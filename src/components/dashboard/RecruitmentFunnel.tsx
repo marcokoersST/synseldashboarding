@@ -237,9 +237,9 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
               const compConv = prevCompStage ? Math.round((hoveredComparisonStage.count / prevCompStage.count) * 100) : null;
               
               return (
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-foreground">{hoveredStage.label}</span>
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between text-xs gap-4 overflow-hidden">
+                  <span className="font-medium text-foreground min-w-[80px] shrink-0">{hoveredStage.label}</span>
+                  <div className="flex items-center gap-4 whitespace-nowrap">
                     <span>
                       <span className="text-muted-foreground">Huidig: </span>
                       <span className="font-medium text-teal">{hoveredStage.count}</span>
