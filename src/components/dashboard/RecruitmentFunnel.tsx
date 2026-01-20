@@ -211,8 +211,8 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
 
         {/* Legend / Hover Info Area in comparison mode */}
         <div className={cn(
-          "mt-4 pt-3 border-t border-border transition-all duration-300",
-          isComparing ? "opacity-100" : "opacity-0 h-0 mt-0 pt-0 border-0 overflow-hidden"
+          "border-t border-border transition-all duration-300",
+          isComparing ? "opacity-100 mt-4 pt-3 min-h-[28px]" : "opacity-0 h-0 mt-0 pt-0 border-0 overflow-hidden"
         )}>
           {hoveredIndex === null ? (
             // Default legend
@@ -237,19 +237,19 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
               const compConv = prevCompStage ? Math.round((hoveredComparisonStage.count / prevCompStage.count) * 100) : null;
               
               return (
-                <div className="flex items-center justify-between text-xs gap-4 overflow-hidden">
-                  <span className="font-medium text-foreground min-w-[80px] shrink-0">{hoveredStage.label}</span>
-                  <div className="flex items-center gap-4 whitespace-nowrap">
-                    <span>
+                <div className="flex items-center justify-between text-xs gap-3">
+                  <span className="font-medium text-foreground shrink-0">{hoveredStage.label}</span>
+                  <div className="flex items-center gap-3 flex-wrap justify-end">
+                    <span className="whitespace-nowrap">
                       <span className="text-muted-foreground">Huidig: </span>
                       <span className="font-medium text-teal">{hoveredStage.count}</span>
                     </span>
-                    <span>
+                    <span className="whitespace-nowrap">
                       <span className="text-muted-foreground">{selectedPeriod}: </span>
                       <span className="font-medium text-gold">{hoveredComparisonStage.count}</span>
                     </span>
                     {currentConv !== null && compConv !== null && (
-                      <span>
+                      <span className="whitespace-nowrap">
                         <span className="text-muted-foreground">Conversie: </span>
                         <span className="text-teal">{currentConv}%</span>
                         <span className="text-muted-foreground"> / </span>
