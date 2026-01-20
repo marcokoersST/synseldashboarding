@@ -1,15 +1,66 @@
 import { 
   LayoutDashboard, 
   LogOut,
-  ChevronLeft
+  ChevronLeft,
+  GitCompare,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
+interface NavItem {
+  icon: typeof LayoutDashboard;
+  label: string;
+  path: string;
+  active?: boolean;
+  subItems?: { icon: typeof LayoutDashboard; label: string; path: string }[];
+}
+
+const navItems: NavItem[] = [
+  { 
+    icon: LayoutDashboard, 
+    label: "Dashboard", 
+    path: "/",
+    active: true,
+    subItems: [
+      { icon: GitCompare, label: "Vergelijking", path: "/vergelijking" }
+    ]
+  },
 ];
 
 export function Sidebar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  // Check if we're on a comparison page
+  const isOnComparisonPage = location.pathname.startsWith("/vergelijking");
+  
+  // Auto-expand Dashboard when on comparison page
+  const effectiveExpandedItems = isOnComparisonPage 
+    ? [...new Set([...expandedItems, "/"])]
+    : expandedItems;
+
+  const toggleExpanded = (path: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedItems(prev => 
+      prev.includes(path) 
+        ? prev.filter(p => p !== path)
+        : [...prev, path]
+    );
+  };
+
+  const handleNavClick = (item: NavItem) => {
+    navigate(item.path);
+  };
+
+  const isSubItemActive = (path: string) => {
+    return location.pathname.startsWith(path);
+  };
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-sidebar flex flex-col z-50">
       {/* Logo */}
@@ -23,19 +74,65 @@ export function Sidebar() {
       {/* Main Navigation */}
       <nav className="flex-1 px-3 py-2">
         <div className="space-y-1">
-          {navItems.map((item) => (
-            <button
-              key={item.label}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                item.active 
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground" 
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-              }`}
-            >
-              <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            const isExpanded = effectiveExpandedItems.includes(item.path);
+            
+            return (
+              <div key={item.label}>
+                <button
+                  onClick={() => handleNavClick(item)}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                    item.active 
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {hasSubItems && (
+                    <span 
+                      onClick={(e) => toggleExpanded(item.path, e)}
+                      className="p-0.5 hover:bg-sidebar-accent rounded"
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="w-4 h-4" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4" />
+                      )}
+                    </span>
+                  )}
+                </button>
+                
+                {/* Sub Items */}
+                {hasSubItems && isExpanded && (
+                  <div className="ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-3">
+                    {item.subItems!.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      const subActive = isSubItemActive(subItem.path);
+                      
+                      return (
+                        <button
+                          key={subItem.path}
+                          onClick={() => navigate(subItem.path)}
+                          className={cn(
+                            "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
+                            subActive 
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                              : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                          )}
+                        >
+                          <SubIcon className="w-4 h-4" />
+                          <span>{subItem.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
       </nav>
