@@ -33,6 +33,7 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
             value={progress} 
             delay={delay + 300}
             barClassName="bg-gradient-to-r from-primary to-gold"
+            trackClassName="bg-gold/30"
           />
           {/* Progress Indicator */}
           <div 
