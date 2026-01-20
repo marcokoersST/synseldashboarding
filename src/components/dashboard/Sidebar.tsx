@@ -1,11 +1,5 @@
 import { 
   LayoutDashboard, 
-  Users, 
-  Mic, 
-  Mail, 
-  MessageSquare, 
-  Settings, 
-  HelpCircle, 
   LogOut,
   ChevronLeft
 } from "lucide-react";
@@ -13,15 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: Users, label: "Kandidaten", active: false },
-  { icon: Mic, label: "Gespreksopnames", active: false },
-  { icon: Mail, label: "Voorstel emails", active: false },
-  { icon: MessageSquare, label: "Chat", active: false },
-];
-
-const settingsItems = [
-  { icon: Settings, label: "Instellingen" },
-  { icon: HelpCircle, label: "Support" },
 ];
 
 export function Sidebar() {
@@ -53,23 +38,6 @@ export function Sidebar() {
           ))}
         </div>
 
-        {/* Settings Section */}
-        <div className="mt-8">
-          <p className="px-3 text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider mb-2">
-            Instellingen
-          </p>
-          <div className="space-y-1">
-            {settingsItems.map((item) => (
-              <button
-                key={item.label}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </nav>
 
       {/* User Profile */}
