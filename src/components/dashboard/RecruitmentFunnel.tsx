@@ -173,7 +173,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
         </div>
 
         {/* Funnel stages */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {currentData.map((stage, index) => (
             <FunnelRow
               key={stage.label}
@@ -247,8 +247,8 @@ function FunnelRow({
       onMouseEnter={() => isComparing && onHover(index)}
       onMouseLeave={() => onHover(null)}
     >
-      {/* Label row */}
-      <div className="flex items-center justify-between mb-1">
+      {/* Label row - text on same line */}
+      <div className="flex items-center justify-between mb-1.5">
         <span className={cn(
           "text-xs transition-all duration-200",
           isComparing && isHovered ? "font-medium text-foreground" : "text-muted-foreground",
@@ -256,7 +256,7 @@ function FunnelRow({
         )}>
           {stage.label}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <AnimatedNumber 
             value={stage.count}
             delay={delay}
@@ -284,45 +284,44 @@ function FunnelRow({
         </div>
       </div>
 
-      {/* Bar container */}
+      {/* Horizontal bar container - grows left to right */}
       <div className={cn(
-        "relative transition-all duration-300 ease-out",
-        isComparing ? "h-6" : "h-3"
+        "relative transition-all duration-300 ease-out overflow-hidden rounded-sm",
+        isComparing ? "h-5" : "h-2.5"
       )}>
-        {/* Current period bar (teal) */}
+        {/* Current period bar (teal) - horizontal, left to right */}
         <div 
           className={cn(
             "absolute left-0 rounded-sm bg-teal transition-all duration-700 ease-out",
-            isComparing ? "top-0 h-[45%]" : "top-0 h-full",
-            isComparing && isHovered && "scale-y-110 origin-top",
-            isComparing && isOther && "scale-y-95 origin-top"
+            isComparing ? "top-0 h-[40%]" : "top-0 h-full",
+            isComparing && isHovered && "brightness-110",
+            isComparing && isOther && "brightness-90"
           )}
           style={{ 
             width: isVisible ? `${currentWidth}%` : "0%",
             opacity: opacity,
-            transitionDelay: isVisible ? "0ms" : `${delay}ms`
           }}
         />
         
         {/* Comparison period bar (gold) - only in comparison mode */}
-        <div 
-          className={cn(
-            "absolute left-0 bottom-0 h-[45%] rounded-sm bg-gold transition-all duration-500 ease-out",
-            !isComparing && "opacity-0 h-0",
-            isComparing && isHovered && "scale-y-110 origin-bottom",
-            isComparing && isOther && "scale-y-95 origin-bottom"
-          )}
-          style={{ 
-            width: isComparing && isVisible ? `${comparisonWidth}%` : "0%",
-            opacity: isComparing ? opacity : 0,
-          }}
-        />
+        {isComparing && (
+          <div 
+            className={cn(
+              "absolute left-0 bottom-0 h-[40%] rounded-sm bg-gold transition-all duration-500 ease-out",
+              isHovered && "brightness-110",
+              isOther && "brightness-90"
+            )}
+            style={{ 
+              width: isVisible ? `${comparisonWidth}%` : "0%",
+              opacity: opacity,
+            }}
+          />
+        )}
 
         {/* Center divider line - only in comparison mode */}
-        <div className={cn(
-          "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-border transition-all duration-300",
-          isComparing ? "opacity-100" : "opacity-0"
-        )} />
+        {isComparing && (
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-border/50" />
+        )}
       </div>
     </div>
   );
