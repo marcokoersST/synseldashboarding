@@ -132,6 +132,11 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-2px)" },
         },
+        "data-pulse": {
+          "0%": { opacity: "1", transform: "scale(1)" },
+          "50%": { opacity: "0.9", transform: "scale(1.02)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -146,6 +151,7 @@ export default {
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
         "draw-line": "draw-line 1.5s ease-out forwards",
         "bounce-subtle": "bounce-subtle 1s ease-in-out infinite",
+        "data-pulse": "data-pulse 0.6s ease-out",
       },
     },
   },
