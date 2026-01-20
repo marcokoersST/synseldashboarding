@@ -10,6 +10,7 @@ interface AnimatedNumberProps {
   duration?: number;
   delay?: number;
   className?: string;
+  formatFn?: (value: number) => string;
 }
 
 export function AnimatedNumber({
@@ -20,6 +21,7 @@ export function AnimatedNumber({
   duration = 1000,
   delay = 0,
   className,
+  formatFn,
 }: AnimatedNumberProps) {
   const { ref, isVisible } = useAnimateOnMount({ delay: 0 });
   const animatedValue = useCountUp({
@@ -30,9 +32,11 @@ export function AnimatedNumber({
     enabled: isVisible,
   });
 
-  const formatted = decimals > 0 
-    ? animatedValue.toFixed(decimals)
-    : animatedValue.toLocaleString();
+  const formatted = formatFn 
+    ? formatFn(animatedValue)
+    : decimals > 0 
+      ? animatedValue.toFixed(decimals)
+      : animatedValue.toLocaleString();
 
   return (
     <span ref={ref} className={cn("tabular-nums transition-all duration-300 data-highlight", className)}>

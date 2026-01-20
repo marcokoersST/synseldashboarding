@@ -44,11 +44,15 @@ const Index = () => {
             <RevenueChart delay={400} />
           </div>
           
-          {/* Middle Row */}
+          {/* Middle Row - Team Leaderboard takes 2 columns */}
           <div className="grid grid-cols-3 gap-4 mb-4">
-            <TeamLeaderboard delay={500} />
-            <RevenueTargetCard delay={600} />
-            <PerformanceScoreCard delay={700} />
+            <div className="col-span-2">
+              <TeamLeaderboard delay={500} />
+            </div>
+            <div className="space-y-4">
+              <RevenueTargetCard delay={600} />
+              <PerformanceScoreCard delay={700} />
+            </div>
           </div>
           
           {/* Bottom Row */}
