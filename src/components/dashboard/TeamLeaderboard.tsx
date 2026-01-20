@@ -1,5 +1,10 @@
 import { Crown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AnimatedCard } from "@/components/animations/AnimatedCard";
+import { AnimatedProgress } from "@/components/animations/AnimatedProgress";
+import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
+import { useAnimateOnMount, getStaggerDelay } from "@/hooks/useAnimateOnMount";
+import { cn } from "@/lib/utils";
 
 const teamMembers = [
   { 
@@ -55,67 +60,98 @@ const teamMembers = [
 
 const goal = 2000000;
 
-export function TeamLeaderboard() {
+interface TeamLeaderboardProps {
+  delay?: number;
+}
+
+export function TeamLeaderboard({ delay = 0 }: TeamLeaderboardProps) {
   return (
-    <div className="bg-card rounded-xl p-5 border border-border">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-sm font-medium text-foreground">Team Omzet Race</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Wie bereikt als eerste €2M?</p>
+    <AnimatedCard delay={delay}>
+      <div className="bg-card rounded-xl p-5 border border-border">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">Team Omzet Race</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Wie bereikt als eerste €2M?</p>
+          </div>
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-gold/10 rounded-md">
+            <Crown className="w-4 h-4 text-gold animate-float" />
+            <span className="text-xs font-medium text-gold">Leider</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-gold/10 rounded-md">
-          <Crown className="w-4 h-4 text-gold" />
-          <span className="text-xs font-medium text-gold">Leider</span>
-        </div>
-      </div>
-      
-      <div className="space-y-3">
-        {teamMembers.map((member, index) => {
-          const progress = (member.revenue / goal) * 100;
-          return (
-            <div 
+        
+        <div className="space-y-3">
+          {teamMembers.map((member, index) => (
+            <TeamMemberRow 
               key={member.id} 
-              className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                member.isCurrentUser 
-                  ? "bg-primary/5 border border-primary/20" 
-                  : "hover:bg-secondary/50"
-              }`}
-            >
-              <span className="w-5 text-xs font-medium text-muted-foreground text-center">
-                {index + 1}
-              </span>
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={member.avatar} />
-                <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm font-medium truncate ${
-                    member.isCurrentUser ? "text-primary" : "text-foreground"
-                  }`}>
-                    {member.name}
-                  </span>
-                  {member.isLeader && <Crown className="w-3.5 h-3.5 text-gold flex-shrink-0" />}
-                </div>
-                <p className="text-xs text-muted-foreground truncate">{member.role}</p>
-              </div>
-              <div className="w-32">
-                <div className="h-1.5 bg-progress-bg rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all ${
-                      member.isLeader ? "bg-gold" : member.isCurrentUser ? "bg-primary" : "bg-teal"
-                    }`}
-                    style={{ width: `${Math.min(progress, 100)}%` }}
-                  />
-                </div>
-              </div>
-              <span className="text-xs font-medium text-foreground w-16 text-right">
-                €{(member.revenue / 1000000).toFixed(2)}M
-              </span>
-            </div>
-          );
-        })}
+              member={member} 
+              index={index}
+              delay={delay + 200 + getStaggerDelay(index, 60)}
+            />
+          ))}
+        </div>
       </div>
+    </AnimatedCard>
+  );
+}
+
+interface TeamMemberRowProps {
+  member: typeof teamMembers[0];
+  index: number;
+  delay: number;
+}
+
+function TeamMemberRow({ member, index, delay }: TeamMemberRowProps) {
+  const { ref, isVisible } = useAnimateOnMount({ delay });
+  const progress = (member.revenue / goal) * 100;
+  
+  return (
+    <div 
+      ref={ref}
+      className={cn(
+        "flex items-center gap-3 p-2 rounded-lg transition-all duration-500 ease-out cursor-pointer",
+        isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4",
+        member.isCurrentUser 
+          ? "bg-primary/5 border border-primary/20 glow-primary" 
+          : "hover:bg-secondary/50"
+      )}
+    >
+      <span className="w-5 text-xs font-medium text-muted-foreground text-center">
+        {index + 1}
+      </span>
+      <Avatar className="w-8 h-8 transition-transform duration-200 hover:scale-110">
+        <AvatarImage src={member.avatar} />
+        <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className={cn(
+            "text-sm font-medium truncate transition-colors",
+            member.isCurrentUser ? "text-primary" : "text-foreground"
+          )}>
+            {member.name}
+          </span>
+          {member.isLeader && <Crown className="w-3.5 h-3.5 text-gold flex-shrink-0 animate-bounce-subtle" />}
+        </div>
+        <p className="text-xs text-muted-foreground truncate">{member.role}</p>
+      </div>
+      <div className="w-32">
+        <AnimatedProgress 
+          value={progress}
+          delay={delay + 100}
+          className="h-1.5"
+          barClassName={cn(
+            member.isLeader ? "bg-gold" : member.isCurrentUser ? "bg-primary" : "bg-teal"
+          )}
+        />
+      </div>
+      <AnimatedNumber 
+        value={member.revenue / 1000000}
+        prefix="€"
+        suffix="M"
+        decimals={2}
+        delay={delay + 200}
+        className="text-xs font-medium text-foreground w-16 text-right"
+      />
     </div>
   );
 }

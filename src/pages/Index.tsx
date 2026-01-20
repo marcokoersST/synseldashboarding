@@ -28,34 +28,34 @@ const Index = () => {
           <WelcomeHeader />
           
           {/* Section Title */}
-          <div className="mb-6">
+          <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
             <h2 className="text-lg font-semibold text-foreground">Doelen & Projecties (3 maanden)</h2>
           </div>
           
           {/* Top Row - Progress Cards */}
           <div className="grid grid-cols-3 gap-4 mb-4">
-            <SalaryProgressCard />
-            <PlacementsCard />
-            <GoalsCard />
+            <SalaryProgressCard delay={100} />
+            <PlacementsCard delay={200} />
+            <GoalsCard delay={300} />
           </div>
           
           {/* Revenue Chart - Full Width */}
           <div className="mb-4">
-            <RevenueChart />
+            <RevenueChart delay={400} />
           </div>
           
           {/* Middle Row */}
           <div className="grid grid-cols-3 gap-4 mb-4">
-            <TeamLeaderboard />
-            <RevenueTargetCard />
-            <PerformanceScoreCard />
+            <TeamLeaderboard delay={500} />
+            <RevenueTargetCard delay={600} />
+            <PerformanceScoreCard delay={700} />
           </div>
           
           {/* Bottom Row */}
           <div className="grid grid-cols-3 gap-4 mb-4">
-            <CoreActivitiesCard />
-            <RecruitmentFunnel />
-            <ChatWidget />
+            <CoreActivitiesCard delay={800} />
+            <RecruitmentFunnel delay={900} />
+            <ChatWidget delay={1000} />
           </div>
         </main>
       </div>
