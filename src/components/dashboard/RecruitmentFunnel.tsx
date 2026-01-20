@@ -11,12 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Square-root scale for bar widths - makes small values visible while keeping proportions
 const getScaledWidth = (value: number, maxValue: number): number => {
@@ -214,19 +209,58 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
           </div>
         </TooltipProvider>
 
-        {/* Legend in comparison mode */}
+        {/* Legend / Hover Info Area in comparison mode */}
         <div className={cn(
-          "flex items-center justify-center gap-6 mt-4 pt-3 border-t border-border transition-all duration-300",
+          "mt-4 pt-3 border-t border-border transition-all duration-300",
           isComparing ? "opacity-100" : "opacity-0 h-0 mt-0 pt-0 border-0 overflow-hidden"
         )}>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm bg-teal" />
-            <span className="text-xs text-muted-foreground">Huidig</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm bg-gold" />
-            <span className="text-xs text-muted-foreground">{selectedPeriod}</span>
-          </div>
+          {hoveredIndex === null ? (
+            // Default legend
+            <div className="flex items-center justify-center gap-6">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-sm bg-teal" />
+                <span className="text-xs text-muted-foreground">Huidig</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-sm bg-gold" />
+                <span className="text-xs text-muted-foreground">{selectedPeriod}</span>
+              </div>
+            </div>
+          ) : (
+            // Hover info display
+            (() => {
+              const hoveredStage = currentData[hoveredIndex];
+              const hoveredComparisonStage = comparisonData[hoveredIndex];
+              const prevStage = hoveredIndex > 0 ? currentData[hoveredIndex - 1] : null;
+              const prevCompStage = hoveredIndex > 0 ? comparisonData[hoveredIndex - 1] : null;
+              const currentConv = prevStage ? Math.round((hoveredStage.count / prevStage.count) * 100) : null;
+              const compConv = prevCompStage ? Math.round((hoveredComparisonStage.count / prevCompStage.count) * 100) : null;
+              
+              return (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-foreground">{hoveredStage.label}</span>
+                  <div className="flex items-center gap-4">
+                    <span>
+                      <span className="text-muted-foreground">Huidig: </span>
+                      <span className="font-medium text-teal">{hoveredStage.count}</span>
+                    </span>
+                    <span>
+                      <span className="text-muted-foreground">{selectedPeriod}: </span>
+                      <span className="font-medium text-gold">{hoveredComparisonStage.count}</span>
+                    </span>
+                    {currentConv !== null && compConv !== null && (
+                      <span>
+                        <span className="text-muted-foreground">Conversie: </span>
+                        <span className="text-teal">{currentConv}%</span>
+                        <span className="text-muted-foreground"> / </span>
+                        <span className="text-gold">{compConv}%</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()
+          )}
         </div>
       </div>
     </AnimatedCard>
@@ -279,131 +313,93 @@ function FunnelRow({
     ? Math.round((comparisonStage.count / previousComparisonStage.count) * 100) 
     : 100;
 
-  const tooltipContent = (
-    <div className="space-y-1.5 text-xs">
-      <div className="font-medium">{stage.label}</div>
-      <div className="flex justify-between gap-4">
-        <span className="text-muted-foreground">Huidig:</span>
-        <span className="font-medium text-teal">{stage.count}</span>
-      </div>
-      {isComparing && (
-        <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">{selectedPeriod}:</span>
-          <span className="font-medium text-gold">{comparisonStage.count}</span>
-        </div>
-      )}
-      {previousStage && (
-        <div className="pt-1 border-t border-border">
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">Conversie:</span>
-            <span>
-              <span className="text-teal">{currentConversion}%</span>
-              {isComparing && (
-                <>
-                  <span className="text-muted-foreground"> / </span>
-                  <span className="text-gold">{comparisonConversion}%</span>
-                </>
-              )}
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          ref={ref}
-          className={cn(
-            "transition-all duration-200 ease-out cursor-default",
-            isComparing && isOther && "opacity-80"
-          )}
-          onMouseEnter={() => isComparing && onHover(index)}
-          onMouseLeave={() => onHover(null)}
-        >
-          {/* Label row - text on same line */}
-          <div className="flex items-center justify-between mb-1.5">
-            <span className={cn(
-              "text-xs transition-all duration-200",
-              isComparing && isHovered ? "font-medium text-foreground" : "text-muted-foreground",
+    <div
+      ref={ref}
+      className={cn(
+        "transition-all duration-200 ease-out cursor-default",
+        isComparing && isOther && "opacity-80"
+      )}
+      onMouseEnter={() => isComparing && onHover(index)}
+      onMouseLeave={() => onHover(null)}
+    >
+      {/* Label row - text on same line */}
+      <div className="flex items-center justify-between mb-1.5">
+        <span className={cn(
+          "text-xs transition-all duration-200",
+          isComparing && isHovered ? "font-medium text-foreground" : "text-muted-foreground",
+          isComparing && isOther && "opacity-80"
+        )}>
+          {stage.label}
+        </span>
+        <div className="flex items-center gap-3">
+          <AnimatedNumber 
+            value={stage.count}
+            delay={delay}
+            className={cn(
+              "text-xs font-medium transition-all duration-200",
+              isComparing ? "text-teal" : "text-foreground",
               isComparing && isOther && "opacity-80"
+            )}
+          />
+          {isComparing ? (
+            <span className={cn(
+              "text-xs font-medium text-gold transition-all duration-200",
+              isOther && "opacity-80"
             )}>
-              {stage.label}
+              {comparisonStage.count}
             </span>
-            <div className="flex items-center gap-3">
-              <AnimatedNumber 
-                value={stage.count}
-                delay={delay}
-                className={cn(
-                  "text-xs font-medium transition-all duration-200",
-                  isComparing ? "text-teal" : "text-foreground",
-                  isComparing && isOther && "opacity-80"
-                )}
-              />
-              {isComparing ? (
-                <span className={cn(
-                  "text-xs font-medium text-gold transition-all duration-200",
-                  isOther && "opacity-80"
-                )}>
-                  {comparisonStage.count}
-                </span>
-              ) : (
-                <span className={cn(
-                  "text-xs text-teal transition-all duration-200",
-                  isOther && "opacity-80"
-                )}>
-                  {stage.percentage}%
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Horizontal bar container - grows left to right */}
-          <div className={cn(
-            "relative transition-all duration-300 ease-out overflow-hidden rounded-full",
-            isComparing ? "h-5" : "h-2"
-          )}>
-            {/* Current period bar (teal) - horizontal gradient from light to dark */}
-            <div 
-              className={cn(
-                "absolute left-0 rounded-full transition-all duration-700 ease-out",
-                isComparing ? "top-0 h-[40%]" : "top-0 h-full",
-                isComparing && isHovered && "brightness-110",
-                isComparing && isOther && "brightness-90"
-              )}
-              style={{ 
-                width: isVisible ? `${currentWidth}%` : "0%",
-                background: `linear-gradient(to right, hsl(var(--teal) / ${opacity * 0.5}), hsl(var(--teal) / ${opacity}))`,
-              }}
-            />
-            
-            {/* Comparison period bar (gold) - only in comparison mode */}
-            {isComparing && (
-              <div 
-                className={cn(
-                  "absolute left-0 bottom-0 h-[40%] rounded-full transition-all duration-500 ease-out",
-                  isHovered && "brightness-110",
-                  isOther && "brightness-90"
-                )}
-                style={{ 
-                  width: isVisible ? `${comparisonWidth}%` : "0%",
-                  background: `linear-gradient(to right, hsl(var(--gold) / ${opacity * 0.5}), hsl(var(--gold) / ${opacity}))`,
-                }}
-              />
-            )}
-
-            {/* Center divider line - only in comparison mode */}
-            {isComparing && (
-              <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-border/50" />
-            )}
-          </div>
+          ) : (
+            <span className={cn(
+              "text-xs text-teal transition-all duration-200",
+              isOther && "opacity-80"
+            )}>
+              {stage.percentage}%
+            </span>
+          )}
         </div>
-      </TooltipTrigger>
-      <TooltipContent side="right" className="bg-popover border-border">
-        {tooltipContent}
-      </TooltipContent>
-    </Tooltip>
+      </div>
+
+      {/* Horizontal bar container - grows left to right */}
+      <div className={cn(
+        "relative transition-all duration-300 ease-out overflow-hidden rounded-full",
+        isComparing ? "h-5" : "h-2"
+      )}>
+        {/* Current period bar (teal) - horizontal gradient from light to dark */}
+        <div 
+          className={cn(
+            "absolute left-0 rounded-full transition-all duration-700 ease-out",
+            isComparing ? "top-0 h-[40%]" : "top-0 h-full",
+            isComparing && isHovered && "brightness-110",
+            isComparing && isOther && "brightness-90"
+          )}
+          style={{ 
+            width: isVisible ? `${currentWidth}%` : "0%",
+            background: `linear-gradient(to right, hsl(var(--teal) / ${opacity * 0.5}), hsl(var(--teal) / ${opacity}))`,
+          }}
+        />
+        
+        {/* Comparison period bar (gold) - only in comparison mode */}
+        {isComparing && (
+          <div 
+            className={cn(
+              "absolute left-0 bottom-0 h-[40%] rounded-full transition-all duration-500 ease-out",
+              isHovered && "brightness-110",
+              isOther && "brightness-90"
+            )}
+            style={{ 
+              width: isVisible ? `${comparisonWidth}%` : "0%",
+              background: `linear-gradient(to right, hsl(var(--gold) / ${opacity * 0.5}), hsl(var(--gold) / ${opacity}))`,
+            }}
+          />
+        )}
+
+        {/* Center divider line - only in comparison mode */}
+        {isComparing && (
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-border/50" />
+        )}
+      </div>
+    </div>
   );
 }
