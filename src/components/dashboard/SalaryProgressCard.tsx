@@ -2,6 +2,7 @@ import { TrendingUp } from "lucide-react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedProgress } from "@/components/animations/AnimatedProgress";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
+import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 
 interface SalaryProgressCardProps {
   delay?: number;
@@ -12,6 +13,7 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
   const current = 3000;
   const goal = 3500;
   const annual = 42000;
+  const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
   
   return (
     <AnimatedCard delay={delay}>
@@ -28,19 +30,18 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
         </div>
         
         {/* Progress Bar */}
-        <div className="relative mb-3">
+        <div ref={ref} className="relative mb-3">
           <AnimatedProgress 
             value={progress} 
             delay={delay + 300}
             barClassName="bg-gradient-to-r from-primary to-gold"
-            trackClassName="bg-gold/30"
+            trackClassName="bg-gold/50"
           />
-          {/* Progress Indicator */}
+          {/* Progress Indicator - moves with animation */}
           <div 
             className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-gold rounded-full border-2 border-card shadow-md transition-all duration-1000 ease-out animate-pulse-subtle"
             style={{ 
-              left: `calc(${progress}% - 8px)`,
-              transitionDelay: `${delay + 300}ms`
+              left: isVisible ? `calc(${progress}% - 8px)` : '-8px',
             }}
           />
         </div>
