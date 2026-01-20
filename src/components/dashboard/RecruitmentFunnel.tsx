@@ -116,8 +116,8 @@ const comparisonDataByPeriod: Record<string, typeof currentData> = {
   ],
 };
 
-// Opacity values for the gradient effect (left to right: light to dark)
-const opacityMap = [0.3, 0.45, 0.6, 0.8, 1];
+// Opacity values for each stage (top to bottom: 100% for Leads, decreasing for later stages)
+const opacityMap = [1, 0.85, 0.7, 0.55, 0.4];
 
 interface RecruitmentFunnelProps {
   delay?: number;
@@ -286,20 +286,20 @@ function FunnelRow({
 
       {/* Horizontal bar container - grows left to right */}
       <div className={cn(
-        "relative transition-all duration-300 ease-out overflow-hidden rounded-sm",
-        isComparing ? "h-5" : "h-2.5"
+        "relative transition-all duration-300 ease-out overflow-hidden rounded-full",
+        isComparing ? "h-5" : "h-2"
       )}>
-        {/* Current period bar (teal) - horizontal, left to right */}
+        {/* Current period bar (teal) - horizontal gradient from light to dark */}
         <div 
           className={cn(
-            "absolute left-0 rounded-sm bg-teal transition-all duration-700 ease-out",
+            "absolute left-0 rounded-full transition-all duration-700 ease-out",
             isComparing ? "top-0 h-[40%]" : "top-0 h-full",
             isComparing && isHovered && "brightness-110",
             isComparing && isOther && "brightness-90"
           )}
           style={{ 
             width: isVisible ? `${currentWidth}%` : "0%",
-            opacity: opacity,
+            background: `linear-gradient(to right, hsl(var(--teal) / ${opacity * 0.5}), hsl(var(--teal) / ${opacity}))`,
           }}
         />
         
@@ -307,13 +307,13 @@ function FunnelRow({
         {isComparing && (
           <div 
             className={cn(
-              "absolute left-0 bottom-0 h-[40%] rounded-sm bg-gold transition-all duration-500 ease-out",
+              "absolute left-0 bottom-0 h-[40%] rounded-full transition-all duration-500 ease-out",
               isHovered && "brightness-110",
               isOther && "brightness-90"
             )}
             style={{ 
               width: isVisible ? `${comparisonWidth}%` : "0%",
-              opacity: opacity,
+              background: `linear-gradient(to right, hsl(var(--gold) / ${opacity * 0.5}), hsl(var(--gold) / ${opacity}))`,
             }}
           />
         )}
