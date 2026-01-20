@@ -35,7 +35,7 @@ export function AnimatedNumber({
     : animatedValue.toLocaleString();
 
   return (
-    <span ref={ref} className={cn("tabular-nums", className)}>
+    <span ref={ref} className={cn("tabular-nums transition-all duration-300 data-highlight", className)}>
       {prefix}{formatted}{suffix}
     </span>
   );

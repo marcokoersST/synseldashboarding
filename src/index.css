@@ -138,14 +138,22 @@
 
 /* Animation Utilities */
 @layer components {
-  /* Hover lift effect for cards */
+  /* Card hover - no movement, subtle internal glow */
   .hover-lift {
     @apply transition-all duration-300 ease-out;
   }
   
   .hover-lift:hover {
-    @apply -translate-y-1;
-    box-shadow: 0 10px 40px -10px hsl(var(--foreground) / 0.1);
+    box-shadow: 0 0 0 1px hsl(var(--border)), 0 4px 20px -5px hsl(var(--foreground) / 0.08);
+  }
+  
+  /* Subtle data pulse on card hover */
+  .hover-lift:hover .data-highlight {
+    animation: data-pulse 0.6s ease-out;
+  }
+  
+  .hover-lift:hover .data-glow {
+    filter: brightness(1.1);
   }
   
   /* Hover scale effect */

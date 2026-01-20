@@ -25,7 +25,7 @@ export function AnimatedProgress({
     <div ref={ref} className={cn("h-2.5 bg-progress-bg rounded-full overflow-hidden", className)}>
       <div
         className={cn(
-          "h-full rounded-full transition-all duration-1000 ease-out",
+          "h-full rounded-full transition-all duration-1000 ease-out data-glow",
           showGlow && "shadow-[0_0_10px_currentColor]",
           barClassName
         )}
