@@ -214,11 +214,6 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
           </div>
         </TooltipProvider>
 
-        {/* Scale disclaimer note */}
-        <p className="text-[10px] text-muted-foreground/60 text-center mt-3">
-          Balklengte geschaald (√) voor leesbaarheid; getallen zijn werkelijke aantallen.
-        </p>
-
         {/* Legend in comparison mode */}
         <div className={cn(
           "flex items-center justify-center gap-6 mt-4 pt-3 border-t border-border transition-all duration-300",
