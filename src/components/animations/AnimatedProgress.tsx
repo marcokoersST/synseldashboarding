@@ -7,6 +7,7 @@ interface AnimatedProgressProps {
   delay?: number;
   className?: string;
   barClassName?: string;
+  trackClassName?: string;
   showGlow?: boolean;
 }
 
@@ -16,13 +17,14 @@ export function AnimatedProgress({
   delay = 0,
   className,
   barClassName,
+  trackClassName,
   showGlow = false,
 }: AnimatedProgressProps) {
   const { ref, isVisible } = useAnimateOnMount({ delay });
   const percentage = Math.min((value / max) * 100, 100);
 
   return (
-    <div ref={ref} className={cn("h-2.5 bg-progress-bg rounded-full overflow-hidden", className)}>
+    <div ref={ref} className={cn("h-2.5 rounded-full overflow-hidden", trackClassName || "bg-progress-bg", className)}>
       <div
         className={cn(
           "h-full rounded-full transition-all duration-1000 ease-out data-glow",
