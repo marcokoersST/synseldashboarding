@@ -59,29 +59,31 @@ export function PerformanceScoreCard({ delay = 0 }: PerformanceScoreCardProps) {
         
         {/* Metric bars */}
         <div className="space-y-3">
-          {metrics.map((metric, index) => (
-            <div key={metric.label} className="group/metric cursor-pointer">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-muted-foreground group-hover/metric:text-foreground transition-colors">
-                  {metric.label}
-                </span>
-                <AnimatedNumber 
-                  value={metric.value}
-                  suffix="/10"
-                  decimals={1}
-                  delay={delay + 600 + getStaggerDelay(index, 100)}
-                  className="text-xs font-medium text-foreground"
-                />
-              </div>
+        {metrics.map((metric, index) => (
+          <div key={metric.label} className="group/metric cursor-pointer">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-muted-foreground group-hover/metric:text-foreground group-hover/metric:font-medium transition-all duration-200">
+                {metric.label}
+              </span>
+              <AnimatedNumber 
+                value={metric.value}
+                suffix="/10"
+                decimals={1}
+                delay={delay + 600 + getStaggerDelay(index, 100)}
+                className="text-xs font-medium text-foreground"
+              />
+            </div>
+            <div className="h-1.5">
               <AnimatedProgress 
                 value={metric.value}
                 max={10}
                 delay={delay + 500 + getStaggerDelay(index, 100)}
-                className="h-1.5 group-hover/metric:h-2 transition-all"
+                className="h-full origin-bottom transform transition-transform duration-200 group-hover/metric:scale-y-[1.33]"
                 barClassName={metric.color}
               />
             </div>
-          ))}
+          </div>
+        ))}
         </div>
       </div>
     </AnimatedCard>
