@@ -132,19 +132,23 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
               <span className="text-xs font-medium text-muted-foreground">Mijn doelen</span>
               <span className="text-xs text-muted-foreground/60">({sortedUserGoals.length})</span>
             </div>
-            <div className="h-[130px] overflow-y-auto scrollbar-thin">
-              <div className="space-y-2 pr-2">
-                {sortedUserGoals.map((goal, index) => (
-                  <GoalItem 
-                    key={goal.id} 
-                    goal={goal} 
-                    delay={delay + 200 + getStaggerDelay(index, 80)}
-                    onToggle={handleToggleComplete}
-                    onDelete={handleDeleteGoal}
-                    onEdit={openEditDialog}
-                  />
-                ))}
+            <div className="relative">
+              <div className="h-[130px] overflow-y-auto scrollbar-thin">
+                <div className="space-y-2 pr-2 pb-4">
+                  {sortedUserGoals.map((goal, index) => (
+                    <GoalItem 
+                      key={goal.id} 
+                      goal={goal} 
+                      delay={delay + 200 + getStaggerDelay(index, 80)}
+                      onToggle={handleToggleComplete}
+                      onDelete={handleDeleteGoal}
+                      onEdit={openEditDialog}
+                    />
+                  ))}
+                </div>
               </div>
+              {/* Fade gradient overlay */}
+              <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-card to-transparent pointer-events-none" />
             </div>
           </div>
           
@@ -156,19 +160,23 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                 <span className="text-xs font-medium text-muted-foreground">Doelen van leidinggevende</span>
                 <span className="text-xs text-muted-foreground/60">({sortedManagerGoals.length})</span>
               </div>
-              <div className="h-[130px] overflow-y-auto scrollbar-thin">
-                <div className="space-y-2 pr-2">
-                  {sortedManagerGoals.map((goal, index) => (
-                    <GoalItem 
-                      key={goal.id} 
-                      goal={goal} 
-                      delay={delay + 200 + getStaggerDelay(sortedUserGoals.length + index, 80)}
-                      onToggle={handleToggleComplete}
-                      onDelete={handleDeleteGoal}
-                      onEdit={openEditDialog}
-                    />
-                  ))}
+              <div className="relative">
+                <div className="h-[130px] overflow-y-auto scrollbar-thin">
+                  <div className="space-y-2 pr-2 pb-4">
+                    {sortedManagerGoals.map((goal, index) => (
+                      <GoalItem 
+                        key={goal.id} 
+                        goal={goal} 
+                        delay={delay + 200 + getStaggerDelay(sortedUserGoals.length + index, 80)}
+                        onToggle={handleToggleComplete}
+                        onDelete={handleDeleteGoal}
+                        onEdit={openEditDialog}
+                      />
+                    ))}
+                  </div>
                 </div>
+                {/* Fade gradient overlay */}
+                <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-card to-transparent pointer-events-none" />
               </div>
             </div>
           )}
