@@ -28,13 +28,15 @@ interface Goal {
 }
 
 const initialGoals: Goal[] = [
-  { id: 1, text: "5 nieuwe kandidaten benaderen", completed: true, isManagerGoal: false },
-  { id: 2, text: "3 sollicitatie gesprekken inplannen", completed: true, isManagerGoal: false },
-  { id: 3, text: "1 nieuwe klant acquisitie doen", completed: false, isManagerGoal: false },
-  { id: 4, text: "CV database bijwerken", completed: false, isManagerGoal: false },
-  // Manager goals
-  { id: 5, text: "Minimaal 90% conversieratio behalen", completed: false, isManagerGoal: true },
-  { id: 6, text: "2 nieuwe klanten werven dit kwartaal", completed: true, isManagerGoal: true },
+  // Personal development goals (user's own)
+  { id: 1, text: "Acquisitiegesprekken volledig zelfstandig uitvoeren zonder begeleiding", completed: true, isManagerGoal: false },
+  { id: 2, text: "Actief luisteren verbeteren tijdens klantgesprekken", completed: false, isManagerGoal: false },
+  { id: 3, text: "Elke week één nieuw onderhandelingstechniek toepassen", completed: false, isManagerGoal: false },
+  { id: 4, text: "Netwerk uitbreiden door maandelijks 2 branche-events bij te wonen", completed: true, isManagerGoal: false },
+  // Manager-set goals
+  { id: 5, text: "Kwaliteitsscore van minimaal 8.0 behalen bij AI-coach inschrijvingen", completed: false, isManagerGoal: true },
+  { id: 6, text: "Meer oplossingsgerichte houding tonen in teamoverleggen", completed: false, isManagerGoal: true },
+  { id: 7, text: "Proactief kennis delen met junior collega's", completed: true, isManagerGoal: true },
 ];
 
 interface GoalsCardProps {
