@@ -1,10 +1,10 @@
-import { Plus, Trash2, Pencil, Check, X, Shield } from "lucide-react";
+import { Plus, Trash2, Pencil, Shield } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { useAnimateOnMount, getStaggerDelay } from "@/hooks/useAnimateOnMount";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useState, useMemo } from "react";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Goal {
   id: number;
@@ -89,13 +90,22 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
     setIsEditDialogOpen(true);
   };
 
-  // Separate user goals and manager goals
-  const userGoals = goals.filter(g => !g.isManagerGoal);
-  const managerGoals = goals.filter(g => g.isManagerGoal);
+  // Separate and sort goals: uncompleted first, then completed
+  const sortedUserGoals = useMemo(() => {
+    return goals
+      .filter(g => !g.isManagerGoal)
+      .sort((a, b) => Number(a.completed) - Number(b.completed));
+  }, [goals]);
+
+  const sortedManagerGoals = useMemo(() => {
+    return goals
+      .filter(g => g.isManagerGoal)
+      .sort((a, b) => Number(a.completed) - Number(b.completed));
+  }, [goals]);
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border">
+      <div className="bg-card rounded-xl p-5 border border-border flex flex-col h-full">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-foreground">Persoonlijke Ontwikkeldoelen</h3>
           <button 
@@ -107,52 +117,67 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
           </button>
         </div>
         
-        <div className="space-y-3">
-          {/* User Goals */}
-          {userGoals.map((goal, index) => (
-            <GoalItem 
-              key={goal.id} 
-              goal={goal} 
-              delay={delay + 200 + getStaggerDelay(index, 80)}
-              onToggle={handleToggleComplete}
-              onDelete={handleDeleteGoal}
-              onEdit={openEditDialog}
-            />
-          ))}
+        <div className="flex-1 flex flex-col gap-4 min-h-0">
+          {/* User Goals Section */}
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-medium text-muted-foreground">Mijn doelen</span>
+              <span className="text-xs text-muted-foreground/60">({sortedUserGoals.length})</span>
+            </div>
+            <ScrollArea className="flex-1 max-h-[120px]">
+              <div className="space-y-2 pr-3">
+                {sortedUserGoals.map((goal, index) => (
+                  <GoalItem 
+                    key={goal.id} 
+                    goal={goal} 
+                    delay={delay + 200 + getStaggerDelay(index, 80)}
+                    onToggle={handleToggleComplete}
+                    onDelete={handleDeleteGoal}
+                    onEdit={openEditDialog}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
           
           {/* Manager Goals Section */}
-          {managerGoals.length > 0 && (
-            <>
-              <div className="flex items-center gap-2 pt-2 mt-2 border-t border-border/50">
+          {sortedManagerGoals.length > 0 && (
+            <div className="flex-1 min-h-0 flex flex-col border-t border-border/50 pt-3">
+              <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-3.5 h-3.5 text-gold" />
                 <span className="text-xs font-medium text-muted-foreground">Doelen van leidinggevende</span>
+                <span className="text-xs text-muted-foreground/60">({sortedManagerGoals.length})</span>
               </div>
-              {managerGoals.map((goal, index) => (
-                <GoalItem 
-                  key={goal.id} 
-                  goal={goal} 
-                  delay={delay + 200 + getStaggerDelay(userGoals.length + index, 80)}
-                  onToggle={handleToggleComplete}
-                  onDelete={handleDeleteGoal}
-                  onEdit={openEditDialog}
-                />
-              ))}
-            </>
+              <ScrollArea className="flex-1 max-h-[120px]">
+                <div className="space-y-2 pr-3">
+                  {sortedManagerGoals.map((goal, index) => (
+                    <GoalItem 
+                      key={goal.id} 
+                      goal={goal} 
+                      delay={delay + 200 + getStaggerDelay(sortedUserGoals.length + index, 80)}
+                      onToggle={handleToggleComplete}
+                      onDelete={handleDeleteGoal}
+                      onEdit={openEditDialog}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
           )}
         </div>
 
         {/* Add Goal Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Nieuw doel toevoegen</DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <Input
-                placeholder="Beschrijf je doel..."
+              <Textarea
+                placeholder="Beschrijf je persoonlijke ontwikkeldoel. Dit kan meerdere regels bevatten..."
                 value={newGoalText}
                 onChange={(e) => setNewGoalText(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddGoal()}
+                className="min-h-[120px] resize-none"
                 autoFocus
               />
             </div>
@@ -169,16 +194,16 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
 
         {/* Edit Goal Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Doel bewerken</DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <Input
-                placeholder="Beschrijf je doel..."
+              <Textarea
+                placeholder="Beschrijf je persoonlijke ontwikkeldoel. Dit kan meerdere regels bevatten..."
                 value={editingGoal?.text || ""}
                 onChange={(e) => setEditingGoal(prev => prev ? { ...prev, text: e.target.value } : null)}
-                onKeyDown={(e) => e.key === 'Enter' && handleEditGoal()}
+                className="min-h-[120px] resize-none"
                 autoFocus
               />
             </div>
@@ -212,16 +237,16 @@ function GoalItem({ goal, delay, onToggle, onDelete, onEdit }: GoalItemProps) {
     <div 
       ref={ref}
       className={cn(
-        "flex items-center gap-3 group transition-all duration-500 ease-out",
+        "flex items-start gap-3 group transition-all duration-500 ease-out p-2 rounded-lg",
         isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4",
-        goal.isManagerGoal && "bg-gold/5 border border-gold/30 rounded-lg px-3 py-2 -mx-1"
+        goal.isManagerGoal && "bg-gold/5 border border-gold/30"
       )}
     >
       <Checkbox 
         checked={goal.completed}
         onCheckedChange={() => onToggle(goal.id)}
         className={cn(
-          "w-5 h-5 rounded-md border-2 transition-all duration-300 cursor-pointer",
+          "w-5 h-5 rounded-md border-2 transition-all duration-300 cursor-pointer mt-0.5 flex-shrink-0",
           goal.completed 
             ? "bg-success border-success text-success-foreground scale-100" 
             : goal.isManagerGoal
@@ -230,7 +255,7 @@ function GoalItem({ goal, delay, onToggle, onDelete, onEdit }: GoalItemProps) {
         )}
       />
       <span className={cn(
-        "text-sm transition-all duration-300 flex-1",
+        "text-sm transition-all duration-300 flex-1 leading-relaxed",
         goal.completed 
           ? "text-muted-foreground line-through" 
           : "text-foreground"
@@ -240,7 +265,7 @@ function GoalItem({ goal, delay, onToggle, onDelete, onEdit }: GoalItemProps) {
       
       {/* Action buttons - only for user goals */}
       {!goal.isManagerGoal && (
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -284,7 +309,7 @@ function GoalItem({ goal, delay, onToggle, onDelete, onEdit }: GoalItemProps) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center w-6 h-6">
+              <div className="flex items-center justify-center w-6 h-6 flex-shrink-0">
                 <Shield className="w-4 h-4 text-gold" />
               </div>
             </TooltipTrigger>
