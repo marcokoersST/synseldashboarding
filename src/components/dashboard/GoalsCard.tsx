@@ -29,15 +29,23 @@ interface Goal {
 }
 
 const initialGoals: Goal[] = [
-  // Personal development goals (user's own)
-  { id: 1, text: "Acquisitiegesprekken volledig zelfstandig uitvoeren zonder begeleiding", completed: true, isManagerGoal: false },
-  { id: 2, text: "Actief luisteren verbeteren tijdens klantgesprekken", completed: false, isManagerGoal: false },
-  { id: 3, text: "Elke week één nieuw onderhandelingstechniek toepassen", completed: false, isManagerGoal: false },
-  { id: 4, text: "Netwerk uitbreiden door maandelijks 2 branche-events bij te wonen", completed: true, isManagerGoal: false },
-  // Manager-set goals
-  { id: 5, text: "Kwaliteitsscore van minimaal 8.0 behalen bij AI-coach inschrijvingen", completed: false, isManagerGoal: true },
-  { id: 6, text: "Meer oplossingsgerichte houding tonen in teamoverleggen", completed: false, isManagerGoal: true },
-  { id: 7, text: "Proactief kennis delen met junior collega's", completed: true, isManagerGoal: true },
+  // Personal development goals (user's own) - 7 goals
+  { id: 1, text: "Acquisitiegesprekken volledig zelfstandig uitvoeren zonder begeleiding van een senior collega", completed: true, isManagerGoal: false },
+  { id: 2, text: "Actief luisteren verbeteren tijdens klantgesprekken door samenvattingen te geven", completed: false, isManagerGoal: false },
+  { id: 3, text: "Elke week één nieuwe onderhandelingstechniek toepassen en evalueren", completed: false, isManagerGoal: false },
+  { id: 4, text: "Netwerk uitbreiden door maandelijks minimaal 2 branche-events bij te wonen", completed: true, isManagerGoal: false },
+  { id: 5, text: "Timemanagement verbeteren door dagelijks prioriteiten te stellen met de Eisenhower-matrix", completed: false, isManagerGoal: false },
+  { id: 6, text: "Presentatievaardigheden ontwikkelen door kwartaallijks een interne kennissessie te geven", completed: true, isManagerGoal: false },
+  { id: 7, text: "Stressbestendigheid vergroten door mindfulness-technieken toe te passen bij piekdrukte", completed: false, isManagerGoal: false },
+  
+  // Manager-set goals - 7 goals
+  { id: 8, text: "Kwaliteitsscore van minimaal 8.0 behalen bij AI-coach inschrijvingen dit kwartaal", completed: false, isManagerGoal: true },
+  { id: 9, text: "Meer oplossingsgerichte houding tonen in teamoverleggen en minder focussen op obstakels", completed: false, isManagerGoal: true },
+  { id: 10, text: "Proactief kennis en best practices delen met junior collega's tijdens wekelijkse check-ins", completed: true, isManagerGoal: true },
+  { id: 11, text: "Initiatief tonen bij het oppakken van nieuwe klantrelaties zonder directe aansturing", completed: false, isManagerGoal: true },
+  { id: 12, text: "Feedbackcultuur versterken door constructieve feedback te geven én te ontvangen", completed: false, isManagerGoal: true },
+  { id: 13, text: "Samenwerking met andere business units verbeteren door maandelijks kennis uit te wisselen", completed: true, isManagerGoal: true },
+  { id: 14, text: "Klanttevredenheid verhogen door proactief follow-up gesprekken te voeren na plaatsingen", completed: false, isManagerGoal: true },
 ];
 
 interface GoalsCardProps {
