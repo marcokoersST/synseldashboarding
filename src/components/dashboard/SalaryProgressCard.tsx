@@ -9,83 +9,131 @@ interface SalaryProgressCardProps {
 }
 
 export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
-  const progress = 68;
-  const current = 3000;
-  const goal = 3500;
-  const annual = 42000;
+  // Mock data based on screenshot structure
+  const currentSalary = 3000;
+  const nextSalary = 3500;
+  const currentRevenue = 420000;
+  const revenueMin = 250000;
+  const revenueMax = 500000;
+  const revenueNeeded = revenueMax - currentRevenue;
+  const progress = ((currentRevenue - revenueMin) / (revenueMax - revenueMin)) * 100;
+  const currentAnnualSalary = 36000;
+  const nextAnnualSalary = 42000;
+  const nextStep = 3;
+  
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('nl-NL', { 
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0 
+    }).format(value);
+  };
   
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border group">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="text-sm font-medium text-foreground">Salaristrap Progressie</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Op weg naar je volgende salaristrap</p>
-          </div>
-          <div className="flex items-center gap-1.5 text-success text-xs font-medium">
-            <TrendingUp className="w-3.5 h-3.5 group-hover:animate-bounce-subtle" />
-            <span>+12%</span>
-          </div>
+      <div className="bg-card rounded-xl p-6 border border-border">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="w-5 h-5 text-muted-foreground" />
+          <h3 className="text-base font-medium text-foreground">Voortgang naar volgende salarisstap</h3>
         </div>
         
-        {/* Progress Bar */}
-        <div ref={ref} className="relative mb-3">
-          <AnimatedProgress 
-            value={progress} 
-            delay={delay + 300}
-            barClassName="bg-gradient-to-r from-primary to-gold"
-            trackClassName="bg-gold/50"
-          />
-          {/* Progress Indicator - moves with animation */}
-          <div 
-            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-gold rounded-full border-2 border-card shadow-md transition-all duration-1000 ease-out animate-pulse-subtle"
-            style={{ 
-              left: isVisible ? `calc(${progress}% - 8px)` : '-8px',
-            }}
-          />
-        </div>
-        
-        {/* Labels */}
-        <div className="flex items-center justify-between text-xs">
-          <div>
-            <span className="text-muted-foreground">Huidig: </span>
-            <AnimatedNumber 
-              value={current} 
-              prefix="€" 
-              delay={delay + 400}
-              className="font-semibold text-foreground"
-            />
-          </div>
-          <div className="text-center">
+        {/* Progress percentage */}
+        <div className="mb-2">
+          <span className="text-4xl font-bold text-success">
             <AnimatedNumber 
               value={progress} 
-              suffix="%" 
-              delay={delay + 500}
-              className="font-bold text-lg text-primary"
-            />
+              decimals={1}
+              delay={delay + 200}
+            />%
+          </span>
+          <span className="text-muted-foreground ml-2">van de weg</span>
+        </div>
+        
+        {/* Revenue needed subtitle */}
+        <p className="text-sm text-muted-foreground mb-6">
+          Nog € {formatCurrency(revenueNeeded)} omzet nodig voor volgende stap
+        </p>
+        
+        {/* Three column info */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Huidig salaris</p>
+            <p className="text-xl font-bold text-foreground">
+              € <AnimatedNumber value={currentSalary} delay={delay + 300} formatFn={formatCurrency} />
+            </p>
+            <p className="text-xs text-muted-foreground">per maand</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground mb-1">Huidige omzet (13 periodes)</p>
+            <p className="text-xl font-bold text-foreground">
+              € <AnimatedNumber value={currentRevenue} delay={delay + 400} formatFn={formatCurrency} />
+            </p>
           </div>
           <div className="text-right">
-            <span className="text-muted-foreground">Doel: </span>
-            <AnimatedNumber 
-              value={goal} 
-              prefix="€" 
-              delay={delay + 400}
-              className="font-semibold text-foreground"
-            />
+            <p className="text-xs text-muted-foreground mb-1">Volgend salaris</p>
+            <p className="text-xl font-bold text-success">
+              € <AnimatedNumber value={nextSalary} delay={delay + 300} formatFn={formatCurrency} />
+            </p>
+            <p className="text-xs text-muted-foreground">per maand</p>
           </div>
         </div>
         
-        {/* Annual salary note */}
-        <div className="mt-3 pt-3 border-t border-border">
-          <p className="text-xs text-muted-foreground text-center">
-            Jaarsalaris doel: <AnimatedNumber 
-              value={annual} 
-              prefix="€" 
-              delay={delay + 600}
-              className="font-semibold text-foreground"
-            />
-          </p>
+        {/* Progress Bar Section */}
+        <div ref={ref} className="relative mb-2">
+          <AnimatedProgress 
+            value={progress} 
+            delay={delay + 500}
+            barClassName="bg-gradient-to-r from-gold to-success"
+            trackClassName="bg-muted/30"
+          />
+          {/* Progress Indicator with € symbol */}
+          <div 
+            className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-card rounded-full border-2 border-border shadow-lg flex items-center justify-center transition-all duration-1000 ease-out"
+            style={{ 
+              left: isVisible ? `calc(${progress}% - 16px)` : '-16px',
+            }}
+          >
+            <span className="text-xs text-muted-foreground font-medium">€</span>
+          </div>
+          
+          {/* Tooltip showing current value */}
+          <div 
+            className="absolute -bottom-10 transform -translate-x-1/2 bg-foreground text-background text-xs font-medium px-3 py-1.5 rounded-md transition-all duration-1000 ease-out whitespace-nowrap"
+            style={{ 
+              left: isVisible ? `${progress}%` : '0%',
+              opacity: isVisible ? 1 : 0,
+            }}
+          >
+            € {formatCurrency(currentRevenue)}
+          </div>
+        </div>
+        
+        {/* Progress range labels */}
+        <div className="flex justify-between text-xs text-muted-foreground mt-12 mb-6">
+          <span>€ {formatCurrency(revenueMin)}</span>
+          <span>€ {formatCurrency(revenueMax)}</span>
+        </div>
+        
+        {/* Annual salary section */}
+        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
+          <div>
+            <p className="text-sm font-medium text-foreground mb-1">Huidig jaarsalaris</p>
+            <p className="text-xl font-bold text-foreground">
+              € <AnimatedNumber value={currentAnnualSalary} delay={delay + 600} formatFn={formatCurrency} />
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Bij € {formatCurrency(revenueMax)} omzet bereik je salarisstap {nextStep}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground mb-1">Volgend jaarsalaris</p>
+            <p className="text-xl font-bold text-success">
+              € <AnimatedNumber value={nextAnnualSalary} delay={delay + 700} formatFn={formatCurrency} />
+            </p>
+          </div>
         </div>
       </div>
     </AnimatedCard>
