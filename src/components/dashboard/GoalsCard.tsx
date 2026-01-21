@@ -132,8 +132,8 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
               <span className="text-xs font-medium text-muted-foreground">Mijn doelen</span>
               <span className="text-xs text-muted-foreground/60">({sortedUserGoals.length})</span>
             </div>
-            <ScrollArea className="flex-1 max-h-[120px]">
-              <div className="space-y-2 pr-3">
+            <div className="h-[130px] overflow-y-auto scrollbar-thin">
+              <div className="space-y-2 pr-2">
                 {sortedUserGoals.map((goal, index) => (
                   <GoalItem 
                     key={goal.id} 
@@ -145,7 +145,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                   />
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           </div>
           
           {/* Manager Goals Section */}
@@ -156,8 +156,8 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                 <span className="text-xs font-medium text-muted-foreground">Doelen van leidinggevende</span>
                 <span className="text-xs text-muted-foreground/60">({sortedManagerGoals.length})</span>
               </div>
-              <ScrollArea className="flex-1 max-h-[120px]">
-                <div className="space-y-2 pr-3">
+              <div className="h-[130px] overflow-y-auto scrollbar-thin">
+                <div className="space-y-2 pr-2">
                   {sortedManagerGoals.map((goal, index) => (
                     <GoalItem 
                       key={goal.id} 
@@ -169,7 +169,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                     />
                   ))}
                 </div>
-              </ScrollArea>
+              </div>
             </div>
           )}
         </div>
