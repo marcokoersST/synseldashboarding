@@ -113,6 +113,25 @@ const isPositiveDiff = (diff: number, inverse: boolean = false): boolean => {
 export function CommunicationStatsCard({ delay = 0 }: CommunicationStatsCardProps) {
   const [currentView, setCurrentView] = useState<ViewType>('calls');
   const [isDetailMode, setIsDetailMode] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayMode, setDisplayMode] = useState(false);
+
+  const toggleDetailMode = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    
+    // Fade out current content
+    setTimeout(() => {
+      const newMode = !isDetailMode;
+      setIsDetailMode(newMode);
+      setDisplayMode(newMode);
+      
+      // Reset transition state after content swap
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 50);
+    }, 150);
+  };
 
   const views: ViewType[] = ['calls', 'mail'];
 
@@ -130,9 +149,6 @@ export function CommunicationStatsCard({ delay = 0 }: CommunicationStatsCardProp
     setIsDetailMode(false);
   };
 
-  const toggleDetailMode = () => {
-    setIsDetailMode(!isDetailMode);
-  };
 
   return (
     <AnimatedCard delay={delay} className="h-full">
@@ -204,11 +220,16 @@ export function CommunicationStatsCard({ delay = 0 }: CommunicationStatsCardProp
         </div>
 
         {/* Content */}
-        <div className="transition-all duration-300 flex-1">
+        <div className={cn(
+          "flex-1 transition-all duration-200 ease-out",
+          isTransitioning 
+            ? "opacity-0 scale-[0.98] translate-y-1" 
+            : "opacity-100 scale-100 translate-y-0"
+        )}>
           {currentView === 'calls' ? (
-            <CallsView isDetailMode={isDetailMode} delay={delay} />
+            <CallsView isDetailMode={displayMode} delay={delay} />
           ) : (
-            <MailView isDetailMode={isDetailMode} delay={delay} />
+            <MailView isDetailMode={displayMode} delay={delay} />
           )}
         </div>
       </div>
