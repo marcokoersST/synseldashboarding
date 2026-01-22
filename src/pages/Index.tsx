@@ -11,6 +11,7 @@ import { PerformanceScoreCard } from "@/components/dashboard/PerformanceScoreCar
 import { CoreActivitiesCard } from "@/components/dashboard/CoreActivitiesCard";
 import { RecruitmentFunnel } from "@/components/dashboard/RecruitmentFunnel";
 import { ChatWidget } from "@/components/dashboard/ChatWidget";
+import { CommunicationStatsCard } from "@/components/dashboard/CommunicationStatsCard";
 
 const Index = () => {
   return (
@@ -55,11 +56,16 @@ const Index = () => {
             </div>
           </div>
           
+          {/* Communication Stats Row */}
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <CommunicationStatsCard delay={750} />
+            <ChatWidget delay={850} />
+          </div>
+          
           {/* Bottom Row */}
           <div className="grid grid-cols-3 gap-4 mb-4">
-            <CoreActivitiesCard delay={800} />
-            <RecruitmentFunnel delay={900} />
-            <ChatWidget delay={1000} />
+            <CoreActivitiesCard delay={900} />
+            <RecruitmentFunnel delay={1000} />
           </div>
         </main>
       </div>
