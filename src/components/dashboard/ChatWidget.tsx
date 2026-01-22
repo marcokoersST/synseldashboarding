@@ -14,8 +14,8 @@ export function ChatWidget({ delay = 0 }: ChatWidgetProps) {
   const { ref: inputRef, isVisible: inputVisible } = useAnimateOnMount({ delay: delay + 600 });
   
   return (
-    <AnimatedCard delay={delay} className="h-full">
-      <div className="bg-card rounded-xl border border-border overflow-hidden h-full flex flex-col">
+    <AnimatedCard delay={delay}>
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 bg-gradient-to-r from-teal/10 to-primary/10 border-b border-border flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal to-primary flex items-center justify-center group">
@@ -28,7 +28,7 @@ export function ChatWidget({ delay = 0 }: ChatWidgetProps) {
         </div>
         
         {/* Chat area */}
-        <div className="p-4 flex-1 min-h-[120px]">
+        <div className="p-4 min-h-[120px]">
           <div 
             ref={messageRef}
             className={cn(
