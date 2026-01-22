@@ -14,7 +14,13 @@ import {
   Maximize2,
   Minimize2,
   Clock,
-  Zap
+  Zap,
+  PhoneMissed,
+  PhoneOff,
+  Flame,
+  Star,
+  UserPlus,
+  Trophy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +30,12 @@ interface CommunicationStatsCardProps {
 
 type ViewType = 'calls' | 'mail';
 
+interface Duration {
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
 // Mock data
 const callsData = {
   passive: {
@@ -32,8 +44,34 @@ const callsData = {
     totalDuration: { hours: 4, minutes: 32, seconds: 15 }
   },
   active: {
-    totalTimeInbound: { hours: 1, minutes: 45, seconds: 30 },
-    totalTimeOutbound: { hours: 2, minutes: 46, seconds: 45 }
+    current: {
+      inboundCalls: 47,
+      outboundCalls: 89,
+      missedCalls: 12,
+      bouncedCalls: 8,
+      totalTimeInbound: { hours: 1, minutes: 45, seconds: 30 },
+      totalTimeOutbound: { hours: 2, minutes: 46, seconds: 45 },
+      contactStatus: {
+        warmRelation: 34,
+        preferredCP: 52,
+        newContact: 50
+      }
+    },
+    bestPeriod: {
+      periodLabel: "P3",
+      placements: 8,
+      inboundCalls: 52,
+      outboundCalls: 79,
+      missedCalls: 6,
+      bouncedCalls: 4,
+      totalTimeInbound: { hours: 2, minutes: 10, seconds: 15 },
+      totalTimeOutbound: { hours: 3, minutes: 15, seconds: 0 },
+      contactStatus: {
+        warmRelation: 42,
+        preferredCP: 48,
+        newContact: 35
+      }
+    }
   }
 };
 
@@ -45,16 +83,31 @@ const mailData = {
   active: {
     sent: 156,
     received: 243,
-    ttfrScore: 2.4, // uren
+    ttfrScore: 2.4,
     timeToNextAction: { hours: 0, minutes: 45, seconds: 0 }
   }
 };
 
-const formatDuration = (duration: { hours: number; minutes: number; seconds: number }) => {
+const formatDuration = (duration: Duration) => {
   const h = String(duration.hours).padStart(1, '0');
   const m = String(duration.minutes).padStart(2, '0');
   const s = String(duration.seconds).padStart(2, '0');
   return `${h}:${m}:${s}`;
+};
+
+// Helper functions for comparison
+const calcPercentageDiff = (current: number, best: number): number => {
+  if (best === 0) return current > 0 ? 100 : 0;
+  return ((current - best) / best) * 100;
+};
+
+const formatPercentage = (diff: number): string => {
+  const sign = diff > 0 ? '+' : '';
+  return `${sign}${diff.toFixed(1)}%`;
+};
+
+const isPositiveDiff = (diff: number, inverse: boolean = false): boolean => {
+  return inverse ? diff < 0 : diff > 0;
 };
 
 export function CommunicationStatsCard({ delay = 0 }: CommunicationStatsCardProps) {
@@ -95,7 +148,15 @@ export function CommunicationStatsCard({ delay = 0 }: CommunicationStatsCardProp
             <h3 className="font-semibold text-foreground">
               {currentView === 'calls' ? 'Gesprekken' : 'E-mail'}
             </h3>
-            {isDetailMode && (
+            {isDetailMode && currentView === 'calls' && (
+              <div className="flex items-center gap-1.5 ml-2">
+                <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-xs text-muted-foreground">
+                  vs {callsData.active.bestPeriod.periodLabel} ({callsData.active.bestPeriod.placements} plaatsingen)
+                </span>
+              </div>
+            )}
+            {isDetailMode && currentView !== 'calls' && (
               <span className="text-xs text-muted-foreground">(detail)</span>
             )}
           </div>
@@ -160,55 +221,166 @@ interface ViewProps {
   delay: number;
 }
 
-function CallsView({ isDetailMode, delay }: ViewProps) {
-  if (isDetailMode) {
-    return (
-      <div className="grid grid-cols-2 gap-4">
-        {/* Inbound Details */}
-        <div className="bg-secondary/30 rounded-lg p-4 hover:bg-secondary/40 transition-colors">
-          <div className="flex items-center gap-2 mb-3">
-            <PhoneIncoming className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Inkomend</span>
+interface ComparisonStatBlockProps {
+  icon: React.ReactNode;
+  label: string;
+  currentValue: number;
+  bestValue: number;
+  showTime?: boolean;
+  currentTime?: Duration;
+  bestTime?: Duration;
+  inverseColors?: boolean;
+  delay?: number;
+  colorClass?: string;
+}
+
+function ComparisonStatBlock({ 
+  icon, 
+  label, 
+  currentValue, 
+  bestValue, 
+  showTime,
+  currentTime,
+  bestTime,
+  inverseColors = false,
+  delay = 0,
+  colorClass
+}: ComparisonStatBlockProps) {
+  const percentageDiff = calcPercentageDiff(currentValue, bestValue);
+  const isPositive = isPositiveDiff(percentageDiff, inverseColors);
+  
+  return (
+    <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
+      <div className="flex items-center gap-1.5 mb-1">
+        {icon}
+        <span className="text-xs text-muted-foreground">{label}</span>
+      </div>
+      
+      {/* Current value */}
+      <div className="flex items-baseline gap-2">
+        <AnimatedNumber 
+          value={currentValue}
+          delay={delay}
+          className={cn("text-lg font-semibold", colorClass || "text-foreground")}
+        />
+        {/* Percentage badge */}
+        <span className={cn(
+          "text-xs font-medium",
+          isPositive ? "text-emerald-500" : "text-destructive"
+        )}>
+          {formatPercentage(percentageDiff)}
+        </span>
+      </div>
+      
+      {/* Time comparison if applicable */}
+      {showTime && currentTime && bestTime && (
+        <div className="mt-1 space-y-0.5">
+          <div className="text-sm font-medium text-foreground">
+            {formatDuration(currentTime)}
           </div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Aantal</span>
-              <AnimatedNumber 
-                value={callsData.passive.inboundCalls} 
-                delay={delay + 100}
-                className="text-lg font-semibold text-foreground"
-              />
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Totale tijd</span>
-              <span className="text-lg font-semibold text-foreground">
-                {formatDuration(callsData.active.totalTimeInbound)}
-              </span>
-            </div>
+          <div className="text-xs text-muted-foreground">
+            vs {formatDuration(bestTime)}
           </div>
         </div>
+      )}
+      
+      {/* Value comparison if no time */}
+      {!showTime && (
+        <div className="text-xs text-muted-foreground mt-0.5">
+          vs {bestValue}
+        </div>
+      )}
+    </div>
+  );
+}
 
-        {/* Outbound Details */}
-        <div className="bg-secondary/30 rounded-lg p-4 hover:bg-secondary/40 transition-colors">
-          <div className="flex items-center gap-2 mb-3">
-            <PhoneOutgoing className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Uitgaand</span>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Aantal</span>
-              <AnimatedNumber 
-                value={callsData.passive.outboundCalls} 
-                delay={delay + 150}
-                className="text-lg font-semibold text-foreground"
-              />
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Totale tijd</span>
-              <span className="text-lg font-semibold text-foreground">
-                {formatDuration(callsData.active.totalTimeOutbound)}
-              </span>
-            </div>
+function CallsView({ isDetailMode, delay }: ViewProps) {
+  const { current, bestPeriod } = callsData.active;
+  
+  if (isDetailMode) {
+    return (
+      <div className="space-y-3">
+        {/* Row 1: Call statistics with comparison */}
+        <div className="grid grid-cols-4 gap-2">
+          {/* Inbound */}
+          <ComparisonStatBlock
+            icon={<PhoneIncoming className="h-3.5 w-3.5 text-primary" />}
+            label="Inkomend"
+            currentValue={current.inboundCalls}
+            bestValue={bestPeriod.inboundCalls}
+            showTime
+            currentTime={current.totalTimeInbound}
+            bestTime={bestPeriod.totalTimeInbound}
+            delay={delay + 100}
+          />
+          
+          {/* Outbound */}
+          <ComparisonStatBlock
+            icon={<PhoneOutgoing className="h-3.5 w-3.5 text-primary" />}
+            label="Uitgaand"
+            currentValue={current.outboundCalls}
+            bestValue={bestPeriod.outboundCalls}
+            showTime
+            currentTime={current.totalTimeOutbound}
+            bestTime={bestPeriod.totalTimeOutbound}
+            delay={delay + 150}
+          />
+          
+          {/* Missed */}
+          <ComparisonStatBlock
+            icon={<PhoneMissed className="h-3.5 w-3.5 text-destructive" />}
+            label="Gemist"
+            currentValue={current.missedCalls}
+            bestValue={bestPeriod.missedCalls}
+            inverseColors
+            delay={delay + 200}
+            colorClass="text-destructive"
+          />
+          
+          {/* Bounced */}
+          <ComparisonStatBlock
+            icon={<PhoneOff className="h-3.5 w-3.5 text-amber-500" />}
+            label="Bounced"
+            currentValue={current.bouncedCalls}
+            bestValue={bestPeriod.bouncedCalls}
+            inverseColors
+            delay={delay + 250}
+            colorClass="text-amber-500"
+          />
+        </div>
+
+        {/* Row 2: Contact Status Breakdown */}
+        <div>
+          <span className="text-xs text-muted-foreground mb-2 block">
+            Contact Status
+          </span>
+          <div className="grid grid-cols-3 gap-2">
+            {/* Warm Relation */}
+            <ComparisonStatBlock
+              icon={<Flame className="h-3.5 w-3.5 text-orange-500" />}
+              label="Warme relatie"
+              currentValue={current.contactStatus.warmRelation}
+              bestValue={bestPeriod.contactStatus.warmRelation}
+              delay={delay + 300}
+            />
+            
+            {/* Preferred CP */}
+            <ComparisonStatBlock
+              icon={<Star className="h-3.5 w-3.5 text-yellow-500" />}
+              label="Voorkeurs CP"
+              currentValue={current.contactStatus.preferredCP}
+              bestValue={bestPeriod.contactStatus.preferredCP}
+              delay={delay + 350}
+            />
+            
+            {/* New Contact */}
+            <ComparisonStatBlock
+              icon={<UserPlus className="h-3.5 w-3.5 text-emerald-500" />}
+              label="Nieuw contact"
+              currentValue={current.contactStatus.newContact}
+              bestValue={bestPeriod.contactStatus.newContact}
+              delay={delay + 400}
+            />
           </div>
         </div>
       </div>
