@@ -82,8 +82,8 @@ export function CommunicationStatsCard({ delay = 0 }: CommunicationStatsCardProp
   };
 
   return (
-    <AnimatedCard delay={delay} className="col-span-2">
-      <div className="bg-card rounded-xl p-5 border border-border h-full">
+    <AnimatedCard delay={delay} className="h-full">
+      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -143,7 +143,7 @@ export function CommunicationStatsCard({ delay = 0 }: CommunicationStatsCardProp
         </div>
 
         {/* Content */}
-        <div className="transition-all duration-300">
+        <div className="transition-all duration-300 flex-1">
           {currentView === 'calls' ? (
             <CallsView isDetailMode={isDetailMode} delay={delay} />
           ) : (
