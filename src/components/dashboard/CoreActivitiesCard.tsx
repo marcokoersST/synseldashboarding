@@ -56,7 +56,7 @@ export function CoreActivitiesCard({ delay = 0 }: CoreActivitiesCardProps) {
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border">
-        <div className="mb-4">
+        <div className="glass-header">
           <h3 className="text-sm font-medium text-foreground">Kernactiviteiten</h3>
           <p className="text-xs text-muted-foreground mt-0.5">Activiteiten deze periode</p>
         </div>

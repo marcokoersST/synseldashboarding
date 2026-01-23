@@ -73,7 +73,7 @@ export function VacancyActivitiesCard({ delay = 0 }: VacancyActivitiesCardProps)
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border">
-        <div className="mb-4">
+        <div className="glass-header">
           <h3 className="text-sm font-medium text-foreground">Vacature Activiteiten</h3>
           <p className="text-xs text-muted-foreground mt-0.5">Wijzigingen deze periode</p>
         </div>

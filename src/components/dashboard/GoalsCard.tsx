@@ -114,7 +114,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border flex flex-col h-full">
-        <div className="flex items-center justify-between mb-4">
+        <div className="glass-header flex items-center justify-between">
           <h3 className="text-sm font-medium text-foreground">Persoonlijke Ontwikkeldoelen</h3>
           <button 
             onClick={() => setIsAddDialogOpen(true)}

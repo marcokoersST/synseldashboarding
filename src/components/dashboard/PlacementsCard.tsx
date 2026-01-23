@@ -117,7 +117,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border group flex flex-col h-full">
-        <div className="flex items-start justify-between mb-4">
+        <div className="glass-header flex items-start justify-between">
           <div>
             <h3 className="text-sm font-medium text-foreground">Plaatsingen & Gedetacheerden</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Huidige actieve plaatsingen</p>

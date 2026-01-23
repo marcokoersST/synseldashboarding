@@ -35,7 +35,7 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-6 border border-border">
         {/* Header */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="glass-header flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-muted-foreground" />
           <h3 className="text-base font-medium text-foreground">Voortgang naar volgende salarisstap</h3>
         </div>
