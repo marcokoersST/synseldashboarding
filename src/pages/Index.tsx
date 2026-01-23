@@ -9,6 +9,7 @@ import { TeamLeaderboard } from "@/components/dashboard/TeamLeaderboard";
 import { RevenueTargetCard } from "@/components/dashboard/RevenueTargetCard";
 import { PerformanceScoreCard } from "@/components/dashboard/PerformanceScoreCard";
 import { CoreActivitiesCard } from "@/components/dashboard/CoreActivitiesCard";
+import { VacancyActivitiesCard } from "@/components/dashboard/VacancyActivitiesCard";
 import { RecruitmentFunnel } from "@/components/dashboard/RecruitmentFunnel";
 import { ChatWidget } from "@/components/dashboard/ChatWidget";
 import { CommunicationStatsCard } from "@/components/dashboard/CommunicationStatsCard";
@@ -67,6 +68,7 @@ const Index = () => {
           {/* Bottom Row */}
           <div className="grid grid-cols-3 gap-4 mb-4">
             <CoreActivitiesCard delay={900} />
+            <VacancyActivitiesCard delay={950} />
             <RecruitmentFunnel delay={1000} />
           </div>
         </main>
