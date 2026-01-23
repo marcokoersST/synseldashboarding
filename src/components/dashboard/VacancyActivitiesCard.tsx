@@ -1,5 +1,5 @@
 import { FilePlus, UserPlus, FolderOpen, FolderClosed } from "lucide-react";
-import { BarChart, Bar, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, ResponsiveContainer, Cell, Tooltip } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { useAnimateOnMount, getStaggerDelay } from "@/hooks/useAnimateOnMount";
@@ -11,8 +11,8 @@ const vacancyActivities = [
     label: "Vacatures toegevoegd", 
     value: 18, 
     data: [
-      { value: 2 }, { value: 4 }, { value: 1 }, { value: 3 }, 
-      { value: 5 }, { value: 2 }, { value: 1 }
+      { value: 2, day: "Ma 13 jan" }, { value: 4, day: "Di 14 jan" }, { value: 1, day: "Wo 15 jan" }, { value: 3, day: "Do 16 jan" }, 
+      { value: 5, day: "Vr 17 jan" }, { value: 2, day: "Za 18 jan" }, { value: 1, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--teal))"
   },
@@ -21,8 +21,8 @@ const vacancyActivities = [
     label: "Contactpersonen toegevoegd", 
     value: 34, 
     data: [
-      { value: 5 }, { value: 3 }, { value: 6 }, { value: 4 }, 
-      { value: 8 }, { value: 5 }, { value: 3 }
+      { value: 5, day: "Ma 13 jan" }, { value: 3, day: "Di 14 jan" }, { value: 6, day: "Wo 15 jan" }, { value: 4, day: "Do 16 jan" }, 
+      { value: 8, day: "Vr 17 jan" }, { value: 5, day: "Za 18 jan" }, { value: 3, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--primary))"
   },
@@ -31,8 +31,8 @@ const vacancyActivities = [
     label: "Vacatures geopend", 
     value: 12, 
     data: [
-      { value: 2 }, { value: 1 }, { value: 3 }, { value: 1 }, 
-      { value: 2 }, { value: 2 }, { value: 1 }
+      { value: 2, day: "Ma 13 jan" }, { value: 1, day: "Di 14 jan" }, { value: 3, day: "Wo 15 jan" }, { value: 1, day: "Do 16 jan" }, 
+      { value: 2, day: "Vr 17 jan" }, { value: 2, day: "Za 18 jan" }, { value: 1, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--gold))"
   },
@@ -41,12 +41,29 @@ const vacancyActivities = [
     label: "Vacatures gesloten", 
     value: 8, 
     data: [
-      { value: 1 }, { value: 2 }, { value: 1 }, { value: 1 }, 
-      { value: 1 }, { value: 1 }, { value: 1 }
+      { value: 1, day: "Ma 13 jan" }, { value: 2, day: "Di 14 jan" }, { value: 1, day: "Wo 15 jan" }, { value: 1, day: "Do 16 jan" }, 
+      { value: 1, day: "Vr 17 jan" }, { value: 1, day: "Za 18 jan" }, { value: 1, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--success))"
   },
 ];
+
+interface MiniChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: { value: number; day: string } }>;
+}
+
+function MiniChartTooltip({ active, payload }: MiniChartTooltipProps) {
+  if (!active || !payload?.length) return null;
+  
+  const data = payload[0].payload;
+  return (
+    <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-lg text-center z-50">
+      <p className="text-sm font-semibold text-foreground">{data.value}</p>
+      <p className="text-xs text-muted-foreground">{data.day}</p>
+    </div>
+  );
+}
 
 interface VacancyActivitiesCardProps {
   delay?: number;
@@ -107,6 +124,10 @@ function VacancyActivityItem({ activity, delay }: VacancyActivityItemProps) {
       <div className="h-8">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={activity.data}>
+            <Tooltip
+              cursor={{ fill: 'hsl(var(--muted)/0.3)' }}
+              content={<MiniChartTooltip />}
+            />
             <Bar dataKey="value" radius={[2, 2, 0, 0]}>
               {activity.data.map((_, index) => (
                 <Cell 
