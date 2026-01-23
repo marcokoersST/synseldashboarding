@@ -24,7 +24,7 @@ export function RevenueTargetCard({ delay = 0 }: RevenueTargetCardProps) {
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border group">
-        <div className="flex items-center justify-between mb-4">
+        <div className="glass-header flex items-center justify-between">
           <div>
             <h3 className="text-sm font-medium text-foreground">Omzet Doelstelling</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Maandelijks target</p>
