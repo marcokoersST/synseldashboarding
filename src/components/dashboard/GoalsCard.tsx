@@ -138,11 +138,10 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
             <div className="relative">
               <div className="h-[180px] overflow-y-auto scrollbar-thin">
                 <div className="space-y-2 pr-2 pb-4">
-                  {sortedUserGoals.map((goal, index) => (
+                  {sortedUserGoals.map((goal) => (
                     <GoalItemCompact 
                       key={goal.id} 
                       goal={goal} 
-                      delay={delay + 200 + getStaggerDelay(index, 80)}
                       onToggle={handleToggleComplete}
                     />
                   ))}
@@ -164,11 +163,10 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
               <div className="relative">
                 <div className="h-[180px] overflow-y-auto scrollbar-thin">
                   <div className="space-y-2 pr-2 pb-4">
-                    {sortedManagerGoals.map((goal, index) => (
+                    {sortedManagerGoals.map((goal) => (
                       <GoalItemCompact 
                         key={goal.id} 
                         goal={goal} 
-                        delay={delay + 200 + getStaggerDelay(sortedUserGoals.length + index, 80)}
                         onToggle={handleToggleComplete}
                       />
                     ))}
@@ -313,19 +311,14 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
 // Compact goal item for the card view
 interface GoalItemCompactProps {
   goal: Goal;
-  delay: number;
   onToggle: (id: number) => void;
 }
 
-function GoalItemCompact({ goal, delay, onToggle }: GoalItemCompactProps) {
-  const { ref, isVisible } = useAnimateOnMount({ delay });
-  
+function GoalItemCompact({ goal, onToggle }: GoalItemCompactProps) {
   return (
     <div 
-      ref={ref}
       className={cn(
-        "flex items-start gap-3 group transition-all duration-500 ease-out p-2 rounded-lg",
-        isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4",
+        "flex items-start gap-2.5 group p-1.5 rounded-lg",
         goal.isManagerGoal && "bg-gold/5 border border-gold/30"
       )}
     >
@@ -333,16 +326,16 @@ function GoalItemCompact({ goal, delay, onToggle }: GoalItemCompactProps) {
         checked={goal.completed}
         onCheckedChange={() => onToggle(goal.id)}
         className={cn(
-          "w-5 h-5 rounded-md border-2 transition-all duration-300 cursor-pointer mt-0.5 flex-shrink-0",
+          "w-4 h-4 rounded-md border-2 transition-all duration-300 cursor-pointer mt-0.5 flex-shrink-0",
           goal.completed 
-            ? "bg-success border-success text-success-foreground scale-100" 
+            ? "bg-success border-success text-success-foreground" 
             : goal.isManagerGoal
-              ? "border-gold/50 hover:border-gold hover:scale-110"
-              : "border-border hover:border-primary hover:scale-110"
+              ? "border-gold/50 hover:border-gold"
+              : "border-border hover:border-primary"
         )}
       />
       <span className={cn(
-        "text-sm transition-all duration-300 flex-1 leading-relaxed",
+        "text-xs transition-all duration-300 flex-1 leading-relaxed",
         goal.completed 
           ? "text-muted-foreground line-through" 
           : "text-foreground"
@@ -355,8 +348,8 @@ function GoalItemCompact({ goal, delay, onToggle }: GoalItemCompactProps) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                <Shield className="w-4 h-4 text-gold" />
+              <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
+                <Shield className="w-3.5 h-3.5 text-gold" />
               </div>
             </TooltipTrigger>
             <TooltipContent side="top">
