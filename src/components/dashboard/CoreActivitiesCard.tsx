@@ -1,5 +1,5 @@
 import { Mail, Phone, UserPlus, CheckCircle } from "lucide-react";
-import { BarChart, Bar, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, ResponsiveContainer, Cell, Tooltip } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { useAnimateOnMount, getStaggerDelay } from "@/hooks/useAnimateOnMount";
@@ -11,8 +11,8 @@ const activities = [
     label: "Emails verstuurd", 
     value: 245, 
     data: [
-      { value: 35 }, { value: 42 }, { value: 28 }, { value: 55 }, 
-      { value: 48 }, { value: 37 }, { value: 52 }
+      { value: 35, day: "Ma 13 jan" }, { value: 42, day: "Di 14 jan" }, { value: 28, day: "Wo 15 jan" }, { value: 55, day: "Do 16 jan" }, 
+      { value: 48, day: "Vr 17 jan" }, { value: 37, day: "Za 18 jan" }, { value: 52, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--teal))"
   },
@@ -21,8 +21,8 @@ const activities = [
     label: "Gesprekken", 
     value: 89, 
     data: [
-      { value: 12 }, { value: 15 }, { value: 10 }, { value: 18 }, 
-      { value: 14 }, { value: 8 }, { value: 12 }
+      { value: 12, day: "Ma 13 jan" }, { value: 15, day: "Di 14 jan" }, { value: 10, day: "Wo 15 jan" }, { value: 18, day: "Do 16 jan" }, 
+      { value: 14, day: "Vr 17 jan" }, { value: 8, day: "Za 18 jan" }, { value: 12, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--primary))"
   },
@@ -31,8 +31,8 @@ const activities = [
     label: "Acquisities", 
     value: 12, 
     data: [
-      { value: 2 }, { value: 1 }, { value: 3 }, { value: 2 }, 
-      { value: 1 }, { value: 2 }, { value: 1 }
+      { value: 2, day: "Ma 13 jan" }, { value: 1, day: "Di 14 jan" }, { value: 3, day: "Wo 15 jan" }, { value: 2, day: "Do 16 jan" }, 
+      { value: 1, day: "Vr 17 jan" }, { value: 2, day: "Za 18 jan" }, { value: 1, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--gold))"
   },
@@ -41,12 +41,29 @@ const activities = [
     label: "Plaatsingen", 
     value: 5, 
     data: [
-      { value: 1 }, { value: 0 }, { value: 1 }, { value: 1 }, 
-      { value: 0 }, { value: 1 }, { value: 1 }
+      { value: 1, day: "Ma 13 jan" }, { value: 0, day: "Di 14 jan" }, { value: 1, day: "Wo 15 jan" }, { value: 1, day: "Do 16 jan" }, 
+      { value: 0, day: "Vr 17 jan" }, { value: 1, day: "Za 18 jan" }, { value: 1, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--success))"
   },
 ];
+
+interface MiniChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: { value: number; day: string } }>;
+}
+
+function MiniChartTooltip({ active, payload }: MiniChartTooltipProps) {
+  if (!active || !payload?.length) return null;
+  
+  const data = payload[0].payload;
+  return (
+    <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-lg text-center z-50">
+      <p className="text-sm font-semibold text-foreground">{data.value}</p>
+      <p className="text-xs text-muted-foreground">{data.day}</p>
+    </div>
+  );
+}
 
 interface CoreActivitiesCardProps {
   delay?: number;
@@ -107,6 +124,10 @@ function ActivityItem({ activity, delay }: ActivityItemProps) {
       <div className="h-8">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={activity.data}>
+            <Tooltip
+              cursor={{ fill: 'hsl(var(--muted)/0.3)' }}
+              content={<MiniChartTooltip />}
+            />
             <Bar dataKey="value" radius={[2, 2, 0, 0]}>
               {activity.data.map((_, index) => (
                 <Cell 
