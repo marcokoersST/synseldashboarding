@@ -133,7 +133,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
               <span className="text-xs text-muted-foreground/60">({sortedUserGoals.length})</span>
             </div>
             <div className="relative">
-              <div className="h-[130px] overflow-y-auto scrollbar-thin">
+              <div className="h-[180px] overflow-y-auto scrollbar-thin">
                 <div className="space-y-2 pr-2 pb-4">
                   {sortedUserGoals.map((goal, index) => (
                     <GoalItem 
@@ -161,7 +161,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                 <span className="text-xs text-muted-foreground/60">({sortedManagerGoals.length})</span>
               </div>
               <div className="relative">
-                <div className="h-[130px] overflow-y-auto scrollbar-thin">
+                <div className="h-[180px] overflow-y-auto scrollbar-thin">
                   <div className="space-y-2 pr-2 pb-4">
                     {sortedManagerGoals.map((goal, index) => (
                       <GoalItem 
