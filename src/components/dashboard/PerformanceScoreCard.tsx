@@ -21,7 +21,7 @@ export function PerformanceScoreCard({ delay = 0 }: PerformanceScoreCardProps) {
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border group">
-        <div className="glass-header flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-medium text-foreground">Prestatie Score</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Totale prestatie indicator</p>

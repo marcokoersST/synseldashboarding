@@ -26,7 +26,7 @@ export function TeamLeaderboard({ delay = 0 }: TeamLeaderboardProps) {
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border h-full">
-        <div className="glass-header flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-medium text-foreground">Team Omzet Race</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Wie bereikt als eerste €2M?</p>

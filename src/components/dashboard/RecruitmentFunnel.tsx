@@ -149,7 +149,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border">
         {/* Header */}
-        <div className="glass-header flex items-start justify-between">
+        <div className="flex items-start justify-between mb-6">
           <div>
             <h3 className="text-sm font-medium text-foreground">Wervingstrechter</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Conversie per fase</p>

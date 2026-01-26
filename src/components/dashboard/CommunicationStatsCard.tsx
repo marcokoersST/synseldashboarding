@@ -154,7 +154,7 @@ export function CommunicationStatsCard({ delay = 0 }: CommunicationStatsCardProp
     <AnimatedCard delay={delay} className="h-full">
       <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
         {/* Header */}
-        <div className="glass-header flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {currentView === 'calls' ? (
               <Phone className="h-5 w-5 text-primary" />

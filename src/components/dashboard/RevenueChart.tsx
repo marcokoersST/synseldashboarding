@@ -27,7 +27,7 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border">
-        <div className="glass-header flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-sm font-medium text-foreground">Omzet Overzicht</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Historisch vs. Geprojecteerd</p>
