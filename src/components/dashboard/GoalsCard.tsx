@@ -204,13 +204,24 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                 
                 {/* Add new goal input */}
                 <div className="px-6 py-3 border-b border-border/30 shrink-0">
-                  <div className="flex gap-2">
-                    <Input
+                  <div className="flex gap-2 items-end">
+                    <Textarea
                       placeholder="Nieuw doel toevoegen..."
                       value={newGoalText}
-                      onChange={(e) => setNewGoalText(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddGoal()}
-                      className="flex-1"
+                      onChange={(e) => {
+                        setNewGoalText(e.target.value);
+                        // Auto-resize
+                        e.target.style.height = 'auto';
+                        e.target.style.height = Math.max(e.target.scrollHeight, 52) + 'px';
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleAddGoal();
+                        }
+                      }}
+                      className="flex-1 min-h-[52px] max-h-[150px] resize-none"
+                      rows={2}
                     />
                     <Button 
                       size="sm" 
