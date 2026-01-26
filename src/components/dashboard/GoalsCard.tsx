@@ -183,7 +183,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
 
         {/* Goals Management Dialog - Large 70% screen */}
         <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
-          <DialogContent className="max-w-[70vw] h-[70vh] flex flex-col p-0 gap-0">
+          <DialogContent className="max-w-[80vw] h-[80vh] flex flex-col p-0 gap-0">
             <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
               <DialogTitle className="text-lg font-semibold">Doelen Beheren</DialogTitle>
             </DialogHeader>
@@ -204,7 +204,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                 
                 {/* Add new goal input */}
                 <div className="px-6 py-3 border-b border-border/30 shrink-0">
-                  <div className="flex gap-2 items-end">
+                  <div className="flex flex-col gap-2">
                     <Textarea
                       placeholder="Nieuw doel toevoegen..."
                       value={newGoalText}
@@ -220,13 +220,14 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                           handleAddGoal();
                         }
                       }}
-                      className="flex-1 min-h-[52px] max-h-[150px] resize-none"
+                      className="w-full min-h-[52px] max-h-[150px] resize-none"
                       rows={2}
                     />
                     <Button 
                       size="sm" 
                       onClick={handleAddGoal}
                       disabled={!newGoalText.trim()}
+                      className="self-end"
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       Toevoegen
