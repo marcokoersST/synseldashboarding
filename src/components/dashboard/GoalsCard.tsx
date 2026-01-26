@@ -1,4 +1,4 @@
-import { Plus, Trash2, Pencil, Shield } from "lucide-react";
+import { Plus, Trash2, Pencil, Shield, X, Check } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { useAnimateOnMount, getStaggerDelay } from "@/hooks/useAnimateOnMount";
@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Tooltip,
@@ -19,7 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 
 interface Goal {
   id: number;
@@ -54,10 +53,10 @@ interface GoalsCardProps {
 
 export function GoalsCard({ delay = 0 }: GoalsCardProps) {
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
   const [newGoalText, setNewGoalText] = useState("");
-  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [editingGoalId, setEditingGoalId] = useState<number | null>(null);
+  const [editingText, setEditingText] = useState("");
 
   const handleToggleComplete = (id: number) => {
     setGoals(goals.map(goal => 
@@ -75,7 +74,6 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
       };
       setGoals([...goals, newGoal]);
       setNewGoalText("");
-      setIsAddDialogOpen(false);
     }
   };
 
@@ -83,19 +81,24 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
     setGoals(goals.filter(goal => goal.id !== id));
   };
 
-  const handleEditGoal = () => {
-    if (editingGoal && editingGoal.text.trim()) {
-      setGoals(goals.map(goal =>
-        goal.id === editingGoal.id ? { ...goal, text: editingGoal.text.trim() } : goal
-      ));
-      setEditingGoal(null);
-      setIsEditDialogOpen(false);
-    }
+  const startEditing = (goal: Goal) => {
+    setEditingGoalId(goal.id);
+    setEditingText(goal.text);
   };
 
-  const openEditDialog = (goal: Goal) => {
-    setEditingGoal({ ...goal });
-    setIsEditDialogOpen(true);
+  const saveEdit = () => {
+    if (editingGoalId && editingText.trim()) {
+      setGoals(goals.map(goal =>
+        goal.id === editingGoalId ? { ...goal, text: editingText.trim() } : goal
+      ));
+    }
+    setEditingGoalId(null);
+    setEditingText("");
+  };
+
+  const cancelEdit = () => {
+    setEditingGoalId(null);
+    setEditingText("");
   };
 
   // Separate and sort goals: uncompleted first, then completed
@@ -117,11 +120,11 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-foreground">Persoonlijke Ontwikkeldoelen</h3>
           <button 
-            onClick={() => setIsAddDialogOpen(true)}
+            onClick={() => setIsManageDialogOpen(true)}
             className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors hover-scale"
           >
             <Plus className="w-4 h-4" />
-            <span>Doel toevoegen</span>
+            <span>Doelen beheren</span>
           </button>
         </div>
         
@@ -136,13 +139,11 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
               <div className="h-[180px] overflow-y-auto scrollbar-thin">
                 <div className="space-y-2 pr-2 pb-4">
                   {sortedUserGoals.map((goal, index) => (
-                    <GoalItem 
+                    <GoalItemCompact 
                       key={goal.id} 
                       goal={goal} 
                       delay={delay + 200 + getStaggerDelay(index, 80)}
                       onToggle={handleToggleComplete}
-                      onDelete={handleDeleteGoal}
-                      onEdit={openEditDialog}
                     />
                   ))}
                 </div>
@@ -164,13 +165,11 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                 <div className="h-[180px] overflow-y-auto scrollbar-thin">
                   <div className="space-y-2 pr-2 pb-4">
                     {sortedManagerGoals.map((goal, index) => (
-                      <GoalItem 
+                      <GoalItemCompact 
                         key={goal.id} 
                         goal={goal} 
                         delay={delay + 200 + getStaggerDelay(sortedUserGoals.length + index, 80)}
                         onToggle={handleToggleComplete}
-                        onDelete={handleDeleteGoal}
-                        onEdit={openEditDialog}
                       />
                     ))}
                   </div>
@@ -182,55 +181,116 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
           )}
         </div>
 
-        {/* Add Goal Dialog */}
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Nieuw doel toevoegen</DialogTitle>
+        {/* Goals Management Dialog - Large 70% screen */}
+        <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
+          <DialogContent className="max-w-[70vw] h-[70vh] flex flex-col p-0 gap-0">
+            <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
+              <DialogTitle className="text-lg font-semibold">Doelen Beheren</DialogTitle>
             </DialogHeader>
-            <div className="py-4">
-              <Textarea
-                placeholder="Beschrijf je persoonlijke ontwikkeldoel. Dit kan meerdere regels bevatten..."
-                value={newGoalText}
-                onChange={(e) => setNewGoalText(e.target.value)}
-                className="min-h-[120px] resize-none"
-                autoFocus
-              />
+            
+            <div className="flex-1 overflow-hidden flex flex-col lg:flex-row min-h-0">
+              {/* Personal Goals Column */}
+              <div className="flex-1 flex flex-col border-r border-border min-h-0">
+                <div className="px-6 py-4 border-b border-border/50 shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-medium text-foreground">Mijn doelen</h4>
+                      <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                        {sortedUserGoals.length}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Add new goal input */}
+                <div className="px-6 py-3 border-b border-border/30 shrink-0">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nieuw doel toevoegen..."
+                      value={newGoalText}
+                      onChange={(e) => setNewGoalText(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddGoal()}
+                      className="flex-1"
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleAddGoal}
+                      disabled={!newGoalText.trim()}
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Toevoegen
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Goals list */}
+                <div className="flex-1 overflow-y-auto px-6 py-4">
+                  <div className="space-y-2">
+                    {sortedUserGoals.map((goal) => (
+                      <GoalItemFull
+                        key={goal.id}
+                        goal={goal}
+                        isEditing={editingGoalId === goal.id}
+                        editingText={editingText}
+                        onToggle={handleToggleComplete}
+                        onDelete={handleDeleteGoal}
+                        onStartEdit={startEditing}
+                        onSaveEdit={saveEdit}
+                        onCancelEdit={cancelEdit}
+                        onEditTextChange={setEditingText}
+                      />
+                    ))}
+                    {sortedUserGoals.length === 0 && (
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        Nog geen persoonlijke doelen. Voeg er een toe hierboven.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Manager Goals Column */}
+              <div className="flex-1 flex flex-col bg-gold/5 min-h-0">
+                <div className="px-6 py-4 border-b border-gold/20 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-gold" />
+                    <h4 className="text-sm font-medium text-foreground">Doelen van leidinggevende</h4>
+                    <span className="text-xs text-muted-foreground bg-gold/20 px-2 py-0.5 rounded-full">
+                      {sortedManagerGoals.length}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Deze doelen zijn ingesteld door je leidinggevende
+                  </p>
+                </div>
+                
+                {/* Manager goals list */}
+                <div className="flex-1 overflow-y-auto px-6 py-4">
+                  <div className="space-y-2">
+                    {sortedManagerGoals.map((goal) => (
+                      <GoalItemFull
+                        key={goal.id}
+                        goal={goal}
+                        isEditing={false}
+                        editingText=""
+                        onToggle={handleToggleComplete}
+                        onDelete={() => {}}
+                        onStartEdit={() => {}}
+                        onSaveEdit={() => {}}
+                        onCancelEdit={() => {}}
+                        onEditTextChange={() => {}}
+                        readOnly
+                      />
+                    ))}
+                    {sortedManagerGoals.length === 0 && (
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        Geen doelen van leidinggevende.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Annuleren
-              </Button>
-              <Button onClick={handleAddGoal} disabled={!newGoalText.trim()}>
-                Toevoegen
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Goal Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Doel bewerken</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <Textarea
-                placeholder="Beschrijf je persoonlijke ontwikkeldoel. Dit kan meerdere regels bevatten..."
-                value={editingGoal?.text || ""}
-                onChange={(e) => setEditingGoal(prev => prev ? { ...prev, text: e.target.value } : null)}
-                className="min-h-[120px] resize-none"
-                autoFocus
-              />
-            </div>
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                Annuleren
-              </Button>
-              <Button onClick={handleEditGoal} disabled={!editingGoal?.text.trim()}>
-                Opslaan
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
@@ -238,15 +298,14 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
   );
 }
 
-interface GoalItemProps {
+// Compact goal item for the card view
+interface GoalItemCompactProps {
   goal: Goal;
   delay: number;
   onToggle: (id: number) => void;
-  onDelete: (id: number) => void;
-  onEdit: (goal: Goal) => void;
 }
 
-function GoalItem({ goal, delay, onToggle, onDelete, onEdit }: GoalItemProps) {
+function GoalItemCompact({ goal, delay, onToggle }: GoalItemCompactProps) {
   const { ref, isVisible } = useAnimateOnMount({ delay });
   
   return (
@@ -279,47 +338,6 @@ function GoalItem({ goal, delay, onToggle, onDelete, onEdit }: GoalItemProps) {
         {goal.text}
       </span>
       
-      {/* Action buttons - only for user goals */}
-      {!goal.isManagerGoal && (
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onEdit(goal)}
-                  className="h-7 w-7 hover:bg-primary/20 hover:text-primary"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p>Bewerken</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onDelete(goal.id)}
-                  className="h-7 w-7 hover:bg-destructive/20 hover:text-destructive"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p>Verwijderen</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      )}
-      
       {/* Manager goal indicator */}
       {goal.isManagerGoal && (
         <TooltipProvider>
@@ -334,6 +352,131 @@ function GoalItem({ goal, delay, onToggle, onDelete, onEdit }: GoalItemProps) {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+      )}
+    </div>
+  );
+}
+
+// Full goal item for the management dialog
+interface GoalItemFullProps {
+  goal: Goal;
+  isEditing: boolean;
+  editingText: string;
+  onToggle: (id: number) => void;
+  onDelete: (id: number) => void;
+  onStartEdit: (goal: Goal) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  onEditTextChange: (text: string) => void;
+  readOnly?: boolean;
+}
+
+function GoalItemFull({ 
+  goal, 
+  isEditing, 
+  editingText,
+  onToggle, 
+  onDelete, 
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onEditTextChange,
+  readOnly = false 
+}: GoalItemFullProps) {
+  return (
+    <div 
+      className={cn(
+        "flex items-start gap-3 group p-3 rounded-lg border transition-all",
+        goal.isManagerGoal 
+          ? "bg-gold/5 border-gold/30" 
+          : "bg-card border-border hover:border-primary/30"
+      )}
+    >
+      <Checkbox 
+        checked={goal.completed}
+        onCheckedChange={() => onToggle(goal.id)}
+        className={cn(
+          "w-5 h-5 rounded-md border-2 transition-all duration-300 cursor-pointer mt-0.5 flex-shrink-0",
+          goal.completed 
+            ? "bg-success border-success text-success-foreground" 
+            : goal.isManagerGoal
+              ? "border-gold/50 hover:border-gold"
+              : "border-border hover:border-primary"
+        )}
+      />
+      
+      {isEditing ? (
+        <div className="flex-1 flex gap-2">
+          <Textarea
+            value={editingText}
+            onChange={(e) => onEditTextChange(e.target.value)}
+            className="flex-1 min-h-[60px] text-sm resize-none"
+            autoFocus
+          />
+          <div className="flex flex-col gap-1">
+            <Button size="icon" variant="ghost" onClick={onSaveEdit} className="h-7 w-7 text-success hover:text-success hover:bg-success/20">
+              <Check className="w-4 h-4" />
+            </Button>
+            <Button size="icon" variant="ghost" onClick={onCancelEdit} className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/20">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <span className={cn(
+            "text-sm flex-1 leading-relaxed",
+            goal.completed 
+              ? "text-muted-foreground line-through" 
+              : "text-foreground"
+          )}>
+            {goal.text}
+          </span>
+          
+          {!readOnly && (
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onStartEdit(goal)}
+                      className="h-7 w-7 hover:bg-primary/20 hover:text-primary"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>Bewerken</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(goal.id)}
+                      className="h-7 w-7 hover:bg-destructive/20 hover:text-destructive"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>Verwijderen</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
+          
+          {goal.isManagerGoal && (
+            <Shield className="w-4 h-4 text-gold flex-shrink-0" />
+          )}
+        </>
       )}
     </div>
   );
