@@ -140,7 +140,8 @@
 @layer components {
   /* Card hover - no movement, subtle internal glow */
   .hover-lift {
-    @apply transition-all duration-300 ease-out rounded-[inherit];
+    /* Ensure the hover ring/shadow follows the same rounded shape as tiles */
+    @apply transition-all duration-300 ease-out rounded-lg;
   }
   
   .hover-lift:hover {
