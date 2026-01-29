@@ -7,7 +7,7 @@ export function WelcomeHeader() {
   });
 
   return (
-    <div className="mb-6">
+    <div className="flex-1">
       <h1 className="text-2xl font-semibold text-foreground">
         Welkom terug, <span className="text-primary">Jouw naam</span>
       </h1>

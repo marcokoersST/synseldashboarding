@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
+import { ForecastGoalsCard } from "@/components/dashboard/ForecastGoalsCard";
 import { SalaryProgressCard } from "@/components/dashboard/SalaryProgressCard";
 import { PlacementsCard } from "@/components/dashboard/PlacementsCard";
 import { GoalsCard } from "@/components/dashboard/GoalsCard";
@@ -14,20 +15,27 @@ import { RecruitmentFunnel } from "@/components/dashboard/RecruitmentFunnel";
 import { ChatWidget } from "@/components/dashboard/ChatWidget";
 import { CommunicationStatsCard } from "@/components/dashboard/CommunicationStatsCard";
 import { AINpsCard } from "@/components/dashboard/AINpsCard";
+import { ForecastGoalsProvider } from "@/contexts/ForecastGoalsContext";
+
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Sidebar */}
-      <Sidebar />
-      
-      {/* Main Content */}
-      <div className="ml-64">
-        {/* Top Bar */}
-        <TopBar />
+    <ForecastGoalsProvider>
+      <div className="min-h-screen bg-background">
+        {/* Sidebar */}
+        <Sidebar />
         
-        {/* Dashboard Content */}
-        <main className="p-6 overflow-auto scrollbar-thin">
-          <WelcomeHeader />
+        {/* Main Content */}
+        <div className="ml-64">
+          {/* Top Bar */}
+          <TopBar />
+          
+          {/* Dashboard Content */}
+          <main className="p-6 overflow-auto scrollbar-thin">
+            {/* Welcome Header + Forecast Goals */}
+            <div className="flex items-start justify-between gap-6 mb-6">
+              <WelcomeHeader />
+              <ForecastGoalsCard delay={50} />
+            </div>
           
           {/* Section Title */}
           <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
@@ -72,9 +80,10 @@ const Index = () => {
             <VacancyActivitiesCard delay={950} />
             <RecruitmentFunnel delay={1000} />
           </div>
-        </main>
+          </main>
+        </div>
       </div>
-    </div>
+    </ForecastGoalsProvider>
   );
 };
 
