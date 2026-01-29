@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Target, Pencil, Sparkles } from "lucide-react";
+import { Target, Pencil, Sparkles, Plus, ChevronDown } from "lucide-react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { useForecastGoals } from "@/contexts/ForecastGoalsContext";
 import { cn } from "@/lib/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface ForecastGoalsCardProps {
   delay?: number;
@@ -101,6 +102,7 @@ function EditableField({ label, value, isCalculated, prefix, suffix, onEdit, for
 
 export function ForecastGoalsCard({ delay = 0 }: ForecastGoalsCardProps) {
   const { calculatedValues, lastEditedField, setGoal, hasGoals } = useForecastGoals();
+  const [isOpen, setIsOpen] = useState(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('nl-NL', {
@@ -116,15 +118,61 @@ export function ForecastGoalsCard({ delay = 0 }: ForecastGoalsCardProps) {
     }).format(value);
   };
 
+  // Collapsed view when goals are set
+  if (hasGoals && !isOpen) {
+    return (
+      <AnimatedCard delay={delay}>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-card rounded-lg px-3 py-2 border border-border flex items-center gap-2 hover:bg-muted/50 transition-colors"
+        >
+          <Target className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-medium text-foreground">
+            €{formatCurrency(calculatedValues.revenue)}
+          </span>
+          <span className="text-xs text-muted-foreground">•</span>
+          <span className="text-xs text-muted-foreground">
+            {formatNumber(calculatedValues.placements)} pl.
+          </span>
+          <ChevronDown className="w-3 h-3 text-muted-foreground ml-1" />
+        </button>
+      </AnimatedCard>
+    );
+  }
+
+  // Collapsed view when no goals are set
+  if (!hasGoals && !isOpen) {
+    return (
+      <AnimatedCard delay={delay}>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-card rounded-lg px-3 py-2 border border-border flex items-center gap-2 hover:bg-muted/50 transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs text-muted-foreground">Forecast doelen</span>
+        </button>
+      </AnimatedCard>
+    );
+  }
+
+  // Expanded view
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-4 border border-border h-full">
+      <div className="bg-card rounded-xl p-4 border border-border">
         {/* Header */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="p-1.5 rounded-lg bg-primary/10">
-            <Target className="w-4 h-4 text-primary" />
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-primary/10">
+              <Target className="w-4 h-4 text-primary" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground">Forecast Doelen</h3>
           </div>
-          <h3 className="text-sm font-semibold text-foreground">Forecast Doelen</h3>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-1 rounded hover:bg-muted/50 transition-colors"
+          >
+            <ChevronDown className="w-4 h-4 text-muted-foreground rotate-180" />
+          </button>
         </div>
 
         {/* Goal Fields */}
