@@ -13,7 +13,7 @@ import { VacancyActivitiesCard } from "@/components/dashboard/VacancyActivitiesC
 import { RecruitmentFunnel } from "@/components/dashboard/RecruitmentFunnel";
 import { ChatWidget } from "@/components/dashboard/ChatWidget";
 import { CommunicationStatsCard } from "@/components/dashboard/CommunicationStatsCard";
-
+import { AINpsCard } from "@/components/dashboard/AINpsCard";
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
@@ -54,6 +54,7 @@ const Index = () => {
             <div className="space-y-4">
               <RevenueTargetCard delay={600} />
               <PerformanceScoreCard delay={700} />
+              <AINpsCard delay={800} />
             </div>
           </div>
           
