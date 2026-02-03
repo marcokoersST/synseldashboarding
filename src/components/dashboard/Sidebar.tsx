@@ -4,7 +4,8 @@ import {
   ChevronLeft,
   GitCompare,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Briefcase
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -28,6 +29,11 @@ const navItems: NavItem[] = [
     subItems: [
       { icon: GitCompare, label: "Vergelijking", path: "/vergelijking" }
     ]
+  },
+  { 
+    icon: Briefcase, 
+    label: "Manager Dashboard", 
+    path: "/manager-dashboard",
   },
 ];
 
