@@ -1,94 +1,106 @@
 
-# Forecast Doelen Tegel - Implementatieplan
+# Manager Dashboard - Implementatieplan
 
 ## Overzicht
 
-Er komt een nieuwe tegel rechts van "Welkom terug, Jouw naam" waarmee je drie onderling verbonden doelen kunt instellen:
-- **Omzet forecast** (bijv. €50.000)
-- **Plaatsingen** (bijv. 5 plaatsingen)
-- **Sollicitatiegesprekken** (bijv. 20 gesprekken)
-
-Deze doelen beïnvloeden elkaar via een "triage calculatie": wanneer je slechts één doel invult, worden de andere twee automatisch berekend.
+Er wordt een nieuwe pagina "Manager Dashboard" toegevoegd als hoofdmenu-item in de donkere sidebar. Dit dashboard is bedoeld voor managers om een overzicht te krijgen van alle consultants in hun team en het hele bedrijf.
 
 ---
 
-## Visueel Ontwerp
+## Visueel Ontwerp - Navigatie
+
+```text
+┌──────────────────────────┐
+│  S  Synsel AI            │
+├──────────────────────────┤
+│  📊 Dashboard            │
+│     └─ Vergelijking      │
+│                          │
+│  👔 Manager Dashboard  ← NIEUW
+│                          │
+├──────────────────────────┤
+│  [User Profile]          │
+└──────────────────────────┘
+```
+
+---
+
+## Manager Dashboard Tegels
+
+### Tegel 1: Team Omzet Ranglijst (2 kolommen breed)
+
+Een uitgebreide ranglijst van alle consultants met omzetontwikkeling en projecties.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Welkom terug, Jouw naam                    ┌─────────────────────────────┐ │
-│  woensdag 29 januari 2026                   │ 🎯 Forecast Doelen         │ │
-│                                             │                             │ │
-│                                             │  Omzet:        € 50.000 ✏️  │ │
-│                                             │  Plaatsingen:  5        ✏️  │ │
-│                                             │  Gesprekken:   20       ✏️  │ │
-│                                             │                             │ │
-│                                             │  [AI berekend label]        │ │
-│                                             └─────────────────────────────┘ │
+│  Team Omzet Ranglijst                                     [Team ▼] [Bedrijf]│
+├─────────────────────────────────────────────────────────────────────────────┤
+│  #  │ Consultant      │ Omzet      │ Omzet Ontwikkeling (13 periodes)      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  1  │ 👤 Sophie de V. │ €1.85M     │ ────────── (historisch) - - - (proj)  │
+│  2  │ 👤 Thomas B.    │ €1.62M     │ ──────────────── - - - - - - - - - -  │
+│  3  │ 👤 Emma J.      │ €1.45M     │ ────────────────── - - - - - - - -    │
+│  4  │ 👤 Jij          │ €1.28M     │ ──────────────────── - - - - - -      │
+│  5  │ 👤 Lucas v.D.   │ €0.98M     │ ────────────────────── - - - -        │
+│  6  │ 👤 Anna V.      │ €0.72M     │ ──────────────────────── - -          │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-## Triage Calculatie Logica
-
-De drie doelen zijn onderling verbonden via conversieratio's:
-
-| Conversie | Beschrijving | Standaard Ratio |
-|-----------|-------------|-----------------|
-| Gesprekken → Plaatsingen | Hoeveel gesprekken per plaatsing | 4:1 (25% conversie) |
-| Plaatsingen → Omzet | Gemiddelde omzet per plaatsing | €10.000 per plaatsing |
-
-### Rekenvoorbeelden
-
-**Als alleen Gesprekken wordt ingevuld (bijv. 20):**
-- Plaatsingen = 20 / 4 = 5
-- Omzet = 5 × €10.000 = €50.000
-
-**Als alleen Plaatsingen wordt ingevuld (bijv. 5):**
-- Gesprekken = 5 × 4 = 20
-- Omzet = 5 × €10.000 = €50.000
-
-**Als alleen Omzet wordt ingevuld (bijv. €80.000):**
-- Plaatsingen = €80.000 / €10.000 = 8
-- Gesprekken = 8 × 4 = 32
+**Kenmerken:**
+- Tab-switcher: "Mijn Team" / "Heel Bedrijf"
+- Elke rij toont consultant met avatar, naam, huidige omzet
+- Inline mini-lijngrafieken per consultant met:
+  - Solide lijn: historische omzet (P1-P6)
+  - Gestreepte lijn: geprojecteerde omzet (P6-P13)
+- Hover voor meer details
+- Gesorteerd op huidige omzet (hoogste eerst)
 
 ---
 
-## State Management
+### Tegel 2: Team Plaatsingen & Gedetacheerden (1 kolom)
 
-Er wordt een nieuwe React Context gemaakt (`ForecastGoalsContext`) die de doelen en berekende waarden beschikbaar maakt voor alle dashboard-tegels.
-
-### Context Interface
+Dezelfde stijl als de PlacementsCard op het normale dashboard, maar dan voor het hele team.
 
 ```text
-ForecastGoalsContext
-├── revenueGoal: number | null      (handmatig ingesteld)
-├── placementsGoal: number | null   (handmatig ingesteld)
-├── interviewsGoal: number | null   (handmatig ingesteld)
-├── calculatedValues: {
-│   ├── revenue: number
-│   ├── placements: number
-│   └── interviews: number
-│   }
-├── lastEditedField: 'revenue' | 'placements' | 'interviews' | null
-└── setGoal: (field, value) => void
+┌─────────────────────────────────────┐
+│  Team Plaatsingen & Gedetacheerden  │
+│                                     │
+│  Totaal: 28        Actief: 12       │
+│                                     │
+│  [Lijngrafieken met projectie]      │
+│                                     │
+│  Actieve gedetacheerden:            │
+│  ┌────────────────────────────────┐ │
+│  │ Jan de Vries  │ TechCorp BV   │ │
+│  │ 15 jan 2024 t/m 15 jul 2025   │ │
+│  └────────────────────────────────┘ │
+│  [Infinite scroll lijst...]         │
+└─────────────────────────────────────┘
 ```
 
 ---
 
-## Inzichten in Andere Tegels
+### Tegel 3: Bedrijf Plaatsingen & Gedetacheerden (1 kolom)
 
-Wanneer doelen zijn ingesteld, verschijnen er inzichten in de volgende tegels:
+Dezelfde structuur maar dan voor het hele bedrijf met hogere getallen.
 
-| Tegel | Type Inzicht |
-|-------|-------------|
-| **SalaryProgressCard** | Projectie: "Met dit doel bereik je je volgende salarisstap" |
-| **PlacementsCard** | Doel indicator op de grafiek + progress naar doel |
-| **RevenueChart** | Extra doel-lijn met het ingestelde forecast target |
-| **RevenueTargetCard** | Vergelijking met forecast doel |
+---
 
-Inzichten worden visueel onderscheiden met een subtiele achtergrondkleur en een "AI Inzicht" label.
+## Data Uitbreiding
+
+De `teamData.ts` wordt uitgebreid met:
+
+1. **Revenue trend data per consultant** (voor de mini-grafieken):
+   - Historische omzet per periode (P1-P6)
+   - Geprojecteerde omzet per periode (P6-P13)
+
+2. **Plaatsingen data per consultant**:
+   - Historische plaatsingen
+   - Actieve gedetacheerden lijst
+
+3. **Bedrijfsbreed data**:
+   - Extra consultants van andere teams
+   - Geaggregeerde statistieken
 
 ---
 
@@ -96,32 +108,42 @@ Inzichten worden visueel onderscheiden met een subtiele achtergrondkleur en een 
 
 ### Nieuwe Bestanden
 
-1. **`src/contexts/ForecastGoalsContext.tsx`**
-   - React Context voor het delen van forecast doelen
-   - Triage calculatie logica
-   - LocalStorage persistentie voor doelen
-
-2. **`src/components/dashboard/ForecastGoalsCard.tsx`**
-   - Compacte tegel met drie invoervelden
-   - Inline editing met visuele feedback
-   - Indicator welke velden automatisch berekend zijn
+| Bestand | Beschrijving |
+|---------|--------------|
+| `src/pages/ManagerDashboard.tsx` | Hoofdpagina met layout en tegels |
+| `src/components/manager/ManagerRevenueLeaderboard.tsx` | Ranglijst met inline grafieken |
+| `src/components/manager/TeamPlacementsCard.tsx` | Team plaatsingen tegel |
+| `src/components/manager/CompanyPlacementsCard.tsx` | Bedrijf plaatsingen tegel |
+| `src/data/managerData.ts` | Extended data met revenue trends en plaatsingen |
 
 ### Aanpassingen Bestaande Bestanden
 
-1. **`src/pages/Index.tsx`**
-   - WelcomeHeader en ForecastGoalsCard naast elkaar in een flex container
-   - Wrap dashboard in ForecastGoalsProvider
+| Bestand | Wijziging |
+|---------|-----------|
+| `src/App.tsx` | Nieuwe route `/manager-dashboard` toevoegen |
+| `src/components/dashboard/Sidebar.tsx` | Nieuw menu-item "Manager Dashboard" met `Briefcase` icoon |
+| `src/data/teamData.ts` | Uitbreiden met `revenueTrend` en `placements` arrays |
 
-2. **`src/components/dashboard/WelcomeHeader.tsx`**
-   - Flexbox aanpassing voor naast-elkaar layout
+### Component Structuur
 
-3. **Diverse dashboard cards** (optioneel, fase 2)
-   - Inzichten tonen gebaseerd op context waarden
+```text
+ManagerDashboard
+├── Sidebar (bestaand)
+├── TopBar (bestaand)
+└── main
+    ├── Header: "Manager Dashboard"
+    ├── Row 1 (grid cols-3)
+    │   ├── ManagerRevenueLeaderboard (col-span-2)
+    │   └── TeamPlacementsCard
+    └── Row 2
+        └── CompanyPlacementsCard
+```
 
 ### Styling
 
-De tegel volgt het bestaande design systeem:
-- `bg-card rounded-xl p-4 border border-border`
+Alle nieuwe componenten volgen het bestaande design systeem:
+- `bg-card rounded-xl p-5 border border-border`
 - Glassmorphism header effect
 - Hover effect met `hover-lift`
-- Entrance animatie met `AnimatedCard`
+- Staggered entrance animaties
+- Recharts voor mini-grafieken (consistent met PlacementsCard)
