@@ -5,7 +5,10 @@ import {
   GitCompare,
   ChevronDown,
   ChevronRight,
-  Briefcase
+  Briefcase,
+  Shield,
+  Eye,
+  BarChart3
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -35,6 +38,15 @@ const navItems: NavItem[] = [
     label: "Manager Dashboard", 
     path: "/manager-dashboard",
   },
+  {
+    icon: Shield,
+    label: "Super Admin",
+    path: "/super-admin",
+    subItems: [
+      { icon: BarChart3, label: "Overzicht", path: "/super-admin" },
+      { icon: Eye, label: "User Emulatie", path: "/super-admin/emulate" },
+    ]
+  },
 ];
 
 export function Sidebar() {
@@ -42,13 +54,15 @@ export function Sidebar() {
   const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
-  // Check if we're on a comparison page
+  // Auto-expand items when on their sub-routes
   const isOnComparisonPage = location.pathname.startsWith("/vergelijking");
+  const isOnSuperAdminPage = location.pathname.startsWith("/super-admin");
   
-  // Auto-expand Dashboard when on comparison page
-  const effectiveExpandedItems = isOnComparisonPage 
-    ? [...new Set([...expandedItems, "/"])]
-    : expandedItems;
+  const effectiveExpandedItems = [
+    ...expandedItems,
+    ...(isOnComparisonPage ? ["/"] : []),
+    ...(isOnSuperAdminPage ? ["/super-admin"] : []),
+  ].filter((v, i, a) => a.indexOf(v) === i);
 
   const toggleExpanded = (path: string, e: React.MouseEvent) => {
     e.stopPropagation();
