@@ -33,13 +33,13 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
 
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 bg-[hsl(220,15%,6%)] text-[hsl(0,0%,95%)] overflow-auto z-[9999]">
+      <div className="fixed inset-0 bg-white text-foreground overflow-auto z-[9999]">
         <div className="p-8 min-h-screen">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold">{title}</h1>
             <button
               onClick={toggleFullscreen}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[hsl(220,15%,15%)] hover:bg-[hsl(220,15%,20%)] transition-colors text-sm"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-sm text-foreground border border-border"
             >
               <X className="w-4 h-4" />
               Sluiten
