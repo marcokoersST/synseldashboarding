@@ -39,7 +39,9 @@ const callsData = {
   passive: {
     inboundCalls: 47,
     outboundCalls: 89,
-    totalDuration: { hours: 4, minutes: 32, seconds: 15 }
+    totalCalls: 136,
+    totalDuration: { hours: 4, minutes: 32, seconds: 15 },
+    avgDuration: { hours: 0, minutes: 2, seconds: 0 },
   },
   active: {
     current: {
@@ -54,7 +56,7 @@ const callsData = {
         preferredCP: 52,
         newContact: 50
       },
-      callsPerPlaatsing: 34 // 136 calls / 4 plaatsingen
+      callsPerPlaatsing: 34
     },
     bestPeriod: {
       periodLabel: "P3",
@@ -70,7 +72,7 @@ const callsData = {
         preferredCP: 48,
         newContact: 35
       },
-      callsPerPlaatsing: 16 // 131 calls / 8 plaatsingen
+      callsPerPlaatsing: 16
     }
   }
 };
@@ -78,7 +80,9 @@ const callsData = {
 const mailData = {
   passive: {
     sent: 156,
-    received: 243
+    received: 243,
+    total: 399,
+    replyRate: 68,
   },
   active: {
     sent: 156,
@@ -108,84 +112,12 @@ const calcPercentageDiff = (current: number, best: number): number => {
 
 const formatPercentage = (diff: number): string => {
   const sign = diff > 0 ? '+' : '';
-  return `${sign}${diff.toFixed(1)}%`;
+  return `${sign}${diff.toFixed(0)}%`;
 };
 
 const isPositiveDiff = (diff: number, inverse: boolean = false): boolean => {
   return inverse ? diff < 0 : diff > 0;
 };
-
-// ─── Shared Components ───
-
-interface ComparisonStatBlockProps {
-  icon: React.ReactNode;
-  label: string;
-  currentValue: number;
-  bestValue: number;
-  showTime?: boolean;
-  currentTime?: Duration;
-  bestTime?: Duration;
-  inverseColors?: boolean;
-  delay?: number;
-  currentPeriod?: string;
-  bestPeriod?: string;
-  decimals?: number;
-  suffix?: string;
-}
-
-function ComparisonStatBlock({ 
-  icon, label, currentValue, bestValue, 
-  showTime, currentTime, bestTime,
-  inverseColors = false, delay = 0,
-  currentPeriod = "P6", bestPeriod = "P3",
-  decimals = 0, suffix
-}: ComparisonStatBlockProps) {
-  const percentageDiff = calcPercentageDiff(currentValue, bestValue);
-  const isPositive = isPositiveDiff(percentageDiff, inverseColors);
-  
-  return (
-    <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-      <div className="flex items-center gap-1.5 mb-2">
-        {icon}
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="border-l-2 border-primary/50 pl-2">
-          <span className="text-[10px] uppercase tracking-wide text-primary/70 font-medium">
-            Nu ({currentPeriod})
-          </span>
-          <div className="text-base font-semibold text-foreground">
-            <AnimatedNumber value={currentValue} delay={delay} decimals={decimals} />
-            {suffix && <span className="text-xs text-muted-foreground ml-0.5">{suffix}</span>}
-          </div>
-          {showTime && currentTime && (
-            <div className="text-xs text-muted-foreground">{formatDuration(currentTime)}</div>
-          )}
-        </div>
-        <div className="border-l-2 border-muted-foreground/30 pl-2">
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground/70 font-medium">
-            Best ({bestPeriod})
-          </span>
-          <div className="text-base font-semibold text-muted-foreground">
-            {decimals > 0 ? bestValue.toFixed(decimals) : bestValue}
-            {suffix && <span className="text-xs text-muted-foreground/70 ml-0.5">{suffix}</span>}
-          </div>
-          {showTime && bestTime && (
-            <div className="text-xs text-muted-foreground/70">{formatDuration(bestTime)}</div>
-          )}
-        </div>
-      </div>
-      <div className="mt-2 flex justify-center">
-        <span className={cn(
-          "text-[10px] font-medium px-2 py-0.5 rounded-full",
-          isPositive ? "bg-success/15 text-success" : "bg-primary/15 text-primary"
-        )}>
-          {formatPercentage(percentageDiff)}
-        </span>
-      </div>
-    </div>
-  );
-}
 
 // ─── Shared toggle hook ───
 
@@ -208,6 +140,57 @@ function useDetailToggle() {
   return { isDetailMode, isTransitioning, displayMode, toggle };
 }
 
+// ─── Compact comparison row for detail mode ───
+
+interface ComparisonRowProps {
+  icon: React.ReactNode;
+  label: string;
+  currentValue: number;
+  bestValue: number;
+  inverseColors?: boolean;
+  delay?: number;
+  suffix?: string;
+  decimals?: number;
+  subtext?: string;
+}
+
+function ComparisonRow({
+  icon, label, currentValue, bestValue,
+  inverseColors = false, delay = 0, suffix, decimals = 0, subtext
+}: ComparisonRowProps) {
+  const diff = calcPercentageDiff(currentValue, bestValue);
+  const positive = isPositiveDiff(diff, inverseColors);
+
+  return (
+    <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-secondary/30 transition-colors group">
+      <div className="flex items-center gap-2 min-w-0">
+        {icon}
+        <div>
+          <span className="text-xs font-medium text-foreground">{label}</span>
+          {subtext && <span className="text-[10px] text-muted-foreground block leading-tight">{subtext}</span>}
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="text-right">
+          <span className="text-sm font-semibold text-foreground tabular-nums">
+            <AnimatedNumber value={currentValue} delay={delay} decimals={decimals} />
+            {suffix && <span className="text-xs text-muted-foreground ml-0.5">{suffix}</span>}
+          </span>
+        </div>
+        <div className="text-right w-8">
+          <span className="text-xs text-muted-foreground tabular-nums">{decimals > 0 ? bestValue.toFixed(decimals) : bestValue}</span>
+        </div>
+        <span className={cn(
+          "text-[10px] font-medium px-1.5 py-0.5 rounded-full min-w-[42px] text-center tabular-nums",
+          positive ? "bg-success/15 text-success" : "bg-primary/15 text-primary"
+        )}>
+          {formatPercentage(diff)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════
 // CallsStatsCard
 // ═══════════════════════════════════════
@@ -226,19 +209,9 @@ export function CallsStatsCard({ delay = 0 }: CardProps) {
           <div className="flex items-center gap-2">
             <Phone className="h-5 w-5 text-primary" />
             <h3 className="font-semibold text-foreground">Gesprekken</h3>
-            {displayMode && (
-              <div className="flex items-center gap-1.5 ml-2">
-                <Trophy className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs text-muted-foreground">
-                  vs {callsData.active.bestPeriod.periodLabel} ({callsData.active.bestPeriod.placements} plaatsingen)
-                </span>
-              </div>
-            )}
           </div>
           <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggle}
+            variant="ghost" size="icon" onClick={toggle}
             className="h-7 w-7 rounded-full bg-secondary hover:bg-secondary/80"
             title={displayMode ? "Toon minder details" : "Toon meer details"}
           >
@@ -258,28 +231,45 @@ export function CallsStatsCard({ delay = 0 }: CardProps) {
 }
 
 function CallsOverviewView({ delay }: { delay: number }) {
+  const total = callsData.passive.inboundCalls + callsData.passive.outboundCalls;
+  const inPct = Math.round((callsData.passive.inboundCalls / total) * 100);
+  const outPct = 100 - inPct;
+
   return (
-    <div className="grid grid-cols-3 gap-3">
-      <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-        <div className="flex items-center gap-2 mb-2">
-          <PhoneIncoming className="h-4 w-4 text-primary" />
-          <span className="text-xs text-muted-foreground">Inkomend</span>
-        </div>
-        <AnimatedNumber value={callsData.passive.inboundCalls} delay={delay + 100} className="text-2xl font-bold text-foreground" />
+    <div className="flex flex-col h-full justify-between gap-4">
+      {/* Big number hero */}
+      <div className="text-center py-2">
+        <AnimatedNumber value={total} delay={delay + 100} className="text-4xl font-bold text-foreground" />
+        <p className="text-xs text-muted-foreground mt-1">totaal gesprekken</p>
       </div>
-      <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-        <div className="flex items-center gap-2 mb-2">
-          <PhoneOutgoing className="h-4 w-4 text-primary" />
-          <span className="text-xs text-muted-foreground">Uitgaand</span>
+
+      {/* Ratio bar */}
+      <div>
+        <div className="flex h-2 rounded-full overflow-hidden bg-secondary/40">
+          <div className="bg-primary/70 rounded-l-full transition-all" style={{ width: `${inPct}%` }} />
+          <div className="bg-primary/30 rounded-r-full transition-all" style={{ width: `${outPct}%` }} />
         </div>
-        <AnimatedNumber value={callsData.passive.outboundCalls} delay={delay + 150} className="text-2xl font-bold text-foreground" />
+        <div className="flex justify-between mt-2">
+          <div className="flex items-center gap-1.5">
+            <PhoneIncoming className="h-3.5 w-3.5 text-primary/70" />
+            <span className="text-xs text-muted-foreground">Inkomend</span>
+            <span className="text-xs font-semibold text-foreground">{callsData.passive.inboundCalls}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-foreground">{callsData.passive.outboundCalls}</span>
+            <span className="text-xs text-muted-foreground">Uitgaand</span>
+            <PhoneOutgoing className="h-3.5 w-3.5 text-primary/30" />
+          </div>
+        </div>
       </div>
-      <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-        <div className="flex items-center gap-2 mb-2">
-          <Clock className="h-4 w-4 text-primary" />
+
+      {/* Duration row */}
+      <div className="flex items-center justify-between bg-secondary/30 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-1.5">
+          <Clock className="h-3.5 w-3.5 text-primary" />
           <span className="text-xs text-muted-foreground">Totale duur</span>
         </div>
-        <span className="text-2xl font-bold text-foreground">{formatDuration(callsData.passive.totalDuration)}</span>
+        <span className="text-sm font-semibold text-foreground tabular-nums">{formatDuration(callsData.passive.totalDuration)}</span>
       </div>
     </div>
   );
@@ -289,43 +279,52 @@ function CallsDetailView({ delay }: { delay: number }) {
   const { current, bestPeriod } = callsData.active;
 
   return (
-    <div className="space-y-3">
-      {/* Row 1: Call stats */}
-      <div className="grid grid-cols-4 gap-2">
-        <ComparisonStatBlock icon={<PhoneIncoming className="h-3.5 w-3.5 text-primary" />} label="Inkomend"
-          currentValue={current.inboundCalls} bestValue={bestPeriod.inboundCalls}
-          showTime currentTime={current.totalTimeInbound} bestTime={bestPeriod.totalTimeInbound}
-          delay={delay + 100} bestPeriod={bestPeriod.periodLabel} />
-        <ComparisonStatBlock icon={<PhoneOutgoing className="h-3.5 w-3.5 text-primary" />} label="Uitgaand"
-          currentValue={current.outboundCalls} bestValue={bestPeriod.outboundCalls}
-          showTime currentTime={current.totalTimeOutbound} bestTime={bestPeriod.totalTimeOutbound}
-          delay={delay + 150} bestPeriod={bestPeriod.periodLabel} />
-        <ComparisonStatBlock icon={<PhoneMissed className="h-3.5 w-3.5 text-muted-foreground" />} label="Gemist"
-          currentValue={current.missedCalls} bestValue={bestPeriod.missedCalls}
-          inverseColors delay={delay + 200} bestPeriod={bestPeriod.periodLabel} />
-        <ComparisonStatBlock icon={<PhoneOff className="h-3.5 w-3.5 text-muted-foreground" />} label="Bounced"
-          currentValue={current.bouncedCalls} bestValue={bestPeriod.bouncedCalls}
-          inverseColors delay={delay + 250} bestPeriod={bestPeriod.periodLabel} />
-      </div>
-
-      {/* Row 2: Contact Status + Calls per plaatsing */}
-      <div>
-        <span className="text-xs text-muted-foreground mb-2 block">Contact Status</span>
-        <div className="grid grid-cols-4 gap-2">
-          <ComparisonStatBlock icon={<Flame className="h-3.5 w-3.5 text-primary" />} label="Warme relatie"
-            currentValue={current.contactStatus.warmRelation} bestValue={bestPeriod.contactStatus.warmRelation}
-            delay={delay + 300} bestPeriod={bestPeriod.periodLabel} />
-          <ComparisonStatBlock icon={<Star className="h-3.5 w-3.5 text-primary" />} label="Voorkeurs CP"
-            currentValue={current.contactStatus.preferredCP} bestValue={bestPeriod.contactStatus.preferredCP}
-            delay={delay + 350} bestPeriod={bestPeriod.periodLabel} />
-          <ComparisonStatBlock icon={<UserPlus className="h-3.5 w-3.5 text-teal" />} label="Nieuw contact"
-            currentValue={current.contactStatus.newContact} bestValue={bestPeriod.contactStatus.newContact}
-            delay={delay + 400} bestPeriod={bestPeriod.periodLabel} />
-          <ComparisonStatBlock icon={<Target className="h-3.5 w-3.5 text-primary" />} label="Calls / plaatsing"
-            currentValue={current.callsPerPlaatsing} bestValue={bestPeriod.callsPerPlaatsing}
-            inverseColors delay={delay + 450} bestPeriod={bestPeriod.periodLabel} />
+    <div className="flex flex-col gap-1">
+      {/* Column headers */}
+      <div className="flex items-center justify-end px-3 mb-1">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] uppercase tracking-wider text-primary/70 font-medium w-[40px] text-right">Nu</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium w-8 text-right">{bestPeriod.periodLabel}</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium min-w-[42px] text-center">Δ</span>
         </div>
       </div>
+
+      {/* Divider */}
+      <div className="border-b border-border/50 mx-3 mb-1" />
+
+      {/* Call rows */}
+      <ComparisonRow icon={<PhoneIncoming className="h-3.5 w-3.5 text-primary" />} label="Inkomend"
+        currentValue={current.inboundCalls} bestValue={bestPeriod.inboundCalls}
+        subtext={formatDuration(current.totalTimeInbound)} delay={delay + 100} />
+      <ComparisonRow icon={<PhoneOutgoing className="h-3.5 w-3.5 text-primary" />} label="Uitgaand"
+        currentValue={current.outboundCalls} bestValue={bestPeriod.outboundCalls}
+        subtext={formatDuration(current.totalTimeOutbound)} delay={delay + 120} />
+      <ComparisonRow icon={<PhoneMissed className="h-3.5 w-3.5 text-muted-foreground" />} label="Gemist"
+        currentValue={current.missedCalls} bestValue={bestPeriod.missedCalls}
+        inverseColors delay={delay + 140} />
+      <ComparisonRow icon={<PhoneOff className="h-3.5 w-3.5 text-muted-foreground" />} label="Bounced"
+        currentValue={current.bouncedCalls} bestValue={bestPeriod.bouncedCalls}
+        inverseColors delay={delay + 160} />
+
+      {/* Section label */}
+      <div className="border-b border-border/50 mx-3 mt-2 mb-1" />
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium px-3 mb-1">Contact status</span>
+
+      <ComparisonRow icon={<Flame className="h-3.5 w-3.5 text-primary" />} label="Warme relatie"
+        currentValue={current.contactStatus.warmRelation} bestValue={bestPeriod.contactStatus.warmRelation}
+        delay={delay + 200} />
+      <ComparisonRow icon={<Star className="h-3.5 w-3.5 text-primary" />} label="Voorkeurs CP"
+        currentValue={current.contactStatus.preferredCP} bestValue={bestPeriod.contactStatus.preferredCP}
+        delay={delay + 220} />
+      <ComparisonRow icon={<UserPlus className="h-3.5 w-3.5 text-teal" />} label="Nieuw contact"
+        currentValue={current.contactStatus.newContact} bestValue={bestPeriod.contactStatus.newContact}
+        delay={delay + 240} />
+
+      <div className="border-b border-border/50 mx-3 mt-2 mb-1" />
+
+      <ComparisonRow icon={<Target className="h-3.5 w-3.5 text-primary" />} label="Calls / plaatsing"
+        currentValue={current.callsPerPlaatsing} bestValue={bestPeriod.callsPerPlaatsing}
+        inverseColors delay={delay + 260} />
     </div>
   );
 }
@@ -344,12 +343,9 @@ export function EmailStatsCard({ delay = 0 }: CardProps) {
           <div className="flex items-center gap-2">
             <Mail className="h-5 w-5 text-teal" />
             <h3 className="font-semibold text-foreground">E-mail</h3>
-            {displayMode && <span className="text-xs text-muted-foreground">(detail)</span>}
           </div>
           <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggle}
+            variant="ghost" size="icon" onClick={toggle}
             className="h-7 w-7 rounded-full bg-secondary hover:bg-secondary/80"
             title={displayMode ? "Toon minder details" : "Toon meer details"}
           >
@@ -369,21 +365,45 @@ export function EmailStatsCard({ delay = 0 }: CardProps) {
 }
 
 function MailOverviewView({ delay }: { delay: number }) {
+  const total = mailData.passive.sent + mailData.passive.received;
+  const sentPct = Math.round((mailData.passive.sent / total) * 100);
+  const recvPct = 100 - sentPct;
+
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-        <div className="flex items-center gap-2 mb-2">
-          <Send className="h-4 w-4 text-teal" />
-          <span className="text-xs text-muted-foreground">Verstuurd</span>
-        </div>
-        <AnimatedNumber value={mailData.passive.sent} delay={delay + 100} className="text-2xl font-bold text-foreground" />
+    <div className="flex flex-col h-full justify-between gap-4">
+      {/* Big number hero */}
+      <div className="text-center py-2">
+        <AnimatedNumber value={total} delay={delay + 100} className="text-4xl font-bold text-foreground" />
+        <p className="text-xs text-muted-foreground mt-1">totaal e-mails</p>
       </div>
-      <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-        <div className="flex items-center gap-2 mb-2">
-          <Inbox className="h-4 w-4 text-teal" />
-          <span className="text-xs text-muted-foreground">Ontvangen</span>
+
+      {/* Ratio bar */}
+      <div>
+        <div className="flex h-2 rounded-full overflow-hidden bg-secondary/40">
+          <div className="bg-teal/70 rounded-l-full transition-all" style={{ width: `${sentPct}%` }} />
+          <div className="bg-teal/30 rounded-r-full transition-all" style={{ width: `${recvPct}%` }} />
         </div>
-        <AnimatedNumber value={mailData.passive.received} delay={delay + 150} className="text-2xl font-bold text-foreground" />
+        <div className="flex justify-between mt-2">
+          <div className="flex items-center gap-1.5">
+            <Send className="h-3.5 w-3.5 text-teal/70" />
+            <span className="text-xs text-muted-foreground">Verstuurd</span>
+            <span className="text-xs font-semibold text-foreground">{mailData.passive.sent}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-foreground">{mailData.passive.received}</span>
+            <span className="text-xs text-muted-foreground">Ontvangen</span>
+            <Inbox className="h-3.5 w-3.5 text-teal/30" />
+          </div>
+        </div>
+      </div>
+
+      {/* Reply rate row */}
+      <div className="flex items-center justify-between bg-secondary/30 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-1.5">
+          <Reply className="h-3.5 w-3.5 text-teal" />
+          <span className="text-xs text-muted-foreground">Reply rate</span>
+        </div>
+        <span className="text-sm font-semibold text-foreground tabular-nums">{mailData.passive.replyRate}%</span>
       </div>
     </div>
   );
@@ -393,99 +413,83 @@ function MailDetailView({ delay }: { delay: number }) {
   const d = mailData.active;
 
   return (
-    <div className="space-y-3">
-      {/* Row 1: Core stats */}
-      <div className="grid grid-cols-4 gap-2">
-        <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Send className="h-3.5 w-3.5 text-teal" />
-            <span className="text-xs text-muted-foreground">Verstuurd</span>
-          </div>
-          <AnimatedNumber value={d.sent} delay={delay + 100} className="text-lg font-bold text-foreground" />
-        </div>
-        <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Inbox className="h-3.5 w-3.5 text-teal" />
-            <span className="text-xs text-muted-foreground">Ontvangen</span>
-          </div>
-          <AnimatedNumber value={d.received} delay={delay + 150} className="text-lg font-bold text-foreground" />
-        </div>
-        <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Zap className="h-3.5 w-3.5 text-teal" />
-            <span className="text-xs text-muted-foreground">TTFR Score</span>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <AnimatedNumber value={d.ttfrScore} decimals={1} delay={delay + 200} className="text-lg font-bold text-foreground" />
-            <span className="text-xs text-muted-foreground">uur</span>
-          </div>
-        </div>
-        <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Clock className="h-3.5 w-3.5 text-teal" />
-            <span className="text-xs text-muted-foreground">Volgende actie</span>
-          </div>
-          <span className="text-lg font-bold text-foreground">{formatDuration(d.timeToNextAction)}</span>
-        </div>
+    <div className="flex flex-col gap-1">
+      {/* Core metrics as aligned rows */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-3">
+        <MetricCell icon={<Send className="h-3.5 w-3.5 text-teal" />} label="Verstuurd" delay={delay + 100}>
+          <AnimatedNumber value={d.sent} delay={delay + 100} className="text-lg font-bold text-foreground tabular-nums" />
+        </MetricCell>
+        <MetricCell icon={<Inbox className="h-3.5 w-3.5 text-teal" />} label="Ontvangen" delay={delay + 120}>
+          <AnimatedNumber value={d.received} delay={delay + 120} className="text-lg font-bold text-foreground tabular-nums" />
+        </MetricCell>
+        <MetricCell icon={<Zap className="h-3.5 w-3.5 text-teal" />} label="TTFR Score" delay={delay + 140}>
+          <span className="text-lg font-bold text-foreground tabular-nums">
+            <AnimatedNumber value={d.ttfrScore} decimals={1} delay={delay + 140} />
+            <span className="text-xs text-muted-foreground ml-1">uur</span>
+          </span>
+        </MetricCell>
+        <MetricCell icon={<Clock className="h-3.5 w-3.5 text-teal" />} label="Volgende actie" delay={delay + 160}>
+          <span className="text-lg font-bold text-foreground tabular-nums">{formatDuration(d.timeToNextAction)}</span>
+        </MetricCell>
       </div>
 
-      {/* Row 2: Verdiepende KPI's */}
-      <div>
-        <span className="text-xs text-muted-foreground mb-2 block">Verdieping</span>
-        <div className="grid grid-cols-3 gap-2">
-          <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-            <div className="flex items-center gap-1.5 mb-2">
-              <FileText className="h-3.5 w-3.5 text-teal" />
-              <span className="text-xs text-muted-foreground">Per procedure</span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <AnimatedNumber value={d.emailsPerProcedure} decimals={1} delay={delay + 300} className="text-lg font-bold text-foreground" />
-              <span className="text-[10px] text-muted-foreground">gem.</span>
-            </div>
+      {/* Divider */}
+      <div className="border-b border-border/50 mx-1 mb-2" />
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium px-1 mb-2">Verdieping</span>
+
+      {/* Deeper metrics */}
+      <div className="grid grid-cols-3 gap-3 mb-3">
+        <MetricCell icon={<FileText className="h-3.5 w-3.5 text-teal" />} label="Per procedure" delay={delay + 200}>
+          <span className="text-lg font-bold text-foreground tabular-nums">
+            <AnimatedNumber value={d.emailsPerProcedure} decimals={1} delay={delay + 200} />
+          </span>
+        </MetricCell>
+        <MetricCell icon={<Briefcase className="h-3.5 w-3.5 text-teal" />} label="Per acquisitie" delay={delay + 220}>
+          <span className="text-lg font-bold text-foreground tabular-nums">
+            <AnimatedNumber value={d.emailsPerAcquisitie} decimals={1} delay={delay + 220} />
+          </span>
+        </MetricCell>
+        <MetricCell icon={<BarChart3 className="h-3.5 w-3.5 text-teal" />} label="Benchmark" delay={delay + 240}>
+          <div className="text-lg font-bold text-foreground tabular-nums leading-tight">
+            <AnimatedNumber value={d.jouwGemiddelde} decimals={1} delay={delay + 240} />
           </div>
-          <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Briefcase className="h-3.5 w-3.5 text-teal" />
-              <span className="text-xs text-muted-foreground">Per acquisitie</span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <AnimatedNumber value={d.emailsPerAcquisitie} decimals={1} delay={delay + 350} className="text-lg font-bold text-foreground" />
-              <span className="text-[10px] text-muted-foreground">gem.</span>
-            </div>
-          </div>
-          <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-            <div className="flex items-center gap-1.5 mb-2">
-              <BarChart3 className="h-3.5 w-3.5 text-teal" />
-              <span className="text-xs text-muted-foreground">Benchmark</span>
-            </div>
-            <div className="text-lg font-bold text-foreground">
-              <AnimatedNumber value={d.jouwGemiddelde} decimals={1} delay={delay + 400} />
-              <span className="text-[10px] text-muted-foreground ml-1">/ {d.benchmarkGeplaatst}</span>
-            </div>
-          </div>
-        </div>
+          <span className="text-[10px] text-muted-foreground">gem. {d.benchmarkGeplaatst}</span>
+        </MetricCell>
       </div>
 
-      {/* Row 3: Reply rate + Reactietijd */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Reply className="h-3.5 w-3.5 text-teal" />
-            <span className="text-xs text-muted-foreground">Reply rate</span>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <AnimatedNumber value={d.replyRate} delay={delay + 450} className="text-lg font-bold text-foreground" />
-            <span className="text-xs text-muted-foreground">%</span>
-          </div>
-        </div>
-        <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Timer className="h-3.5 w-3.5 text-teal" />
-            <span className="text-xs text-muted-foreground">Gem. reactietijd</span>
-          </div>
-          <span className="text-lg font-bold text-foreground">{formatDuration(d.gemReactietijd)}</span>
-        </div>
+      {/* Bottom row */}
+      <div className="grid grid-cols-2 gap-3">
+        <MetricCell icon={<Reply className="h-3.5 w-3.5 text-teal" />} label="Reply rate" delay={delay + 260}>
+          <span className="text-lg font-bold text-foreground tabular-nums">
+            <AnimatedNumber value={d.replyRate} delay={delay + 260} />
+            <span className="text-xs text-muted-foreground ml-0.5">%</span>
+          </span>
+        </MetricCell>
+        <MetricCell icon={<Timer className="h-3.5 w-3.5 text-teal" />} label="Gem. reactietijd" delay={delay + 280}>
+          <span className="text-lg font-bold text-foreground tabular-nums">{formatDuration(d.gemReactietijd)}</span>
+        </MetricCell>
       </div>
+    </div>
+  );
+}
+
+// ─── Aligned metric cell for email detail ───
+
+interface MetricCellProps {
+  icon: React.ReactNode;
+  label: string;
+  delay: number;
+  children: React.ReactNode;
+}
+
+function MetricCell({ icon, label, children }: MetricCellProps) {
+  return (
+    <div className="bg-secondary/30 rounded-lg p-3 hover:bg-secondary/40 transition-colors">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        {icon}
+        <span className="text-[11px] text-muted-foreground font-medium">{label}</span>
+      </div>
+      <div>{children}</div>
     </div>
   );
 }
