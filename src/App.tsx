@@ -8,6 +8,10 @@ import Vergelijking from "./pages/Vergelijking";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import SuperAdminEmulate from "./pages/SuperAdminEmulate";
+import TVSalesFunnelWeek from "./pages/TVSalesFunnelWeek";
+import TVSalesFunnelPeriod from "./pages/TVSalesFunnelPeriod";
+import TVBekerDashboard from "./pages/TVBekerDashboard";
+import TVGedetacheerden from "./pages/TVGedetacheerden";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +28,10 @@ const App = () => (
           <Route path="/manager-dashboard" element={<ManagerDashboard />} />
           <Route path="/super-admin" element={<SuperAdminDashboard />} />
           <Route path="/super-admin/emulate" element={<SuperAdminEmulate />} />
+          <Route path="/tv/sales-funnel-week" element={<TVSalesFunnelWeek />} />
+          <Route path="/tv/sales-funnel-period" element={<TVSalesFunnelPeriod />} />
+          <Route path="/tv/beker" element={<TVBekerDashboard />} />
+          <Route path="/tv/gedetacheerden" element={<TVGedetacheerden />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
