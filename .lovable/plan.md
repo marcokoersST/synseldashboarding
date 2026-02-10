@@ -1,58 +1,57 @@
 
 
-# Periodefilter toevoegen aan Plaatsingen & Gedetacheerden
+# Vergelijking pagina: Performance vergelijken met teamleden
 
-## Wat verandert
+## Wat wordt gebouwd
 
-Er komt een compacte periodeselector in de header van de PlacementsCard tile. Hiermee kun je een eerdere periode selecteren, waarna alle data in de tile (stats, chart, kandidatenlijst, versus-data) wordt aangepast naar die periode.
+Een nieuwe "Vergelijking" pagina (route: `/vergelijking`) die toegankelijk is via de sidebar onder Dashboard. Op deze pagina kun je een teamlid selecteren om je prestaties mee te vergelijken. Financiele data (salaris, bonus, omzet in euro's) wordt uitgesloten -- de focus ligt op activiteiten en resultaten.
 
 ## Ontwerp
 
-**Periodeselector**: Een kleine dropdown/select naast de bestaande toggle-knoppen in de header. Toont "P6" (huidig) als standaard, met opties P1 t/m P6 (alleen historische periodes, geen toekomstige). De huidige periode is visueel gemarkeerd.
+**Bovenaan**: Titel "Vergelijking" met subtitel. Een dropdown of pill-selector om een teamlid te kiezen.
 
-**Wat verandert per geselecteerde periode**:
-- **Stats bovenaan**: "Totaal" en "Actief" worden aangepast naar de waarden van die periode
-- **Mini-chart (lijstmodus)**: De chart toont data t/m de geselecteerde periode als "werkelijk", de rest als "prognose"
-- **Detail-chart**: De split tussen werkelijk/prognose verschuift naar de geselecteerde periode
-- **Versus-stats**: De vergelijking wordt gemaakt op basis van de geselecteerde periode
-- **Subtitel**: Toont "Periode X" i.p.v. "Huidige actieve plaatsingen"
+**Midden**: Side-by-side vergelijking in twee kolommen (Jij vs. geselecteerd teamlid) met:
+- Avatar, naam, rang
+- Performance Score (ring)
+- Vergelijkbare metrics zonder financiele data
+
+**Metrics die worden getoond** (geen salaris/bonus/omzet):
+- Emails verstuurd
+- Gesprekken
+- Acquisities
+- Plaatsingen
+- Kandidaten
+- Conversieratio (%)
+- Performance Score
+
+**Onderaan**: Gedetailleerde vergelijkingstabel met MetricRow componenten en visuele indicators (groen = je loopt voor, rood = je loopt achter).
+
+**Quick Insights bar**: Compacte samenvatting van waar je voor- en achterloopt (hergebruik van het bestaande patroon uit de huidige Vergelijking pagina).
 
 ## Technische aanpak
 
-### Bestand: `src/components/dashboard/PlacementsCard.tsx`
+### 1. Nieuw bestand: `src/pages/VergelijkingOverview.tsx`
+- Gebruikt `ConsultantLayout` of de standaard Sidebar+TopBar layout
+- State: `selectedMemberId` (standaard het eerste niet-current-user teamlid)
+- Filtert `teamMembers` om de huidige gebruiker uit te sluiten voor de selector
+- Hergebruikt bestaande componenten: `MetricRow`, `AnimatedCard`, `AnimatedNumber`, `AnimatedRing`
+- Sluit de volgende MetricRows uit: Omzet (currency), Salaris voortgang
+- Bevat de Quick Insights bar (voor/achter pills)
 
-**1. Nieuwe state**:
-- `selectedPeriod: number` (standaard `6`, index 1-based voor P1-P6)
+### 2. Bestand: `src/App.tsx`
+- Voeg route toe: `/vergelijking` -> `VergelijkingOverview`
+- Bestaande route `/vergelijking/:memberId` blijft behouden
 
-**2. Period-afhankelijke data**:
-- Een `getDataForPeriod(periodIndex)` functie die `combinedData` transformeert: alles t/m de geselecteerde periode wordt "historical", daarna "projected"
-- Stats (Totaal, Actief) worden per periode uit een mock-object gehaald
-- De versus-data leest uit `combinedData[periodIndex - 1]` voor de juiste norm/fastLane/bestPerformer waarden
+### 3. Bestand: `src/components/dashboard/Sidebar.tsx`
+- Update het subItem pad van `/vergelijking` (dat nu nergens heen leidt zonder memberId) zodat het correct naar de nieuwe overview-pagina navigeert
 
-**3. Mock data per periode** (nieuw object):
-```
-const periodStats = {
-  P1: { totaal: 8, actief: 2 },
-  P2: { totaal: 12, actief: 1 },
-  P3: { totaal: 16, actief: 3 },
-  P4: { totaal: 19, actief: 2 },
-  P5: { totaal: 23, actief: 4 },
-  P6: { totaal: 28, actief: 5 },
-};
-```
+### 4. Componenten die hergebruikt worden
+- `ComparisonColumn` -- aangepast gebruik zonder omzet/salaris sectie (de revenue progress bar wordt verborgen via een nieuwe optionele prop `hideRevenue`)
+- `MetricRow` -- bestaande component, selectief alleen niet-financiele metrics
+- `AnimatedCard`, `AnimatedNumber`, `AnimatedRing` -- ongewijzigd
 
-**4. UI - Periodeselector**:
-- Geplaatst in de header, links van de percentage-indicator
-- Compacte `<select>` of een mini pillbar met P1-P6
-- Stijl: `bg-muted/50 rounded-lg text-xs` conform bestaande toggle-styling
-- Gebruik een native `<select>` element gestyled met de bestaande design tokens voor compactheid
-
-**5. Data-transformatie**:
-- `combinedData` wordt dynamisch aangepast: voor de geselecteerde periode wordt het splitpunt tussen `historical` en `projected` verschoven
-- `useMemo` om de getransformeerde data te cachen op basis van `selectedPeriod`
-- Versus-items lezen hun waarden uit het juiste datapunt
-
-**6. Subtitel update**:
-- Bij P6 (huidig): "Huidige actieve plaatsingen"
-- Bij andere periodes: "Periode X - historisch overzicht"
+### 5. Teamlid selector
+- Compacte dropdown (`<select>`) of clickable avatar-rij bovenaan
+- Toont naam + rang van elk teamlid
+- Bij selectie worden alle vergelijkingsdata direct bijgewerkt
 
