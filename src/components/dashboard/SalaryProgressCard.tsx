@@ -178,19 +178,10 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
           >
             <span className="text-xs text-muted-foreground font-medium">€</span>
           </div>
-          <div
-            className="absolute -bottom-10 transform -translate-x-1/2 bg-foreground text-background text-xs font-medium px-3 py-1.5 rounded-md transition-all duration-1000 ease-out whitespace-nowrap"
-            style={{
-              left: isVisible ? `${progress}%` : '0%',
-              opacity: isVisible ? 1 : 0,
-            }}
-          >
-            € {formatCurrency(currentMiddleValue)}
-          </div>
         </div>
 
         {/* Progress range labels */}
-        <div className="flex justify-between text-xs text-muted-foreground mt-12 mb-6">
+        <div className="flex justify-between text-xs text-muted-foreground mt-4 mb-6">
           <span>€ {formatCurrency(rangeMin)}</span>
           <span>€ {formatCurrency(rangeMax)}</span>
         </div>
