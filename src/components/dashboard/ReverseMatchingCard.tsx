@@ -266,32 +266,34 @@ function DetailView({ delay }: { delay: number }) {
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-2 block">
           Conversie funnel
         </span>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {kpis.map((kpi, i) => {
             const width =
               i === 0 ? 100 : Math.round((kpi.value / kpis[0].value) * 100);
             return (
-              <div key={kpi.key} className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground w-24 shrink-0">
-                  {kpi.label}
-                </span>
-                <div className="flex-1 h-5 bg-secondary/30 rounded-full overflow-hidden relative">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: `${width}%`,
-                      background: `linear-gradient(to right, hsl(var(--${kpi.color}) / 0.4), hsl(var(--${kpi.color}) / 0.8))`,
-                    }}
-                  />
-                </div>
-                <span className="text-xs font-semibold text-foreground tabular-nums w-8 text-right">
-                  {kpi.value}
-                </span>
-                {i > 0 && (
-                  <span className="text-[10px] text-muted-foreground tabular-nums w-12 text-right">
-                    {conversions[i - 1].rate}%
+              <div key={kpi.key}>
+                <div className="flex items-baseline justify-between mb-1">
+                  <span className="text-xs text-muted-foreground">
+                    {kpi.label}
                   </span>
-                )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-foreground tabular-nums">
+                      {kpi.value}
+                    </span>
+                    {i > 0 && (
+                      <span className="text-[10px] text-muted-foreground tabular-nums">
+                        {conversions[i - 1].rate}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div
+                  className="h-7 rounded-md transition-all duration-700"
+                  style={{
+                    width: `${width}%`,
+                    background: `linear-gradient(to right, hsl(var(--${kpi.color}) / 0.3), hsl(var(--${kpi.color}) / 0.7))`,
+                  }}
+                />
               </div>
             );
           })}
