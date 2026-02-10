@@ -103,12 +103,20 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
               {mode === 'salary' ? "Voortgang naar volgende salarisstap" : "Voortgang naar volgende bonusstap"}
             </h3>
           </div>
-          <button
-            onClick={() => setMode(mode === 'salary' ? 'bonus' : 'salary')}
-            className="p-1.5 rounded-md bg-muted/50 text-muted-foreground hover:text-foreground opacity-60 hover:opacity-100 transition-all"
-          >
-            {mode === 'salary' ? <DollarSign className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
-          </button>
+          <div className="flex rounded-md bg-muted/50 p-0.5 gap-0.5 opacity-60 hover:opacity-100 transition-opacity">
+            <button
+              onClick={() => setMode('salary')}
+              className={`p-1 rounded transition-colors ${mode === 'salary' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setMode('bonus')}
+              className={`p-1 rounded transition-colors ${mode === 'bonus' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              <DollarSign className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Progress percentage */}
