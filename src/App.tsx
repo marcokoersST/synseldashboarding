@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Vergelijking from "./pages/Vergelijking";
+import VergelijkingOverview from "./pages/VergelijkingOverview";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import SuperAdminEmulate from "./pages/SuperAdminEmulate";
@@ -47,6 +48,7 @@ const App = () => (
         <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">Laden...</div>}>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/vergelijking" element={<VergelijkingOverview />} />
             <Route path="/vergelijking/:memberId" element={<Vergelijking />} />
             <Route path="/manager-dashboard" element={<ManagerDashboard />} />
             <Route path="/super-admin" element={<SuperAdminDashboard />} />

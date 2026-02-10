@@ -12,6 +12,7 @@ interface ComparisonColumnProps {
   rank: number;
   isCurrentUser: boolean;
   delay?: number;
+  hideRevenue?: boolean;
 }
 
 export function ComparisonColumn({
@@ -19,6 +20,7 @@ export function ComparisonColumn({
   rank,
   isCurrentUser,
   delay = 0,
+  hideRevenue = false,
 }: ComparisonColumnProps) {
   const revenueProgress = (member.revenue / REVENUE_GOAL) * 100;
 
@@ -97,27 +99,29 @@ export function ComparisonColumn({
       </div>
 
       {/* Revenue Progress */}
-      <div className="mb-6 p-4 rounded-lg bg-muted/30">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-muted-foreground">Omzet</span>
-          <span className="text-lg font-bold text-foreground">
-            <AnimatedNumber
-              value={member.revenue}
-              delay={delay + 200}
-              formatFn={formatCurrency}
-            />
-          </span>
+      {!hideRevenue && (
+        <div className="mb-6 p-4 rounded-lg bg-muted/30">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-muted-foreground">Omzet</span>
+            <span className="text-lg font-bold text-foreground">
+              <AnimatedNumber
+                value={member.revenue}
+                delay={delay + 200}
+                formatFn={formatCurrency}
+              />
+            </span>
+          </div>
+          <AnimatedProgress
+            value={revenueProgress}
+            delay={delay + 250}
+            className="h-3"
+          />
+          <div className="flex justify-between mt-1.5 text-xs text-muted-foreground">
+            <span>€0</span>
+            <span>Doel: €2M</span>
+          </div>
         </div>
-        <AnimatedProgress
-          value={revenueProgress}
-          delay={delay + 250}
-          className="h-3"
-        />
-        <div className="flex justify-between mt-1.5 text-xs text-muted-foreground">
-          <span>€0</span>
-          <span>Doel: €2M</span>
-        </div>
-      </div>
+      )}
 
       {/* Metrics Grid */}
       <div className="space-y-4">
@@ -152,12 +156,14 @@ export function ComparisonColumn({
           suffix="%"
           delay={delay + 550}
         />
-        <MetricItem
-          label="Salaris voortgang"
-          value={member.metrics.salaryProgress}
-          suffix="%"
-          delay={delay + 600}
-        />
+        {!hideRevenue && (
+          <MetricItem
+            label="Salaris voortgang"
+            value={member.metrics.salaryProgress}
+            suffix="%"
+            delay={delay + 600}
+          />
+        )}
       </div>
     </AnimatedCard>
   );
