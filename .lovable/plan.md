@@ -1,47 +1,16 @@
 
 
-# Toggle styling aanpassen in SalaryProgressCard
+# Tooltip onder de progressiebalk verwijderen
 
 ## Wat verandert
 
-De toggle-knoppen ("Salaris" / "Bonus") worden subtieler en naar rechtsboven verplaatst.
+Het zwarte tooltip-label ("€ 420.000") dat onder de progressiebalk zweeft wordt verwijderd. De circulaire '€' indicator op de balk blijft behouden.
 
-## Concrete wijzigingen
+## Technische wijziging
 
 ### Bestand: `src/components/dashboard/SalaryProgressCard.tsx`
 
-1. **Toggle positie**: Verplaats de toggle-container naar de rechterbovenhoek van de card met `absolute` positioning (top-right), zodat deze boven de header zweeft in plaats van ernaast in de flex-row.
+Verwijder het `div`-element met de class `absolute -bottom-10` dat het zwarte tooltip-label rendert (regels ~155-163 in het huidige bestand). Dit is het element met `bg-foreground text-background` styling dat de waarde "€ 420.000" toont.
 
-2. **Minder prominent maken**:
-   - Voeg `opacity-60 hover:opacity-100 transition-opacity` toe aan de toggle-container
-   - Verklein de tekst van `text-xs` naar `text-[10px]`
-   - Verklein de padding van `px-3 py-1` naar `px-2 py-0.5`
+Daarnaast wordt de `mt-12` spacing onder de progressiebalk verkleind naar `mt-4`, aangezien de extra ruimte alleen nodig was voor het tooltip-label.
 
-### Voorbeeld van de wijziging
-
-```text
-// Huidige header structuur:
-<div className="flex items-center justify-between mb-4">
-  <div className="flex items-center gap-2">
-    {icon + titel}
-  </div>
-  <div className="flex rounded-lg bg-muted p-0.5 gap-0.5">
-    {toggle buttons}
-  </div>
-</div>
-
-// Nieuw: card wrapper wordt relative, toggle wordt absolute top-right
-<div className="bg-card rounded-xl p-6 border border-border relative">
-  ...
-  <div className="absolute top-3 right-3 flex rounded-md bg-muted/50 p-0.5 gap-0.5 opacity-60 hover:opacity-100 transition-opacity">
-    <button className="px-2 py-0.5 text-[10px] font-medium rounded ...">Salaris</button>
-    <button className="px-2 py-0.5 text-[10px] font-medium rounded ...">Bonus</button>
-  </div>
-  ...
-  // Header wordt simpeler zonder justify-between
-  <div className="flex items-center gap-2 mb-4">
-    {icon + titel}
-  </div>
-```
-
-Geen andere bestanden worden gewijzigd.
