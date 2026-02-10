@@ -91,32 +91,32 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-6 border border-border">
+      <div className="bg-card rounded-xl p-6 border border-border relative">
+        {/* Toggle - subtle, top-right */}
+        <div className="absolute top-3 right-3 flex rounded-md bg-muted/50 p-0.5 gap-0.5 opacity-60 hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => setMode('salary')}
+            className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${isSalary ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Salaris
+          </button>
+          <button
+            onClick={() => setMode('bonus')}
+            className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${!isSalary ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Bonus
+          </button>
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            {isSalary
-              ? <TrendingUp className="w-5 h-5 text-muted-foreground" />
-              : <DollarSign className="w-5 h-5 text-muted-foreground" />
-            }
-            <h3 className="text-base font-medium text-foreground">
-              {isSalary ? "Voortgang naar volgende salarisstap" : "Voortgang naar volgende bonusstap"}
-            </h3>
-          </div>
-          <div className="flex rounded-lg bg-muted p-0.5 gap-0.5">
-            <button
-              onClick={() => setMode('salary')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${isSalary ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              Salaris
-            </button>
-            <button
-              onClick={() => setMode('bonus')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${!isSalary ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              Bonus
-            </button>
-          </div>
+        <div className="flex items-center gap-2 mb-4">
+          {isSalary
+            ? <TrendingUp className="w-5 h-5 text-muted-foreground" />
+            : <DollarSign className="w-5 h-5 text-muted-foreground" />
+          }
+          <h3 className="text-base font-medium text-foreground">
+            {isSalary ? "Voortgang naar volgende salarisstap" : "Voortgang naar volgende bonusstap"}
+          </h3>
         </div>
 
         {/* Progress percentage */}
