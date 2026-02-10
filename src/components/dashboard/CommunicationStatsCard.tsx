@@ -133,8 +133,8 @@ function useDetailToggle() {
       const newMode = !isDetailMode;
       setIsDetailMode(newMode);
       setDisplayMode(newMode);
-      setTimeout(() => setIsTransitioning(false), 50);
-    }, 150);
+      setTimeout(() => setIsTransitioning(false), 120);
+    }, 300);
   };
 
   return { isDetailMode, isTransitioning, displayMode, toggle };
@@ -220,8 +220,8 @@ export function CallsStatsCard({ delay = 0 }: CardProps) {
         </div>
 
         <div className={cn(
-          "flex-1 transition-all duration-200 ease-out",
-          isTransitioning ? "opacity-0 scale-[0.98] translate-y-1" : "opacity-100 scale-100 translate-y-0"
+          "flex-1 transition-all duration-400 ease-in-out",
+          isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
           {displayMode ? <CallsDetailView delay={delay} /> : <CallsOverviewView delay={delay} />}
         </div>
@@ -354,8 +354,8 @@ export function EmailStatsCard({ delay = 0 }: CardProps) {
         </div>
 
         <div className={cn(
-          "flex-1 transition-all duration-200 ease-out",
-          isTransitioning ? "opacity-0 scale-[0.98] translate-y-1" : "opacity-100 scale-100 translate-y-0"
+          "flex-1 transition-all duration-400 ease-in-out",
+          isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
           {displayMode ? <MailDetailView delay={delay} /> : <MailOverviewView delay={delay} />}
         </div>
