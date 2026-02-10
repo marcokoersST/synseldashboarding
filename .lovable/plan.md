@@ -1,47 +1,88 @@
 
 
-# Conversie Funnel Layout Verbeteren
+# Toggle Modus: Salaris / Bonus in SalaryProgressCard
 
-## Probleem
+## Overzicht
 
-De huidige conversie funnel in de Detail-modus van de Reverse Matching tegel gebruikt afgeronde (rounded-full) balken met een aparte track-achtergrond, wat er niet aantrekkelijk uitziet.
+De SalaryProgressCard krijgt een toggle waarmee je kunt wisselen tussen de bestaande **Salaris-modus** en een nieuwe **Bonus-modus**. Omdat de bonus afhankelijk is van de behaalde marge, draait de bonus-modus om marge-data in plaats van omzet.
 
-## Nieuwe layout
+## Bonus-structuur (uit screenshots)
 
-De funnel krijgt een strakker ontwerp:
+Twee bonus-types, beide gebaseerd op marge:
 
-- **Geen afgeronde track-achtergrond** -- balken staan direct op de kaartachtergrond zonder een grijze container eromheen
-- **Subtiel afgeronde hoeken** (`rounded-md` i.p.v. `rounded-full`) voor een modernere look
-- **Grotere balk-hoogte** (`h-7` i.p.v. `h-5`) zodat de bars prominenter zijn
-- **Label links uitgelijnd** boven de balk (niet ernaast), met het getal rechts op dezelfde regel
-- **Conversiepercentage als badge** rechts van het getal voor de 2e en 3e rij
-- Bars groeien proportioneel: eerste balk = 100% breedte, volgende balken schalen op basis van hun waarde t.o.v. de eerste
+**Omzetbonus (per 4-wekelijkse periode, op basis van marge):**
+
+| Marge per periode | Bonus |
+|---|---|
+| 10.000 | 200 |
+| 20.000 | 300 |
+| 30.000 | 500 |
+| 40.000 | 700 |
+| 50.000 | 1.000 |
+| 60.000 | 1.500 |
+| 80.000 | 2.500 |
+| 100.000 | 4.000 |
+| 120.000 | 6.000 |
+| 140.000 | 8.000 |
+| 160.000 | 10.000 |
+
+**Targetbonus (per jaar, op basis van jaarmarge):**
+
+| Jaarmarge | Bonus per jaar |
+|---|---|
+| 250.000 | 1.000 |
+| 500.000 | 3.000 |
+| 750.000 | 7.500 |
+| 1.000.000 | 15.000 |
+| 1.250.000 | 22.500 |
+| 1.500.000 | 30.000 |
+| 2.000.000 | 40.000 |
+
+## Wat verandert visueel
+
+De card behoudt exact dezelfde layout (header, groot percentage, subtitel, drie kolommen, progress bar, onderste sectie), maar de inhoud wisselt:
+
+### Header
+- Toggle-pills "Salaris" / "Bonus" naast de titel
+- Icoon wisselt: TrendingUp (salaris) vs DollarSign (bonus)
+- Titel: "Voortgang naar volgende salarisstap" vs "Voortgang naar volgende bonusstap"
+
+### Groot percentage + subtitel
+- Salaris: "68.0% van de weg" + "Nog X omzet nodig"
+- Bonus: "X% van de weg" + "Nog X marge nodig voor volgende bonusstap"
+
+### Drie kolommen
+- Salaris: Huidig salaris | Huidige omzet (13 periodes) | Volgend salaris
+- Bonus: Huidige periodebonus | Huidige periodemarge | Volgende periodebonus
+
+### Progress bar
+- Salaris: omzet-drempels (250k - 500k)
+- Bonus: marge-drempels van de huidige naar volgende omzetbonus-trede
+
+### Onderste sectie (onder de streep)
+- Salaris: Huidig jaarsalaris | Volgend jaarsalaris
+- Bonus: Huidige targetbonus (jaar) | Volgende targetbonus (jaar) + bijbehorende marge-drempel
 
 ## Technische details
 
-### Bestand: `src/components/dashboard/ReverseMatchingCard.tsx`
+### Bestand: `src/components/dashboard/SalaryProgressCard.tsx`
 
-Alleen de funnel-sectie in `DetailView` (regels 264-298) wordt aangepast:
+1. **Imports toevoegen**: `useState` uit React, `DollarSign` uit lucide-react
+2. **State**: `const [mode, setMode] = useState<'salary' | 'bonus'>('salary')`
+3. **Bonus mock data** (hardcoded in component):
+   - `omzetBonusTiers` array met de 11 tredes uit de tabel hierboven
+   - `targetBonusTiers` array met de 7 tredes
+   - Huidige periodemarge: 45.000 (past bij bestaande margin data in consultantData)
+   - Huidige jaarmarge: 420.000 (consistent met bestaande omzetdata)
+4. **Berekeningen bonus-modus**:
+   - Zoek huidige en volgende omzetbonus-trede op basis van periodemarge
+   - Bereken progress als percentage tussen de twee drempels
+   - Zoek huidige en volgende targetbonus op basis van jaarmarge
+5. **Toggle UI**: Twee kleine pill-buttons in de header, gestyled met bestaande Tailwind klassen (`bg-muted`, `bg-primary text-primary-foreground` voor actief)
+6. **Conditioneel renderen**: Alle labels, waarden en iconen wisselen op basis van `mode`, de JSX structuur blijft identiek
+7. **Progress bar gradient**: Salaris = `from-gold to-success` (bestaand), Bonus = `from-gold to-primary` (subtiel verschil)
 
-```text
-// Per KPI-rij:
-<div>
-  <div className="flex items-baseline justify-between mb-1">
-    <span className="text-xs text-muted-foreground">{label}</span>
-    <div className="flex items-center gap-2">
-      <span className="text-xs font-semibold">{value}</span>
-      {conversion && <span className="text-[10px] text-muted-foreground">{rate}%</span>}
-    </div>
-  </div>
-  <div
-    className="h-7 rounded-md transition-all duration-700"
-    style={{
-      width: `${proportionalWidth}%`,
-      background: `linear-gradient(to right, hsl(var(--color) / 0.3), hsl(var(--color) / 0.7))`
-    }}
-  />
-</div>
-```
+### Geen andere bestanden worden gewijzigd
 
-Geen andere secties of bestanden worden gewijzigd.
+De data blijft consistent: de marge-gegevens in de bonus-modus sluiten aan bij de `marginPerPlacement` en `detavastValues` data die al bestaan in `consultantData.ts`.
 
