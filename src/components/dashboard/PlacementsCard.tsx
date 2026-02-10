@@ -137,13 +137,13 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             {/* Toggle */}
             <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
               <button
-                onClick={() => setDetailMode(false)}
+                onClick={() => setDetailMode(d => !d)}
                 className={`p-1.5 rounded-md transition-all duration-200 ${!detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 <List size={14} />
               </button>
               <button
-                onClick={() => setDetailMode(true)}
+                onClick={() => setDetailMode(d => !d)}
                 className={`p-1.5 rounded-md transition-all duration-200 ${detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 <BarChart3 size={14} />
