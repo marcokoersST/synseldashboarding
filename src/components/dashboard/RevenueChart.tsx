@@ -1,7 +1,17 @@
+import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { useNavigate } from "react-router-dom";
+
+const LEGEND_GROUPS: Record<string, string[]> = {
+  werkelijk: ["werkelijk"],
+  geprojecteerd: ["geprojecteerd"],
+  minimumNorm: ["minimumNorm"],
+  fastLane: ["fastLane"],
+  executiveLane: ["executiveLane"],
+  bestPerformer: ["bestPerformer", "bestPerformerProj"],
+};
 
 const data = [
   { month: "mei", werkelijk: 28000, geprojecteerd: null, minimumNorm: 20000, fastLane: 34000, executiveLane: 40000, bestPerformer: 32000, bestPerformerProj: null },
@@ -93,10 +103,25 @@ interface RevenueChartProps {
 export function RevenueChart({ delay = 0 }: RevenueChartProps) {
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
   const navigate = useNavigate();
+  const [activeLine, setActiveLine] = useState<string | null>(null);
+
+  const getLineOpacity = (dataKey: string): number => {
+    if (!activeLine) return 1;
+    return LEGEND_GROUPS[activeLine]?.includes(dataKey) ? 1 : 0.3;
+  };
+
+  const legendItems: { key: string; label: string; swatch: React.ReactNode }[] = [
+    { key: "werkelijk", label: "Werkelijk", swatch: <div className="w-4 h-[2.5px] rounded-full" style={{ backgroundColor: 'hsl(var(--teal))' }} /> },
+    { key: "geprojecteerd", label: "Geprojecteerd", swatch: <div className="w-4 h-[2.5px] rounded-full" style={{ background: 'repeating-linear-gradient(90deg, hsl(var(--primary)) 0 4px, transparent 4px 8px)' }} /> },
+    { key: "minimumNorm", label: "Minimum Norm", swatch: <div className="w-4 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.minimumNorm} 0 2px, transparent 2px 5px)` }} /> },
+    { key: "fastLane", label: "Fast Lane", swatch: <div className="w-4 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.fastLane} 0 2px, transparent 2px 5px)` }} /> },
+    { key: "executiveLane", label: "Executive Lane", swatch: <div className="w-4 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.executiveLane} 0 2px, transparent 2px 5px)` }} /> },
+    { key: "bestPerformer", label: "Best Performer", swatch: <div className="w-4 h-[2px] rounded-full" style={{ backgroundColor: COLORS.bestPerformer }} /> },
+  ];
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border">
+      <div className="bg-card rounded-xl p-5 border border-border" onClick={() => setActiveLine(null)}>
         <div className="flex flex-col gap-3 mb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -105,32 +130,21 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
             </div>
           </div>
 
-          {/* Legend - two rows */}
+          {/* Legend - interactive */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-[2.5px] rounded-full" style={{ backgroundColor: 'hsl(var(--teal))' }} />
-              <span className="text-[11px] text-muted-foreground">Werkelijk</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-[2.5px] rounded-full" style={{ background: 'repeating-linear-gradient(90deg, hsl(var(--primary)) 0 4px, transparent 4px 8px)' }} />
-              <span className="text-[11px] text-muted-foreground">Geprojecteerd</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.minimumNorm} 0 2px, transparent 2px 5px)` }} />
-              <span className="text-[11px] text-muted-foreground">Minimum Norm</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.fastLane} 0 2px, transparent 2px 5px)` }} />
-              <span className="text-[11px] text-muted-foreground">Fast Lane</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.executiveLane} 0 2px, transparent 2px 5px)` }} />
-              <span className="text-[11px] text-muted-foreground">Executive Lane</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-[2px] rounded-full" style={{ backgroundColor: COLORS.bestPerformer }} />
-              <span className="text-[11px] text-muted-foreground">Best Performer</span>
-            </div>
+            {legendItems.map((item) => (
+              <div
+                key={item.key}
+                className="flex items-center gap-1.5 cursor-pointer transition-opacity duration-300 ease-in-out"
+                style={{ opacity: !activeLine || activeLine === item.key ? 1 : 0.5 }}
+                onClick={(e) => { e.stopPropagation(); setActiveLine(activeLine === item.key ? null : item.key); }}
+              >
+                {item.swatch}
+                <span className={`text-[11px] transition-all duration-300 ${activeLine === item.key ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                  {item.label}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -153,13 +167,13 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
               <Tooltip content={<CustomTooltip onNavigate={() => navigate("/vergelijking/1")} />} />
 
               {/* Minimum Norm - gray dotted thin */}
-              <Line type="monotone" dataKey="minimumNorm" stroke={COLORS.minimumNorm} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} />
+              <Line type="monotone" dataKey="minimumNorm" stroke={COLORS.minimumNorm} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} strokeOpacity={getLineOpacity("minimumNorm")} style={{ transition: "stroke-opacity 300ms ease" }} />
 
               {/* Fast Lane - orange dotted thin */}
-              <Line type="monotone" dataKey="fastLane" stroke={COLORS.fastLane} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} />
+              <Line type="monotone" dataKey="fastLane" stroke={COLORS.fastLane} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} strokeOpacity={getLineOpacity("fastLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
 
               {/* Executive Lane - purple dotted thin */}
-              <Line type="monotone" dataKey="executiveLane" stroke={COLORS.executiveLane} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} />
+              <Line type="monotone" dataKey="executiveLane" stroke={COLORS.executiveLane} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} strokeOpacity={getLineOpacity("executiveLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
 
               {/* Best Performer actual - pink solid medium */}
               <Line
@@ -167,11 +181,13 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
                 dataKey="bestPerformer"
                 stroke={COLORS.bestPerformer}
                 strokeWidth={2}
-                dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 3 }}
+                dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("bestPerformer") }}
                 activeDot={{ r: 5, cursor: "pointer" }}
                 connectNulls={false}
                 cursor="pointer"
                 onClick={() => navigate("/vergelijking/1")}
+                strokeOpacity={getLineOpacity("bestPerformer")}
+                style={{ transition: "stroke-opacity 300ms ease" }}
               />
 
               {/* Best Performer projected - pink dashed medium */}
@@ -181,11 +197,13 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
                 stroke={COLORS.bestPerformer}
                 strokeWidth={2}
                 strokeDasharray="6 4"
-                dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 3 }}
+                dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("bestPerformerProj") }}
                 activeDot={{ r: 5, cursor: "pointer" }}
                 connectNulls={false}
                 cursor="pointer"
                 onClick={() => navigate("/vergelijking/1")}
+                strokeOpacity={getLineOpacity("bestPerformerProj")}
+                style={{ transition: "stroke-opacity 300ms ease" }}
               />
 
               {/* Werkelijk - teal solid thick */}
@@ -194,12 +212,13 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
                 dataKey="werkelijk"
                 stroke="hsl(var(--teal))"
                 strokeWidth={2.5}
-                dot={{ fill: 'hsl(var(--teal))', strokeWidth: 0, r: 4 }}
+                dot={{ fill: 'hsl(var(--teal))', strokeWidth: 0, r: 4, fillOpacity: getLineOpacity("werkelijk") }}
                 activeDot={{ r: 6, className: "animate-pulse-subtle" }}
                 connectNulls={false}
                 strokeDasharray={isVisible ? "0" : "2000"}
                 strokeDashoffset={isVisible ? "0" : "2000"}
-                style={{ transition: "stroke-dasharray 2s ease-out, stroke-dashoffset 2s ease-out" }}
+                strokeOpacity={getLineOpacity("werkelijk")}
+                style={{ transition: "stroke-dasharray 2s ease-out, stroke-dashoffset 2s ease-out, stroke-opacity 300ms ease" }}
               />
 
               {/* Geprojecteerd - primary dashed thick */}
@@ -209,10 +228,11 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
                 stroke="hsl(var(--primary))"
                 strokeWidth={2.5}
                 strokeDasharray={isVisible ? "8 4" : "2000"}
-                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4 }}
+                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4, fillOpacity: getLineOpacity("geprojecteerd") }}
                 activeDot={{ r: 6, className: "animate-pulse-subtle" }}
                 connectNulls={false}
-                style={{ transition: "stroke-dasharray 2s ease-out 0.5s" }}
+                strokeOpacity={getLineOpacity("geprojecteerd")}
+                style={{ transition: "stroke-dasharray 2s ease-out 0.5s, stroke-opacity 300ms ease" }}
               />
             </LineChart>
           </ResponsiveContainer>
