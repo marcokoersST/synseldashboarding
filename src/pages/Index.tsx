@@ -63,16 +63,15 @@ const Index = () => {
             <div className="space-y-4">
               <RevenueTargetCard delay={600} />
               <PerformanceScoreCard delay={700} />
-              <AINpsCard delay={800} />
             </div>
           </div>
           
           {/* Reverse Matching Row */}
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="col-span-2">
-              <ReverseMatchingCard delay={820} />
+              <ReverseMatchingCard delay={800} />
             </div>
-            <div />
+            <AINpsCard delay={820} />
           </div>
 
           {/* Communication Stats Row */}
