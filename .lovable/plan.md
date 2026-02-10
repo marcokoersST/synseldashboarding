@@ -1,18 +1,14 @@
 
-# Super Admin Dashboard - Implementatieplan
+
+# TV Dashboards - Implementatieplan
 
 ## Overzicht
 
-Er wordt een nieuwe "Super Admin Dashboard" pagina toegevoegd in de sidebar, met twee hoofdfuncties:
-
-1. **Overzichtsdashboard** - Toont alle data van alle consultants over alle afdelingen (Engineering, Operators, Monteurs)
-2. **User Emulatie** - Kies een willekeurige user (consultant of manager) en bekijk exact hun dashboard alsof je als die persoon bent ingelogd
+Er wordt een nieuw hoofdmenu-item "TV Dashboards" toegevoegd in de sidebar met 4 sub-dashboards. Elk dashboard is geoptimaliseerd voor weergave op een 4K TV (16:9) en heeft een fullscreen-modus waarbij de sidebar verdwijnt.
 
 ---
 
 ## Navigatie
-
-De sidebar krijgt een derde hoofdmenu-item met een `Shield` icoon:
 
 ```text
 +----------------------------+
@@ -23,9 +19,15 @@ De sidebar krijgt een derde hoofdmenu-item met een `Shield` icoon:
 |                            |
 |  Manager Dashboard         |
 |                            |
-|  Super Admin          NIEUW|
+|  Super Admin               |
 |     Overzicht              |
 |     User Emulatie          |
+|                            |
+|  TV Dashboards        NIEUW|
+|     Sales Funnel (Week)    |
+|     Sales Funnel (Periode) |
+|     Beker Dashboard        |
+|     Gedetacheerden         |
 +----------------------------+
 |  [User Profile]            |
 +----------------------------+
@@ -33,65 +35,153 @@ De sidebar krijgt een derde hoofdmenu-item met een `Shield` icoon:
 
 ---
 
-## Pagina 1: Super Admin Overzicht
+## Fullscreen TV-modus
 
-Toont geaggregeerde data over drie afdelingen: **Engineering**, **Operators** en **Monteurs**.
+Elk TV dashboard krijgt een knop rechtsboven ("TV Modus" met een `Monitor` icoon). Bij klikken:
+- Sidebar verdwijnt (`ml-64` wordt `ml-0`)
+- TopBar verdwijnt
+- Content vult het hele scherm (16:9, 3840x2160 optimaal)
+- Een kleine "Exit" knop zweeft in de hoek om terug te gaan
+- Gebruikt de browser Fullscreen API (`document.documentElement.requestFullscreen()`)
 
-### Tegels:
-
-**Rij 1 - Afdelings KPI's (3 kolommen)**
-| Tegel | Inhoud |
-|-------|--------|
-| Engineering | Totaal omzet, aantal consultants, actieve plaatsingen |
-| Operators | Totaal omzet, aantal consultants, actieve plaatsingen |
-| Monteurs | Totaal omzet, aantal consultants, actieve plaatsingen |
-
-Elke tegel toont een mini trendlijn en vergelijking met vorige periode.
-
-**Rij 2 - Bedrijfsbrede Ranglijst (volledige breedte)**
-- Alle consultants uit alle afdelingen in een ranglijst
-- Filterbaar per afdeling via tabs
-- Hergebruik van het `ManagerRevenueLeaderboard` component met extra afdelings-filter
-
-**Rij 3 - Totale Plaatsingen (2 kolommen) + Omzet Verdeling (1 kolom)**
-- Plaatsingen chart over alle afdelingen
-- Pie/donut chart met omzet verdeling per afdeling
+Er wordt een gedeeld `TVDashboardLayout` wrapper-component gemaakt dat deze logica afhandelt.
 
 ---
 
-## Pagina 2: User Emulatie
+## Dashboard 1: Weekweergave Sales Funnel
 
-Een selectiescherm bovenaan waar je een user kiest, waarna het exacte dashboard van die user eronder verschijnt.
-
-### Werking:
-
-1. **User Selector** - Dropdown/zoekbalk bovenaan met alle consultants en managers
-2. **Rol detectie** - Op basis van de geselecteerde user wordt automatisch het juiste dashboard getoond:
-   - Als de user een **consultant** is: toon het normale Dashboard (Index pagina) met hun data
-   - Als de user een **manager** is: toon het Manager Dashboard met hun team data
-3. **Emulatie Banner** - Gele/oranje banner bovenaan die aangeeft dat je als een andere user kijkt, met een knop om terug te gaan
+Route: `/tv/sales-funnel-week`
 
 ```text
-+------------------------------------------------------------------+
-|  [!] Je bekijkt het dashboard als: Sophie de Vries  [Stoppen]    |
-+------------------------------------------------------------------+
-|                                                                    |
-|  [Exact hetzelfde dashboard als wat Sophie ziet]                  |
-|                                                                    |
-+------------------------------------------------------------------+
++------------------------------------------------------------------------+
+|  Weekweergave Sales Funnel                            [TV Modus]       |
++------------------------------------------------------------------------+
+|                                                                         |
+|  +----------+ +--------+ +-----------+ +-----------+ +----------+ +---+|
+|  |Inschrijv.| |Intakes | |Acquisities| |Voorstellen| |Gesprekken| |Pl.||
+|  |    42     | |   28   | |    15     | |    22     | |    18    | | 6 ||
+|  | +12% ▲   | | +5% ▲  | |  -3% ▼   | |  +8% ▲   | |  +2% ▲  | |+1 ||
+|  +----------+ +--------+ +-----------+ +-----------+ +----------+ +---+|
+|                                                                         |
+|  +----------------------------------+ +--------------------------------+|
+|  | Kandidaten in Procedure          | | Belstatistieken                ||
+|  |                                  | |                                ||
+|  | 84 kandidaten actief             | | Uitgaand: 342 gesprekken       ||
+|  | [Voortgangsbalk per fase]        | | Totale gesprekstijd: 48u 32m   ||
+|  |                                  | | [Staafdiagram per dag]         ||
+|  +----------------------------------+ +--------------------------------+|
++------------------------------------------------------------------------+
 ```
+
+**Tegels:**
+- 6 grote KPI-kaarten in een rij: Inschrijvingen, Intakes, Acquisities, Voorstellen, Gesprekken, Plaatsingen
+- Kandidaten in Procedure (met fase-verdeling)
+- Belstatistieken (uitgaande gesprekken + totale gesprekstijd, per dag als staafdiagram)
 
 ---
 
-## Data Uitbreiding
+## Dashboard 2: Periodeweergave Sales Funnel
 
-De `managerData.ts` wordt uitgebreid met afdelingen:
+Route: `/tv/sales-funnel-period`
 
-| Afdeling | Team ID | Consultants |
-|----------|---------|-------------|
-| Engineering | dept-engineering | Sophie, Thomas, Emma, Jij, Lucas, Anna |
-| Operators | dept-operators | Mark, Linda, Kevin, Rianne |
-| Monteurs | dept-monteurs | 4 nieuwe consultants |
+```text
++------------------------------------------------------------------------+
+|  Periodeweergave Sales Funnel                         [TV Modus]       |
++------------------------------------------------------------------------+
+|                                                                         |
+|  +----------+ +--------+ +-----------+ +-----------+ +----------+      |
+|  |Inschrijv.| |Intakes | |Acquisities| |Voorstellen| |Gesprekken|      |
+|  |   186     | |  124   | |    68     | |    95     | |    78    |      |
+|  | vs vorige | | periode| |          | |           | |          |      |
+|  +----------+ +--------+ +-----------+ +-----------+ +----------+      |
+|                                                                         |
+|  +----------------------------------+ +--------------------------------+|
+|  | Belstatistieken                  | | Kandidaten in Procedure        ||
+|  | Uitgaand: 1.482                  | | 84 actief in pipeline          ||
+|  | Totale gesprekstijd: 210u        | | [Verdeling per fase]           ||
+|  +----------------------------------+ +--------------------------------+|
++------------------------------------------------------------------------+
+```
+
+Vergelijkbaar met Dashboard 1 maar dan over de gehele periode (zonder Plaatsingen KPI).
+
+---
+
+## Dashboard 3: Beker Dashboard (Succesroom)
+
+Route: `/tv/beker`
+
+```text
++------------------------------------------------------------------------+
+|  Beker Dashboard - Periode 6                          [TV Modus]       |
++------------------------------------------------------------------------+
+|                                                                         |
+|  +-----------------------------------+ +------------------------------+|
+|  | 👑 Omzetkoning                    | | 🏆 Plaatsingskoning          ||
+|  |                                   | |                              ||
+|  | Grootste stijgers:                | | Totaal plaatsingen:          ||
+|  | 1. Sophie de V.  +€180K  ▲       | | 1. Kevin H.     5 pl.       ||
+|  | 2. Thomas B.     +€120K  ▲       | | 2. Sophie de V. 4 pl.       ||
+|  | 3. Kevin H.      +€95K   ▲       | | 3. Mark de G.   4 pl.       ||
+|  |                                   | |                              ||
+|  | Grootste dalers:                  | | Potentiele marge:            ||
+|  | 1. Rianne W.     -€45K   ▼       | | Totaal: €2.4M               ||
+|  +-----------------------------------+ +------------------------------+|
+|                                                                         |
+|  +-----------------------------------+ +------------------------------+|
+|  | 💰 Margebaas                      | | 🎯 Gesprekken Guru           ||
+|  |                                   | |                              ||
+|  | Dealbedrag alle plaatsingen:      | | Totaal gesprekken periode:   ||
+|  | 1. Sophie de V.  €420K            | | 1. Sophie de V.  128        ||
+|  | 2. Kevin H.      €380K            | | 2. Kevin H.      115        ||
+|  | 3. Thomas B.     €310K            | | 3. Mark de G.    105        ||
+|  +-----------------------------------+ +------------------------------+|
++------------------------------------------------------------------------+
+```
+
+**4 competitie-tegels:**
+- **Omzetkoning**: Grootste stijgers + dalers in omzet
+- **Plaatsingskoning**: Ranking op aantal plaatsingen in de periode
+- **Margebaas**: Dealbedrag van alle plaatsingen opgeteld per consultant
+- **Gesprekken Guru**: Ranking op totaal aantal gesprekken in de periode
+
+Elke tegel met een kroon/trofee icoon en podium-achtige ranking (goud, zilver, brons).
+
+---
+
+## Dashboard 4: Gedetacheerden & Financieel
+
+Route: `/tv/gedetacheerden`
+
+```text
++------------------------------------------------------------------------+
+|  Gedetacheerden & Financieel Overzicht                [TV Modus]       |
++------------------------------------------------------------------------+
+|                                                                         |
+|  +-------------------+ +-------------------+ +-------------------+     |
+|  | 20 Gedetacheerd   | | 3 Nog te starten  | | 5 Gaat stoppen    |     |
+|  | Momenteel actief  | | Startdatum bekend | | Einddatum bekend  |     |
+|  +-------------------+ +-------------------+ +-------------------+     |
+|                                                                         |
+|  +--------------------------------------------------------------------+|
+|  | Momenteel Gedetacheerd (scrollbare lijst)                          ||
+|  | Naam | Bedrijf | Startdatum | Einddatum | Consultant              ||
+|  +--------------------------------------------------------------------+|
+|                                                                         |
+|  +-----------------------------------+ +------------------------------+|
+|  | Omzet Laatste 3 Periodes          | | Bonussen                     ||
+|  | P4: €1.2M | P5: €1.4M | P6: €1.6M| | Afgelopen maand: €12.500    ||
+|  | [Staafdiagram]                    | | Afgelopen 12 maanden: €148K  ||
+|  | Totale verdiensten: €4.2M         | | [Trendlijn bonussen]         ||
+|  +-----------------------------------+ +------------------------------+|
++------------------------------------------------------------------------+
+```
+
+**Tegels:**
+- 3 status-KPI's: Momenteel gedetacheerd, Nog te starten, Gaat stoppen
+- Gedetacheerden lijst (tabel met naam, bedrijf, data, consultant)
+- Omzet laatste 3 periodes (staafdiagram + totaal)
+- Bonussen (afgelopen maand + afgelopen 12 maanden met trendlijn)
 
 ---
 
@@ -101,55 +191,53 @@ De `managerData.ts` wordt uitgebreid met afdelingen:
 
 | Bestand | Beschrijving |
 |---------|--------------|
-| `src/pages/SuperAdminDashboard.tsx` | Overzichtspagina met afdelings-KPI's en ranglijst |
-| `src/pages/SuperAdminEmulate.tsx` | User emulatie pagina met selector en embedded dashboard |
-| `src/components/admin/DepartmentKPICard.tsx` | KPI tegel per afdeling |
-| `src/components/admin/CompanyLeaderboard.tsx` | Bedrijfsbrede ranglijst met afdelingsfilter |
-| `src/components/admin/UserSelector.tsx` | Zoekbare dropdown om een user te kiezen |
-| `src/components/admin/EmulationBanner.tsx` | Waarschuwingsbanner bij emulatie |
-| `src/components/admin/DepartmentRevenueChart.tsx` | Omzetverdeling per afdeling (donut chart) |
-| `src/data/adminData.ts` | Afdelingen, extra consultants voor Monteurs |
+| `src/components/tv/TVDashboardLayout.tsx` | Shared wrapper met fullscreen toggle, verbergt sidebar/topbar |
+| `src/components/tv/FullscreenButton.tsx` | TV-modus knop component |
+| `src/components/tv/SalesFunnelKPI.tsx` | Herbruikbare grote KPI-kaart voor funnel metrics |
+| `src/components/tv/CandidatesPipeline.tsx` | Kandidaten in procedure visualisatie |
+| `src/components/tv/CallStats.tsx` | Belstatistieken component |
+| `src/components/tv/CompetitionCard.tsx` | Beker/competitie tegel (koning, guru, etc.) |
+| `src/components/tv/DeployedOverview.tsx` | Gedetacheerden lijst + status KPI's |
+| `src/components/tv/RevenuePeriodsChart.tsx` | Omzet laatste 3 periodes staafdiagram |
+| `src/components/tv/BonusCard.tsx` | Bonussen overzicht |
+| `src/pages/TVSalesFunnelWeek.tsx` | Dashboard 1 pagina |
+| `src/pages/TVSalesFunnelPeriod.tsx` | Dashboard 2 pagina |
+| `src/pages/TVBekerDashboard.tsx` | Dashboard 3 pagina |
+| `src/pages/TVGedetacheerden.tsx` | Dashboard 4 pagina |
+| `src/data/tvData.ts` | Mock data voor alle TV dashboards |
 
 ### Aanpassingen Bestaande Bestanden
 
 | Bestand | Wijziging |
 |---------|-----------|
-| `src/App.tsx` | Routes `/super-admin` en `/super-admin/emulate` toevoegen |
-| `src/components/dashboard/Sidebar.tsx` | Menu-item "Super Admin" met submenu (Overzicht + User Emulatie) |
-| `src/data/managerData.ts` | Afdeling (`department`) property toevoegen aan consultants |
-| `src/pages/Index.tsx` | Optionele `userId` prop accepteren voor emulatie modus |
+| `src/App.tsx` | 4 nieuwe routes toevoegen (`/tv/*`) |
+| `src/components/dashboard/Sidebar.tsx` | "TV Dashboards" menu-item met 4 sub-items |
 
-### User Emulatie Aanpak
+### Fullscreen Logica (TVDashboardLayout)
 
-Het Index component en ManagerDashboard component krijgen een optionele `emulatedUserId` prop. Wanneer deze is ingesteld:
-- Wordt alle data gefilterd/aangepast naar die specifieke user
-- De WelcomeHeader toont de naam van de ge-emuleerde user
-- Alle metrics komen uit de data van die user
-- Er is geen interactie mogelijk met forecast doelen (read-only modus)
+Het layout-component beheert de fullscreen state:
+- `useState` voor `isFullscreen`
+- Bij activeren: `document.documentElement.requestFullscreen()` + sidebar/topbar verbergen
+- Bij deactiveren: `document.exitFullscreen()` + layout herstellen
+- Luistert naar `fullscreenchange` event voor Escape-toets
+- In fullscreen modus: witte tekst op donkere achtergrond, geoptimaliseerd voor afstand lezen
 
-### Component Structuur
+### Styling voor TV
 
-```text
-SuperAdminDashboard (/super-admin)
-+-- Sidebar
-+-- TopBar
-+-- main
-    +-- Header: "Super Admin Dashboard"
-    +-- DepartmentKPICard x3 (grid cols-3)
-    +-- CompanyLeaderboard (col-span-2) + DepartmentRevenueChart (col-span-1)
+- Grotere font-sizes in fullscreen (tekst leesbaar op afstand)
+- Hoog contrast kleuren
+- Geen hover-effecten in TV-modus (niet interactief)
+- Grid layouts geoptimaliseerd voor 16:9 verhouding
+- Animaties voor data-updates (tickers, fades)
 
-SuperAdminEmulate (/super-admin/emulate)
-+-- Sidebar
-+-- TopBar
-+-- EmulationBanner (als user geselecteerd)
-+-- UserSelector
-+-- Index of ManagerDashboard (afhankelijk van rol)
-```
+### Data Model (tvData.ts)
 
-### Styling
+Bevat mock data voor:
+- Sales funnel metrics (week + periode) met vergelijkingspercentages
+- Kandidaten pipeline per fase
+- Belstatistieken per dag/periode
+- Competitie rankings (omzet stijgers/dalers, plaatsingen, marge, gesprekken)
+- Gedetacheerden lijst met start/einddatums en status
+- Omzet per periode (laatste 3)
+- Bonus uitkeringen (maandelijks + jaarlijks)
 
-Alle componenten volgen het bestaande design systeem:
-- `bg-card rounded-xl p-5 border border-border`
-- Glassmorphism header effect
-- Emulatie banner: `bg-amber-500/10 border-amber-500/30` met waarschuwingsicoon
-- Super Admin menu-item: `Shield` icoon uit lucide-react
