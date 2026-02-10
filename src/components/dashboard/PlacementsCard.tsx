@@ -81,6 +81,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
   const [hoveredPeriod, setHoveredPeriod] = useState<string | null>(null);
   const [lockedPeriod, setLockedPeriod] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const chartClickedRef = useRef(false);
 
   const displayPeriod = lockedPeriod || hoveredPeriod || null;
   const activeData = displayPeriod ? combinedData.find(d => d.period === displayPeriod) : null;
@@ -231,7 +232,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             </div>
           </>
         ) : (
-          <div onClick={() => { setActiveLine(null); setLockedPeriod(null); }}>
+          <div onClick={() => { if (chartClickedRef.current) { chartClickedRef.current = false; return; } setActiveLine(null); setLockedPeriod(null); }}>
             {/* Interactive Legend */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-3">
               {legendItems.map((item) => (
@@ -261,7 +262,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                   onMouseLeave={() => setHoveredPeriod(null)}
                   onClick={(e: any) => {
                     if (e?.activeLabel) {
-                      e.stopPropagation?.();
+                      chartClickedRef.current = true;
                       setLockedPeriod(prev => prev === e.activeLabel ? null : e.activeLabel);
                     }
                   }}
