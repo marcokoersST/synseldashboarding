@@ -1,45 +1,45 @@
 
-# Data-notificatie toevoegen op Geld & Bonus pagina
+
+# Gesprekken & E-mail: Twee Losse Tegels + Calls per Plaatsing KPI
 
 ## Wat wordt er gedaan
 
-Op de Geld & Bonus pagina (`/consultant/geld-bonus`) wordt bij elke kaart die financiele data toont een subtiele notificatiebanner toegevoegd met de tekst:
+De huidige gecombineerde `CommunicationStatsCard` (met up/down navigatie) wordt opgesplitst in **twee aparte tegels**: een Gesprekken-tegel en een E-mail-tegel. Elk krijgt een eigen overview/detail schakelaar. Daarnaast wordt in de **detail modus van Gesprekken** een nieuwe KPI toegevoegd: **"Calls per plaatsing"**.
 
-> "Deze data is afhankelijk van Jigler BV. Wordt dagelijks geüpdatet. Zie je iets misgaan?"
-> [Help-knop]
-
-## Welke kaarten krijgen de notificatie
-
-Alle 8 kaarten op deze pagina tonen financiele data, dus allemaal:
-
-1. Bonusmeter
-2. Salarisstap
-3. Totale Verdiensten
-4. Scenario Calculator
-5. Detavast-waarde Indicator
-6. Marge per Plaatsing
-7. No-Regret Lijst
-8. Bonusranglijst
-
-## Visueel ontwerp
-
-De notificatie verschijnt als een compact bannerje onderaan elke kaart:
+## Layout wijziging op Index pagina
 
 ```text
-+------------------------------------------+
-|  Bonusmeter                              |
-|  ... kaart inhoud ...                    |
-|                                          |
-|  [i] Data via Jigler BV - dagelijks      |
-|      geüpdatet. Iets misgaan? [? Help]   |
-+------------------------------------------+
+VOOR:
+[CommunicationStats (2 kolommen)]  [ChatWidget]
+
+NA:
+[Gesprekken]  [E-mail]  [ChatWidget]
 ```
 
-- Lichtblauwe/grijze achtergrond (`bg-muted/50`)
-- Klein info-icoontje (`Info` uit lucide-react)
-- Tekst in `text-xs text-muted-foreground`
-- "Help" knop als kleine pill-button met `HelpCircle` icoon
-- De Help-knop opent een dialog met contactinformatie / instructies om een probleem te melden
+Drie kolommen, elk 1 kolom breed.
+
+## Tegel 1: Gesprekken (CallsStatsCard)
+
+### Overview modus
+- Inkomend (47), Uitgaand (89), Totale duur (4:32:15)
+
+### Detail modus
+- Vergelijkingsmatrix huidige vs beste periode (Inkomend, Uitgaand, Gemist, Bounced)
+- Contact Status breakdown (Warme relatie, Voorkeurs CP, Nieuw contact)
+- **NIEUW: Calls per plaatsing** — toont hoeveel calls er gemiddeld nodig zijn voor 1 plaatsing, huidige periode vs beste periode, met vergelijkingsbadge
+
+## Tegel 2: E-mail (EmailStatsCard)
+
+### Overview modus
+- Verstuurd (156), Ontvangen (243)
+
+### Detail modus (uitgebreid)
+- Verstuurd, Ontvangen, TTFR Score, Volgende actie
+- **Emails per procedure**: Gemiddeld aantal mails per lopende procedure
+- **Emails per acquisitie**: Gemiddeld aantal mails per acquisitie
+- **Benchmark geplaatste kandidaten**: Gem. emails bij geplaatste kandidaten vs jouw gemiddelde
+- **Reply rate**: % mails met antwoord
+- **Gem. reactietijd**: Tijd tot jouw reply
 
 ## Technische details
 
@@ -47,13 +47,20 @@ De notificatie verschijnt als een compact bannerje onderaan elke kaart:
 
 | Bestand | Wijziging |
 |---------|-----------|
-| `src/components/consultant/JiglerDataNotice.tsx` | **Nieuw** - Herbruikbaar notificatie-component met help-dialog |
-| `src/pages/consultant/GeldBonus.tsx` | Import en plaatsing van `JiglerDataNotice` in elke `CardContent` |
+| `src/components/dashboard/CommunicationStatsCard.tsx` | Refactor naar twee exports: `CallsStatsCard` en `EmailStatsCard`. Elk met eigen toggle (Maximize/Minimize). Up/down navigatie verwijderd. Calls detail krijgt extra "Calls per plaatsing" KPI. Mail detail krijgt extra verdiepende KPI's. |
+| `src/pages/Index.tsx` | Grid aanpassen van `col-span-2 + 1` naar `3 losse kolommen`. Importeert `CallsStatsCard` en `EmailStatsCard` i.p.v. `CommunicationStatsCard`. |
 
-### JiglerDataNotice component
+### Nieuwe mock data
 
-Een compact, herbruikbaar component dat:
-- De info-tekst toont over Jigler BV en dagelijkse updates
-- Een "Help" knop bevat die een Dialog opent
-- De Dialog bevat instructies zoals "Neem contact op met je manager" of "Mail support@synsel.nl"
-- Gebruikt bestaande `Dialog` en `Button` UI componenten
+**Calls — calls per plaatsing:**
+- Huidige periode: 34 calls per plaatsing (136 totaal calls / 4 plaatsingen)
+- Beste periode: 16 calls per plaatsing (131 totaal calls / 8 plaatsingen)
+
+**E-mail detail:**
+- Emails per procedure: 12.4
+- Emails per acquisitie: 8.7
+- Benchmark geplaatst: 18.2
+- Jouw gemiddelde: 14.6
+- Reply rate: 68%
+- Gem. reactietijd: 0:32:00
+
