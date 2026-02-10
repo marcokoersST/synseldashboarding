@@ -96,20 +96,20 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
         <div className="absolute top-3 right-3 flex rounded-md bg-muted/50 p-0.5 gap-0.5 opacity-60 hover:opacity-100 transition-opacity">
           <button
             onClick={() => setMode('salary')}
-            className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${isSalary ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`p-1 rounded transition-colors ${isSalary ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
           >
-            Salaris
+            <TrendingUp className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setMode('bonus')}
-            className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${!isSalary ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`p-1 rounded transition-colors ${!isSalary ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
           >
-            Bonus
+            <DollarSign className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Header */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-4 pr-16">
           {isSalary
             ? <TrendingUp className="w-5 h-5 text-muted-foreground" />
             : <DollarSign className="w-5 h-5 text-muted-foreground" />
