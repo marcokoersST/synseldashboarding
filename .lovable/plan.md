@@ -1,52 +1,47 @@
 
-# Reverse Matching naast AI NPS Score plaatsen
 
-## Wat verandert
+# Conversie Funnel Layout Verbeteren
 
-Twee layout-wijzigingen in `src/pages/Index.tsx`:
+## Probleem
 
-1. **AI NPS Score verwijderen uit de sidebar-kolom** (regel 66) van de Team Leaderboard rij
-2. **Reverse Matching rij verwijderen** (regels 70-76) en vervangen door een nieuwe gedeelde rij met beide kaarten
+De huidige conversie funnel in de Detail-modus van de Reverse Matching tegel gebruikt afgeronde (rounded-full) balken met een aparte track-achtergrond, wat er niet aantrekkelijk uitziet.
 
-## Concrete wijzigingen
+## Nieuwe layout
 
-### Bestand: `src/pages/Index.tsx`
+De funnel krijgt een strakker ontwerp:
 
-**Stap 1** — Verwijder `<AINpsCard>` uit de rechterkolom (regel 66):
+- **Geen afgeronde track-achtergrond** -- balken staan direct op de kaartachtergrond zonder een grijze container eromheen
+- **Subtiel afgeronde hoeken** (`rounded-md` i.p.v. `rounded-full`) voor een modernere look
+- **Grotere balk-hoogte** (`h-7` i.p.v. `h-5`) zodat de bars prominenter zijn
+- **Label links uitgelijnd** boven de balk (niet ernaast), met het getal rechts op dezelfde regel
+- **Conversiepercentage als badge** rechts van het getal voor de 2e en 3e rij
+- Bars groeien proportioneel: eerste balk = 100% breedte, volgende balken schalen op basis van hun waarde t.o.v. de eerste
+
+## Technische details
+
+### Bestand: `src/components/dashboard/ReverseMatchingCard.tsx`
+
+Alleen de funnel-sectie in `DetailView` (regels 264-298) wordt aangepast:
 
 ```text
-// WAS:
-<div className="space-y-4">
-  <RevenueTargetCard delay={600} />
-  <PerformanceScoreCard delay={700} />
-  <AINpsCard delay={800} />          // <-- verwijderen
-</div>
-
-// WORDT:
-<div className="space-y-4">
-  <RevenueTargetCard delay={600} />
-  <PerformanceScoreCard delay={700} />
+// Per KPI-rij:
+<div>
+  <div className="flex items-baseline justify-between mb-1">
+    <span className="text-xs text-muted-foreground">{label}</span>
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-semibold">{value}</span>
+      {conversion && <span className="text-[10px] text-muted-foreground">{rate}%</span>}
+    </div>
+  </div>
+  <div
+    className="h-7 rounded-md transition-all duration-700"
+    style={{
+      width: `${proportionalWidth}%`,
+      background: `linear-gradient(to right, hsl(var(--color) / 0.3), hsl(var(--color) / 0.7))`
+    }}
+  />
 </div>
 ```
 
-**Stap 2** — Vervang de "Reverse Matching Row" (regels 70-76) door een gedeelde rij:
+Geen andere secties of bestanden worden gewijzigd.
 
-```text
-// WAS:
-<div className="grid grid-cols-3 gap-4 mb-4">
-  <div className="col-span-2">
-    <ReverseMatchingCard delay={820} />
-  </div>
-  <div />
-</div>
-
-// WORDT:
-<div className="grid grid-cols-3 gap-4 mb-4">
-  <div className="col-span-2">
-    <ReverseMatchingCard delay={800} />
-  </div>
-  <AINpsCard delay={820} />
-</div>
-```
-
-Geen andere bestanden worden gewijzigd. Inhoud en styling van de kaarten blijven ongewijzigd.
