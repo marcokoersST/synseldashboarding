@@ -11,8 +11,9 @@ import {
   BarChart3,
   Monitor,
   Trophy,
-  Users,
-  TrendingUp
+   Users,
+   TrendingUp,
+   ListOrdered
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -60,6 +61,7 @@ const navItems: NavItem[] = [
       { icon: BarChart3, label: "Sales Funnel (Periode)", path: "/tv/sales-funnel-period" },
       { icon: Trophy, label: "Beker Dashboard", path: "/tv/beker" },
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
+      { icon: ListOrdered, label: "Ranglijsten", path: "/tv/ranglijsten" },
     ]
   },
 ];
