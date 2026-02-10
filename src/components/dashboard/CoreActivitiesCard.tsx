@@ -9,20 +9,20 @@ const activities = [
   { 
     icon: Mail, 
     label: "Emails verstuurd", 
-    value: 245, 
+    value: 156, 
     data: [
-      { value: 35, day: "Ma 13 jan" }, { value: 42, day: "Di 14 jan" }, { value: 28, day: "Wo 15 jan" }, { value: 55, day: "Do 16 jan" }, 
-      { value: 48, day: "Vr 17 jan" }, { value: 37, day: "Za 18 jan" }, { value: 52, day: "Zo 19 jan" }
+      { value: 20, day: "Ma 13 jan" }, { value: 25, day: "Di 14 jan" }, { value: 18, day: "Wo 15 jan" }, { value: 30, day: "Do 16 jan" }, 
+      { value: 27, day: "Vr 17 jan" }, { value: 16, day: "Za 18 jan" }, { value: 20, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--teal))"
   },
   { 
     icon: Phone, 
     label: "Gesprekken", 
-    value: 89, 
+    value: 136, 
     data: [
-      { value: 12, day: "Ma 13 jan" }, { value: 15, day: "Di 14 jan" }, { value: 10, day: "Wo 15 jan" }, { value: 18, day: "Do 16 jan" }, 
-      { value: 14, day: "Vr 17 jan" }, { value: 8, day: "Za 18 jan" }, { value: 12, day: "Zo 19 jan" }
+      { value: 18, day: "Ma 13 jan" }, { value: 22, day: "Di 14 jan" }, { value: 16, day: "Wo 15 jan" }, { value: 25, day: "Do 16 jan" }, 
+      { value: 21, day: "Vr 17 jan" }, { value: 14, day: "Za 18 jan" }, { value: 20, day: "Zo 19 jan" }
     ],
     color: "hsl(var(--primary))"
   },
