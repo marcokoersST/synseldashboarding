@@ -6,6 +6,7 @@ import { useState, useCallback, useRef } from "react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { List, BarChart3, TrendingUp, TrendingDown, Lock } from "lucide-react";
+import { useMemo } from "react";
 
 // Combined data for both views
 const combinedData = [
@@ -36,6 +37,15 @@ const LEGEND_GROUPS: Record<string, string[]> = {
   minimumNorm: ["minimumNorm"],
   fastLane: ["fastLane"],
   bestPerformer: ["bestPerformer", "bestPerformerProj"],
+};
+
+const periodStats: Record<number, { totaal: number; actief: number }> = {
+  1: { totaal: 8, actief: 2 },
+  2: { totaal: 12, actief: 1 },
+  3: { totaal: 16, actief: 3 },
+  4: { totaal: 19, actief: 2 },
+  5: { totaal: 23, actief: 4 },
+  6: { totaal: 28, actief: 5 },
 };
 
 // Mock candidates
@@ -80,11 +90,29 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
   const [activeLine, setActiveLine] = useState<string | null>(null);
   const [hoveredPeriod, setHoveredPeriod] = useState<string | null>(null);
   const [lockedPeriod, setLockedPeriod] = useState<string | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState(6);
   const scrollRef = useRef<HTMLDivElement>(null);
   const chartClickedRef = useRef(false);
 
   const displayPeriod = lockedPeriod || hoveredPeriod || null;
-  const activeData = displayPeriod ? combinedData.find(d => d.period === displayPeriod) : null;
+  const stats = periodStats[selectedPeriod];
+
+  const filteredData = useMemo(() => {
+    return combinedData.map((d, i) => {
+      const periodIndex = i; // 0-based, P1=0
+      const splitIndex = selectedPeriod - 1; // 0-based split point
+      if (periodIndex <= splitIndex) {
+        // Historical: use the raw historical value (or the original projected if we're viewing a "future" period relative to raw data)
+        const val = d.historical ?? d.projected;
+        return { ...d, historical: val, projected: null, bestPerformer: d.bestPerformer ?? d.bestPerformerProj, bestPerformerProj: null };
+      } else {
+        // Projected
+        const val = d.projected ?? d.historical;
+        return { ...d, historical: null, projected: val, bestPerformer: null, bestPerformerProj: d.bestPerformerProj ?? d.bestPerformer };
+      }
+    });
+  }, [selectedPeriod]);
+  const activeData = displayPeriod ? filteredData.find(d => d.period === displayPeriod) : null;
 
   const loadMoreCandidates = useCallback(() => {
     if (isLoading || !hasMore) return;
@@ -108,16 +136,14 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
     return LEGEND_GROUPS[activeLine]?.includes(dataKey) ? 1 : 0.3;
   };
 
-  // Versus data
-  const currentTotal = 5; // P6 actual
-  const normP6 = 3;
-  const fastLaneP6 = 5;
-  const bestP6 = 6;
+  // Versus data - dynamic based on selected period
+  const selectedDataPoint = filteredData[selectedPeriod - 1];
+  const currentTotal = selectedDataPoint?.historical ?? selectedDataPoint?.projected ?? 0;
 
   const versusItems = [
-    { label: "Minimum Norm", yours: currentTotal, theirs: normP6, color: COLORS.minimumNorm },
-    { label: "Fast Lane", yours: currentTotal, theirs: fastLaneP6, color: COLORS.fastLane },
-    { label: "Best Performer", yours: currentTotal, theirs: bestP6, color: COLORS.bestPerformer },
+    { label: "Minimum Norm", yours: currentTotal, theirs: selectedDataPoint?.minimumNorm ?? 0, color: COLORS.minimumNorm },
+    { label: "Fast Lane", yours: currentTotal, theirs: selectedDataPoint?.fastLane ?? 0, color: COLORS.fastLane },
+    { label: "Best Performer", yours: currentTotal, theirs: selectedDataPoint?.bestPerformer ?? selectedDataPoint?.bestPerformerProj ?? 0, color: COLORS.bestPerformer },
   ];
 
   const legendItems = [
@@ -134,9 +160,23 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="text-sm font-medium text-foreground">Plaatsingen & Gedetacheerden</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Huidige actieve plaatsingen</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {selectedPeriod === 6 ? "Huidige actieve plaatsingen" : `Periode ${selectedPeriod} - historisch overzicht`}
+            </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* Period Selector */}
+            <select
+              value={selectedPeriod}
+              onChange={(e) => { setSelectedPeriod(Number(e.target.value)); setLockedPeriod(null); }}
+              className="bg-muted/50 rounded-lg text-xs font-medium text-foreground px-2 py-1.5 border-0 outline-none cursor-pointer appearance-none pr-5 bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%239ca3af%22%20d%3D%22M0%200l5%206%205-6z%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_6px_center]"
+            >
+              {[1, 2, 3, 4, 5, 6].map(p => (
+                <option key={p} value={p} className="bg-card text-foreground">
+                  P{p}{p === 6 ? ' (huidig)' : ''}
+                </option>
+              ))}
+            </select>
             <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
               <span>0.0%</span>
             </div>
@@ -161,11 +201,11 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
         {/* Stats */}
         <div className="flex items-end gap-6 mb-4">
           <div>
-            <AnimatedNumber value={28} delay={delay + 300} className="text-3xl font-bold text-foreground" />
+            <AnimatedNumber value={stats.totaal} delay={delay + 300} className="text-3xl font-bold text-foreground" />
             <p className="text-xs text-muted-foreground mt-0.5">Totaal</p>
           </div>
           <div>
-            <AnimatedNumber value={5} delay={delay + 400} className="text-xl font-semibold text-teal" />
+            <AnimatedNumber value={stats.actief} delay={delay + 400} className="text-xl font-semibold text-teal" />
             <p className="text-xs text-muted-foreground mt-0.5">Actief</p>
           </div>
         </div>
@@ -175,7 +215,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             {/* Mini Chart */}
             <div ref={ref} className="h-16 mb-1">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={combinedData}>
+                <LineChart data={filteredData}>
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
@@ -254,7 +294,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             <div ref={ref} className="h-48 mb-3">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={combinedData}
+                  data={filteredData}
                   margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
                   onMouseMove={(e: any) => {
                     if (e?.activeLabel) setHoveredPeriod(e.activeLabel);
@@ -317,7 +357,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                 </>
               ) : (
                 <>
-                  <h4 className="text-xs font-medium text-muted-foreground mb-1.5">Jouw positie (P6)</h4>
+                  <h4 className="text-xs font-medium text-muted-foreground mb-1.5">Jouw positie (P{selectedPeriod})</h4>
                   {versusItems.map((item) => {
                     const delta = item.yours - item.theirs;
                     const isPositive = delta >= 0;
