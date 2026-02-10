@@ -64,15 +64,8 @@ const Index = () => {
               <RevenueTargetCard delay={600} />
               <PerformanceScoreCard delay={700} />
               <AINpsCard delay={800} />
-            </div>
-          </div>
-          
-          {/* Reverse Matching Row */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="col-span-2">
               <ReverseMatchingCard delay={820} />
             </div>
-            <div />
           </div>
 
           {/* Communication Stats Row */}
