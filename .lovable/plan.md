@@ -1,43 +1,58 @@
 
 
-# Hover-details onder de grafiek tonen met lock-functie
+# Periodefilter toevoegen aan Plaatsingen & Gedetacheerden
 
 ## Wat verandert
 
-In de detail-modus van de PlacementsCard wordt de zwevende Recharts tooltip (het popup-venster bij hover) verwijderd. In plaats daarvan komt er een vast informatiegebied onder de grafiek dat:
+Er komt een compacte periodeselector in de header van de PlacementsCard tile. Hiermee kun je een eerdere periode selecteren, waarna alle data in de tile (stats, chart, kandidatenlijst, versus-data) wordt aangepast naar die periode.
 
-1. **Standaard**: de "Jouw positie" versus-data toont (zoals nu onderaan staat)
-2. **Bij hover op een periode**: de details van die specifieke periode toont (alle waarden voor dat datapunt)
-3. **Bij klik op een periode**: die periode wordt "gelocked" -- de details blijven zichtbaar, ook als je de muis weghaalt
-4. **Bij klik ergens anders in de tile**: de lock wordt opgeheven en het valt terug naar de standaard "Jouw positie" weergave
+## Ontwerp
+
+**Periodeselector**: Een kleine dropdown/select naast de bestaande toggle-knoppen in de header. Toont "P6" (huidig) als standaard, met opties P1 t/m P6 (alleen historische periodes, geen toekomstige). De huidige periode is visueel gemarkeerd.
+
+**Wat verandert per geselecteerde periode**:
+- **Stats bovenaan**: "Totaal" en "Actief" worden aangepast naar de waarden van die periode
+- **Mini-chart (lijstmodus)**: De chart toont data t/m de geselecteerde periode als "werkelijk", de rest als "prognose"
+- **Detail-chart**: De split tussen werkelijk/prognose verschuift naar de geselecteerde periode
+- **Versus-stats**: De vergelijking wordt gemaakt op basis van de geselecteerde periode
+- **Subtitel**: Toont "Periode X" i.p.v. "Huidige actieve plaatsingen"
 
 ## Technische aanpak
 
 ### Bestand: `src/components/dashboard/PlacementsCard.tsx`
 
-**Nieuwe state:**
-- `hoveredPeriod: string | null` -- welke periode momenteel gehoverd wordt
-- `lockedPeriod: string | null` -- welke periode gelocked is
+**1. Nieuwe state**:
+- `selectedPeriod: number` (standaard `6`, index 1-based voor P1-P6)
 
-**Recharts Tooltip vervangen:**
-- Verwijder de `<Tooltip>` component uit de detail chart
-- Voeg `onMouseMove` toe aan de `<LineChart>` om `hoveredPeriod` te updaten op basis van het actieve datapunt (via Recharts' `onMouseMove` event die `activeLabel` bevat)
-- Voeg `onMouseLeave` toe om `hoveredPeriod` te resetten naar `null`
-- Voeg `onClick` toe aan de `<LineChart>` om de huidige `hoveredPeriod` als `lockedPeriod` vast te zetten
+**2. Period-afhankelijke data**:
+- Een `getDataForPeriod(periodIndex)` functie die `combinedData` transformeert: alles t/m de geselecteerde periode wordt "historical", daarna "projected"
+- Stats (Totaal, Actief) worden per periode uit een mock-object gehaald
+- De versus-data leest uit `combinedData[periodIndex - 1]` voor de juiste norm/fastLane/bestPerformer waarden
 
-**Actieve periode bepalen:**
-- `displayPeriod = lockedPeriod || hoveredPeriod || null`
-- Als `displayPeriod` een waarde heeft: toon de detaildata voor die periode
-- Als `displayPeriod` null is: toon de huidige "Jouw positie" versus-stats
+**3. Mock data per periode** (nieuw object):
+```
+const periodStats = {
+  P1: { totaal: 8, actief: 2 },
+  P2: { totaal: 12, actief: 1 },
+  P3: { totaal: 16, actief: 3 },
+  P4: { totaal: 19, actief: 2 },
+  P5: { totaal: 23, actief: 4 },
+  P6: { totaal: 28, actief: 5 },
+};
+```
 
-**Info-gebied onder de grafiek:**
-- Bij een actieve periode: toon de periodenaam en alle waarden (Werkelijk/Prognose, Min. Norm, Fast Lane, Best Performer) in dezelfde compacte rij-stijl als de huidige versus-stats
-- Bij geen actieve periode: toon de bestaande "Jouw positie (P6)" versus-data
+**4. UI - Periodeselector**:
+- Geplaatst in de header, links van de percentage-indicator
+- Compacte `<select>` of een mini pillbar met P1-P6
+- Stijl: `bg-muted/50 rounded-lg text-xs` conform bestaande toggle-styling
+- Gebruik een native `<select>` element gestyled met de bestaande design tokens voor compactheid
 
-**Lock uitschakelen:**
-- De bestaande `onClick` op de wrapper-div (regel 229: `onClick={() => setActiveLine(null)}`) wordt uitgebreid om ook `lockedPeriod` te resetten naar `null`
-- Een klik op de chart zelf stopt propagatie (`e.stopPropagation()`) zodat het locken werkt zonder direct weer te unlocken
+**5. Data-transformatie**:
+- `combinedData` wordt dynamisch aangepast: voor de geselecteerde periode wordt het splitpunt tussen `historical` en `projected` verschoven
+- `useMemo` om de getransformeerde data te cachen op basis van `selectedPeriod`
+- Versus-items lezen hun waarden uit het juiste datapunt
 
-**Visuele indicator voor lock:**
-- Een klein lock-icoon of een subtiele highlight op de actieve X-as label om aan te geven dat een periode gelocked is
+**6. Subtitel update**:
+- Bij P6 (huidig): "Huidige actieve plaatsingen"
+- Bij andere periodes: "Periode X - historisch overzicht"
 
