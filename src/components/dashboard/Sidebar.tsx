@@ -8,7 +8,11 @@ import {
   Briefcase,
   Shield,
   Eye,
-  BarChart3
+  BarChart3,
+  Monitor,
+  Trophy,
+  Users,
+  TrendingUp
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -47,6 +51,17 @@ const navItems: NavItem[] = [
       { icon: Eye, label: "User Emulatie", path: "/super-admin/emulate" },
     ]
   },
+  {
+    icon: Monitor,
+    label: "TV Dashboards",
+    path: "/tv/sales-funnel-week",
+    subItems: [
+      { icon: TrendingUp, label: "Sales Funnel (Week)", path: "/tv/sales-funnel-week" },
+      { icon: BarChart3, label: "Sales Funnel (Periode)", path: "/tv/sales-funnel-period" },
+      { icon: Trophy, label: "Beker Dashboard", path: "/tv/beker" },
+      { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
+    ]
+  },
 ];
 
 export function Sidebar() {
@@ -57,11 +72,13 @@ export function Sidebar() {
   // Auto-expand items when on their sub-routes
   const isOnComparisonPage = location.pathname.startsWith("/vergelijking");
   const isOnSuperAdminPage = location.pathname.startsWith("/super-admin");
+  const isOnTVPage = location.pathname.startsWith("/tv/");
   
   const effectiveExpandedItems = [
     ...expandedItems,
     ...(isOnComparisonPage ? ["/"] : []),
     ...(isOnSuperAdminPage ? ["/super-admin"] : []),
+    ...(isOnTVPage ? ["/tv/sales-funnel-week"] : []),
   ].filter((v, i, a) => a.indexOf(v) === i);
 
   const toggleExpanded = (path: string, e: React.MouseEvent) => {
