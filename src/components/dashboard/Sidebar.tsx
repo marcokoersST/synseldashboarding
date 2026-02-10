@@ -38,6 +38,32 @@ const navItems: NavItem[] = [
       { icon: GitCompare, label: "Vergelijking", path: "/vergelijking" }
     ]
   },
+  {
+    icon: BarChart3,
+    label: "Consultant",
+    path: "/consultant/geld-bonus",
+    subItems: [
+      { icon: BarChart3, label: "Geld & Bonus", path: "/consultant/geld-bonus" },
+      { icon: BarChart3, label: "KPI Cockpit", path: "/consultant/kpi-cockpit" },
+      { icon: TrendingUp, label: "Sales Funnel", path: "/consultant/sales-funnel" },
+      { icon: BarChart3, label: "Volgende Actie", path: "/consultant/next-actions" },
+      { icon: BarChart3, label: "Gesprekskwaliteit", path: "/consultant/gesprekskwaliteit" },
+      { icon: BarChart3, label: "Activiteit vs Resultaat", path: "/consultant/activiteit-resultaat" },
+      { icon: BarChart3, label: "Benchmarking", path: "/consultant/benchmarking" },
+      { icon: Users, label: "Kandidaat-First", path: "/consultant/kandidaat-first" },
+      { icon: BarChart3, label: "Klant & Markt", path: "/consultant/klant-markt" },
+      { icon: BarChart3, label: "CRM Hygiëne", path: "/consultant/crm-hygiene" },
+      { icon: BarChart3, label: "Snelheid", path: "/consultant/snelheid" },
+      { icon: TrendingUp, label: "Forecasting", path: "/consultant/forecasting" },
+      { icon: Users, label: "Detavast & Retentie", path: "/consultant/detavast" },
+      { icon: BarChart3, label: "Skills & Training", path: "/consultant/skills" },
+      { icon: Trophy, label: "Gamification", path: "/consultant/gamification" },
+      { icon: BarChart3, label: "Alerts & Risico's", path: "/consultant/alerts" },
+      { icon: BarChart3, label: "Match Kwaliteit", path: "/consultant/match-kwaliteit" },
+      { icon: ListOrdered, label: "Route naar #1", path: "/consultant/route-naar-1" },
+      { icon: BarChart3, label: "Extra Dashboards", path: "/consultant/extra" },
+    ]
+  },
   { 
     icon: Briefcase, 
     label: "Manager Dashboard", 
@@ -75,12 +101,14 @@ export function Sidebar() {
   const isOnComparisonPage = location.pathname.startsWith("/vergelijking");
   const isOnSuperAdminPage = location.pathname.startsWith("/super-admin");
   const isOnTVPage = location.pathname.startsWith("/tv/");
+  const isOnConsultantPage = location.pathname.startsWith("/consultant/");
   
   const effectiveExpandedItems = [
     ...expandedItems,
     ...(isOnComparisonPage ? ["/"] : []),
     ...(isOnSuperAdminPage ? ["/super-admin"] : []),
     ...(isOnTVPage ? ["/tv/sales-funnel-week"] : []),
+    ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
   ].filter((v, i, a) => a.indexOf(v) === i);
 
   const toggleExpanded = (path: string, e: React.MouseEvent) => {
