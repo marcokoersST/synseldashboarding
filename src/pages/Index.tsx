@@ -67,7 +67,7 @@ const Index = () => {
           </div>
           
           {/* Communication Stats Row */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-4 mb-4 items-start">
             <CallsStatsCard delay={750} />
             <EmailStatsCard delay={800} />
             <ChatWidget delay={850} />
