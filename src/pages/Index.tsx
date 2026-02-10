@@ -13,7 +13,7 @@ import { CoreActivitiesCard } from "@/components/dashboard/CoreActivitiesCard";
 import { VacancyActivitiesCard } from "@/components/dashboard/VacancyActivitiesCard";
 import { RecruitmentFunnel } from "@/components/dashboard/RecruitmentFunnel";
 import { ChatWidget } from "@/components/dashboard/ChatWidget";
-import { CommunicationStatsCard } from "@/components/dashboard/CommunicationStatsCard";
+import { CallsStatsCard, EmailStatsCard } from "@/components/dashboard/CommunicationStatsCard";
 import { AINpsCard } from "@/components/dashboard/AINpsCard";
 import { ForecastGoalsProvider } from "@/contexts/ForecastGoalsContext";
 
@@ -68,9 +68,8 @@ const Index = () => {
           
           {/* Communication Stats Row */}
           <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="col-span-2 h-full">
-              <CommunicationStatsCard delay={750} />
-            </div>
+            <CallsStatsCard delay={750} />
+            <EmailStatsCard delay={800} />
             <ChatWidget delay={850} />
           </div>
           
