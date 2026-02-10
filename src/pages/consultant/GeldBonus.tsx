@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { bonusData, salaryProgressData, earningsData, scenarioOptions, detavastValues, marginPerPlacement, noRegretDeals, bonusLeaderboard } from "@/data/consultantData";
 import { DollarSign, TrendingUp, Target, Trophy, ArrowRight } from "lucide-react";
+import { JiglerDataNotice } from "@/components/consultant/JiglerDataNotice";
 
 export default function GeldBonus() {
   const [selectedScenario, setSelectedScenario] = useState<number | null>(null);
@@ -34,6 +35,7 @@ export default function GeldBonus() {
                   </div>
                 ))}
               </div>
+              <JiglerDataNotice />
             </CardContent>
           </Card>
         </AnimatedCard>
@@ -53,6 +55,7 @@ export default function GeldBonus() {
               </div>
               <Progress value={salaryProgressData.progress} className="h-2 mb-2" />
               <p className="text-xs text-muted-foreground">Nog €{((salaryProgressData.requiredRevenue - salaryProgressData.currentRevenue) / 1000).toFixed(0)}k omzet nodig</p>
+              <JiglerDataNotice />
             </CardContent>
           </Card>
         </AnimatedCard>
@@ -87,6 +90,7 @@ export default function GeldBonus() {
                   </TabsContent>
                 ))}
               </Tabs>
+              <JiglerDataNotice />
             </CardContent>
           </Card>
         </AnimatedCard>
@@ -116,6 +120,7 @@ export default function GeldBonus() {
                   </button>
                 ))}
               </div>
+              <JiglerDataNotice />
             </CardContent>
           </Card>
         </AnimatedCard>
@@ -141,6 +146,7 @@ export default function GeldBonus() {
                   </div>
                 ))}
               </div>
+              <JiglerDataNotice />
             </CardContent>
           </Card>
         </AnimatedCard>
@@ -165,6 +171,7 @@ export default function GeldBonus() {
                   </div>
                 ))}
               </div>
+              <JiglerDataNotice />
             </CardContent>
           </Card>
         </AnimatedCard>
@@ -191,6 +198,7 @@ export default function GeldBonus() {
                   </div>
                 ))}
               </div>
+              <JiglerDataNotice />
             </CardContent>
           </Card>
         </AnimatedCard>
@@ -211,6 +219,7 @@ export default function GeldBonus() {
                   </div>
                 ))}
               </div>
+              <JiglerDataNotice />
             </CardContent>
           </Card>
         </AnimatedCard>
