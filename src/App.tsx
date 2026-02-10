@@ -12,6 +12,7 @@ import TVSalesFunnelWeek from "./pages/TVSalesFunnelWeek";
 import TVSalesFunnelPeriod from "./pages/TVSalesFunnelPeriod";
 import TVBekerDashboard from "./pages/TVBekerDashboard";
 import TVGedetacheerden from "./pages/TVGedetacheerden";
+import TVRanglijsten from "./pages/TVRanglijsten";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/tv/sales-funnel-period" element={<TVSalesFunnelPeriod />} />
           <Route path="/tv/beker" element={<TVBekerDashboard />} />
           <Route path="/tv/gedetacheerden" element={<TVGedetacheerden />} />
+          <Route path="/tv/ranglijsten" element={<TVRanglijsten />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
