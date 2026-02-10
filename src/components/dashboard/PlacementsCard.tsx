@@ -5,7 +5,7 @@ import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { useState, useCallback, useRef } from "react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
-import { List, BarChart3, TrendingUp, TrendingDown } from "lucide-react";
+import { List, BarChart3, TrendingUp, TrendingDown, Lock } from "lucide-react";
 
 // Combined data for both views
 const combinedData = [
@@ -78,7 +78,12 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
   const [hasMore, setHasMore] = useState(true);
   const [detailMode, setDetailMode] = useState(false);
   const [activeLine, setActiveLine] = useState<string | null>(null);
+  const [hoveredPeriod, setHoveredPeriod] = useState<string | null>(null);
+  const [lockedPeriod, setLockedPeriod] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const displayPeriod = lockedPeriod || hoveredPeriod || null;
+  const activeData = displayPeriod ? combinedData.find(d => d.period === displayPeriod) : null;
 
   const loadMoreCandidates = useCallback(() => {
     if (isLoading || !hasMore) return;
@@ -226,7 +231,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             </div>
           </>
         ) : (
-          <div onClick={() => setActiveLine(null)}>
+          <div onClick={() => { setActiveLine(null); setLockedPeriod(null); }}>
             {/* Interactive Legend */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-3">
               {legendItems.map((item) => (
@@ -247,17 +252,23 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             {/* Detail Chart */}
             <div ref={ref} className="h-48 mb-3">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={combinedData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                <LineChart
+                  data={combinedData}
+                  margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
+                  onMouseMove={(e: any) => {
+                    if (e?.activeLabel) setHoveredPeriod(e.activeLabel);
+                  }}
+                  onMouseLeave={() => setHoveredPeriod(null)}
+                  onClick={(e: any) => {
+                    if (e?.activeLabel) {
+                      e.stopPropagation?.();
+                      setLockedPeriod(prev => prev === e.activeLabel ? null : e.activeLabel);
+                    }
+                  }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis dataKey="period" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={{ stroke: 'hsl(var(--border))' }} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '11px' }}
-                    formatter={(value: number, name: string) => {
-                      const labels: Record<string, string> = { historical: 'Werkelijk', projected: 'Prognose', minimumNorm: 'Min. Norm', fastLane: 'Fast Lane', bestPerformer: 'Best Performer', bestPerformerProj: 'Best Perf. (proj.)' };
-                      return [value, labels[name] || name];
-                    }}
-                  />
                   <Line type="monotone" dataKey="minimumNorm" stroke={COLORS.minimumNorm} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} strokeOpacity={getLineOpacity("minimumNorm")} style={{ transition: "stroke-opacity 300ms ease" }} />
                   <Line type="monotone" dataKey="fastLane" stroke={COLORS.fastLane} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} strokeOpacity={getLineOpacity("fastLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
                   <Line type="monotone" dataKey="bestPerformer" stroke={COLORS.bestPerformer} strokeWidth={2} dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 2.5, fillOpacity: getLineOpacity("bestPerformer") }} connectNulls={false} strokeOpacity={getLineOpacity("bestPerformer")} style={{ transition: "stroke-opacity 300ms ease" }} />
@@ -268,28 +279,65 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
               </ResponsiveContainer>
             </div>
 
-            {/* Versus Stats */}
+            {/* Dynamic Info Area */}
             <div className="border-t border-border pt-3 space-y-2">
-              <h4 className="text-xs font-medium text-muted-foreground mb-1.5">Jouw positie (P6)</h4>
-              {versusItems.map((item) => {
-                const delta = item.yours - item.theirs;
-                const isPositive = delta >= 0;
-                return (
-                  <div key={item.label} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/30">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-xs text-muted-foreground">{item.label}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-foreground">{item.theirs}</span>
-                      <div className={`flex items-center gap-0.5 text-xs font-medium ${isPositive ? 'text-teal' : 'text-destructive'}`}>
-                        {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                        <span>{isPositive ? '+' : ''}{delta}</span>
+              {activeData ? (
+                <>
+                  <h4 className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                    {activeData.period}
+                    {lockedPeriod && <Lock size={10} className="text-muted-foreground" />}
+                  </h4>
+                  {[
+                    { label: activeData.historical != null ? "Werkelijk" : "Prognose", value: activeData.historical ?? activeData.projected, color: "hsl(var(--teal))" },
+                    { label: "Min. Norm", value: activeData.minimumNorm, color: COLORS.minimumNorm },
+                    { label: "Fast Lane", value: activeData.fastLane, color: COLORS.fastLane },
+                    { label: "Best Performer", value: activeData.bestPerformer ?? activeData.bestPerformerProj, color: COLORS.bestPerformer },
+                  ].filter(item => item.value != null).map((item) => {
+                    const yours = activeData.historical ?? activeData.projected ?? 0;
+                    const delta = item.label === "Werkelijk" || item.label === "Prognose" ? null : yours - (item.value ?? 0);
+                    return (
+                      <div key={item.label} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/30">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="text-xs text-muted-foreground">{item.label}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-foreground">{item.value}</span>
+                          {delta != null && (
+                            <div className={`flex items-center gap-0.5 text-xs font-medium ${delta >= 0 ? 'text-teal' : 'text-destructive'}`}>
+                              {delta >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                              <span>{delta >= 0 ? '+' : ''}{delta}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </>
+              ) : (
+                <>
+                  <h4 className="text-xs font-medium text-muted-foreground mb-1.5">Jouw positie (P6)</h4>
+                  {versusItems.map((item) => {
+                    const delta = item.yours - item.theirs;
+                    const isPositive = delta >= 0;
+                    return (
+                      <div key={item.label} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/30">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="text-xs text-muted-foreground">{item.label}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-foreground">{item.theirs}</span>
+                          <div className={`flex items-center gap-0.5 text-xs font-medium ${isPositive ? 'text-teal' : 'text-destructive'}`}>
+                            {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                            <span>{isPositive ? '+' : ''}{delta}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </div>
           </div>
         )}
