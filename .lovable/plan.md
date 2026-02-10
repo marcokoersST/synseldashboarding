@@ -1,56 +1,52 @@
 
-# Reverse Matching Engine Tile
+# Reverse Matching naast AI NPS Score plaatsen
 
-## Wat wordt er gebouwd
+## Wat verandert
 
-Een visueel aantrekkelijke "Reverse Matching" tegel die de prestaties van de reverse matching engine toont met drie KPI's en een overview/detail toggle. De tegel wordt geplaatst in een nieuwe rij tussen de Team Leaderboard-rij en de Communicatie-rij, en beslaat 2 kolommen.
+Twee layout-wijzigingen in `src/pages/Index.tsx`:
 
-## Overview Mode
+1. **AI NPS Score verwijderen uit de sidebar-kolom** (regel 66) van de Team Leaderboard rij
+2. **Reverse Matching rij verwijderen** (regels 70-76) en vervangen door een nieuwe gedeelde rij met beide kaarten
 
-Een horizontale conversie-flow met drie stappen, verbonden door pijlen met conversiepercentages:
+## Concrete wijzigingen
+
+### Bestand: `src/pages/Index.tsx`
+
+**Stap 1** — Verwijder `<AINpsCard>` uit de rechterkolom (regel 66):
 
 ```text
-  [Voorgesteld]  --42.9%-->  [Gesprekken]  --38.9%-->  [Plaatsingen]
-       42                        18                         7
-     +12%                       +8%                       +16%
+// WAS:
+<div className="space-y-4">
+  <RevenueTargetCard delay={600} />
+  <PerformanceScoreCard delay={700} />
+  <AINpsCard delay={800} />          // <-- verwijderen
+</div>
+
+// WORDT:
+<div className="space-y-4">
+  <RevenueTargetCard delay={600} />
+  <PerformanceScoreCard delay={700} />
+</div>
 ```
 
-Visuele elementen:
-- Elk KPI-blok heeft een gekleurd icoon, het label, een groot geanimeerd getal (AnimatedNumber), en een week-over-week trend badge (groen/rood)
-- Conversie-pijlen tussen de blokken met het percentage
-- Onderaan een gradient funnel-bar die de drie stappen visueel toont met afnemende breedte
-- Zachte achtergrondkleuren per stap (primary/10, teal/10, success/10) voor visueel onderscheid
-
-## Detail Mode
-
-- **Conversie-funnel**: Horizontale funnel met drie stappen, absolute aantallen en percentages, vergelijkbaar met de RecruitmentFunnel stijl
-- **Trend per periode**: Mini-lijngrafiek (Recharts LineChart) met 3 lijnen (pitched, applications, deals) over de **laatste 6 periodes** (P8 t/m P13)
-- **Top kandidaten**: Compacte lijst van 3 recente plaatsingen met naam, bedrijf en datum
-- Transitie-animatie: 400ms ease-in-out fade + scale (zelfde als communicatietegels)
-
-## Technische details
-
-### Nieuw bestand: `src/components/dashboard/ReverseMatchingCard.tsx`
-
-- Gebruikt het `useDetailToggle` patroon uit CommunicationStatsCard
-- Componenten: AnimatedCard, AnimatedNumber, Recharts LineChart
-- Iconen: Users (voorgesteld), MessageSquare (gesprekken), Trophy (plaatsingen), Maximize2/Minimize2 (toggle)
-- Mock data direct in component:
-  - Pitched: 42 (+12%), Applications: 18 (+8%), Deals Won: 7 (+16%)
-  - Conversies: 42.9% en 38.9%
-  - 6 periodes trenddata (P8-P13)
-  - 3 recente plaatsingen
-
-### Aanpassing: `src/pages/Index.tsx`
-
-- Import ReverseMatchingCard
-- Nieuwe rij tussen Team Leaderboard en Communicatie Stats:
+**Stap 2** — Vervang de "Reverse Matching Row" (regels 70-76) door een gedeelde rij:
 
 ```text
+// WAS:
 <div className="grid grid-cols-3 gap-4 mb-4">
   <div className="col-span-2">
     <ReverseMatchingCard delay={820} />
   </div>
-  <div /> {/* lege kolom */}
+  <div />
+</div>
+
+// WORDT:
+<div className="grid grid-cols-3 gap-4 mb-4">
+  <div className="col-span-2">
+    <ReverseMatchingCard delay={800} />
+  </div>
+  <AINpsCard delay={820} />
 </div>
 ```
+
+Geen andere bestanden worden gewijzigd. Inhoud en styling van de kaarten blijven ongewijzigd.
