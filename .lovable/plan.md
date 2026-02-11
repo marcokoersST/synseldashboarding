@@ -1,26 +1,31 @@
 
 
-# Fix sidebar text stuttering during expand animation
+# Smooth sidebar closing animation
 
-## Problem
-Text labels in the sidebar appear/disappear instantly via conditional rendering (`{!isCollapsed && ...}`), while the sidebar width animates smoothly over 300ms. This mismatch causes visible "jumping" as text pops in mid-animation.
+## Root causes of the stutter
+
+1. **Re-mounting nav buttons**: The tooltip wrapper conditionally renders based on `isCollapsed` (lines 211-222). When toggling, every nav button unmounts and remounts in a different wrapper, breaking the CSS transition mid-animation.
+
+2. **Instant layout shifts**: `gap-3` stays constant while text shrinks to `max-w-0`, and `justify-center` toggles instantly via the `isCollapsed` check. These discrete CSS changes cause visible jumps.
+
+3. **Sub-items vanish instantly**: The submenu section uses `{hasSubItems && isExpanded && !isCollapsed && (...)}`, removing DOM elements immediately instead of animating them out.
 
 ## Solution
-Instead of conditionally rendering text, always render it but hide it with `overflow-hidden` and `whitespace-nowrap` on the sidebar. The width transition will naturally clip/reveal the text content without any jumping.
-
-## Changes
 
 ### `src/components/dashboard/Sidebar.tsx`
 
-1. **Add `overflow-hidden` to the sidebar `<aside>`** so content beyond the collapsed width is clipped during transition.
+1. **Always render the Tooltip wrapper** for every nav item. Disable it when expanded by setting the tooltip content to only show when `isCollapsed` is true. This prevents re-mounting buttons during the transition.
 
-2. **Always render text labels** in nav buttons, logo, and user profile — remove the `{!isCollapsed && ...}` conditional wrappers. Instead, add `whitespace-nowrap` and `overflow-hidden` to text containers so they get smoothly clipped by the sidebar's width transition.
+2. **Transition the gap**: Replace the static `gap-3` on nav buttons with a transitioning gap using a CSS approach -- switch to `gap-0` when collapsed and use padding/margin on the icon instead, or transition gap via inline style since Tailwind does not animate gap by default.
 
-3. **Hide sub-items during collapsed state** — keep the conditional for sub-item sections since those should not be visible at all when collapsed.
+3. **Remove instant class toggles**: Instead of toggling `justify-center` and `px-2` via `isCollapsed`, keep consistent padding and let the overflow + max-width transitions handle the visual collapse naturally.
 
-4. **Add `min-w-0` and `whitespace-nowrap`** to text spans to prevent wrapping during the transition.
+4. **Animate sub-items out**: Wrap sub-item sections in a container with `max-height` and `opacity` transitions so they shrink/fade out smoothly instead of disappearing instantly.
 
-5. **Keep tooltip logic** — tooltips still only show when `isCollapsed` is true.
+## Technical details
 
-This approach means the text is always in the DOM but gets naturally hidden/revealed by the parent's changing width, resulting in a perfectly smooth animation with no jumping or stuttering.
+- Tooltip: always wrap, but only render `TooltipContent` when `isCollapsed` is true (or use `open={false}` when expanded)
+- Nav button padding: keep `px-3` always, the sidebar's overflow will clip content naturally
+- Sub-items container: use `transition-[max-height,opacity]` with `max-h-0 opacity-0` when collapsed vs `max-h-[500px] opacity-100` when expanded
+- Remove `justify-center` toggle -- icons naturally stay left-aligned and centered within the 64px width since they are `shrink-0` with fixed size
 
