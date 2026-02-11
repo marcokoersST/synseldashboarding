@@ -60,10 +60,10 @@ const stepColors = [
 
 // Arc layout: 7 circles in a semicircle from left to right (180° arc)
 // Center of the arc
-const CX = 350;
-const CY = 230;
-const ARC_RADIUS = 185;
-const CIRCLE_R = 32;
+const CX = 210;
+const CY = 280;
+const ARC_RADIUS = 200;
+const CIRCLE_R = 40;
 
 // Angles from π (left) to 0 (right), evenly spaced
 const circlePositions = Array.from({ length: 7 }, (_, i) => {
