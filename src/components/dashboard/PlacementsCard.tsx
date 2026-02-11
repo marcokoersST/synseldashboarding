@@ -101,10 +101,14 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
     return combinedData.map((d, i) => {
       const periodIndex = i; // 0-based, P1=0
       const splitIndex = selectedPeriod - 1; // 0-based split point
-      if (periodIndex <= splitIndex) {
-        // Historical: use the raw historical value (or the original projected if we're viewing a "future" period relative to raw data)
+      if (periodIndex < splitIndex) {
+        // Fully historical
         const val = d.historical ?? d.projected;
         return { ...d, historical: val, projected: null, bestPerformer: d.bestPerformer ?? d.bestPerformerProj, bestPerformerProj: null };
+      } else if (periodIndex === splitIndex) {
+        // Split point: keep both so solid and dotted lines connect
+        const val = d.historical ?? d.projected;
+        return { ...d, historical: val, projected: val, bestPerformer: d.bestPerformer ?? d.bestPerformerProj, bestPerformerProj: d.bestPerformerProj ?? d.bestPerformer };
       } else {
         // Projected
         const val = d.projected ?? d.historical;
