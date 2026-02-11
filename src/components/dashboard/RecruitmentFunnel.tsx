@@ -49,13 +49,13 @@ const comparisonDataByPeriod: Record<string, StepData[]> = {
 };
 
 const stepColors = [
-  "hsl(175, 65%, 45%)",
-  "hsl(160, 55%, 45%)",
-  "hsl(145, 50%, 42%)",
-  "hsl(35, 65%, 50%)",
-  "hsl(200, 55%, 48%)",
-  "hsl(260, 45%, 50%)",
-  "hsl(175, 70%, 38%)",
+  "hsl(175, 60%, 45%)",
+  "hsl(175, 50%, 55%)",
+  "hsl(160, 55%, 42%)",
+  "hsl(45, 30%, 55%)",
+  "hsl(175, 65%, 38%)",
+  "hsl(160, 45%, 50%)",
+  "hsl(45, 35%, 45%)",
 ];
 
 // Arc layout: 7 circles in a semicircle from left to right (180° arc)
