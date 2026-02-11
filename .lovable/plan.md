@@ -1,21 +1,28 @@
 
 
-# Reduce opacity gradient height in GoalsCard
+# Fix tile height: all three tiles same fixed height
 
 ## Problem
-The fade-out gradient at the bottom of each goal list section (`h-8` = 32px) is too tall, covering the bottom side of the third visible goal and hiding the top of the fourth goal.
+With `items-stretch`, all three tiles (Salary, Placements, Goals) stretch to match the tallest one, making the row too long. The user wants all tiles to have the same, shorter height -- and toggle modes should not change the tile size.
 
 ## Solution
-Reduce the gradient height from `h-8` to `h-4` (16px) on both gradient overlays (user goals and manager goals sections) in `src/components/dashboard/GoalsCard.tsx`.
+Apply a fixed height to the grid row and ensure each card's internal content adapts within that constraint.
 
 ## Technical Details
 
-### `src/components/dashboard/GoalsCard.tsx`
+### 1. `src/pages/Index.tsx`
+- Add a fixed row height to the grid: change `items-stretch` to a specific height class on the grid, e.g., `grid-rows-[540px]` (or similar, may need tuning). This forces all three columns to the same height regardless of content.
 
-Two gradient overlay divs need updating (around lines 133 and 150):
+### 2. `src/components/dashboard/PlacementsCard.tsx`
+- The detail mode chart area (`h-48`) and info area (`min-h-[168px]`) drive excessive height. Reduce chart height from `h-48` (192px) to `h-40` (160px) and reduce the info area `min-h` from `[168px]` to `[148px]`.
+- In list mode, the candidates list already uses `flex-1 min-h-0` with overflow scroll, so it will adapt automatically.
 
-- **User goals gradient** (line ~133): Change `h-8` to `h-4`
-- **Manager goals gradient** (line ~150): Change `h-8` to `h-4`
+### 3. `src/components/dashboard/SalaryProgressCard.tsx`
+- Already has `h-full`, will fill the fixed grid height. Content fits naturally, no changes needed beyond ensuring overflow doesn't break.
 
-This makes the fade effect more subtle, allowing the upper portion of the fourth goal item to remain visible and readable while still indicating there is more content below.
+### 4. `src/components/dashboard/GoalsCard.tsx`
+- Already has `h-full` and fixed `h-[180px]` scroll areas. May need to reduce these slightly (e.g., `h-[160px]`) if the fixed grid height is tight, or use `flex-1 min-h-0` with `overflow-y-auto` to let both goal sections share remaining space proportionally.
+
+### Height tuning
+The exact fixed height value will be calibrated to match the screenshot (~540px). The key principle: one fixed height for the row, internal components flex/scroll within it.
 
