@@ -1,27 +1,27 @@
 
-
-# Fix: Constant tile height for Plaatsingen & Gedetacheerden
+# Fix: Goals card sections need fixed-height scrollable areas
 
 ## Problem
-The list mode (overview) of the Plaatsingen tile uses `flex-1` to grow the candidates list, which combined with `items-stretch` on the grid causes the entire row to stretch based on content. The tile height should be constant regardless of toggle mode.
+After removing `h-full` from the GoalsCard, the `flex-1 min-h-0` containers with `absolute inset-0` collapse to zero height because there's no explicit height constraint. The goals are invisible.
 
 ## Solution
-Remove `items-stretch` from the grid row and stop the card from growing. Instead, give the candidates list in list mode a fixed height so it scrolls internally, just like the detail mode already does.
+Replace the flex-based dynamic sizing with fixed-height scroll containers for both goal sections. Each section gets a fixed height that shows approximately 3.5 goal items (indicating more content is available via scroll). This is self-contained within the GoalsCard and won't affect neighboring tiles.
 
 ## Technical Changes
 
-### 1. `src/pages/Index.tsx` (line 34)
-- Remove `items-stretch` from the grid. The tiles will size themselves to their natural/fixed height.
+### `src/components/dashboard/GoalsCard.tsx`
 
-### 2. `src/components/dashboard/PlacementsCard.tsx`
-- Remove `h-full` and `flex-1 min-h-0` from the card container so it no longer stretches.
-- In list mode (the `!detailMode` branch), replace the `flex-1 min-h-0` on the candidates list container with a fixed height scroll area (e.g., `max-h-[280px] overflow-y-auto`). This keeps the candidates list scrollable within a bounded area, matching the detail mode height.
-- The detail mode already has `min-h-[148px]` on its info area so it stays consistent.
+**Mijn doelen section (lines 138-152):**
+- Remove the `relative flex-1 min-h-0` wrapper with `absolute inset-0` pattern
+- Replace with a simple `h-[160px] overflow-y-auto scrollbar-thin` container
+- Keep the fade gradient at the bottom
 
-### 3. `src/components/dashboard/GoalsCard.tsx`
-- Remove `h-full` if present so it sizes naturally too, relying on its internal fixed-height scroll areas.
+**Doelen van leidinggevende section (lines 163-177):**
+- Same change: remove the `relative flex-1 min-h-0` / `absolute inset-0` pattern
+- Replace with `h-[160px] overflow-y-auto scrollbar-thin`
+- Keep the fade gradient
 
-### 4. `src/components/dashboard/SalaryProgressCard.tsx`
-- Remove `h-full` so it also sizes naturally.
+**Parent flex container (line 131):**
+- Remove `flex-1 min-h-0` from the parent wrapper since children now have explicit heights
 
-The result: all three tiles render at their natural content height (which will be similar since detail mode and list mode are both bounded), and no tile stretches the row.
+The `160px` height at `text-xs` line height with spacing shows roughly 3.5 items, clearly indicating scrollability.
