@@ -164,7 +164,7 @@ function StepNode({
       {/* Label */}
       <text x={cx + labelOffsetX} y={cy + labelOffsetY}
         textAnchor="middle" dominantBaseline="middle"
-        fill="hsl(220, 10%, 40%)" fontSize="10" fontWeight="600" fontFamily="Inter, sans-serif">
+        fill="hsl(220, 10%, 40%)" fontSize="13" fontWeight="600" fontFamily="Inter, sans-serif">
         {label}
       </text>
       {/* Conversion from previous step */}
