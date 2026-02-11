@@ -15,6 +15,7 @@ import TVSalesFunnelPeriod from "./pages/TVSalesFunnelPeriod";
 import TVBekerDashboard from "./pages/TVBekerDashboard";
 import TVGedetacheerden from "./pages/TVGedetacheerden";
 import TVRanglijsten from "./pages/TVRanglijsten";
+import TVHeatmap from "./pages/TVHeatmap";
 import NotFound from "./pages/NotFound";
 import { lazy, Suspense } from "react";
 
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/tv/beker" element={<TVBekerDashboard />} />
               <Route path="/tv/gedetacheerden" element={<TVGedetacheerden />} />
               <Route path="/tv/ranglijsten" element={<TVRanglijsten />} />
+              <Route path="/tv/heatmap" element={<TVHeatmap />} />
               <Route path="/consultant/geld-bonus" element={<GeldBonus />} />
               <Route path="/consultant/kpi-cockpit" element={<KPICockpit />} />
               <Route path="/consultant/sales-funnel" element={<SalesFunnel />} />
