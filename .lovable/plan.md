@@ -1,32 +1,26 @@
 
-# Sidebar inklap-functionaliteit implementeren
 
-## Wat er gaat gebeuren
+# Fix sidebar text stuttering during expand animation
 
-Klikken op de ronde pijl-knop rechts op de sidebar klapt de sidebar in naar een smalle icon-only modus (~64px breed). Opnieuw klikken klapt hem weer uit en herstelt de vorige weergave.
+## Problem
+Text labels in the sidebar appear/disappear instantly via conditional rendering (`{!isCollapsed && ...}`), while the sidebar width animates smoothly over 300ms. This mismatch causes visible "jumping" as text pops in mid-animation.
 
-## Wijzigingen
+## Solution
+Instead of conditionally rendering text, always render it but hide it with `overflow-hidden` and `whitespace-nowrap` on the sidebar. The width transition will naturally clip/reveal the text content without any jumping.
 
-### 1. `src/components/dashboard/Sidebar.tsx`
+## Changes
 
-- **Collapsed state toevoegen**: `isCollapsed` state (boolean) en `savedExpandedItems` state (om de open submenu's te bewaren bij inklappen).
-- **Toggle functie**: Bij inklappen: sla huidige `expandedItems` op in `savedExpandedItems`, klap alle submenu's dicht. Bij uitklappen: herstel `savedExpandedItems` terug naar `expandedItems`.
-- **Conditioneel renderen**:
-  - Logo: alleen het "S" icoon tonen wanneer ingeklapt, geen tekst.
-  - Nav items: alleen iconen tonen, geen labels, geen submenu's, geen chevrons.
-  - User profile: alleen de avatar tonen, geen naam/rol/logout-icoon.
-- **Chevron-knop**: 180 graden draaien wanneer ingeklapt (`rotate-180` class op het ChevronLeft icoon).
-- **Sidebar breedte**: `w-64` wordt `w-16` wanneer ingeklapt, met een smooth CSS transition.
-- **Tooltip**: Bij ingeklapte staat een tooltip tonen met de label-naam bij hover over een icoon.
+### `src/components/dashboard/Sidebar.tsx`
 
-### 2. `src/components/layout/AppLayout.tsx`
+1. **Add `overflow-hidden` to the sidebar `<aside>`** so content beyond the collapsed width is clipped during transition.
 
-- **Dynamische margin**: De `ml-64` op de content-div wordt dynamisch: `ml-64` wanneer uitgeklapt, `ml-16` wanneer ingeklapt.
-- Hiervoor moet de `isCollapsed` state worden gedeeld. Dit wordt opgelost door de collapsed state via een callback of context door te geven. Eenvoudigste aanpak: de state naar `AppLayout` verplaatsen en als prop doorgeven aan `Sidebar`.
+2. **Always render text labels** in nav buttons, logo, and user profile — remove the `{!isCollapsed && ...}` conditional wrappers. Instead, add `whitespace-nowrap` and `overflow-hidden` to text containers so they get smoothly clipped by the sidebar's width transition.
 
-## Technische aanpak
+3. **Hide sub-items during collapsed state** — keep the conditional for sub-item sections since those should not be visible at all when collapsed.
 
-- `AppLayout` beheert `isCollapsed` state en geeft `isCollapsed` + `onToggleCollapse` als props aan `Sidebar`.
-- `Sidebar` accepteert deze props en past de UI aan.
-- CSS transitions op `width` en `margin-left` zorgen voor een vloeiende animatie.
-- `savedExpandedItems` ref in Sidebar slaat de submenu-staat op bij inklappen en herstelt bij uitklappen.
+4. **Add `min-w-0` and `whitespace-nowrap`** to text spans to prevent wrapping during the transition.
+
+5. **Keep tooltip logic** — tooltips still only show when `isCollapsed` is true.
+
+This approach means the text is always in the DOM but gets naturally hidden/revealed by the parent's changing width, resulting in a perfectly smooth animation with no jumping or stuttering.
+
