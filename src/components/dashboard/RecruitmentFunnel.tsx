@@ -49,21 +49,21 @@ const comparisonDataByPeriod: Record<string, StepData[]> = {
 };
 
 const stepColors = [
-  "hsl(175, 65%, 45%)",
-  "hsl(160, 55%, 45%)",
-  "hsl(145, 50%, 42%)",
-  "hsl(35, 65%, 50%)",
-  "hsl(200, 55%, 48%)",
-  "hsl(260, 45%, 50%)",
-  "hsl(175, 70%, 38%)",
+  "hsl(175, 60%, 45%)",
+  "hsl(175, 50%, 55%)",
+  "hsl(160, 55%, 42%)",
+  "hsl(45, 30%, 55%)",
+  "hsl(175, 65%, 38%)",
+  "hsl(160, 45%, 50%)",
+  "hsl(45, 35%, 45%)",
 ];
 
 // Arc layout: 7 circles in a semicircle from left to right (180° arc)
 // Center of the arc
-const CX = 350;
-const CY = 230;
-const ARC_RADIUS = 185;
-const CIRCLE_R = 32;
+const CX = 210;
+const CY = 280;
+const ARC_RADIUS = 200;
+const CIRCLE_R = 40;
 
 // Angles from π (left) to 0 (right), evenly spaced
 const circlePositions = Array.from({ length: 7 }, (_, i) => {
@@ -129,7 +129,7 @@ function StepNode({
 
       {/* Step number */}
       <text x={cx} y={cy - 7} textAnchor="middle" dominantBaseline="middle"
-        fill={color} fontSize="10" fontWeight="700" fontFamily="Inter, sans-serif"
+        fill={color} fontSize="13" fontWeight="700" fontFamily="Inter, sans-serif"
         opacity={0.6}>
         0{index + 1}
       </text>
@@ -138,17 +138,17 @@ function StepNode({
       {isComparing && compCount !== undefined ? (
         <>
           <text x={cx} y={cy + 6} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="15" fontFamily="Inter, sans-serif">
+            fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="18" fontFamily="Inter, sans-serif">
             {count}
           </text>
-          <text x={cx} y={cy + 19} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(45, 50%, 45%)" fontWeight="600" fontSize="11" fontFamily="Inter, sans-serif">
+          <text x={cx} y={cy + 21} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(45, 50%, 45%)" fontWeight="600" fontSize="14" fontFamily="Inter, sans-serif">
             {compCount}
           </text>
         </>
       ) : (
         <text x={cx} y={cy + 8} textAnchor="middle" dominantBaseline="middle"
-          fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="17" fontFamily="Inter, sans-serif">
+          fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="22" fontFamily="Inter, sans-serif">
           {count}
         </text>
       )}
@@ -164,7 +164,7 @@ function StepNode({
       {/* Label */}
       <text x={cx + labelOffsetX} y={cy + labelOffsetY}
         textAnchor="middle" dominantBaseline="middle"
-        fill="hsl(220, 10%, 40%)" fontSize="10" fontWeight="600" fontFamily="Inter, sans-serif">
+        fill="hsl(220, 10%, 40%)" fontSize="13" fontWeight="600" fontFamily="Inter, sans-serif">
         {label}
       </text>
       {/* Conversion from previous step */}
@@ -214,7 +214,7 @@ function ConnectorLine({
       />
       {/* Percentage */}
       <text x={mx + perpX} y={my + perpY} textAnchor="middle" dominantBaseline="middle"
-        fill="hsl(220, 10%, 55%)" fontSize="9" fontWeight="500" fontFamily="Inter, sans-serif"
+        fill="hsl(220, 10%, 55%)" fontSize="12" fontWeight="500" fontFamily="Inter, sans-serif"
         style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.3s ${delay + 500}ms` }}>
         {percentage}%
       </text>
@@ -243,7 +243,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div ref={ref} className="bg-card rounded-xl p-5 border border-border">
+      <div ref={ref} className="bg-card rounded-xl p-5 border border-border min-h-[480px]">
         {/* Header */}
         <div className="flex items-start justify-between mb-1">
           <div>
@@ -276,9 +276,9 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
         </div>
 
         {/* SVG Pipeline */}
-        <svg viewBox="0 0 700 310" className="w-full" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 420 500" className="w-full" preserveAspectRatio="xMidYMid meet">
           {/* Central hub circle */}
-          <circle cx={CX} cy={CY} r={50}
+          <circle cx={CX} cy={CY} r={55}
             fill="white" stroke="hsl(220, 10%, 90%)" strokeWidth={2}
             style={{
               transform: isVisible ? "scale(1)" : "scale(0)",
@@ -287,12 +287,12 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
             }}
           />
           <text x={CX} y={CY - 8} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 15%, 25%)" fontSize="12" fontWeight="700" fontFamily="Inter, sans-serif"
+            fill="hsl(220, 15%, 25%)" fontSize="15" fontWeight="700" fontFamily="Inter, sans-serif"
             style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.4s ${delay + 300}ms` }}>
             Werving
           </text>
           <text x={CX} y={CY + 8} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 10%, 55%)" fontSize="9" fontWeight="500" fontFamily="Inter, sans-serif"
+            fill="hsl(220, 10%, 55%)" fontSize="11" fontWeight="500" fontFamily="Inter, sans-serif"
             style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.4s ${delay + 350}ms` }}>
             trechter
           </text>
