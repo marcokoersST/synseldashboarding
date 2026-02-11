@@ -116,7 +116,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
-    <div className="bg-card rounded-xl p-5 border border-border flex flex-col h-full overflow-hidden">
+    <div className="bg-card rounded-xl p-5 border border-border flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-4 shrink-0">
           <h3 className="text-sm font-medium text-foreground">Persoonlijke Ontwikkeldoelen</h3>
           <button 
