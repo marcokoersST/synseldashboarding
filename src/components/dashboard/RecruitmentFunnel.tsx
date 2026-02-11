@@ -138,11 +138,11 @@ function StepNode({
       {isComparing && compCount !== undefined ? (
         <>
           <text x={cx} y={cy + 6} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="15" fontFamily="Inter, sans-serif">
+            fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="18" fontFamily="Inter, sans-serif">
             {count}
           </text>
-          <text x={cx} y={cy + 19} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(45, 50%, 45%)" fontWeight="600" fontSize="11" fontFamily="Inter, sans-serif">
+          <text x={cx} y={cy + 21} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(45, 50%, 45%)" fontWeight="600" fontSize="14" fontFamily="Inter, sans-serif">
             {compCount}
           </text>
         </>
