@@ -292,7 +292,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
             Werving
           </text>
           <text x={CX} y={CY + 8} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 10%, 55%)" fontSize="9" fontWeight="500" fontFamily="Inter, sans-serif"
+            fill="hsl(220, 10%, 55%)" fontSize="11" fontWeight="500" fontFamily="Inter, sans-serif"
             style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.4s ${delay + 350}ms` }}>
             trechter
           </text>
