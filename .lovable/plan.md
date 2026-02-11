@@ -1,68 +1,41 @@
 
 
-## Compact Overview + Expandable Detail Mode for Wervingstrechter
+## Replace Netherlands Map with Real SVG
 
-### Overview
+### What changes
+The current hand-drawn "fish-like" Netherlands outline (NL_PATH) and decorative province lines will be replaced with the uploaded detailed SVG map of the Netherlands with real province boundaries. The animated dots will be repositioned to match the new coordinate system.
 
-In the default (overview) state, the funnel tile currently has a large `min-h-[800px]` with massive empty space below the SVG graphic. The tile will be made compact by default and expand when the user enters a "detail mode" -- which combines the existing comparison feature with additional statistics.
+### Steps
 
-### Changes in `src/components/dashboard/RecruitmentFunnel.tsx`
+**1. Copy the uploaded SVG to the project**
+- Copy `netherlands-2.svg` to `public/images/netherlands.svg` so it can be referenced via `<image>` in the SVG overlay.
 
-**1. Add a detail mode toggle (following existing pattern from CommunicationStatsCard)**
+**2. Update `NetherlandsHeatmap.tsx`**
+- Remove the `NL_PATH` constant and `PROVINCE_LINES` array
+- Change the SVG `viewBox` from `"80 30 280 430"` to `"0 0 613 724"` (matching the uploaded SVG dimensions)
+- Replace the `<path>` and province line rendering with an `<image>` element that loads `/images/netherlands.svg`, sized to fill the viewBox
+- Style the image with opacity and a CSS filter to match the dark theme (the SVG paths will appear as the map background)
+- Keep all dot rendering, tooltip, and animation logic unchanged
 
-Add a `useDetailToggle` hook (same pattern already used in multiple dashboard cards) to manage `isDetailMode`, `isTransitioning`, and `displayMode` states.
-
-**2. Compact overview mode**
-
-- Remove `min-h-[800px]` -- no fixed minimum height in overview
-- Use a smaller SVG layout: reduce `ARC_RADIUS` to `180`, adjust `ARC_CENTER_Y` to `280`, use `CIRCLE_R = 30`, and set `viewBox` to `0 0 400 540`
-- This shrinks the graphic to fit tightly, eliminating the whitespace
-- The "Vergelijken" button moves into detail mode (it becomes the detail toggle button)
-
-**3. Expanded detail mode**
-
-When the user clicks the button, the tile expands with:
-- The full-size funnel SVG (current dimensions: radius 260, viewBox 560x780)
-- Comparison controls (period selector + comparison overlay on circles)
-- A **conversion summary table** below the SVG showing all 6 step-to-step conversions with current values, plus comparison values when a period is selected
-- An **overall conversion stat** (Step 1 to Step 7: e.g., "120 -> 5 = 4.2%")
-- A **best/worst converting step** highlight
-- The existing hover info / legend section
-
-**4. Dynamic SVG constants**
-
-Instead of module-level constants, compute them based on `isDetailMode`:
-- Overview: `ARC_RADIUS=180`, `ARC_CENTER_Y=280`, `CIRCLE_R=30`, `viewBox="0 0 400 540"`, smaller font sizes
-- Detail: `ARC_RADIUS=260`, `ARC_CENTER_Y=400`, `CIRCLE_R=40`, `viewBox="0 0 560 780"` (current values)
-
-The circle positions, connector lines, etc. will recalculate based on these dynamic values.
-
-**5. Transition animation**
-
-Use a smooth height transition on the container with `transition-all duration-300` (matching existing card patterns). The SVG will crossfade between compact and expanded layouts.
+**3. Update city coordinates in `heatmapData.ts`**
+- The uploaded SVG uses a geographic projection mapped to 612x724 pixels with bounds: west=3.36, north=53.56, east=7.23, south=50.75
+- All 38 city positions will be recalculated using real geographic coordinates converted to SVG pixel space:
+  - `svgX = (longitude - 3.359) / (7.227 - 3.359) * 612.54`
+  - `svgY = (53.560 - latitude) / (53.560 - 50.751) * 723.62`
+- Example: Amsterdam (52.37, 4.90) becomes approximately (245, 307) in SVG space
+- Example: Groningen (53.22, 6.57) becomes approximately (508, 88)
 
 ### Technical details
 
-| Property | Overview | Detail |
-|----------|----------|--------|
-| ARC_RADIUS | 180 | 260 |
-| ARC_CENTER_Y | 280 | 400 |
-| CIRCLE_R | 30 | 40 |
-| viewBox | 0 0 400 540 | 0 0 560 780 |
-| min-height | none | none (content-driven) |
-| Font sizes | ~10-16px | 13-22px (current) |
-| Comparison | hidden | available |
-| Conversion table | hidden | shown below SVG |
-| Overall stats | hidden | shown |
+| Item | Before | After |
+|------|--------|-------|
+| Map source | Inline `NL_PATH` string | `<image>` referencing `/images/netherlands.svg` |
+| viewBox | `80 30 280 430` | `0 0 613 724` |
+| Province lines | 4 decorative dashed lines | Real province boundaries from SVG |
+| City coordinate system | Arbitrary 80-360 x 30-460 | Geographic projection 0-613 x 0-724 |
+| Styling | `url(#nl-fill)` gradient | CSS filter + opacity to match dark theme |
 
-### Detail mode extra content (below the SVG)
-
-- **Conversion table**: 6 rows, one per step transition, showing "Step A -> Step B: X%" with optional comparison column
-- **Summary row**: "Totaal: 120 -> 5 (4.2% conversie)" in a highlighted style
-- **Best step**: highlighted in green (e.g., "Beste conversie: Inschrijvingen -> Acquisities (78%)")
-- **Worst step**: highlighted in amber (e.g., "Laagste conversie: Vervolg -> Plaatsingen (45%)")
-
-### No breaking changes
-- The existing comparison logic, colors, animations, and data structures all remain
-- The "Vergelijken" button is repurposed as the detail/expand toggle; the period selector appears inside detail mode
+### No other changes
+- All animation, tooltip, filter, and sidebar logic stays exactly the same
+- The dot sizes, colors, glow effects, and pulse animations are unchanged
 
