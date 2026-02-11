@@ -1,22 +1,21 @@
 
 
-# Increase scrollable area height in GoalsCard
+# Reduce opacity gradient height in GoalsCard
 
 ## Problem
-Both goal list sections (user goals and manager goals) use a fixed `h-[180px]` scrollable container, which only fits about 3 goal items. This causes the content to feel cramped, with the third item filling up right to the bottom edge of the tile.
+The fade-out gradient at the bottom of each goal list section (`h-8` = 32px) is too tall, covering the bottom side of the third visible goal and hiding the top of the fourth goal.
 
 ## Solution
-Replace the fixed `h-[180px]` on both scrollable containers with a flexible height approach. Change them to use `flex-1 min-h-0` so they expand to fill all available space within the card, rather than being constrained to 180px. This lets the card's overall grid height dictate how much space each section gets.
+Reduce the gradient height from `h-8` to `h-4` (16px) on both gradient overlays (user goals and manager goals sections) in `src/components/dashboard/GoalsCard.tsx`.
 
 ## Technical Details
 
 ### `src/components/dashboard/GoalsCard.tsx`
 
-Two changes needed:
+Two gradient overlay divs need updating (around lines 133 and 150):
 
-1. **User goals scroll area** (line 138-139): Change the scroll container wrapper from `<div className="relative">` + `<div className="h-[180px] ...">` to use `flex-1 min-h-0` on the relative wrapper and remove the fixed height, replacing it with `h-full`.
+- **User goals gradient** (line ~133): Change `h-8` to `h-4`
+- **Manager goals gradient** (line ~150): Change `h-8` to `h-4`
 
-2. **Manager goals scroll area** (line 163-164): Same change -- remove the fixed `h-[180px]` and let the container flex to fill available space.
-
-This way, both sections share the available vertical space equally and adapt to the card's actual height in the grid, showing more items and eliminating the cramped bottom edge.
+This makes the fade effect more subtle, allowing the upper portion of the fourth goal item to remain visible and readable while still indicating there is more content below.
 

@@ -135,8 +135,8 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
               <span className="text-xs font-medium text-muted-foreground">Mijn doelen</span>
               <span className="text-xs text-muted-foreground/60">({sortedUserGoals.length})</span>
             </div>
-            <div className="relative flex-1 min-h-0">
-              <div className="h-full overflow-y-auto scrollbar-thin">
+            <div className="relative">
+              <div className="h-[180px] overflow-y-auto scrollbar-thin">
                 <div className="space-y-2 pr-2 pb-4">
                   {sortedUserGoals.map((goal) => (
                     <GoalItemCompact 
@@ -160,8 +160,8 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                 <span className="text-xs font-medium text-muted-foreground">Doelen van leidinggevende</span>
                 <span className="text-xs text-muted-foreground/60">({sortedManagerGoals.length})</span>
               </div>
-              <div className="relative flex-1 min-h-0">
-                <div className="h-full overflow-y-auto scrollbar-thin">
+              <div className="relative">
+                <div className="h-[180px] overflow-y-auto scrollbar-thin">
                   <div className="space-y-2 pr-2 pb-4">
                     {sortedManagerGoals.map((goal) => (
                       <GoalItemCompact 
