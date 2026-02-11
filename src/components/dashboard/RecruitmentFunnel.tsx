@@ -131,7 +131,7 @@ function StepNode({
       />
 
       {/* Step number */}
-      <text x={cx} y={cy - 7} textAnchor="middle" dominantBaseline="middle"
+      <text x={cx} y={cy - 14} textAnchor="middle" dominantBaseline="middle"
         fill={textColor} fontSize="13" fontWeight="700" fontFamily="Inter, sans-serif"
         opacity={0.6}>
         0{index + 1}
@@ -150,7 +150,7 @@ function StepNode({
           </text>
         </>
       ) : (
-        <text x={cx} y={cy + 8} textAnchor="middle" dominantBaseline="middle"
+        <text x={cx} y={cy + 12} textAnchor="middle" dominantBaseline="middle"
           fill={countColor} fontWeight="700" fontSize="22" fontFamily="Inter, sans-serif">
           {count}
         </text>
