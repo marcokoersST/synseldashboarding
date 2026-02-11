@@ -48,54 +48,68 @@ const comparisonDataByPeriod: Record<string, StepData[]> = {
   P13: makeCompData([135, 73, 57, 36, 26, 13, 7]),
 };
 
+// Light-to-dark teal gradient
 const stepColors = [
-  "hsl(175, 60%, 45%)",
-  "hsl(175, 50%, 55%)",
-  "hsl(160, 55%, 42%)",
-  "hsl(45, 30%, 55%)",
-  "hsl(175, 65%, 38%)",
-  "hsl(160, 45%, 50%)",
-  "hsl(45, 35%, 45%)",
+  "hsl(175, 50%, 75%)",
+  "hsl(175, 50%, 67%)",
+  "hsl(175, 55%, 59%)",
+  "hsl(175, 55%, 51%)",
+  "hsl(175, 60%, 43%)",
+  "hsl(175, 60%, 35%)",
+  "hsl(175, 65%, 27%)",
 ];
 
-// Arc layout: 7 circles in a semicircle from left to right (180° arc)
-// Center of the arc
-const CX = 210;
-const CY = 280;
+// Text colors: dark for light circles, white for dark
+const stepTextColors = [
+  "hsl(220, 15%, 20%)",
+  "hsl(220, 15%, 20%)",
+  "hsl(220, 15%, 20%)",
+  "hsl(220, 15%, 25%)",
+  "white",
+  "white",
+  "white",
+];
+
+const stepCountColors = [
+  "hsl(220, 15%, 20%)",
+  "hsl(220, 15%, 20%)",
+  "hsl(220, 15%, 20%)",
+  "white",
+  "white",
+  "white",
+  "white",
+];
+
+// Arc layout: vertical semicircle opening to the right
+// Arc center on the left side, angles from π/2 (top) to -π/2 (bottom)
+const ARC_CENTER_X = 80;
+const ARC_CENTER_Y = 350;
 const ARC_RADIUS = 200;
 const CIRCLE_R = 40;
 
-// Angles from π (left) to 0 (right), evenly spaced
 const circlePositions = Array.from({ length: 7 }, (_, i) => {
-  const angle = Math.PI - (i / 6) * Math.PI; // π to 0
+  const angle = Math.PI / 2 - (i / 6) * Math.PI; // π/2 to -π/2
   return {
-    x: CX + ARC_RADIUS * Math.cos(angle),
-    y: CY - ARC_RADIUS * Math.sin(angle),
+    x: ARC_CENTER_X + ARC_RADIUS * Math.cos(angle),
+    y: ARC_CENTER_Y - ARC_RADIUS * Math.sin(angle),
   };
 });
 
 // --- Sub-components ---
 
 function StepNode({
-  cx, cy, count, label, color, index, delay, isVisible,
+  cx, cy, count, label, color, textColor, countColor, index, delay, isVisible,
   isComparing, compCount, isHovered, onHover,
 }: {
   cx: number; cy: number; count: number; label: string; color: string;
+  textColor: string; countColor: string;
   index: number; delay: number; isVisible: boolean;
   isComparing: boolean; compCount?: number; isHovered: boolean;
   onHover: (i: number | null) => void;
 }) {
-  // Label position: above for top circles, below for bottom ones
-  const angle = Math.PI - (index / 6) * Math.PI;
-  const isTop = cy < CY - 40;
-  const isBottom = cy > CY + 40;
-  const labelOffsetY = isTop ? -CIRCLE_R - 28 : isBottom ? CIRCLE_R + 16 : (angle > Math.PI / 2 ? -CIRCLE_R - 28 : -CIRCLE_R - 28);
-  const labelOffsetX = 0;
-
-  // Small colored indicator dot position (like reference)
-  const dotAngle = angle + Math.PI / 2 + 0.4; // top-left area of circle
-  const dotX = cx + (CIRCLE_R + 2) * Math.cos(dotAngle);
-  const dotY = cy - (CIRCLE_R + 2) * Math.sin(dotAngle);
+  // Label to the right of the circle
+  const labelX = cx + CIRCLE_R + 14;
+  const labelY = cy;
 
   return (
     <g
@@ -108,28 +122,15 @@ function StepNode({
         transition: `transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
       }}
     >
-      {/* Outer ring */}
+      {/* Main filled circle */}
       <circle cx={cx} cy={cy} r={CIRCLE_R}
-        fill="white" stroke="hsl(220, 10%, 88%)" strokeWidth={2}
-        style={{ filter: isHovered ? "drop-shadow(0 2px 8px rgba(0,0,0,0.1))" : "none", transition: "filter 0.2s" }}
-      />
-
-      {/* Colored accent arc (partial ring like reference) */}
-      <circle cx={cx} cy={cy} r={CIRCLE_R}
-        fill="none" stroke={color} strokeWidth={3}
-        strokeDasharray={`${CIRCLE_R * 1.8} ${2 * Math.PI * CIRCLE_R}`}
-        strokeDashoffset={-CIRCLE_R * 0.3}
-        strokeLinecap="round"
-      />
-
-      {/* Colored indicator dot */}
-      <circle cx={dotX} cy={dotY} r={5}
-        fill={color} stroke="white" strokeWidth={2}
+        fill={color}
+        style={{ filter: isHovered ? "drop-shadow(0 2px 8px rgba(0,0,0,0.15))" : "none", transition: "filter 0.2s" }}
       />
 
       {/* Step number */}
       <text x={cx} y={cy - 7} textAnchor="middle" dominantBaseline="middle"
-        fill={color} fontSize="13" fontWeight="700" fontFamily="Inter, sans-serif"
+        fill={textColor} fontSize="13" fontWeight="700" fontFamily="Inter, sans-serif"
         opacity={0.6}>
         0{index + 1}
       </text>
@@ -138,7 +139,7 @@ function StepNode({
       {isComparing && compCount !== undefined ? (
         <>
           <text x={cx} y={cy + 6} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="18" fontFamily="Inter, sans-serif">
+            fill={countColor} fontWeight="700" fontSize="18" fontFamily="Inter, sans-serif">
             {count}
           </text>
           <text x={cx} y={cy + 21} textAnchor="middle" dominantBaseline="middle"
@@ -148,7 +149,7 @@ function StepNode({
         </>
       ) : (
         <text x={cx} y={cy + 8} textAnchor="middle" dominantBaseline="middle"
-          fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="22" fontFamily="Inter, sans-serif">
+          fill={countColor} fontWeight="700" fontSize="22" fontFamily="Inter, sans-serif">
           {count}
         </text>
       )}
@@ -161,13 +162,12 @@ function StepNode({
         />
       )}
 
-      {/* Label */}
-      <text x={cx + labelOffsetX} y={cy + labelOffsetY}
-        textAnchor="middle" dominantBaseline="middle"
+      {/* Label to the right */}
+      <text x={labelX} y={labelY}
+        textAnchor="start" dominantBaseline="middle"
         fill="hsl(220, 10%, 40%)" fontSize="13" fontWeight="600" fontFamily="Inter, sans-serif">
         {label}
       </text>
-      {/* Conversion from previous step */}
     </g>
   );
 }
@@ -178,43 +178,42 @@ function ConnectorLine({
   x1: number; y1: number; x2: number; y2: number;
   percentage: number; delay: number; isVisible: boolean;
 }) {
-  // Line from center to circle, with percentage near the circle end
   const dx = x2 - x1;
   const dy = y2 - y1;
   const dist = Math.sqrt(dx * dx + dy * dy);
   const nx = dx / dist;
   const ny = dy / dist;
 
-  // Start from center edge, end at circle edge
-  const sx = x1 + nx * 52;
-  const sy = y1 + ny * 52;
-  const ex = x2 - nx * (CIRCLE_R + 8);
-  const ey = y2 - ny * (CIRCLE_R + 8);
+  // Start from edge of circle 1, end at edge of circle 2
+  const sx = x1 + nx * (CIRCLE_R + 4);
+  const sy = y1 + ny * (CIRCLE_R + 4);
+  const ex = x2 - nx * (CIRCLE_R + 4);
+  const ey = y2 - ny * (CIRCLE_R + 4);
 
-  // Midpoint for percentage label
   const mx = (sx + ex) / 2;
   const my = (sy + ey) / 2;
-  const perpX = -ny * 12;
-  const perpY = nx * 12;
+  // Perpendicular offset for label
+  const perpX = -ny * 14;
+  const perpY = nx * 14;
 
   const pathLen = Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2);
 
   return (
     <g>
       <line x1={sx} y1={sy} x2={ex} y2={ey}
-        stroke="hsl(220, 10%, 85%)" strokeWidth={1.5}
+        stroke="hsl(220, 10%, 82%)" strokeWidth={1.5}
         strokeDasharray={pathLen}
         strokeDashoffset={isVisible ? 0 : pathLen}
         style={{ transition: `stroke-dashoffset 0.8s ease-out ${delay}ms` }}
       />
-      {/* Small arrow at the end */}
-      <circle cx={ex + nx * 3} cy={ey + ny * 3} r={2.5}
-        fill="hsl(220, 10%, 75%)"
+      {/* Arrow dot */}
+      <circle cx={ex - nx * 2} cy={ey - ny * 2} r={2.5}
+        fill="hsl(220, 10%, 70%)"
         style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.3s ${delay + 400}ms` }}
       />
       {/* Percentage */}
       <text x={mx + perpX} y={my + perpY} textAnchor="middle" dominantBaseline="middle"
-        fill="hsl(220, 10%, 55%)" fontSize="12" fontWeight="500" fontFamily="Inter, sans-serif"
+        fill="hsl(220, 10%, 50%)" fontSize="12" fontWeight="500" fontFamily="Inter, sans-serif"
         style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.3s ${delay + 500}ms` }}>
         {percentage}%
       </text>
@@ -243,7 +242,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div ref={ref} className="bg-card rounded-xl p-5 border border-border min-h-[480px]">
+      <div ref={ref} className="bg-card rounded-xl p-5 border border-border min-h-[720px]">
         {/* Header */}
         <div className="flex items-start justify-between mb-1">
           <div>
@@ -276,33 +275,13 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
         </div>
 
         {/* SVG Pipeline */}
-        <svg viewBox="0 0 420 500" className="w-full" preserveAspectRatio="xMidYMid meet">
-          {/* Central hub circle */}
-          <circle cx={CX} cy={CY} r={55}
-            fill="white" stroke="hsl(220, 10%, 90%)" strokeWidth={2}
-            style={{
-              transform: isVisible ? "scale(1)" : "scale(0)",
-              transformOrigin: `${CX}px ${CY}px`,
-              transition: `transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay + 50}ms`,
-            }}
-          />
-          <text x={CX} y={CY - 8} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 15%, 25%)" fontSize="15" fontWeight="700" fontFamily="Inter, sans-serif"
-            style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.4s ${delay + 300}ms` }}>
-            Werving
-          </text>
-          <text x={CX} y={CY + 8} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 10%, 55%)" fontSize="11" fontWeight="500" fontFamily="Inter, sans-serif"
-            style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.4s ${delay + 350}ms` }}>
-            trechter
-          </text>
-
-          {/* Connector lines from center to each circle */}
+        <svg viewBox="0 0 420 700" className="w-full" preserveAspectRatio="xMidYMid meet">
+          {/* Connector lines between consecutive circles */}
           {conversions.map((pct, i) => (
             <ConnectorLine
               key={i}
-              x1={CX}
-              y1={CY}
+              x1={circlePositions[i].x}
+              y1={circlePositions[i].y}
               x2={circlePositions[i + 1].x}
               y2={circlePositions[i + 1].y}
               percentage={pct}
@@ -310,16 +289,6 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
               isVisible={isVisible}
             />
           ))}
-
-          {/* Also draw line from center to first circle (no percentage) */}
-          <line
-            x1={CX - 40} y1={CY}
-            x2={circlePositions[0].x + CIRCLE_R + 8} y2={circlePositions[0].y}
-            stroke="hsl(220, 10%, 85%)" strokeWidth={1.5}
-            strokeDasharray="200"
-            strokeDashoffset={isVisible ? 0 : 200}
-            style={{ transition: `stroke-dashoffset 0.8s ease-out ${delay + 150}ms` }}
-          />
 
           {/* Step circles */}
           {currentData.map((step, i) => (
@@ -330,6 +299,8 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
               count={step.count}
               label={step.shortLabel}
               color={stepColors[i]}
+              textColor={stepTextColors[i]}
+              countColor={stepCountColors[i]}
               index={i}
               delay={delay + 100 + i * 80}
               isVisible={isVisible}
