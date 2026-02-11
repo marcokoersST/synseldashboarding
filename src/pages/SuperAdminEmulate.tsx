@@ -1,88 +1,8 @@
 import { useState } from "react";
-import { Sidebar } from "@/components/dashboard/Sidebar";
-import { TopBar } from "@/components/dashboard/TopBar";
 import { UserSelector } from "@/components/admin/UserSelector";
 import { EmulationBanner } from "@/components/admin/EmulationBanner";
 import { EmulationUser } from "@/data/adminData";
 import { Eye } from "lucide-react";
-
-// Lazy-load the dashboards to embed them
-import Index from "./Index";
-import ManagerDashboard from "./ManagerDashboard";
-
-export default function SuperAdminEmulate() {
-  const [selectedUser, setSelectedUser] = useState<EmulationUser | null>(null);
-
-  return (
-    <div className="min-h-screen bg-background flex">
-      <Sidebar />
-      <div className="flex-1 ml-64">
-        <TopBar />
-        <main className="p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-foreground">User Emulatie</h1>
-            <p className="text-sm text-muted-foreground mt-1">Bekijk het dashboard vanuit het perspectief van een andere gebruiker</p>
-          </div>
-
-          <UserSelector selectedUser={selectedUser} onSelectUser={setSelectedUser} />
-
-          {selectedUser && (
-            <>
-              <EmulationBanner user={selectedUser} onStop={() => setSelectedUser(null)} />
-              
-              {/* Embedded dashboard based on user role */}
-              <div className="border border-border rounded-xl overflow-hidden">
-                {selectedUser.role === "consultant" ? (
-                  <EmulatedConsultantDashboard userName={selectedUser.name} />
-                ) : (
-                  <EmulatedManagerDashboard userName={selectedUser.name} />
-                )}
-              </div>
-            </>
-          )}
-
-          {!selectedUser && (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                <Eye className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-medium text-foreground mb-1">Geen gebruiker geselecteerd</h3>
-              <p className="text-sm text-muted-foreground max-w-md">
-                Selecteer een consultant of manager hierboven om hun dashboard te bekijken alsof je bent ingelogd als die gebruiker.
-              </p>
-            </div>
-          )}
-        </main>
-      </div>
-    </div>
-  );
-}
-
-// Simplified embedded views that reuse existing dashboard content without the sidebar/topbar
-function EmulatedConsultantDashboard({ userName }: { userName: string }) {
-  return (
-    <div className="p-6 bg-background">
-      <div className="mb-4 px-2">
-        <h2 className="text-lg font-semibold text-foreground">Dashboard van {userName}</h2>
-        <p className="text-xs text-muted-foreground">Consultant dashboard weergave (read-only)</p>
-      </div>
-      {/* We render the Index page content inline - stripped of sidebar/topbar */}
-      <IndexContent />
-    </div>
-  );
-}
-
-function EmulatedManagerDashboard({ userName }: { userName: string }) {
-  return (
-    <div className="p-6 bg-background">
-      <div className="mb-4 px-2">
-        <h2 className="text-lg font-semibold text-foreground">Manager Dashboard van {userName}</h2>
-        <p className="text-xs text-muted-foreground">Manager dashboard weergave (read-only)</p>
-      </div>
-      <ManagerContent />
-    </div>
-  );
-}
 
 // Extracted dashboard content without layout wrappers
 import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
@@ -104,6 +24,71 @@ import { ForecastGoalsProvider } from "@/contexts/ForecastGoalsContext";
 import { ManagerRevenueLeaderboard } from "@/components/manager/ManagerRevenueLeaderboard";
 import { TeamPlacementsCard } from "@/components/manager/TeamPlacementsCard";
 import { CompanyPlacementsCard } from "@/components/manager/CompanyPlacementsCard";
+
+export default function SuperAdminEmulate() {
+  const [selectedUser, setSelectedUser] = useState<EmulationUser | null>(null);
+
+  return (
+    <>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground">User Emulatie</h1>
+        <p className="text-sm text-muted-foreground mt-1">Bekijk het dashboard vanuit het perspectief van een andere gebruiker</p>
+      </div>
+
+      <UserSelector selectedUser={selectedUser} onSelectUser={setSelectedUser} />
+
+      {selectedUser && (
+        <>
+          <EmulationBanner user={selectedUser} onStop={() => setSelectedUser(null)} />
+          
+          <div className="border border-border rounded-xl overflow-hidden">
+            {selectedUser.role === "consultant" ? (
+              <EmulatedConsultantDashboard userName={selectedUser.name} />
+            ) : (
+              <EmulatedManagerDashboard userName={selectedUser.name} />
+            )}
+          </div>
+        </>
+      )}
+
+      {!selectedUser && (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+            <Eye className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-medium text-foreground mb-1">Geen gebruiker geselecteerd</h3>
+          <p className="text-sm text-muted-foreground max-w-md">
+            Selecteer een consultant of manager hierboven om hun dashboard te bekijken alsof je bent ingelogd als die gebruiker.
+          </p>
+        </div>
+      )}
+    </>
+  );
+}
+
+function EmulatedConsultantDashboard({ userName }: { userName: string }) {
+  return (
+    <div className="p-6 bg-background">
+      <div className="mb-4 px-2">
+        <h2 className="text-lg font-semibold text-foreground">Dashboard van {userName}</h2>
+        <p className="text-xs text-muted-foreground">Consultant dashboard weergave (read-only)</p>
+      </div>
+      <IndexContent />
+    </div>
+  );
+}
+
+function EmulatedManagerDashboard({ userName }: { userName: string }) {
+  return (
+    <div className="p-6 bg-background">
+      <div className="mb-4 px-2">
+        <h2 className="text-lg font-semibold text-foreground">Manager Dashboard van {userName}</h2>
+        <p className="text-xs text-muted-foreground">Manager dashboard weergave (read-only)</p>
+      </div>
+      <ManagerContent />
+    </div>
+  );
+}
 
 function IndexContent() {
   return (

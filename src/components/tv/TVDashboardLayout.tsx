@@ -1,7 +1,5 @@
 import { useState, useEffect, ReactNode } from "react";
 import { Monitor, X } from "lucide-react";
-import { Sidebar } from "@/components/dashboard/Sidebar";
-import { cn } from "@/lib/utils";
 
 interface TVDashboardLayoutProps {
   title: string;
@@ -52,21 +50,18 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <Sidebar />
-      <main className="flex-1 ml-64 p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          <button
-            onClick={toggleFullscreen}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary transition-colors text-sm text-foreground"
-          >
-            <Monitor className="w-4 h-4" />
-            TV Modus
-          </button>
-        </div>
-        {children}
-      </main>
+    <div className="p-2">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+        <button
+          onClick={toggleFullscreen}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary transition-colors text-sm text-foreground"
+        >
+          <Monitor className="w-4 h-4" />
+          TV Modus
+        </button>
+      </div>
+      {children}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import Vergelijking from "./pages/Vergelijking";
 import VergelijkingOverview from "./pages/VergelijkingOverview";
@@ -47,36 +48,39 @@ const App = () => (
       <BrowserRouter>
         <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">Laden...</div>}>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/vergelijking" element={<VergelijkingOverview />} />
-            <Route path="/vergelijking/:memberId" element={<Vergelijking />} />
-            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-            <Route path="/super-admin" element={<SuperAdminDashboard />} />
-            <Route path="/super-admin/emulate" element={<SuperAdminEmulate />} />
-            <Route path="/tv/sales-funnel-week" element={<TVSalesFunnelWeek />} />
-            <Route path="/tv/sales-funnel-period" element={<TVSalesFunnelPeriod />} />
-            <Route path="/tv/beker" element={<TVBekerDashboard />} />
-            <Route path="/tv/gedetacheerden" element={<TVGedetacheerden />} />
-            <Route path="/tv/ranglijsten" element={<TVRanglijsten />} />
-            <Route path="/consultant/geld-bonus" element={<GeldBonus />} />
-            <Route path="/consultant/kpi-cockpit" element={<KPICockpit />} />
-            <Route path="/consultant/sales-funnel" element={<SalesFunnel />} />
-            <Route path="/consultant/next-actions" element={<NextActions />} />
-            <Route path="/consultant/gesprekskwaliteit" element={<Gesprekskwaliteit />} />
-            <Route path="/consultant/activiteit-resultaat" element={<ActiviteitResultaat />} />
-            <Route path="/consultant/benchmarking" element={<Benchmarking />} />
-            <Route path="/consultant/kandidaat-first" element={<KandidaatFirst />} />
-            <Route path="/consultant/klant-markt" element={<KlantMarkt />} />
-            <Route path="/consultant/crm-hygiene" element={<CRMHygiene />} />
-            <Route path="/consultant/snelheid" element={<Snelheid />} />
-            <Route path="/consultant/forecasting" element={<Forecasting />} />
-            <Route path="/consultant/detavast" element={<Detavast />} />
-            <Route path="/consultant/skills" element={<SkillsTraining />} />
-            <Route path="/consultant/gamification" element={<Gamification />} />
-            <Route path="/consultant/alerts" element={<AlertsRisicos />} />
-            <Route path="/consultant/match-kwaliteit" element={<MatchKwaliteit />} />
-            <Route path="/consultant/route-naar-1" element={<RouteNaar1 />} />
-            <Route path="/consultant/extra" element={<ExtraDashboards />} />
+            {/* All pages sharing persistent Sidebar + TopBar */}
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/vergelijking" element={<VergelijkingOverview />} />
+              <Route path="/vergelijking/:memberId" element={<Vergelijking />} />
+              <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+              <Route path="/super-admin" element={<SuperAdminDashboard />} />
+              <Route path="/super-admin/emulate" element={<SuperAdminEmulate />} />
+              <Route path="/tv/sales-funnel-week" element={<TVSalesFunnelWeek />} />
+              <Route path="/tv/sales-funnel-period" element={<TVSalesFunnelPeriod />} />
+              <Route path="/tv/beker" element={<TVBekerDashboard />} />
+              <Route path="/tv/gedetacheerden" element={<TVGedetacheerden />} />
+              <Route path="/tv/ranglijsten" element={<TVRanglijsten />} />
+              <Route path="/consultant/geld-bonus" element={<GeldBonus />} />
+              <Route path="/consultant/kpi-cockpit" element={<KPICockpit />} />
+              <Route path="/consultant/sales-funnel" element={<SalesFunnel />} />
+              <Route path="/consultant/next-actions" element={<NextActions />} />
+              <Route path="/consultant/gesprekskwaliteit" element={<Gesprekskwaliteit />} />
+              <Route path="/consultant/activiteit-resultaat" element={<ActiviteitResultaat />} />
+              <Route path="/consultant/benchmarking" element={<Benchmarking />} />
+              <Route path="/consultant/kandidaat-first" element={<KandidaatFirst />} />
+              <Route path="/consultant/klant-markt" element={<KlantMarkt />} />
+              <Route path="/consultant/crm-hygiene" element={<CRMHygiene />} />
+              <Route path="/consultant/snelheid" element={<Snelheid />} />
+              <Route path="/consultant/forecasting" element={<Forecasting />} />
+              <Route path="/consultant/detavast" element={<Detavast />} />
+              <Route path="/consultant/skills" element={<SkillsTraining />} />
+              <Route path="/consultant/gamification" element={<Gamification />} />
+              <Route path="/consultant/alerts" element={<AlertsRisicos />} />
+              <Route path="/consultant/match-kwaliteit" element={<MatchKwaliteit />} />
+              <Route path="/consultant/route-naar-1" element={<RouteNaar1 />} />
+              <Route path="/consultant/extra" element={<ExtraDashboards />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
