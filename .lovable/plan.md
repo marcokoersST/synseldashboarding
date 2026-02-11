@@ -1,27 +1,43 @@
 
-# Fix: Goals card sections need fixed-height scrollable areas
+
+# Fix: Prestatie Score card not appearing
 
 ## Problem
-After removing `h-full` from the GoalsCard, the `flex-1 min-h-0` containers with `absolute inset-0` collapse to zero height because there's no explicit height constraint. The goals are invisible.
+The Prestatie Score card renders with `opacity-0` and relies on an `IntersectionObserver` with a 700ms delay to become visible. After removing `items-stretch`, the right column no longer stretches to match the TeamLeaderboard's height, which can cause the card to sit just outside the viewport threshold -- meaning the observer never fires and the card stays invisible (`opacity-0`).
 
 ## Solution
-Replace the flex-based dynamic sizing with fixed-height scroll containers for both goal sections. Each section gets a fixed height that shows approximately 3.5 goal items (indicating more content is available via scroll). This is self-contained within the GoalsCard and won't affect neighboring tiles.
+Two changes to ensure the card always appears:
 
-## Technical Changes
+### 1. `src/pages/Index.tsx` (line 46)
+Add `items-start` to the grid so tiles align to the top. This is cosmetically the same as the current behavior but makes alignment explicit.
 
-### `src/components/dashboard/GoalsCard.tsx`
+### 2. `src/components/dashboard/PerformanceScoreCard.tsx` (line 22)
+The real fix: the 700ms delay on a card that may be near the viewport edge causes the IntersectionObserver to potentially miss it. Reduce the delay or, better yet, remove the `AnimatedCard` wrapper's dependency on intersection for this specific card. 
 
-**Mijn doelen section (lines 138-152):**
-- Remove the `relative flex-1 min-h-0` wrapper with `absolute inset-0` pattern
-- Replace with a simple `h-[160px] overflow-y-auto scrollbar-thin` container
-- Keep the fade gradient at the bottom
+The simplest fix: lower the `delay` prop passed from Index.tsx (from 700 to 600) and reduce the `threshold` requirement. But since other cards with similar delays work fine, the actual root cause is likely that the card's `opacity-0` state combined with `translate-y-4` makes it effectively invisible and potentially outside the observer's reach.
 
-**Doelen van leidinggevende section (lines 163-177):**
-- Same change: remove the `relative flex-1 min-h-0` / `absolute inset-0` pattern
-- Replace with `h-[160px] overflow-y-auto scrollbar-thin`
-- Keep the fade gradient
+**Recommended approach**: Ensure the PerformanceScoreCard always triggers its animation by adding a fallback timer in `useAnimateOnMount` that forces visibility after a maximum wait time. This prevents any card from staying permanently invisible.
 
-**Parent flex container (line 131):**
-- Remove `flex-1 min-h-0` from the parent wrapper since children now have explicit heights
+### Changes:
 
-The `160px` height at `text-xs` line height with spacing shows roughly 3.5 items, clearly indicating scrollability.
+**`src/hooks/useAnimateOnMount.ts`**
+- Add a fallback `setTimeout` (e.g., 2 seconds after mount) that forces `isVisible = true` if the IntersectionObserver hasn't triggered yet. This ensures no card stays permanently invisible regardless of scroll position.
+
+```
+// Add inside useEffect, after observer setup:
+const fallbackTimer = setTimeout(() => {
+  if (!hasAnimated) {
+    setIsVisible(true);
+    setHasAnimated(true);
+  }
+}, delay + 2000);
+
+// Clean up in return:
+return () => {
+  observer.disconnect();
+  clearTimeout(fallbackTimer);
+};
+```
+
+This is a minimal, safe change that guarantees the Prestatie Score card (and any future cards) will always appear, even if the IntersectionObserver doesn't fire due to edge-case viewport positioning.
+
