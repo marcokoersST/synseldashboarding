@@ -1,20 +1,19 @@
 
 
-# Fix PlacementsCard height jumping on hover
+# Fix PlacementsCard height stability affecting adjacent tiles
 
 ## Problem
-When hovering over periods in detail mode, the info area below the chart switches between showing 3 items ("Jouw positie" default) and 4 items (period-specific data including Werkelijk/Prognose + 3 benchmarks), causing the card to grow/shrink and shift the layout.
+The `min-h-[168px]` applied to the info area is not enough to prevent layout shifts. When hovering over periods, the info area switches between 3 rows (default "Jouw positie") and 4 rows (period detail with Werkelijk + 3 benchmarks), causing the adjacent "Persoonlijke Ontwikkeldoelen" tile to shift.
 
 ## Solution
-Give the dynamic info area a fixed minimum height that accommodates the tallest state (4 rows), so hovering never changes the card size. The non-detail mode (list view) should also match overall card height by letting its candidates list flex to fill available space.
+Always render exactly 4 rows in the info area for both states (default and hover). In the default "Jouw positie" state, add a 4th invisible/empty row so the height matches the hover state exactly. This eliminates any height difference between the two states entirely, rather than relying on `min-h` which can be imprecise.
 
 ## Technical Details
 
 ### `src/components/dashboard/PlacementsCard.tsx`
 
-1. **Fixed-height info area in detail mode** (around line 328): Add a `min-h-[168px]` to the info area `div` so it always reserves space for 4 rows (header + 4 stat rows), preventing layout shifts when hovering between periods.
+1. **Default state: always show 4 rows** - In the "Jouw positie" section (lines 362-386), the `versusItems` array only has 3 items (Minimum Norm, Fast Lane, Best Performer). Add a 4th invisible spacer row with the same height/padding as the real rows (`py-1.5 px-3 rounded-lg`) but with `invisible` class. This ensures both states render identically sized content.
 
-2. **Non-detail mode fills available space**: The candidates list container (around line 252) already has `h-[180px]`, and the mini chart is `h-16`. These should naturally match. If needed, adjust the mini chart height or list height so the total card height in non-detail mode matches detail mode (legend ~24px + chart 192px + info area ~168px = ~384px vs mini chart 64px + labels 16px + list header 20px + list 180px = ~280px). Increase the candidates list from `h-[180px]` to flex-fill the remaining space using `flex-1` on the container.
+2. **Keep `min-h-[168px]` as a safety net** - The min-height stays as a fallback, but the primary fix is structural: both states always output 4 rows.
 
-3. **Ensure the outer container has a fixed height**: Set a consistent `min-h` on the card content or let the detail mode define the natural height while non-detail mode stretches its content to match via flexbox.
-
+This approach is more robust than relying on pixel-based min-height because it guarantees identical DOM structure in both states.
