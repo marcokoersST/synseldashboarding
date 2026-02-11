@@ -1,22 +1,23 @@
 
-# Consultant submenu inklapbaar maken
+# Fix scroll-leaking tussen sidebar en hoofdcontent
 
 ## Probleem
 
-Klikken op "Consultant" in de sidebar navigeert alleen naar de route maar klapt het submenu niet in/uit. Daarnaast forceert `effectiveExpandedItems` het submenu open wanneer je op een consultant-pagina bent, waardoor handmatig inklappen onmogelijk is.
+Wanneer je met de muis over de sidebar scrollt en het einde bereikt, "lekt" het scroll-event door naar de hoofdpagina (en vice versa). Dit zorgt ervoor dat de pagina onverwacht mee-scrollt.
 
 ## Oplossing
 
+De CSS-eigenschap `overscroll-behavior: contain` toevoegen aan beide scrollbare containers. Dit voorkomt dat scroll-events doorlekken naar de parent/andere container wanneer het einde van een scrollbaar element is bereikt.
+
+## Wijzigingen
+
 **Bestand: `src/components/dashboard/Sidebar.tsx`**
+- Op het `<nav>` element de class `overscroll-contain` toevoegen (Tailwind utility voor `overscroll-behavior: contain`)
 
-1. **`handleNavClick` aanpassen**: Voor items met subItems wordt niet genavigeerd maar alleen het submenu getoggled (expand/collapse). Dit is het verwachte gedrag: de parent-knop fungeert als toggle, de sub-items navigeren.
+**Bestand: `src/index.css`**
+- Een `.overscroll-contain` utility toevoegen als die nog niet beschikbaar is, of direct de Tailwind class gebruiken
 
-2. **Handmatige collapse respecteren**: Een `manuallyCollapsed` state toevoegen. Wanneer een gebruiker een item handmatig inklapt, wordt dat onthouden. De `effectiveExpandedItems` logica checkt of een item niet handmatig is ingeklapt voordat het automatisch wordt uitgevouwen.
+**Bestand: `src/pages/Index.tsx`** (en `ConsultantLayout.tsx`, `ManagerDashboard.tsx`, etc.)
+- Op het `<main>` element ook `overscroll-contain` toevoegen zodat scrollen in de hoofdcontent niet doorlekt naar de sidebar
 
-3. **Chevron-icoon**: De aparte `onClick` op het chevron-icoon wordt overbodig omdat de hele knop nu togglet. Het chevron blijft puur visueel.
-
-## Technisch detail
-
-- `handleNavClick`: Als `item.subItems` bestaat, toggle `expandedItems` en update `manuallyCollapsed`. Anders: navigeer.
-- `effectiveExpandedItems`: Alleen auto-expanden als het item NIET in `manuallyCollapsed` zit.
-- Bij navigatie naar een andere sectie wordt `manuallyCollapsed` gereset voor die sectie.
+Dit is een pure CSS-fix zonder JavaScript, en werkt in alle moderne browsers.
