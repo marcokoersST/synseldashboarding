@@ -105,7 +105,6 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const [manuallyCollapsed, setManuallyCollapsed] = useState<string[]>([]);
   const savedExpandedRef = useRef<{ expanded: string[]; manual: string[] }>({ expanded: [], manual: [] });
 
-  // Auto-expand items when on their sub-routes (unless manually collapsed)
   const isOnComparisonPage = location.pathname.startsWith("/vergelijking");
   const isOnSuperAdminPage = location.pathname.startsWith("/super-admin");
   const isOnTVPage = location.pathname.startsWith("/tv/");
@@ -125,10 +124,8 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
 
   const handleToggleCollapse = () => {
     if (!isCollapsed) {
-      // Save current state before collapsing
       savedExpandedRef.current = { expanded: expandedItems, manual: manuallyCollapsed };
     } else {
-      // Restore saved state when expanding
       setExpandedItems(savedExpandedRef.current.expanded);
       setManuallyCollapsed(savedExpandedRef.current.manual);
     }
@@ -161,7 +158,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
       <button
         onClick={() => handleNavClick(item)}
         className={cn(
-          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors whitespace-nowrap overflow-hidden",
           isCollapsed && "justify-center px-0",
           item.active 
             ? "bg-sidebar-accent text-sidebar-accent-foreground" 
@@ -169,15 +166,11 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
         )}
       >
         <item.icon className="w-5 h-5 shrink-0" />
-        {!isCollapsed && (
-          <>
-            <span className="flex-1 text-left">{item.label}</span>
-            {hasSubItems && (
-              <span className="p-0.5">
-                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              </span>
-            )}
-          </>
+        <span className="flex-1 text-left min-w-0 truncate">{item.label}</span>
+        {hasSubItems && (
+          <span className="p-0.5 shrink-0">
+            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          </span>
         )}
       </button>
     );
@@ -186,19 +179,19 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   return (
     <TooltipProvider delayDuration={0}>
       <aside className={cn(
-        "fixed left-0 top-0 h-screen bg-sidebar flex flex-col z-50 transition-[width] duration-300 ease-in-out",
+        "fixed left-0 top-0 h-screen bg-sidebar flex flex-col z-50 transition-[width] duration-300 ease-in-out overflow-hidden",
         isCollapsed ? "w-16" : "w-64"
       )}>
         {/* Logo */}
-        <div className={cn("p-6 flex items-center gap-3", isCollapsed && "justify-center p-4")}>
+        <div className="p-6 flex items-center gap-3 whitespace-nowrap overflow-hidden">
           <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
             <span className="text-sidebar-primary-foreground font-bold text-sm">S</span>
           </div>
-          {!isCollapsed && <span className="text-sidebar-accent-foreground font-semibold text-lg">Synsel AI</span>}
+          <span className="text-sidebar-accent-foreground font-semibold text-lg">Synsel AI</span>
         </div>
 
         {/* Main Navigation */}
-        <nav className="flex-1 px-3 py-2 overflow-y-auto scrollbar-thin overscroll-contain">
+        <nav className="flex-1 px-3 py-2 overflow-y-auto overflow-x-hidden scrollbar-thin overscroll-contain">
           <div className="space-y-1">
             {navItems.map((item) => {
               const hasSubItems = item.subItems && item.subItems.length > 0;
@@ -219,7 +212,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
                     navButton(item)
                   )}
                   
-                  {/* Sub Items */}
+                  {/* Sub Items - only show when expanded AND not collapsed */}
                   {hasSubItems && isExpanded && !isCollapsed && (
                     <div className="ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-3">
                       {item.subItems!.map((subItem) => {
@@ -231,14 +224,14 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
                             key={subItem.path}
                             onClick={() => navigate(subItem.path)}
                             className={cn(
-                              "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
+                              "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors whitespace-nowrap overflow-hidden",
                               subActive 
                                 ? "bg-sidebar-accent text-sidebar-accent-foreground" 
                                 : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                             )}
                           >
-                            <SubIcon className="w-4 h-4" />
-                            <span>{subItem.label}</span>
+                            <SubIcon className="w-4 h-4 shrink-0" />
+                            <span className="min-w-0 truncate">{subItem.label}</span>
                           </button>
                         );
                       })}
@@ -252,23 +245,16 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
 
         {/* User Profile */}
         <div className="p-3 border-t border-sidebar-border">
-          <div className={cn(
-            "flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer",
-            isCollapsed && "justify-center p-1"
-          )}>
+          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer whitespace-nowrap overflow-hidden">
             <Avatar className="w-9 h-9 shrink-0">
               <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" />
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
-            {!isCollapsed && (
-              <>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-sidebar-accent-foreground truncate">Jouw naam</p>
-                  <p className="text-xs text-sidebar-foreground truncate">Recruitment Consultant</p>
-                </div>
-                <LogOut className="w-4 h-4 text-sidebar-foreground" />
-              </>
-            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">Jouw naam</p>
+              <p className="text-xs text-sidebar-foreground truncate">Recruitment Consultant</p>
+            </div>
+            <LogOut className="w-4 h-4 text-sidebar-foreground shrink-0" />
           </div>
         </div>
 
