@@ -381,6 +381,10 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                       </div>
                     );
                   })}
+                  {/* Invisible spacer row to match hover state (4 rows) */}
+                  <div className="py-1.5 px-3 rounded-lg invisible" aria-hidden="true">
+                    <div className="flex items-center gap-2"><span className="text-xs">&nbsp;</span></div>
+                  </div>
                 </>
               )}
             </div>
