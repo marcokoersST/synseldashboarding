@@ -243,7 +243,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div ref={ref} className="bg-card rounded-xl p-5 border border-border">
+      <div ref={ref} className="bg-card rounded-xl p-5 border border-border min-h-[480px]">
         {/* Header */}
         <div className="flex items-start justify-between mb-1">
           <div>
