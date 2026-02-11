@@ -2,26 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { heatmapEvents, unitColors, getHeatmapStats, HeatmapUnit, HeatmapEvent } from "@/data/heatmapData";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-// Simplified SVG path of the Netherlands outline
-const NL_PATH = `M185,60 L195,55 L210,58 L225,52 L240,55 L258,48 L275,52 L290,50 
-L305,58 L315,70 L320,85 L322,100 L318,120 L315,140 L312,160 L310,180 
-L308,200 L310,215 L312,230 L305,240 L295,250 L285,260 L278,275 
-L272,290 L268,305 L265,320 L270,340 L275,355 L270,370 L265,385 
-L260,400 L255,415 L250,430 L245,440 L240,435 L235,425 L228,415 
-L225,400 L220,385 L215,370 L210,355 L205,345 L195,340 L185,345 
-L175,355 L165,365 L155,375 L145,385 L135,390 L128,385 L125,375 
-L130,365 L135,355 L140,340 L145,325 L148,310 L150,295 L152,280 
-L150,265 L148,250 L152,240 L155,230 L158,220 L162,210 L165,200 
-L168,190 L170,178 L172,168 L175,155 L178,145 L180,132 L182,118 
-L180,105 L178,92 L180,80 L183,68 Z`;
-
-// Province boundaries (simplified decorative lines)
-const PROVINCE_LINES = [
-  "M210,170 L260,175 L280,200",
-  "M155,230 L210,240 L260,245",
-  "M148,310 L210,300 L260,305",
-  "M175,355 L220,350 L260,355",
-];
 
 interface DotProps {
   event: HeatmapEvent;
@@ -156,15 +136,8 @@ export function NetherlandsHeatmap() {
 
         <TooltipProvider delayDuration={0}>
           <Tooltip>
-            <svg viewBox="80 30 280 430" className="w-full h-full max-h-[70vh]" preserveAspectRatio="xMidYMid meet">
+            <svg viewBox="0 0 613 724" className="w-full h-full max-h-[70vh]" preserveAspectRatio="xMidYMid meet">
               <defs>
-                <linearGradient id="nl-fill" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="hsl(220, 15%, 18%)" />
-                  <stop offset="100%" stopColor="hsl(220, 15%, 14%)" />
-                </linearGradient>
-                <filter id="map-shadow">
-                  <feDropShadow dx="2" dy="3" stdDeviation="4" floodColor="hsl(0,0%,0%)" floodOpacity="0.15" />
-                </filter>
                 <style>{`
                   @keyframes heatmap-pulse {
                     0% { r: 4; opacity: 0.6; }
@@ -173,28 +146,15 @@ export function NetherlandsHeatmap() {
                 `}</style>
               </defs>
 
-              {/* Netherlands outline */}
-              <path
-                d={NL_PATH}
-                fill="url(#nl-fill)"
-                stroke="hsl(220, 15%, 30%)"
-                strokeWidth="1.5"
-                filter="url(#map-shadow)"
-                className="transition-all duration-700"
+              {/* Netherlands map */}
+              <image
+                href="/images/netherlands.svg"
+                x="0"
+                y="0"
+                width="613"
+                height="724"
+                style={{ opacity: 0.35, filter: "brightness(0.5) saturate(0.3)" }}
               />
-
-              {/* Province lines */}
-              {PROVINCE_LINES.map((d, i) => (
-                <path
-                  key={i}
-                  d={d}
-                  fill="none"
-                  stroke="hsl(220, 15%, 22%)"
-                  strokeWidth="0.5"
-                  strokeDasharray="4,4"
-                  opacity="0.5"
-                />
-              ))}
 
               {/* Dots */}
               {filteredEvents.map((event) => (
