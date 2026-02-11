@@ -91,7 +91,7 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border h-full">
+      <div className="bg-card rounded-xl p-5 border border-border">
         {/* Header with inline toggle */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
