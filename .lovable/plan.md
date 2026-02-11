@@ -1,73 +1,74 @@
 
-# Redesign Wervingstrechter: Circular Pipeline Layout
 
-## Overview
-Replace the horizontal bar funnel with a **circular/curved pipeline** of 7 step-circles connected by curved lines, with conversion percentages on the connecting paths. The circles flow in a U-shape or arc pattern rather than a straight line, fitting naturally within the tile.
+# Minimalistic Wervingstrechter Redesign
 
-## New 7 Steps
-1. Toegewezen kandidaten (120)
-2. Inschrijvingen (65)
-3. Acquisities (51)
-4. Uitnodiging (32)
-5. Gesprekken (23)
-6. Vervolg gesprekken (11)
-7. Plaatsingen (5)
+## Reference
+The uploaded image shows a clean circular process diagram with:
+- **Ring-style circles** with colored centers, color matches the palet of the rest of the dashboard. the brown tint will not be used.
+- Each circle has a distinct color per step
+- Step number label above the main title inside/near the circle
+- **Chevron arrows** (">>" style) between circles instead of lines with badges
+- Clean white background, lots of whitespace
+- Text is outside/below the circles, well-spaced
 
-## Visual Layout
+## Design Changes
 
-```text
-    [120]---54%---[65]---78%---[51]
-   Toeg.         Insch.        Acq.
-      \                          |
-       \                      63%
-        \                        |
-    [5]---45%---[11]---48%---[32]
-   Plts.       Verv.g.       Uitn.
-                  |
-                 [23]
-                Gespr.
-```
+### Circles: From filled gradient blobs to clean rings
+- Remove radial gradients, inner highlights, and 3D effects
+- Use **stroke-only circles** (no fill, or white fill) with a 3px colored border
+- Each step gets a **unique color** from a curated teal-to-green palette (matching the dashboard theme)
+- Uniform circle size (no sqrt scaling) -- all circles same radius for a cleaner look
+- Show **count prominently** inside the circle in dark text (not white)
+- Show **step label** below the circle in muted text
 
-The 7 circles are arranged in a **horseshoe/U-shape** using SVG:
-- Top row: steps 1-3 flow left to right
-- Right side curves down: step 3 to step 4
-- Bottom row: steps 4-6 flow right to left
-- Step 7 (Plaatsingen) at the bottom-left end
+### Connections: From curved paths with badges to simple chevron arrows
+- Remove the bezier paths and conversion badge rectangles
+- Replace with **double-chevron arrows** (">>" SVG) between circles
+- Show the **conversion percentage** as small text near the chevron
+- Arrows follow the U-shape flow direction
 
-Each circle is connected by a **curved SVG path** (quadratic bezier) with the conversion percentage label positioned at the midpoint of each path.
+### Layout
+- Keep the U-shape arrangement but with more spacing
+- Increase viewBox to give more breathing room
+- Remove hover glow filters and blur effects
+- Keep comparison mode and hover info area (functional, not visual clutter)
 
-## Circle Design
-- Each circle sized proportionally (larger = more candidates, using sqrt scale)
-- Filled with teal gradient at decreasing opacity per step
-- Count displayed inside the circle in bold white text
-- Label displayed below/beside each circle in muted text
-- Staggered scale-in animation on mount
-- Hover: circle glows subtly, shows details in the bottom info area
+### Colors per step (teal palette variations)
+1. Toegewezen: `hsl(175, 65%, 45%)`
+2. Inschrijvingen: `hsl(160, 55%, 50%)`
+3. Acquisities: `hsl(145, 50%, 45%)`
+4. Uitnodiging: `hsl(35, 65%, 55%)` (warm accent)
+5. Gesprekken: `hsl(200, 55%, 50%)`
+6. Vervolg: `hsl(260, 45%, 55%)`
+7. Plaatsingen: `hsl(175, 70%, 40%)`
 
-## Connecting Lines
-- SVG curved paths between circles
-- Thin stroke in muted color, animated with stroke-dashoffset (draw-in effect)
-- Conversion percentage shown as a small label at the midpoint of each curve
+## Technical Details
 
-## Comparison Mode
-- In comparison mode, each circle shows two concentric rings: outer teal (current), inner gold (comparison)
-- Or: the count splits into two lines inside the circle (teal on top, gold below)
-- Legend and hover info area at the bottom remain the same
+### File: `src/components/dashboard/RecruitmentFunnel.tsx`
 
-## Technical Changes
+**StepCircle changes:**
+- Remove `radialGradient`, `filter`, inner highlight circle, hover glow ring
+- Render a single `circle` with `fill="white"` (or `hsl(var(--card))`) and colored `stroke` (3px)
+- Add a subtle progress-arc on the ring (like the reference -- a small gap/tick mark)
+- Count text in dark foreground color, label below in muted
+- Step number shown as small "Stap X" text above the count
 
-### `src/components/dashboard/RecruitmentFunnel.tsx`
-- Replace `currentData` (5 steps) with 7 new steps and realistic demo counts
-- Replace all 13 `comparisonDataByPeriod` entries with matching 7-step data
-- Remove `FunnelRow` component and horizontal bar rendering entirely
-- Build new SVG-based layout:
-  - Define positions for 7 circles in a U-shape using absolute coordinates within a viewBox
-  - `StepCircle` component: renders an SVG circle group (circle + count text + label text) with scale-in animation
-  - `ConversionPath` component: renders an SVG path between two positions with stroke-dashoffset animation and a conversion label at the midpoint
-- Update `opacityMap` to 7 entries
-- Keep header (title, subtitle, comparison toggle, period selector) unchanged
-- Keep hover info area and legend unchanged, just updated for 7 steps
-- Circle sizes use sqrt scaling for visual balance (min size enforced)
+**ConversionPath changes:**
+- Remove bezier paths, background lines, and badge rectangles
+- Replace with a group of 2-3 chevron shapes (">>") positioned at the midpoint between circles
+- Conversion percentage as small text below the chevrons
+- Chevrons colored in muted gray
 
-### No other files need changes
-The component is imported as `<RecruitmentFunnel delay={1000} />` in Index.tsx -- this stays the same.
+**Layout constants:**
+- Uniform radius: 38px for all circles
+- Adjusted positions for more whitespace
+- ViewBox remains 600x380
+
+**Removed complexity:**
+- No `getRadius` sqrt scaling (uniform size)
+- No `opacityMap` (each circle has its own distinct color)
+- No gradient defs, no blur filters
+- Cleaner, fewer SVG elements per circle
+
+### No other files change
+The component API (`delay` prop, import path) stays identical.
