@@ -150,38 +150,6 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     return location.pathname.startsWith(path);
   };
 
-  const navButton = (item: NavItem) => {
-    const hasSubItems = item.subItems && item.subItems.length > 0;
-    const isExpanded = effectiveExpandedItems.includes(item.path);
-
-    return (
-      <button
-        onClick={() => handleNavClick(item)}
-        className={cn(
-          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors overflow-hidden",
-          isCollapsed && "justify-center px-2",
-          item.active 
-            ? "bg-sidebar-accent text-sidebar-accent-foreground" 
-            : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-        )}
-      >
-        <item.icon className="w-5 h-5 shrink-0" />
-        <span className={cn(
-          "flex-1 text-left min-w-0 truncate whitespace-nowrap transition-[opacity,max-width] duration-300",
-          isCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[200px]"
-        )}>{item.label}</span>
-        {hasSubItems && (
-          <span className={cn(
-            "p-0.5 shrink-0 transition-opacity duration-300",
-            isCollapsed ? "opacity-0 absolute" : "opacity-100"
-          )}>
-            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          </span>
-        )}
-      </button>
-    );
-  };
-
   return (
     <TooltipProvider delayDuration={0}>
       <aside className={cn(
@@ -189,13 +157,13 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
         isCollapsed ? "w-16" : "w-64"
       )}>
         {/* Logo */}
-        <div className="p-6 flex items-center gap-3 overflow-hidden">
+        <div className="p-6 flex items-center overflow-hidden">
           <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
             <span className="text-sidebar-primary-foreground font-bold text-sm">S</span>
           </div>
           <span className={cn(
-            "text-sidebar-accent-foreground font-semibold text-lg whitespace-nowrap transition-opacity duration-300",
-            isCollapsed ? "opacity-0" : "opacity-100"
+            "text-sidebar-accent-foreground font-semibold text-lg whitespace-nowrap overflow-hidden transition-[opacity,max-width,margin-left] duration-300",
+            isCollapsed ? "opacity-0 max-w-0 ml-0" : "opacity-100 max-w-[180px] ml-3"
           )}>Synsel AI</span>
         </div>
 
@@ -205,45 +173,74 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
             {navItems.map((item) => {
               const hasSubItems = item.subItems && item.subItems.length > 0;
               const isExpanded = effectiveExpandedItems.includes(item.path);
+              const showSubItems = hasSubItems && isExpanded && !isCollapsed;
               
               return (
                 <div key={item.label}>
-                  {isCollapsed ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        {navButton(item)}
-                      </TooltipTrigger>
+                  {/* Always render Tooltip wrapper to prevent re-mounting */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => handleNavClick(item)}
+                        className={cn(
+                          "w-full flex items-center px-3 py-2.5 rounded-lg text-sm transition-all duration-300 overflow-hidden",
+                          item.active 
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                            : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                        )}
+                      >
+                        <item.icon className="w-5 h-5 shrink-0" />
+                        <span className={cn(
+                          "flex-1 text-left min-w-0 truncate whitespace-nowrap overflow-hidden transition-[opacity,max-width,margin-left] duration-300",
+                          isCollapsed ? "opacity-0 max-w-0 ml-0" : "opacity-100 max-w-[200px] ml-3"
+                        )}>{item.label}</span>
+                        {hasSubItems && (
+                          <span className={cn(
+                            "shrink-0 transition-[opacity,max-width] duration-300 overflow-hidden",
+                            isCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[24px]"
+                          )}>
+                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          </span>
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    {isCollapsed && (
                       <TooltipContent side="right">
                         {item.label}
                       </TooltipContent>
-                    </Tooltip>
-                  ) : (
-                    navButton(item)
-                  )}
+                    )}
+                  </Tooltip>
                   
-                  {/* Sub Items - only show when expanded AND not collapsed */}
-                  {hasSubItems && isExpanded && !isCollapsed && (
-                    <div className="ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-3">
-                      {item.subItems!.map((subItem) => {
-                        const SubIcon = subItem.icon;
-                        const subActive = isSubItemActive(subItem.path);
-                        
-                        return (
-                          <button
-                            key={subItem.path}
-                            onClick={() => navigate(subItem.path)}
-                            className={cn(
-                              "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors whitespace-nowrap overflow-hidden",
-                              subActive 
-                                ? "bg-sidebar-accent text-sidebar-accent-foreground" 
-                                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                            )}
-                          >
-                            <SubIcon className="w-4 h-4 shrink-0" />
-                            <span className="min-w-0 truncate">{subItem.label}</span>
-                          </button>
-                        );
-                      })}
+                  {/* Sub Items - animated with max-height + opacity */}
+                  {hasSubItems && (
+                    <div
+                      className={cn(
+                        "ml-4 border-l border-sidebar-border pl-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out",
+                        showSubItems ? "max-h-[600px] opacity-100 mt-1" : "max-h-0 opacity-0 mt-0"
+                      )}
+                    >
+                      <div className="space-y-1">
+                        {item.subItems!.map((subItem) => {
+                          const SubIcon = subItem.icon;
+                          const subActive = isSubItemActive(subItem.path);
+                          
+                          return (
+                            <button
+                              key={subItem.path}
+                              onClick={() => navigate(subItem.path)}
+                              className={cn(
+                                "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors whitespace-nowrap overflow-hidden",
+                                subActive 
+                                  ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                              )}
+                            >
+                              <SubIcon className="w-4 h-4 shrink-0" />
+                              <span className="min-w-0 truncate">{subItem.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -254,21 +251,21 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
 
         {/* User Profile */}
         <div className="p-3 border-t border-sidebar-border overflow-hidden">
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer overflow-hidden">
+          <div className="flex items-center p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer overflow-hidden">
             <Avatar className="w-9 h-9 shrink-0">
               <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" />
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
             <div className={cn(
-              "flex-1 min-w-0 whitespace-nowrap transition-opacity duration-300",
-              isCollapsed ? "opacity-0" : "opacity-100"
+              "flex-1 min-w-0 whitespace-nowrap overflow-hidden transition-[opacity,max-width,margin-left] duration-300",
+              isCollapsed ? "opacity-0 max-w-0 ml-0" : "opacity-100 max-w-[180px] ml-3"
             )}>
               <p className="text-sm font-medium text-sidebar-accent-foreground truncate">Jouw naam</p>
               <p className="text-xs text-sidebar-foreground truncate">Recruitment Consultant</p>
             </div>
             <LogOut className={cn(
-              "w-4 h-4 text-sidebar-foreground shrink-0 transition-opacity duration-300",
-              isCollapsed ? "opacity-0" : "opacity-100"
+              "w-4 h-4 text-sidebar-foreground shrink-0 transition-[opacity,max-width] duration-300",
+              isCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[16px]"
             )} />
           </div>
         </div>
