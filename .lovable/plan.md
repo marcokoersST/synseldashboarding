@@ -1,28 +1,27 @@
 
 
-# Fix tile height: all three tiles same fixed height
+# Fix: Constant tile height for Plaatsingen & Gedetacheerden
 
 ## Problem
-With `items-stretch`, all three tiles (Salary, Placements, Goals) stretch to match the tallest one, making the row too long. The user wants all tiles to have the same, shorter height -- and toggle modes should not change the tile size.
+The list mode (overview) of the Plaatsingen tile uses `flex-1` to grow the candidates list, which combined with `items-stretch` on the grid causes the entire row to stretch based on content. The tile height should be constant regardless of toggle mode.
 
 ## Solution
-Apply a fixed height to the grid row and ensure each card's internal content adapts within that constraint.
+Remove `items-stretch` from the grid row and stop the card from growing. Instead, give the candidates list in list mode a fixed height so it scrolls internally, just like the detail mode already does.
 
-## Technical Details
+## Technical Changes
 
-### 1. `src/pages/Index.tsx`
-- Add a fixed row height to the grid: change `items-stretch` to a specific height class on the grid, e.g., `grid-rows-[540px]` (or similar, may need tuning). This forces all three columns to the same height regardless of content.
+### 1. `src/pages/Index.tsx` (line 34)
+- Remove `items-stretch` from the grid. The tiles will size themselves to their natural/fixed height.
 
 ### 2. `src/components/dashboard/PlacementsCard.tsx`
-- The detail mode chart area (`h-48`) and info area (`min-h-[168px]`) drive excessive height. Reduce chart height from `h-48` (192px) to `h-40` (160px) and reduce the info area `min-h` from `[168px]` to `[148px]`.
-- In list mode, the candidates list already uses `flex-1 min-h-0` with overflow scroll, so it will adapt automatically.
+- Remove `h-full` and `flex-1 min-h-0` from the card container so it no longer stretches.
+- In list mode (the `!detailMode` branch), replace the `flex-1 min-h-0` on the candidates list container with a fixed height scroll area (e.g., `max-h-[280px] overflow-y-auto`). This keeps the candidates list scrollable within a bounded area, matching the detail mode height.
+- The detail mode already has `min-h-[148px]` on its info area so it stays consistent.
 
-### 3. `src/components/dashboard/SalaryProgressCard.tsx`
-- Already has `h-full`, will fill the fixed grid height. Content fits naturally, no changes needed beyond ensuring overflow doesn't break.
+### 3. `src/components/dashboard/GoalsCard.tsx`
+- Remove `h-full` if present so it sizes naturally too, relying on its internal fixed-height scroll areas.
 
-### 4. `src/components/dashboard/GoalsCard.tsx`
-- Already has `h-full` and fixed `h-[180px]` scroll areas. May need to reduce these slightly (e.g., `h-[160px]`) if the fixed grid height is tight, or use `flex-1 min-h-0` with `overflow-y-auto` to let both goal sections share remaining space proportionally.
+### 4. `src/components/dashboard/SalaryProgressCard.tsx`
+- Remove `h-full` so it also sizes naturally.
 
-### Height tuning
-The exact fixed height value will be calibrated to match the screenshot (~540px). The key principle: one fixed height for the row, internal components flex/scroll within it.
-
+The result: all three tiles render at their natural content height (which will be similar since detail mode and list mode are both bounded), and no tile stretches the row.
