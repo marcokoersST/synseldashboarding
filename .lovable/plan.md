@@ -1,38 +1,58 @@
 
-# Fix Wervingstrechter: Bigger, Readable, Matching Colors
 
-## Issues to Fix
-1. **Text too small** -- font sizes in SVG are 9-10px, unreadable at the tile's rendered size
-2. **Colors don't match dashboard** -- purple (`hsl(260)`) and warm yellow (`hsl(35)`) are off-brand. Dashboard uses teal, gold, and muted grays
-3. **Tile too small** -- needs more vertical height while staying 1/3 width
+# Wervingstrechter: Vertical Flow with Sequential Connections
 
 ## Changes (all in `src/components/dashboard/RecruitmentFunnel.tsx`)
 
-### 1. Increase SVG viewBox and circle sizes
-- Change viewBox from `700x310` to `420x500` (taller, narrower to fill 1/3 column better)
-- Increase `CIRCLE_R` from `32` to `40`
-- Increase `ARC_RADIUS` from `185` to `200`
-- Reposition the arc center to work with the taller viewBox
+### 1. Rotate layout 90 degrees -- vertical top-to-bottom flow
+- Replace the semicircle arc layout with a **vertical zigzag/S-curve** arrangement
+- Step 1 starts at **top-left**, flows down in two columns (like a snake pattern) ending with Step 7 at **bottom-right**
+- New viewBox: `420x600` to accommodate the vertical layout
+- Circle positions will alternate between left (x~120) and right (x~300), stepping down vertically with ~80px spacing
 
-### 2. Increase all text sizes
-- Step number ("01"): from `10px` to `13px`
-- Count value: from `17px` to `22px`
-- Labels: from `10px` to `13px`
-- Conversion percentages: from `9px` to `12px`
-- Central hub text: from `12px`/`9px` to `15px`/`11px`
+Layout (approximate):
+```text
+  Step 1 -----> Step 2
+                  |
+  Step 3 <------+
+    |
+    +------> Step 4
+                  |
+  Step 5 <------+
+    |
+    +------> Step 6
+                  |
+  Step 7 <------+
+```
 
-### 3. Fix colors to match dashboard palette
-Replace the `stepColors` array with variations of teal and gold only (no purple, no warm yellow):
-- Step 1: `hsl(175, 60%, 45%)` (teal -- primary chart color)
-- Step 2: `hsl(175, 50%, 55%)` (lighter teal)
-- Step 3: `hsl(160, 55%, 42%)` (teal-green)
-- Step 4: `hsl(45, 30%, 55%)` (gold -- dashboard accent)
-- Step 5: `hsl(175, 65%, 38%)` (darker teal)
-- Step 6: `hsl(160, 45%, 50%)` (mid teal-green)
-- Step 7: `hsl(45, 35%, 45%)` (darker gold)
+### 2. Sequential connector lines (circle-to-circle, not hub-and-spoke)
+- Remove the central hub circle ("Werving trechter") entirely
+- Remove all lines from center to circles
+- Draw connector lines **between consecutive circles** (Step 1 to Step 2, Step 2 to Step 3, etc.)
+- Each connector shows the conversion percentage at its midpoint
+- Lines connect from the edge of one circle to the edge of the next
 
-### 4. Add minimum height to the tile
-- Add `min-h-[480px]` to the card wrapper to ensure the tile takes up more vertical space, giving the SVG more room to render at a readable size
+### 3. Light-to-dark color gradient across steps
+Replace `stepColors` with a single teal hue progressing from light to dark:
+- Step 1: `hsl(175, 50%, 75%)` (lightest)
+- Step 2: `hsl(175, 50%, 67%)`
+- Step 3: `hsl(175, 55%, 59%)`
+- Step 4: `hsl(175, 55%, 51%)`
+- Step 5: `hsl(175, 60%, 43%)`
+- Step 6: `hsl(175, 60%, 35%)`
+- Step 7: `hsl(175, 65%, 27%)` (darkest)
+
+Text inside circles will use dark text for light circles (steps 1-3) and white text for dark circles (steps 5-7), with step 4 as the transition point.
+
+### 4. Remove central hub
+- Delete the central hub circle SVG element and its "Werving" / "trechter" text
+- Delete the line from center to step 1
+- Remove `CX`, `CY` constants (no longer needed)
+
+### 5. Keep everything else
+- Comparison mode, hover info, header, animations all remain unchanged
+- Component API (`delay` prop) stays identical
+- `min-h-[480px]` stays on the card
 
 ## No other files change
-The component stays in its 1/3 grid column in `Index.tsx`.
+
