@@ -158,19 +158,23 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
       <button
         onClick={() => handleNavClick(item)}
         className={cn(
-          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors whitespace-nowrap overflow-hidden",
-          isCollapsed && "justify-center px-0",
+          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+          isCollapsed && "justify-center px-2",
           item.active 
             ? "bg-sidebar-accent text-sidebar-accent-foreground" 
             : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
         )}
       >
         <item.icon className="w-5 h-5 shrink-0" />
-        <span className="flex-1 text-left min-w-0 truncate">{item.label}</span>
-        {hasSubItems && (
-          <span className="p-0.5 shrink-0">
-            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          </span>
+        {!isCollapsed && (
+          <>
+            <span className="flex-1 text-left min-w-0 truncate">{item.label}</span>
+            {hasSubItems && (
+              <span className="p-0.5 shrink-0">
+                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </span>
+            )}
+          </>
         )}
       </button>
     );
@@ -179,15 +183,15 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   return (
     <TooltipProvider delayDuration={0}>
       <aside className={cn(
-        "fixed left-0 top-0 h-screen bg-sidebar flex flex-col z-50 transition-[width] duration-300 ease-in-out overflow-hidden",
+        "fixed left-0 top-0 h-screen bg-sidebar flex flex-col z-50 transition-[width] duration-300 ease-in-out",
         isCollapsed ? "w-16" : "w-64"
       )}>
         {/* Logo */}
-        <div className="p-6 flex items-center gap-3 whitespace-nowrap overflow-hidden">
+        <div className={cn("p-6 flex items-center gap-3", isCollapsed && "justify-center p-4")}>
           <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
             <span className="text-sidebar-primary-foreground font-bold text-sm">S</span>
           </div>
-          <span className="text-sidebar-accent-foreground font-semibold text-lg">Synsel AI</span>
+          {!isCollapsed && <span className="text-sidebar-accent-foreground font-semibold text-lg whitespace-nowrap">Synsel AI</span>}
         </div>
 
         {/* Main Navigation */}
@@ -245,16 +249,23 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
 
         {/* User Profile */}
         <div className="p-3 border-t border-sidebar-border">
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer whitespace-nowrap overflow-hidden">
+          <div className={cn(
+            "flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer",
+            isCollapsed && "justify-center p-1"
+          )}>
             <Avatar className="w-9 h-9 shrink-0">
               <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" />
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">Jouw naam</p>
-              <p className="text-xs text-sidebar-foreground truncate">Recruitment Consultant</p>
-            </div>
-            <LogOut className="w-4 h-4 text-sidebar-foreground shrink-0" />
+            {!isCollapsed && (
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-sidebar-accent-foreground truncate">Jouw naam</p>
+                  <p className="text-xs text-sidebar-foreground truncate">Recruitment Consultant</p>
+                </div>
+                <LogOut className="w-4 h-4 text-sidebar-foreground shrink-0" />
+              </>
+            )}
           </div>
         </div>
 
