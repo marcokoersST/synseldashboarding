@@ -158,7 +158,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
       <button
         onClick={() => handleNavClick(item)}
         className={cn(
-          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors overflow-hidden",
           isCollapsed && "justify-center px-2",
           item.active 
             ? "bg-sidebar-accent text-sidebar-accent-foreground" 
@@ -166,15 +166,17 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
         )}
       >
         <item.icon className="w-5 h-5 shrink-0" />
-        {!isCollapsed && (
-          <>
-            <span className="flex-1 text-left min-w-0 truncate">{item.label}</span>
-            {hasSubItems && (
-              <span className="p-0.5 shrink-0">
-                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              </span>
-            )}
-          </>
+        <span className={cn(
+          "flex-1 text-left min-w-0 truncate whitespace-nowrap transition-[opacity,max-width] duration-300",
+          isCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[200px]"
+        )}>{item.label}</span>
+        {hasSubItems && (
+          <span className={cn(
+            "p-0.5 shrink-0 transition-opacity duration-300",
+            isCollapsed ? "opacity-0 absolute" : "opacity-100"
+          )}>
+            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          </span>
         )}
       </button>
     );
@@ -187,11 +189,14 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
         isCollapsed ? "w-16" : "w-64"
       )}>
         {/* Logo */}
-        <div className={cn("p-6 flex items-center gap-3", isCollapsed && "justify-center p-4")}>
+        <div className="p-6 flex items-center gap-3 overflow-hidden">
           <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
             <span className="text-sidebar-primary-foreground font-bold text-sm">S</span>
           </div>
-          {!isCollapsed && <span className="text-sidebar-accent-foreground font-semibold text-lg whitespace-nowrap">Synsel AI</span>}
+          <span className={cn(
+            "text-sidebar-accent-foreground font-semibold text-lg whitespace-nowrap transition-opacity duration-300",
+            isCollapsed ? "opacity-0" : "opacity-100"
+          )}>Synsel AI</span>
         </div>
 
         {/* Main Navigation */}
@@ -248,24 +253,23 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
         </nav>
 
         {/* User Profile */}
-        <div className="p-3 border-t border-sidebar-border">
-          <div className={cn(
-            "flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer",
-            isCollapsed && "justify-center p-1"
-          )}>
+        <div className="p-3 border-t border-sidebar-border overflow-hidden">
+          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer overflow-hidden">
             <Avatar className="w-9 h-9 shrink-0">
               <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" />
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
-            {!isCollapsed && (
-              <>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-sidebar-accent-foreground truncate">Jouw naam</p>
-                  <p className="text-xs text-sidebar-foreground truncate">Recruitment Consultant</p>
-                </div>
-                <LogOut className="w-4 h-4 text-sidebar-foreground shrink-0" />
-              </>
-            )}
+            <div className={cn(
+              "flex-1 min-w-0 whitespace-nowrap transition-opacity duration-300",
+              isCollapsed ? "opacity-0" : "opacity-100"
+            )}>
+              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">Jouw naam</p>
+              <p className="text-xs text-sidebar-foreground truncate">Recruitment Consultant</p>
+            </div>
+            <LogOut className={cn(
+              "w-4 h-4 text-sidebar-foreground shrink-0 transition-opacity duration-300",
+              isCollapsed ? "opacity-0" : "opacity-100"
+            )} />
           </div>
         </div>
 
