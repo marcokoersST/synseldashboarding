@@ -287,7 +287,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
             }}
           />
           <text x={CX} y={CY - 8} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 15%, 25%)" fontSize="12" fontWeight="700" fontFamily="Inter, sans-serif"
+            fill="hsl(220, 15%, 25%)" fontSize="15" fontWeight="700" fontFamily="Inter, sans-serif"
             style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.4s ${delay + 300}ms` }}>
             Werving
           </text>
