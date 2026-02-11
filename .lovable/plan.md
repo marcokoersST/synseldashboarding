@@ -1,39 +1,53 @@
 
 
-# Wervingstrechter: Vertical Flow with Sequential Connections
+# Wervingstrechter: Rotated Semicircle (90 degrees)
 
-## Changes (all in `src/components/dashboard/RecruitmentFunnel.tsx`)
+## What Changes
 
-### 1. Rotate layout 90 degrees -- vertical top-to-bottom flow
-- Replace the semicircle arc layout with a **vertical zigzag/S-curve** arrangement
-- Step 1 starts at **top-left**, flows down in two columns (like a snake pattern) ending with Step 7 at **bottom-right**
-- New viewBox: `420x600` to accommodate the vertical layout
-- Circle positions will alternate between left (x~120) and right (x~300), stepping down vertically with ~80px spacing
+The current semicircle opens upward (step 1 left, step 7 right). We rotate it 90 degrees clockwise so it opens to the **right**, with step 1 at the **top** and step 7 at the **bottom**. The visual stays the same size -- we just make the tile taller to fit.
 
-Layout (approximate):
 ```text
-  Step 1 -----> Step 2
-                  |
-  Step 3 <------+
-    |
-    +------> Step 4
-                  |
-  Step 5 <------+
-    |
-    +------> Step 6
-                  |
-  Step 7 <------+
+Current layout (opens upward):
+
+    3   4   5
+  2           6
+1               7
+     [center]
+
+After 90-degree rotation (opens right):
+
+  1 ----
+  |
+  2 --------
+  |
+  3 ------------
+  |
+  4 ----------------  (arc opens right)
+  |
+  5 ------------
+  |
+  6 --------
+  |
+  7 ----
 ```
 
-### 2. Sequential connector lines (circle-to-circle, not hub-and-spoke)
-- Remove the central hub circle ("Werving trechter") entirely
-- Remove all lines from center to circles
-- Draw connector lines **between consecutive circles** (Step 1 to Step 2, Step 2 to Step 3, etc.)
-- Each connector shows the conversion percentage at its midpoint
-- Lines connect from the edge of one circle to the edge of the next
+## All changes in `src/components/dashboard/RecruitmentFunnel.tsx`
 
-### 3. Light-to-dark color gradient across steps
-Replace `stepColors` with a single teal hue progressing from light to dark:
+### 1. Rotate the semicircle 90 degrees clockwise
+- Change arc angles from `pi..0` to `pi/2..-pi/2` (top to bottom)
+- Arc center moves to the **left side** of the viewBox (x ~80), so the arc opens to the right
+- viewBox changes to `420x700` (taller to fit the vertical semicircle)
+- `ARC_RADIUS` and `CIRCLE_R` stay at 200 and 40 (no shrinking)
+
+### 2. Sequential circle-to-circle connections
+- Remove the central hub circle and its "Werving" / "trechter" text
+- Remove all hub-to-circle lines
+- Draw connector lines between consecutive circles (step 1 to 2, 2 to 3, etc.)
+- Each line shows the conversion percentage at its midpoint
+- Remove `CX`, `CY` constants
+
+### 3. Light-to-dark teal color gradient
+Replace `stepColors` with a progressive teal gradient:
 - Step 1: `hsl(175, 50%, 75%)` (lightest)
 - Step 2: `hsl(175, 50%, 67%)`
 - Step 3: `hsl(175, 55%, 59%)`
@@ -42,17 +56,22 @@ Replace `stepColors` with a single teal hue progressing from light to dark:
 - Step 6: `hsl(175, 60%, 35%)`
 - Step 7: `hsl(175, 65%, 27%)` (darkest)
 
-Text inside circles will use dark text for light circles (steps 1-3) and white text for dark circles (steps 5-7), with step 4 as the transition point.
+Dark text for light circles (steps 1-3), white text for dark circles (steps 5-7), step 4 transitions.
 
-### 4. Remove central hub
-- Delete the central hub circle SVG element and its "Werving" / "trechter" text
-- Delete the line from center to step 1
-- Remove `CX`, `CY` constants (no longer needed)
+### 4. Label positioning
+- Labels move to the **right** of each circle (since the arc opens right, there is space)
+- For circles at the very top/bottom of the arc, labels shift slightly to avoid overlap
 
-### 5. Keep everything else
-- Comparison mode, hover info, header, animations all remain unchanged
+### 5. Make the tile taller
+- Change `min-h-[480px]` to `min-h-[720px]` on the card wrapper to give the vertical semicircle enough room
+
+### 6. ConnectorLine update
+- Change the line start/end calculation: instead of connecting from center hub, connect from edge of circle N to edge of circle N+1
+- Percentage label sits at the midpoint of each connector
+
+### 7. Everything else stays
+- Comparison mode, hover info panel, header, animations all unchanged
 - Component API (`delay` prop) stays identical
-- `min-h-[480px]` stays on the card
 
 ## No other files change
 
