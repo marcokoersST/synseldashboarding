@@ -83,8 +83,8 @@ const stepCountColors = [
 // Arc layout: vertical semicircle opening to the right
 // Arc center on the left side, angles from π/2 (top) to -π/2 (bottom)
 const ARC_CENTER_X = 60;
-const ARC_CENTER_Y = 370;
-const ARC_RADIUS = 220;
+const ARC_CENTER_Y = 400;
+const ARC_RADIUS = 260;
 const CIRCLE_R = 40;
 
 const circlePositions = Array.from({ length: 7 }, (_, i) => {
@@ -195,8 +195,8 @@ function ConnectorLine({
   const mx = (sx + ex) / 2;
   const my = (sy + ey) / 2;
   // Perpendicular offset for label
-  const perpX = -ny * 14;
-  const perpY = nx * 14;
+  const perpX = -ny * 30;
+  const perpY = nx * 30;
 
   const pathLen = Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2);
 
@@ -244,7 +244,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div ref={ref} className="bg-card rounded-xl p-5 border border-border min-h-[720px]">
+      <div ref={ref} className="bg-card rounded-xl p-5 border border-border min-h-[800px]">
         {/* Header */}
         <div className="flex items-start justify-between mb-1">
           <div>
@@ -277,7 +277,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
         </div>
 
         {/* SVG Pipeline */}
-        <svg viewBox="0 0 520 700" className="w-full" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 560 780" className="w-full" preserveAspectRatio="xMidYMid meet">
           {/* Connector lines between consecutive circles */}
           {conversions.map((pct, i) => (
             <ConnectorLine
