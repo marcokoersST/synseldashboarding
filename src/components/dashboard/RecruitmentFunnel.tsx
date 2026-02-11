@@ -50,53 +50,52 @@ const comparisonDataByPeriod: Record<string, StepData[]> = {
 
 const stepColors = [
   "hsl(175, 65%, 45%)",
-  "hsl(160, 55%, 50%)",
-  "hsl(145, 50%, 45%)",
-  "hsl(35, 65%, 55%)",
-  "hsl(200, 55%, 50%)",
-  "hsl(260, 45%, 55%)",
-  "hsl(175, 70%, 40%)",
+  "hsl(160, 55%, 45%)",
+  "hsl(145, 50%, 42%)",
+  "hsl(35, 65%, 50%)",
+  "hsl(200, 55%, 48%)",
+  "hsl(260, 45%, 50%)",
+  "hsl(175, 70%, 38%)",
 ];
 
-const stepFills = [
-  "hsl(175, 65%, 92%)",
-  "hsl(160, 55%, 92%)",
-  "hsl(145, 50%, 92%)",
-  "hsl(35, 65%, 92%)",
-  "hsl(200, 55%, 92%)",
-  "hsl(260, 45%, 92%)",
-  "hsl(175, 70%, 92%)",
-];
+// Arc layout: 7 circles in a semicircle from left to right (180° arc)
+// Center of the arc
+const CX = 350;
+const CY = 230;
+const ARC_RADIUS = 185;
+const CIRCLE_R = 32;
 
-const RADIUS = 38;
-
-// Rotated 270° (clockwise): original U-shape was top-row L→R then bottom-row R→L
-// Now: right column top→bottom, then left column bottom→top
-const circlePositions = [
-  { x: 340, y: 45 },   // 0 Toegewezen (was top-left)
-  { x: 340, y: 155 },  // 1 Inschrijvingen (was top-center)
-  { x: 340, y: 265 },  // 2 Acquisities (was top-right)
-  { x: 340, y: 375 },  // 3 Uitnodiging (was bottom-right)
-  { x: 160, y: 375 },  // 4 Gesprekken (was bottom-center-right)
-  { x: 160, y: 265 },  // 5 Vervolg (was bottom-center-left)
-  { x: 160, y: 155 },  // 6 Plaatsingen (was bottom-left)
-];
+// Angles from π (left) to 0 (right), evenly spaced
+const circlePositions = Array.from({ length: 7 }, (_, i) => {
+  const angle = Math.PI - (i / 6) * Math.PI; // π to 0
+  return {
+    x: CX + ARC_RADIUS * Math.cos(angle),
+    y: CY - ARC_RADIUS * Math.sin(angle),
+  };
+});
 
 // --- Sub-components ---
 
-function StepCircle({
-  cx, cy, count, label, color, fill, index, delay, isVisible,
+function StepNode({
+  cx, cy, count, label, color, index, delay, isVisible,
   isComparing, compCount, isHovered, onHover,
 }: {
-  cx: number; cy: number; count: number; label: string; color: string; fill: string;
+  cx: number; cy: number; count: number; label: string; color: string;
   index: number; delay: number; isVisible: boolean;
   isComparing: boolean; compCount?: number; isHovered: boolean;
   onHover: (i: number | null) => void;
 }) {
-  // Label to the right for right column, left for left column
-  const isRightCol = cx > 250;
-  const labelX = isRightCol ? cx + RADIUS + 12 : cx - RADIUS - 12;
-  const labelAnchor = isRightCol ? "start" : "end";
+  // Label position: above for top circles, below for bottom ones
+  const angle = Math.PI - (index / 6) * Math.PI;
+  const isTop = cy < CY - 40;
+  const isBottom = cy > CY + 40;
+  const labelOffsetY = isTop ? -CIRCLE_R - 28 : isBottom ? CIRCLE_R + 16 : (angle > Math.PI / 2 ? -CIRCLE_R - 28 : -CIRCLE_R - 28);
+  const labelOffsetX = 0;
+
+  // Small colored indicator dot position (like reference)
+  const dotAngle = angle + Math.PI / 2 + 0.4; // top-left area of circle
+  const dotX = cx + (CIRCLE_R + 2) * Math.cos(dotAngle);
+  const dotY = cy - (CIRCLE_R + 2) * Math.sin(dotAngle);
 
   return (
     <g
@@ -109,92 +108,114 @@ function StepCircle({
         transition: `transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
       }}
     >
-      {/* Filled ring circle */}
-      <circle cx={cx} cy={cy} r={RADIUS}
-        fill={fill} stroke={color} strokeWidth={3}
-        opacity={isHovered ? 1 : 0.9}
-        style={{ transition: "opacity 0.2s ease" }}
+      {/* Outer ring */}
+      <circle cx={cx} cy={cy} r={CIRCLE_R}
+        fill="white" stroke="hsl(220, 10%, 88%)" strokeWidth={2}
+        style={{ filter: isHovered ? "drop-shadow(0 2px 8px rgba(0,0,0,0.1))" : "none", transition: "filter 0.2s" }}
+      />
+
+      {/* Colored accent arc (partial ring like reference) */}
+      <circle cx={cx} cy={cy} r={CIRCLE_R}
+        fill="none" stroke={color} strokeWidth={3}
+        strokeDasharray={`${CIRCLE_R * 1.8} ${2 * Math.PI * CIRCLE_R}`}
+        strokeDashoffset={-CIRCLE_R * 0.3}
+        strokeLinecap="round"
+      />
+
+      {/* Colored indicator dot */}
+      <circle cx={dotX} cy={dotY} r={5}
+        fill={color} stroke="white" strokeWidth={2}
       />
 
       {/* Step number */}
-      <text x={cx} y={cy - 10} textAnchor="middle" dominantBaseline="middle"
-        fill={color} fontSize="10" fontWeight="600" fontFamily="Inter, sans-serif"
-        opacity={0.7}>
-        Stap {index + 1}
+      <text x={cx} y={cy - 7} textAnchor="middle" dominantBaseline="middle"
+        fill={color} fontSize="10" fontWeight="700" fontFamily="Inter, sans-serif"
+        opacity={0.6}>
+        0{index + 1}
       </text>
 
       {/* Count */}
       {isComparing && compCount !== undefined ? (
         <>
-          <text x={cx} y={cy + 5} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="18" fontFamily="Inter, sans-serif">
+          <text x={cx} y={cy + 6} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="15" fontFamily="Inter, sans-serif">
             {count}
           </text>
-          <text x={cx} y={cy + 21} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(45, 50%, 45%)" fontWeight="600" fontSize="13" fontFamily="Inter, sans-serif">
+          <text x={cx} y={cy + 19} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(45, 50%, 45%)" fontWeight="600" fontSize="11" fontFamily="Inter, sans-serif">
             {compCount}
           </text>
         </>
       ) : (
         <text x={cx} y={cy + 8} textAnchor="middle" dominantBaseline="middle"
-          fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="20" fontFamily="Inter, sans-serif">
+          fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="17" fontFamily="Inter, sans-serif">
           {count}
         </text>
       )}
 
       {/* Comparison dashed ring */}
       {isComparing && compCount !== undefined && (
-        <circle cx={cx} cy={cy} r={RADIUS + 5}
-          fill="none" stroke="hsl(45, 40%, 55%)" strokeWidth={2}
-          strokeDasharray="5 3" opacity={0.7}
+        <circle cx={cx} cy={cy} r={CIRCLE_R + 5}
+          fill="none" stroke="hsl(45, 40%, 55%)" strokeWidth={1.5}
+          strokeDasharray="4 3" opacity={0.6}
         />
       )}
 
-      {/* Label beside circle */}
-      <text x={labelX} y={cy}
-        textAnchor={labelAnchor} dominantBaseline="middle"
-        fill="hsl(220, 10%, 45%)" fontSize="11" fontWeight="500" fontFamily="Inter, sans-serif">
+      {/* Label */}
+      <text x={cx + labelOffsetX} y={cy + labelOffsetY}
+        textAnchor="middle" dominantBaseline="middle"
+        fill="hsl(220, 10%, 40%)" fontSize="10" fontWeight="600" fontFamily="Inter, sans-serif">
         {label}
       </text>
+      {/* Conversion from previous step */}
     </g>
   );
 }
 
-function ChevronArrow({
+function ConnectorLine({
   x1, y1, x2, y2, percentage, delay, isVisible,
 }: {
   x1: number; y1: number; x2: number; y2: number;
   percentage: number; delay: number; isVisible: boolean;
 }) {
-  const mx = (x1 + x2) / 2;
-  const my = (y1 + y2) / 2;
+  // Line from center to circle, with percentage near the circle end
   const dx = x2 - x1;
   const dy = y2 - y1;
   const dist = Math.sqrt(dx * dx + dy * dy);
   const nx = dx / dist;
   const ny = dy / dist;
 
-  const chevronSize = 5;
-  const gap = 7;
+  // Start from center edge, end at circle edge
+  const sx = x1 + nx * 52;
+  const sy = y1 + ny * 52;
+  const ex = x2 - nx * (CIRCLE_R + 8);
+  const ey = y2 - ny * (CIRCLE_R + 8);
 
-  const makeChevron = (ox: number) => {
-    const cx = mx + nx * ox;
-    const cy = my + ny * ox;
-    return `M ${cx - ny * chevronSize - nx * chevronSize} ${cy + nx * chevronSize - ny * chevronSize} L ${cx} ${cy} L ${cx - ny * (-chevronSize) - nx * chevronSize} ${cy + nx * (-chevronSize) - ny * chevronSize}`;
-  };
+  // Midpoint for percentage label
+  const mx = (sx + ex) / 2;
+  const my = (sy + ey) / 2;
+  const perpX = -ny * 12;
+  const perpY = nx * 12;
 
-  const perpX = -ny * 16;
-  const perpY = nx * 16;
+  const pathLen = Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2);
 
   return (
-    <g style={{
-      opacity: isVisible ? 1 : 0,
-      transition: `opacity 0.4s ease-out ${delay}ms`,
-    }}>
-      <path d={makeChevron(-gap / 2)} fill="none" stroke="hsl(220, 10%, 72%)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-      <path d={makeChevron(gap / 2)} fill="none" stroke="hsl(220, 10%, 72%)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    <g>
+      <line x1={sx} y1={sy} x2={ex} y2={ey}
+        stroke="hsl(220, 10%, 85%)" strokeWidth={1.5}
+        strokeDasharray={pathLen}
+        strokeDashoffset={isVisible ? 0 : pathLen}
+        style={{ transition: `stroke-dashoffset 0.8s ease-out ${delay}ms` }}
+      />
+      {/* Small arrow at the end */}
+      <circle cx={ex + nx * 3} cy={ey + ny * 3} r={2.5}
+        fill="hsl(220, 10%, 75%)"
+        style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.3s ${delay + 400}ms` }}
+      />
+      {/* Percentage */}
       <text x={mx + perpX} y={my + perpY} textAnchor="middle" dominantBaseline="middle"
-        fill="hsl(220, 10%, 50%)" fontSize="10" fontWeight="500" fontFamily="Inter, sans-serif">
+        fill="hsl(220, 10%, 55%)" fontSize="9" fontWeight="500" fontFamily="Inter, sans-serif"
+        style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.3s ${delay + 500}ms` }}>
         {percentage}%
       </text>
     </g>
@@ -224,7 +245,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
     <AnimatedCard delay={delay}>
       <div ref={ref} className="bg-card rounded-xl p-5 border border-border">
         {/* Header */}
-        <div className="flex items-start justify-between mb-2">
+        <div className="flex items-start justify-between mb-1">
           <div>
             <h3 className="text-sm font-medium text-foreground">Wervingstrechter</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Conversie per fase</p>
@@ -254,41 +275,61 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
           </div>
         </div>
 
-        {/* SVG Pipeline - vertical orientation */}
-        <svg viewBox="0 0 500 420" className="w-full" preserveAspectRatio="xMidYMid meet">
-          {/* Chevron arrows */}
-          {conversions.map((pct, i) => {
-            const from = circlePositions[i];
-            const to = circlePositions[i + 1];
-            const dx = to.x - from.x;
-            const dy = to.y - from.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const nx = dx / dist;
-            const ny = dy / dist;
-            return (
-              <ChevronArrow
-                key={i}
-                x1={from.x + nx * (RADIUS + 8)}
-                y1={from.y + ny * (RADIUS + 8)}
-                x2={to.x - nx * (RADIUS + 8)}
-                y2={to.y - ny * (RADIUS + 8)}
-                percentage={pct}
-                delay={delay + 300 + i * 100}
-                isVisible={isVisible}
-              />
-            );
-          })}
+        {/* SVG Pipeline */}
+        <svg viewBox="0 0 700 310" className="w-full" preserveAspectRatio="xMidYMid meet">
+          {/* Central hub circle */}
+          <circle cx={CX} cy={CY} r={50}
+            fill="white" stroke="hsl(220, 10%, 90%)" strokeWidth={2}
+            style={{
+              transform: isVisible ? "scale(1)" : "scale(0)",
+              transformOrigin: `${CX}px ${CY}px`,
+              transition: `transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay + 50}ms`,
+            }}
+          />
+          <text x={CX} y={CY - 8} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(220, 15%, 25%)" fontSize="12" fontWeight="700" fontFamily="Inter, sans-serif"
+            style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.4s ${delay + 300}ms` }}>
+            Werving
+          </text>
+          <text x={CX} y={CY + 8} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(220, 10%, 55%)" fontSize="9" fontWeight="500" fontFamily="Inter, sans-serif"
+            style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.4s ${delay + 350}ms` }}>
+            trechter
+          </text>
+
+          {/* Connector lines from center to each circle */}
+          {conversions.map((pct, i) => (
+            <ConnectorLine
+              key={i}
+              x1={CX}
+              y1={CY}
+              x2={circlePositions[i + 1].x}
+              y2={circlePositions[i + 1].y}
+              percentage={pct}
+              delay={delay + 200 + i * 100}
+              isVisible={isVisible}
+            />
+          ))}
+
+          {/* Also draw line from center to first circle (no percentage) */}
+          <line
+            x1={CX - 40} y1={CY}
+            x2={circlePositions[0].x + CIRCLE_R + 8} y2={circlePositions[0].y}
+            stroke="hsl(220, 10%, 85%)" strokeWidth={1.5}
+            strokeDasharray="200"
+            strokeDashoffset={isVisible ? 0 : 200}
+            style={{ transition: `stroke-dashoffset 0.8s ease-out ${delay + 150}ms` }}
+          />
 
           {/* Step circles */}
           {currentData.map((step, i) => (
-            <StepCircle
+            <StepNode
               key={i}
               cx={circlePositions[i].x}
               cy={circlePositions[i].y}
               count={step.count}
               label={step.shortLabel}
               color={stepColors[i]}
-              fill={stepFills[i]}
               index={i}
               delay={delay + 100 + i * 80}
               isVisible={isVisible}
