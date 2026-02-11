@@ -1,77 +1,49 @@
 
+## Fix Text Overlapping and Increase Circle Spacing
 
-# Wervingstrechter: Rotated Semicircle (90 degrees)
+### Issues Identified
+1. **Tight circle spacing**: With `ARC_CENTER_X = 80` and `ARC_RADIUS = 200`, circles positioned on the arc don't have enough horizontal spread
+2. **Insufficient label offset**: `labelX = cx + CIRCLE_R + 14` only adds 14px after the circle edge, causing text overlap
+3. **Narrow SVG width**: The `viewBox` is `420x700`, which constrains horizontal expansion
+4. **Text not considering label length**: Longer labels (like "Inschrijvingen") need more space
 
-## What Changes
+### Solution
 
-The current semicircle opens upward (step 1 left, step 7 right). We rotate it 90 degrees clockwise so it opens to the **right**, with step 1 at the **top** and step 7 at the **bottom**. The visual stays the same size -- we just make the tile taller to fit.
+All changes in `src/components/dashboard/RecruitmentFunnel.tsx`:
 
-```text
-Current layout (opens upward):
+**1. Increase SVG viewBox width** (from `420x700` to `520x700`)
+   - Gives more horizontal space for labels to the right
+   - The tile stays 1/3 width but SVG has more breathing room
 
-    3   4   5
-  2           6
-1               7
-     [center]
+**2. Shift arc center further left** (from `ARC_CENTER_X = 80` to `ARC_CENTER_X = 60`)
+   - Moves the arc pivot point left, spreading circles further right
+   - Opens up the right side of the viewBox for label text
 
-After 90-degree rotation (opens right):
+**3. Increase label offset** (from `labelX = cx + CIRCLE_R + 14` to `labelX = cx + CIRCLE_R + 28`)
+   - Adds 28px instead of 14px between circle edge and label start
+   - Prevents overlap between circle and text
 
-  1 ----
-  |
-  2 --------
-  |
-  3 ------------
-  |
-  4 ----------------  (arc opens right)
-  |
-  5 ------------
-  |
-  6 --------
-  |
-  7 ----
-```
+**4. Increase vertical spacing** (from `ARC_RADIUS = 200` to `ARC_RADIUS = 220`)
+   - Spreads circles further apart vertically
+   - Reduces vertical text collision risk
 
-## All changes in `src/components/dashboard/RecruitmentFunnel.tsx`
+**5. Adjust ARC_CENTER_Y** (from `ARC_CENTER_Y = 350` to `ARC_CENTER_Y = 370`)
+   - Recenter the arc vertically in the taller viewBox to keep visual balanced
 
-### 1. Rotate the semicircle 90 degrees clockwise
-- Change arc angles from `pi..0` to `pi/2..-pi/2` (top to bottom)
-- Arc center moves to the **left side** of the viewBox (x ~80), so the arc opens to the right
-- viewBox changes to `420x700` (taller to fit the vertical semicircle)
-- `ARC_RADIUS` and `CIRCLE_R` stay at 200 and 40 (no shrinking)
+### Code Changes
+- Line 85: `const ARC_CENTER_X = 60;` (was 80)
+- Line 86: `const ARC_CENTER_Y = 370;` (was 350)
+- Line 87: `const ARC_RADIUS = 220;` (was 200)
+- Line 111: `const labelX = cx + CIRCLE_R + 28;` (was 14)
+- Line 278: `<svg viewBox="0 0 520 700"` (was "0 0 420 700")
 
-### 2. Sequential circle-to-circle connections
-- Remove the central hub circle and its "Werving" / "trechter" text
-- Remove all hub-to-circle lines
-- Draw connector lines between consecutive circles (step 1 to 2, 2 to 3, etc.)
-- Each line shows the conversion percentage at its midpoint
-- Remove `CX`, `CY` constants
+### Why This Works
+- Wider viewBox provides horizontal real estate
+- Leftward arc center spreads circles rightward, clearing space for labels
+- Increased label offset ensures text doesn't crowd the circles
+- Increased arc radius adds vertical breathing room
 
-### 3. Light-to-dark teal color gradient
-Replace `stepColors` with a progressive teal gradient:
-- Step 1: `hsl(175, 50%, 75%)` (lightest)
-- Step 2: `hsl(175, 50%, 67%)`
-- Step 3: `hsl(175, 55%, 59%)`
-- Step 4: `hsl(175, 55%, 51%)`
-- Step 5: `hsl(175, 60%, 43%)`
-- Step 6: `hsl(175, 60%, 35%)`
-- Step 7: `hsl(175, 65%, 27%)` (darkest)
-
-Dark text for light circles (steps 1-3), white text for dark circles (steps 5-7), step 4 transitions.
-
-### 4. Label positioning
-- Labels move to the **right** of each circle (since the arc opens right, there is space)
-- For circles at the very top/bottom of the arc, labels shift slightly to avoid overlap
-
-### 5. Make the tile taller
-- Change `min-h-[480px]` to `min-h-[720px]` on the card wrapper to give the vertical semicircle enough room
-
-### 6. ConnectorLine update
-- Change the line start/end calculation: instead of connecting from center hub, connect from edge of circle N to edge of circle N+1
-- Percentage label sits at the midpoint of each connector
-
-### 7. Everything else stays
-- Comparison mode, hover info panel, header, animations all unchanged
-- Component API (`delay` prop) stays identical
-
-## No other files change
-
+### No Other Changes
+- Component API unchanged
+- Colors, animations, comparison mode all stay identical
+- Tile dimensions and grid position unchanged
