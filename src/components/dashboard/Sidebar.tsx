@@ -96,32 +96,39 @@ export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [manuallyCollapsed, setManuallyCollapsed] = useState<string[]>([]);
 
-  // Auto-expand items when on their sub-routes
+  // Auto-expand items when on their sub-routes (unless manually collapsed)
   const isOnComparisonPage = location.pathname.startsWith("/vergelijking");
   const isOnSuperAdminPage = location.pathname.startsWith("/super-admin");
   const isOnTVPage = location.pathname.startsWith("/tv/");
   const isOnConsultantPage = location.pathname.startsWith("/consultant/");
   
-  const effectiveExpandedItems = [
-    ...expandedItems,
+  const autoExpanded = [
     ...(isOnComparisonPage ? ["/"] : []),
     ...(isOnSuperAdminPage ? ["/super-admin"] : []),
     ...(isOnTVPage ? ["/tv/sales-funnel-week"] : []),
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
+  ].filter(path => !manuallyCollapsed.includes(path));
+
+  const effectiveExpandedItems = [
+    ...expandedItems,
+    ...autoExpanded,
   ].filter((v, i, a) => a.indexOf(v) === i);
 
-  const toggleExpanded = (path: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedItems(prev => 
-      prev.includes(path) 
-        ? prev.filter(p => p !== path)
-        : [...prev, path]
-    );
-  };
-
   const handleNavClick = (item: NavItem) => {
-    navigate(item.path);
+    if (item.subItems && item.subItems.length > 0) {
+      const isExpanded = effectiveExpandedItems.includes(item.path);
+      if (isExpanded) {
+        setExpandedItems(prev => prev.filter(p => p !== item.path));
+        setManuallyCollapsed(prev => prev.includes(item.path) ? prev : [...prev, item.path]);
+      } else {
+        setExpandedItems(prev => [...prev, item.path]);
+        setManuallyCollapsed(prev => prev.filter(p => p !== item.path));
+      }
+    } else {
+      navigate(item.path);
+    }
   };
 
   const isSubItemActive = (path: string) => {
@@ -159,10 +166,7 @@ export function Sidebar() {
                   <item.icon className="w-5 h-5" />
                   <span className="flex-1 text-left">{item.label}</span>
                   {hasSubItems && (
-                    <span 
-                      onClick={(e) => toggleExpanded(item.path, e)}
-                      className="p-0.5 hover:bg-sidebar-accent rounded"
-                    >
+                    <span className="p-0.5">
                       {isExpanded ? (
                         <ChevronDown className="w-4 h-4" />
                       ) : (
