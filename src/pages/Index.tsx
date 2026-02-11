@@ -43,7 +43,7 @@ const Index = () => {
       </div>
       
       {/* Middle Row - Team Leaderboard takes 2 columns */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-3 gap-4 mb-4 items-start">
         <div className="col-span-2">
           <TeamLeaderboard delay={500} />
         </div>

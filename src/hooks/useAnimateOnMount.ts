@@ -28,8 +28,16 @@ export function useAnimateOnMount({ delay = 0, threshold = 0.1 }: UseAnimateOnMo
 
     observer.observe(element);
 
+    const fallbackTimer = setTimeout(() => {
+      if (!hasAnimated) {
+        setIsVisible(true);
+        setHasAnimated(true);
+      }
+    }, delay + 2000);
+
     return () => {
       observer.disconnect();
+      clearTimeout(fallbackTimer);
     };
   }, [delay, threshold, hasAnimated]);
 
