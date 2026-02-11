@@ -91,7 +91,7 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-6 border border-border h-full">
+      <div className="bg-card rounded-xl p-5 border border-border h-full">
         {/* Header with inline toggle */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
         </div>
 
         {/* Progress percentage */}
-        <div className="mb-2">
+        <div className="mb-1">
           <span className="text-4xl font-bold text-success">
             <AnimatedNumber value={progress} decimals={1} delay={delay + 200} />%
           </span>
@@ -128,12 +128,12 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
         </div>
 
         {/* Subtitle */}
-        <p className="text-sm text-muted-foreground mb-6">
+        <p className="text-sm text-muted-foreground mb-4">
           Nog € {formatCurrency(amountNeeded)} {isSalary ? "omzet" : "marge"} nodig voor volgende stap
         </p>
 
         {/* Three column info */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <div>
             <p className="text-xs text-muted-foreground mb-1">
               {isSalary ? "Huidig salaris" : "Huidige periodebonus"}
@@ -181,7 +181,7 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
         </div>
 
         {/* Progress range labels */}
-        <div className="flex justify-between text-xs text-muted-foreground mt-4 mb-6">
+        <div className="flex justify-between text-xs text-muted-foreground mt-3 mb-4">
           <span>€ {formatCurrency(rangeMin)}</span>
           <span>€ {formatCurrency(rangeMax)}</span>
         </div>
