@@ -15,7 +15,7 @@ import {
   TrendingUp,
   ListOrdered
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -103,6 +103,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [manuallyCollapsed, setManuallyCollapsed] = useState<string[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const savedExpandedRef = useRef<{ expanded: string[]; manual: string[] }>({ expanded: [], manual: [] });
 
   const isOnComparisonPage = location.pathname.startsWith("/vergelijking");
@@ -129,8 +130,16 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
       setExpandedItems(savedExpandedRef.current.expanded);
       setManuallyCollapsed(savedExpandedRef.current.manual);
     }
+    setIsTransitioning(true);
     onToggleCollapse();
   };
+
+  useEffect(() => {
+    if (isTransitioning) {
+      const timer = setTimeout(() => setIsTransitioning(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isTransitioning]);
 
   const handleNavClick = (item: NavItem) => {
     if (item.subItems && item.subItems.length > 0 && !isCollapsed) {
@@ -204,7 +213,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
                         )}
                       </button>
                     </TooltipTrigger>
-                    {isCollapsed && (
+                    {isCollapsed && !isTransitioning && (
                       <TooltipContent side="right">
                         {item.label}
                       </TooltipContent>
@@ -250,9 +259,9 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
         </nav>
 
         {/* User Profile */}
-        <div className="p-3 border-t border-sidebar-border overflow-hidden">
+        <div className="p-3 border-t border-sidebar-border">
           <div className="flex items-center p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer overflow-hidden">
-            <Avatar className="w-9 h-9 shrink-0">
+            <Avatar className="w-9 h-9 shrink-0 overflow-visible">
               <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" />
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
