@@ -89,6 +89,7 @@ const navItems: NavItem[] = [
       { icon: Trophy, label: "Beker Dashboard", path: "/tv/beker" },
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
       { icon: ListOrdered, label: "Ranglijsten", path: "/tv/ranglijsten" },
+      { icon: Monitor, label: "Heatmap", path: "/tv/heatmap" },
     ]
   },
 ];
