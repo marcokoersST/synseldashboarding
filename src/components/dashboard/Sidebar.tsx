@@ -146,7 +146,7 @@ export function Sidebar() {
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 px-3 py-2 overflow-y-auto scrollbar-thin">
+      <nav className="flex-1 px-3 py-2 overflow-y-auto scrollbar-thin overscroll-contain">
         <div className="space-y-1">
           {navItems.map((item) => {
             const hasSubItems = item.subItems && item.subItems.length > 0;
