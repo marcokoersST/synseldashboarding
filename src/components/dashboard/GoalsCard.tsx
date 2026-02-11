@@ -148,7 +148,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                 </div>
               </div>
               {/* Fade gradient overlay */}
-              <div className="absolute bottom-0 left-0 right-2 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-2 h-2 bg-gradient-to-t from-card to-transparent pointer-events-none" />
             </div>
           </div>
           
@@ -173,7 +173,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                   </div>
                 </div>
                 {/* Fade gradient overlay */}
-                <div className="absolute bottom-0 left-0 right-2 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                <div className="absolute bottom-0 left-0 right-2 h-2 bg-gradient-to-t from-card to-transparent pointer-events-none" />
               </div>
             </div>
           )}
