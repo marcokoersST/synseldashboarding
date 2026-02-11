@@ -161,15 +161,35 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border group flex flex-col">
-        <div className="flex items-start justify-between mb-4">
-          <div>
+        <div className="mb-4">
+          {/* Row 1: Title | Percentage + Toggle */}
+          <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-foreground">Plaatsingen & Gedetacheerden</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
+                <span>0.0%</span>
+              </div>
+              <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+                <button
+                  onClick={() => setDetailMode(d => !d)}
+                  className={`p-1.5 rounded-md transition-all duration-200 ${!detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  <List size={14} />
+                </button>
+                <button
+                  onClick={() => setDetailMode(d => !d)}
+                  className={`p-1.5 rounded-md transition-all duration-200 ${detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  <BarChart3 size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* Row 2: Subtitle | Period Selector */}
+          <div className="flex items-center justify-between mt-1">
+            <p className="text-xs text-muted-foreground">
               {selectedPeriod === 6 ? "Huidige actieve plaatsingen" : `Periode ${selectedPeriod} - historisch overzicht`}
             </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* Period Selector */}
             <select
               value={selectedPeriod}
               onChange={(e) => { setSelectedPeriod(Number(e.target.value)); setLockedPeriod(null); }}
@@ -181,24 +201,6 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                 </option>
               ))}
             </select>
-            <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
-              <span>0.0%</span>
-            </div>
-            {/* Toggle */}
-            <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
-              <button
-                onClick={() => setDetailMode(d => !d)}
-                className={`p-1.5 rounded-md transition-all duration-200 ${!detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                <List size={14} />
-              </button>
-              <button
-                onClick={() => setDetailMode(d => !d)}
-                className={`p-1.5 rounded-md transition-all duration-200 ${detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                <BarChart3 size={14} />
-              </button>
-            </div>
           </div>
         </div>
 
