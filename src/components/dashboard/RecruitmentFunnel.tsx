@@ -276,7 +276,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
         </div>
 
         {/* SVG Pipeline */}
-        <svg viewBox="0 0 700 310" className="w-full" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 420 500" className="w-full" preserveAspectRatio="xMidYMid meet">
           {/* Central hub circle */}
           <circle cx={CX} cy={CY} r={50}
             fill="white" stroke="hsl(220, 10%, 90%)" strokeWidth={2}
