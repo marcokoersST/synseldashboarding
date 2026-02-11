@@ -295,7 +295,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             </div>
 
             {/* Detail Chart */}
-            <div ref={ref} className="h-48 mb-3">
+            <div ref={ref} className="h-40 mb-3">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={filteredData}
@@ -325,7 +325,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             </div>
 
             {/* Dynamic Info Area */}
-            <div className="border-t border-border pt-3 space-y-2 min-h-[168px]">
+            <div className="border-t border-border pt-3 space-y-2 min-h-[148px]">
               {activeData ? (
                 <>
                   <h4 className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">

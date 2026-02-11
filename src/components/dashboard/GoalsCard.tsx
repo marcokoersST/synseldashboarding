@@ -116,8 +116,8 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border flex flex-col h-full">
-        <div className="flex items-center justify-between mb-4">
+    <div className="bg-card rounded-xl p-5 border border-border flex flex-col h-full overflow-hidden">
+        <div className="flex items-center justify-between mb-4 shrink-0">
           <h3 className="text-sm font-medium text-foreground">Persoonlijke Ontwikkeldoelen</h3>
           <button 
             onClick={() => setIsManageDialogOpen(true)}
@@ -128,15 +128,15 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
           </button>
         </div>
         
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 flex-1 min-h-0">
           {/* User Goals Section */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex items-center gap-2 mb-2 shrink-0">
               <span className="text-xs font-medium text-muted-foreground">Mijn doelen</span>
               <span className="text-xs text-muted-foreground/60">({sortedUserGoals.length})</span>
             </div>
-            <div className="relative">
-              <div className="h-[180px] overflow-y-auto scrollbar-thin">
+            <div className="relative flex-1 min-h-0">
+              <div className="absolute inset-0 overflow-y-auto scrollbar-thin">
                 <div className="space-y-2 pr-2 pb-4">
                   {sortedUserGoals.map((goal) => (
                     <GoalItemCompact 
@@ -154,14 +154,14 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
           
           {/* Manager Goals Section */}
           {sortedManagerGoals.length > 0 && (
-            <div className="flex flex-col border-t border-border/50 pt-3">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-col border-t border-border/50 pt-3 flex-1 min-h-0">
+              <div className="flex items-center gap-2 mb-2 shrink-0">
                 <Shield className="w-3.5 h-3.5 text-gold" />
                 <span className="text-xs font-medium text-muted-foreground">Doelen van leidinggevende</span>
                 <span className="text-xs text-muted-foreground/60">({sortedManagerGoals.length})</span>
               </div>
-              <div className="relative">
-                <div className="h-[180px] overflow-y-auto scrollbar-thin">
+              <div className="relative flex-1 min-h-0">
+                <div className="absolute inset-0 overflow-y-auto scrollbar-thin">
                   <div className="space-y-2 pr-2 pb-4">
                     {sortedManagerGoals.map((goal) => (
                       <GoalItemCompact 
