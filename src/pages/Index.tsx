@@ -31,7 +31,7 @@ const Index = () => {
           <TopBar />
           
           {/* Dashboard Content */}
-          <main className="p-6 overflow-auto scrollbar-thin">
+          <main className="p-6 overflow-auto scrollbar-thin overscroll-contain">
             {/* Welcome Header + Forecast Goals */}
             <div className="flex items-start justify-between gap-6 mb-6">
               <WelcomeHeader />

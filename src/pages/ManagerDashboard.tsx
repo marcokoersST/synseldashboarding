@@ -12,7 +12,7 @@ export default function ManagerDashboard() {
       <div className="flex-1 ml-64">
         <TopBar />
         
-        <main className="p-6">
+        <main className="p-6 overscroll-contain">
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-foreground">Manager Dashboard</h1>

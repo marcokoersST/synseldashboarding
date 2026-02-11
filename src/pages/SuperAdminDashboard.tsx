@@ -11,7 +11,7 @@ export default function SuperAdminDashboard() {
       <Sidebar />
       <div className="flex-1 ml-64">
         <TopBar />
-        <main className="p-6">
+        <main className="p-6 overscroll-contain">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-foreground">Super Admin Dashboard</h1>
             <p className="text-sm text-muted-foreground mt-1">Overzicht van alle afdelingen en consultants</p>
