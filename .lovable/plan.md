@@ -1,19 +1,21 @@
 
 
-# Fix PlacementsCard height stability affecting adjacent tiles
+# Reduce opacity gradient height in GoalsCard
 
 ## Problem
-The `min-h-[168px]` applied to the info area is not enough to prevent layout shifts. When hovering over periods, the info area switches between 3 rows (default "Jouw positie") and 4 rows (period detail with Werkelijk + 3 benchmarks), causing the adjacent "Persoonlijke Ontwikkeldoelen" tile to shift.
+The fade-out gradient at the bottom of each goal list section (`h-8` = 32px) is too tall, covering the bottom side of the third visible goal and hiding the top of the fourth goal.
 
 ## Solution
-Always render exactly 4 rows in the info area for both states (default and hover). In the default "Jouw positie" state, add a 4th invisible/empty row so the height matches the hover state exactly. This eliminates any height difference between the two states entirely, rather than relying on `min-h` which can be imprecise.
+Reduce the gradient height from `h-8` to `h-4` (16px) on both gradient overlays (user goals and manager goals sections) in `src/components/dashboard/GoalsCard.tsx`.
 
 ## Technical Details
 
-### `src/components/dashboard/PlacementsCard.tsx`
+### `src/components/dashboard/GoalsCard.tsx`
 
-1. **Default state: always show 4 rows** - In the "Jouw positie" section (lines 362-386), the `versusItems` array only has 3 items (Minimum Norm, Fast Lane, Best Performer). Add a 4th invisible spacer row with the same height/padding as the real rows (`py-1.5 px-3 rounded-lg`) but with `invisible` class. This ensures both states render identically sized content.
+Two gradient overlay divs need updating (around lines 133 and 150):
 
-2. **Keep `min-h-[168px]` as a safety net** - The min-height stays as a fallback, but the primary fix is structural: both states always output 4 rows.
+- **User goals gradient** (line ~133): Change `h-8` to `h-4`
+- **Manager goals gradient** (line ~150): Change `h-8` to `h-4`
 
-This approach is more robust than relying on pixel-based min-height because it guarantees identical DOM structure in both states.
+This makes the fade effect more subtle, allowing the upper portion of the fourth goal item to remain visible and readable while still indicating there is more content below.
+
