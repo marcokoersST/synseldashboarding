@@ -21,17 +21,17 @@ import { ForecastGoalsProvider } from "@/contexts/ForecastGoalsContext";
 const Index = () => {
   return (
     <ForecastGoalsProvider>
-      <div className="min-h-screen bg-background">
+      <div className="h-screen bg-background flex">
         {/* Sidebar */}
         <Sidebar />
         
         {/* Main Content */}
-        <div className="ml-64">
+        <div className="ml-64 flex-1 flex flex-col h-screen">
           {/* Top Bar */}
           <TopBar />
           
           {/* Dashboard Content */}
-          <main className="p-6 overflow-auto scrollbar-thin overscroll-contain">
+          <main className="flex-1 p-6 overflow-y-auto scrollbar-thin overscroll-contain">
             {/* Welcome Header + Forecast Goals */}
             <div className="flex items-start justify-between gap-6 mb-6">
               <WelcomeHeader />
