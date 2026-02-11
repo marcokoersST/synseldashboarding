@@ -1,43 +1,28 @@
 
 
-# Fix: Prestatie Score card not appearing
+# Rearrange PlacementsCard header to two rows
 
-## Problem
-The Prestatie Score card renders with `opacity-0` and relies on an `IntersectionObserver` with a 700ms delay to become visible. After removing `items-stretch`, the right column no longer stretches to match the TeamLeaderboard's height, which can cause the card to sit just outside the viewport threshold -- meaning the observer never fires and the card stays invisible (`opacity-0`).
+## What changes
+Reorganize the header into two rows without changing the tile size:
 
-## Solution
-Two changes to ensure the card always appears:
+- **Row 1:** Title (left) | Percentage + Toggle (right)
+- **Row 2:** Subtitle (left) | Period selector (right)
 
-### 1. `src/pages/Index.tsx` (line 46)
-Add `items-start` to the grid so tiles align to the top. This is cosmetically the same as the current behavior but makes alignment explicit.
+## Technical Changes
 
-### 2. `src/components/dashboard/PerformanceScoreCard.tsx` (line 22)
-The real fix: the 700ms delay on a card that may be near the viewport edge causes the IntersectionObserver to potentially miss it. Reduce the delay or, better yet, remove the `AnimatedCard` wrapper's dependency on intersection for this specific card. 
+### `src/components/dashboard/PlacementsCard.tsx` (lines 164-203)
 
-The simplest fix: lower the `delay` prop passed from Index.tsx (from 700 to 600) and reduce the `threshold` requirement. But since other cards with similar delays work fine, the actual root cause is likely that the card's `opacity-0` state combined with `translate-y-4` makes it effectively invisible and potentially outside the observer's reach.
-
-**Recommended approach**: Ensure the PerformanceScoreCard always triggers its animation by adding a fallback timer in `useAnimateOnMount` that forces visibility after a maximum wait time. This prevents any card from staying permanently invisible.
-
-### Changes:
-
-**`src/hooks/useAnimateOnMount.ts`**
-- Add a fallback `setTimeout` (e.g., 2 seconds after mount) that forces `isVisible = true` if the IntersectionObserver hasn't triggered yet. This ensures no card stays permanently invisible regardless of scroll position.
+Replace the current single `flex` header block with two rows:
 
 ```
-// Add inside useEffect, after observer setup:
-const fallbackTimer = setTimeout(() => {
-  if (!hasAnimated) {
-    setIsVisible(true);
-    setHasAnimated(true);
-  }
-}, delay + 2000);
+Row 1: flex items-center justify-between
+  Left:  h3 "Plaatsingen & Gedetacheerden"
+  Right: "0.0%" + List/BarChart3 toggle
 
-// Clean up in return:
-return () => {
-  observer.disconnect();
-  clearTimeout(fallbackTimer);
-};
+Row 2: flex items-center justify-between mt-1
+  Left:  p subtitle text
+  Right: Period select dropdown
 ```
 
-This is a minimal, safe change that guarantees the Prestatie Score card (and any future cards) will always appear, even if the IntersectionObserver doesn't fire due to edge-case viewport positioning.
+The `mb-4` stays on the outer wrapper so spacing to the stats section is unchanged. All elements keep their existing styling. No height, padding, or structural changes to the card container itself -- just moving elements between rows within the same header space.
 
