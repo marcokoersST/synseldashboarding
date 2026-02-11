@@ -82,9 +82,9 @@ const stepCountColors = [
 
 // Arc layout: vertical semicircle opening to the right
 // Arc center on the left side, angles from π/2 (top) to -π/2 (bottom)
-const ARC_CENTER_X = 80;
-const ARC_CENTER_Y = 350;
-const ARC_RADIUS = 200;
+const ARC_CENTER_X = 60;
+const ARC_CENTER_Y = 370;
+const ARC_RADIUS = 220;
 const CIRCLE_R = 40;
 
 const circlePositions = Array.from({ length: 7 }, (_, i) => {
@@ -108,7 +108,7 @@ function StepNode({
   onHover: (i: number | null) => void;
 }) {
   // Label to the right of the circle
-  const labelX = cx + CIRCLE_R + 14;
+  const labelX = cx + CIRCLE_R + 28;
   const labelY = cy;
 
   return (
@@ -275,7 +275,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
         </div>
 
         {/* SVG Pipeline */}
-        <svg viewBox="0 0 420 700" className="w-full" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 520 700" className="w-full" preserveAspectRatio="xMidYMid meet">
           {/* Connector lines between consecutive circles */}
           {conversions.map((pct, i) => (
             <ConnectorLine
