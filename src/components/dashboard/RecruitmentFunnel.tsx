@@ -58,30 +58,45 @@ const stepColors = [
   "hsl(175, 70%, 40%)",
 ];
 
+const stepFills = [
+  "hsl(175, 65%, 92%)",
+  "hsl(160, 55%, 92%)",
+  "hsl(145, 50%, 92%)",
+  "hsl(35, 65%, 92%)",
+  "hsl(200, 55%, 92%)",
+  "hsl(260, 45%, 92%)",
+  "hsl(175, 70%, 92%)",
+];
+
 const RADIUS = 38;
 
+// Rotated 270° (clockwise): original U-shape was top-row L→R then bottom-row R→L
+// Now: right column top→bottom, then left column bottom→top
 const circlePositions = [
-  { x: 85, y: 90 },
-  { x: 300, y: 90 },
-  { x: 515, y: 90 },
-  { x: 515, y: 290 },
-  { x: 373, y: 290 },
-  { x: 227, y: 290 },
-  { x: 85, y: 290 },
+  { x: 340, y: 45 },   // 0 Toegewezen (was top-left)
+  { x: 340, y: 155 },  // 1 Inschrijvingen (was top-center)
+  { x: 340, y: 265 },  // 2 Acquisities (was top-right)
+  { x: 340, y: 375 },  // 3 Uitnodiging (was bottom-right)
+  { x: 160, y: 375 },  // 4 Gesprekken (was bottom-center-right)
+  { x: 160, y: 265 },  // 5 Vervolg (was bottom-center-left)
+  { x: 160, y: 155 },  // 6 Plaatsingen (was bottom-left)
 ];
 
 // --- Sub-components ---
 
 function StepCircle({
-  cx, cy, count, label, color, index, delay, isVisible,
+  cx, cy, count, label, color, fill, index, delay, isVisible,
   isComparing, compCount, isHovered, onHover,
 }: {
-  cx: number; cy: number; count: number; label: string; color: string;
+  cx: number; cy: number; count: number; label: string; color: string; fill: string;
   index: number; delay: number; isVisible: boolean;
   isComparing: boolean; compCount?: number; isHovered: boolean;
   onHover: (i: number | null) => void;
 }) {
-  const labelY = cy > 150 ? cy + RADIUS + 20 : cy - RADIUS - 16;
+  // Label to the right for right column, left for left column
+  const isRightCol = cx > 250;
+  const labelX = isRightCol ? cx + RADIUS + 12 : cx - RADIUS - 12;
+  const labelAnchor = isRightCol ? "start" : "end";
 
   return (
     <g
@@ -94,34 +109,35 @@ function StepCircle({
         transition: `transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
       }}
     >
-      {/* Ring circle */}
+      {/* Filled ring circle */}
       <circle cx={cx} cy={cy} r={RADIUS}
-        fill="hsl(var(--card))" stroke={color} strokeWidth={3}
-        opacity={isHovered ? 1 : 0.85}
+        fill={fill} stroke={color} strokeWidth={3}
+        opacity={isHovered ? 1 : 0.9}
         style={{ transition: "opacity 0.2s ease" }}
       />
 
       {/* Step number */}
       <text x={cx} y={cy - 10} textAnchor="middle" dominantBaseline="middle"
-        fill="hsl(220, 10%, 55%)" fontSize="9" fontWeight="500" fontFamily="Inter, sans-serif">
+        fill={color} fontSize="10" fontWeight="600" fontFamily="Inter, sans-serif"
+        opacity={0.7}>
         Stap {index + 1}
       </text>
 
       {/* Count */}
       {isComparing && compCount !== undefined ? (
         <>
-          <text x={cx} y={cy + 4} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(220, 15%, 25%)" fontWeight="700" fontSize="15" fontFamily="Inter, sans-serif">
+          <text x={cx} y={cy + 5} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="18" fontFamily="Inter, sans-serif">
             {count}
           </text>
-          <text x={cx} y={cy + 18} textAnchor="middle" dominantBaseline="middle"
-            fill="hsl(45, 50%, 45%)" fontWeight="600" fontSize="11" fontFamily="Inter, sans-serif">
+          <text x={cx} y={cy + 21} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(45, 50%, 45%)" fontWeight="600" fontSize="13" fontFamily="Inter, sans-serif">
             {compCount}
           </text>
         </>
       ) : (
-        <text x={cx} y={cy + 6} textAnchor="middle" dominantBaseline="middle"
-          fill="hsl(220, 15%, 25%)" fontWeight="700" fontSize="17" fontFamily="Inter, sans-serif">
+        <text x={cx} y={cy + 8} textAnchor="middle" dominantBaseline="middle"
+          fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="20" fontFamily="Inter, sans-serif">
           {count}
         </text>
       )}
@@ -134,10 +150,10 @@ function StepCircle({
         />
       )}
 
-      {/* Label */}
-      <text x={cx} y={labelY}
-        textAnchor="middle" dominantBaseline="middle"
-        fill="hsl(220, 10%, 50%)" fontSize="10" fontWeight="500" fontFamily="Inter, sans-serif">
+      {/* Label beside circle */}
+      <text x={labelX} y={cy}
+        textAnchor={labelAnchor} dominantBaseline="middle"
+        fill="hsl(220, 10%, 45%)" fontSize="11" fontWeight="500" fontFamily="Inter, sans-serif">
         {label}
       </text>
     </g>
@@ -158,12 +174,8 @@ function ChevronArrow({
   const nx = dx / dist;
   const ny = dy / dist;
 
-  // Angle for rotating chevrons
-  const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-
-  // Two chevron marks
-  const chevronSize = 6;
-  const gap = 8;
+  const chevronSize = 5;
+  const gap = 7;
 
   const makeChevron = (ox: number) => {
     const cx = mx + nx * ox;
@@ -171,19 +183,18 @@ function ChevronArrow({
     return `M ${cx - ny * chevronSize - nx * chevronSize} ${cy + nx * chevronSize - ny * chevronSize} L ${cx} ${cy} L ${cx - ny * (-chevronSize) - nx * chevronSize} ${cy + nx * (-chevronSize) - ny * chevronSize}`;
   };
 
-  // Percentage label offset perpendicular to the line
-  const perpX = -ny * 14;
-  const perpY = nx * 14;
+  const perpX = -ny * 16;
+  const perpY = nx * 16;
 
   return (
     <g style={{
       opacity: isVisible ? 1 : 0,
       transition: `opacity 0.4s ease-out ${delay}ms`,
     }}>
-      <path d={makeChevron(-gap / 2)} fill="none" stroke="hsl(220, 10%, 75%)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-      <path d={makeChevron(gap / 2)} fill="none" stroke="hsl(220, 10%, 75%)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={makeChevron(-gap / 2)} fill="none" stroke="hsl(220, 10%, 72%)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={makeChevron(gap / 2)} fill="none" stroke="hsl(220, 10%, 72%)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
       <text x={mx + perpX} y={my + perpY} textAnchor="middle" dominantBaseline="middle"
-        fill="hsl(220, 10%, 55%)" fontSize="9" fontWeight="500" fontFamily="Inter, sans-serif">
+        fill="hsl(220, 10%, 50%)" fontSize="10" fontWeight="500" fontFamily="Inter, sans-serif">
         {percentage}%
       </text>
     </g>
@@ -243,8 +254,8 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
           </div>
         </div>
 
-        {/* SVG Pipeline */}
-        <svg viewBox="0 0 600 380" className="w-full" preserveAspectRatio="xMidYMid meet">
+        {/* SVG Pipeline - vertical orientation */}
+        <svg viewBox="0 0 500 420" className="w-full" preserveAspectRatio="xMidYMid meet">
           {/* Chevron arrows */}
           {conversions.map((pct, i) => {
             const from = circlePositions[i];
@@ -277,6 +288,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
               count={step.count}
               label={step.shortLabel}
               color={stepColors[i]}
+              fill={stepFills[i]}
               index={i}
               delay={delay + 100 + i * 80}
               isVisible={isVisible}
