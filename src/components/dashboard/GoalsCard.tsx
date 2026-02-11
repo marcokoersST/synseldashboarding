@@ -128,15 +128,15 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
           </button>
         </div>
         
-        <div className="flex flex-col gap-4 flex-1 min-h-0">
+        <div className="flex flex-col gap-4">
           {/* User Goals Section */}
-          <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex items-center gap-2 mb-2 shrink-0">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-medium text-muted-foreground">Mijn doelen</span>
               <span className="text-xs text-muted-foreground/60">({sortedUserGoals.length})</span>
             </div>
-            <div className="relative flex-1 min-h-0">
-              <div className="absolute inset-0 overflow-y-auto scrollbar-thin">
+            <div className="relative">
+              <div className="h-[160px] overflow-y-auto scrollbar-thin">
                 <div className="space-y-2 pr-2 pb-4">
                   {sortedUserGoals.map((goal) => (
                     <GoalItemCompact 
@@ -147,21 +147,20 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                   ))}
                 </div>
               </div>
-              {/* Fade gradient overlay */}
               <div className="absolute bottom-0 left-0 right-2 h-2 bg-gradient-to-t from-card to-transparent pointer-events-none" />
             </div>
           </div>
           
           {/* Manager Goals Section */}
           {sortedManagerGoals.length > 0 && (
-            <div className="flex flex-col border-t border-border/50 pt-3 flex-1 min-h-0">
-              <div className="flex items-center gap-2 mb-2 shrink-0">
+            <div className="flex flex-col border-t border-border/50 pt-3">
+              <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-3.5 h-3.5 text-gold" />
                 <span className="text-xs font-medium text-muted-foreground">Doelen van leidinggevende</span>
                 <span className="text-xs text-muted-foreground/60">({sortedManagerGoals.length})</span>
               </div>
-              <div className="relative flex-1 min-h-0">
-                <div className="absolute inset-0 overflow-y-auto scrollbar-thin">
+              <div className="relative">
+                <div className="h-[160px] overflow-y-auto scrollbar-thin">
                   <div className="space-y-2 pr-2 pb-4">
                     {sortedManagerGoals.map((goal) => (
                       <GoalItemCompact 
@@ -172,7 +171,6 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
                     ))}
                   </div>
                 </div>
-                {/* Fade gradient overlay */}
                 <div className="absolute bottom-0 left-0 right-2 h-2 bg-gradient-to-t from-card to-transparent pointer-events-none" />
               </div>
             </div>
