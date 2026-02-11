@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
-import { heatmapEvents, unitColors, getHeatmapStats, HeatmapUnit, HeatmapEvent } from "@/data/heatmapData";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { heatmapEvents, unitColors, getHeatmapStats, HeatmapUnit, HeatmapEvent, provinceVacancies, getProvinceVacancy, getTotalVacancies } from "@/data/heatmapData";
+import { provinces } from "@/data/netherlandsProvinces";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
+import { MapPin } from "lucide-react";
 
 interface DotProps {
   event: HeatmapEvent;
@@ -16,68 +17,62 @@ function AnimatedDot({ event, visible, isHighlighted, onHover }: DotProps) {
   const opacity = isHighlighted ? 1 : 0.85;
 
   return (
-    <TooltipTrigger asChild>
-      <g
-        onMouseEnter={() => onHover(event.id)}
-        onMouseLeave={() => onHover(null)}
-        style={{ cursor: "pointer" }}
-      >
-        {/* Glow ring */}
+    <g
+      onMouseEnter={() => onHover(event.id)}
+      onMouseLeave={() => onHover(null)}
+      style={{ cursor: "pointer" }}
+    >
+      <circle
+        cx={event.lng}
+        cy={event.lat}
+        r={visible ? size + 4 : 0}
+        fill="none"
+        stroke={color.glow}
+        strokeWidth={1.5}
+        opacity={visible ? (isHighlighted ? 0.6 : 0.25) : 0}
+        style={{
+          transition: "all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          transitionDelay: `${event.delayMs}ms`,
+        }}
+      />
+      {visible && (
         <circle
           cx={event.lng}
           cy={event.lat}
-          r={visible ? size + 4 : 0}
+          r={size}
           fill="none"
           stroke={color.glow}
-          strokeWidth={1.5}
-          opacity={visible ? (isHighlighted ? 0.6 : 0.25) : 0}
+          strokeWidth={1}
+          opacity={0}
           style={{
-            transition: "all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            transitionDelay: `${event.delayMs}ms`,
+            animation: `heatmap-pulse 1.5s ease-out ${event.delayMs}ms`,
           }}
         />
-        {/* Pulse ring on appear */}
-        {visible && (
-          <circle
-            cx={event.lng}
-            cy={event.lat}
-            r={size}
-            fill="none"
-            stroke={color.glow}
-            strokeWidth={1}
-            opacity={0}
-            style={{
-              animation: `heatmap-pulse 1.5s ease-out ${event.delayMs}ms`,
-            }}
-          />
-        )}
-        {/* Main dot */}
-        <circle
-          cx={event.lng}
-          cy={event.lat}
-          r={visible ? size : 0}
-          fill={color.dot}
-          opacity={visible ? opacity : 0}
-          style={{
-            transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            transitionDelay: `${event.delayMs}ms`,
-            filter: isHighlighted ? `drop-shadow(0 0 6px ${color.glow})` : "none",
-          }}
-        />
-        {/* Inner bright point */}
-        <circle
-          cx={event.lng}
-          cy={event.lat}
-          r={visible ? size * 0.35 : 0}
-          fill="white"
-          opacity={visible ? 0.7 : 0}
-          style={{
-            transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            transitionDelay: `${event.delayMs + 100}ms`,
-          }}
-        />
-      </g>
-    </TooltipTrigger>
+      )}
+      <circle
+        cx={event.lng}
+        cy={event.lat}
+        r={visible ? size : 0}
+        fill={color.dot}
+        opacity={visible ? opacity : 0}
+        style={{
+          transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          transitionDelay: `${event.delayMs}ms`,
+          filter: isHighlighted ? `drop-shadow(0 0 6px ${color.glow})` : "none",
+        }}
+      />
+      <circle
+        cx={event.lng}
+        cy={event.lat}
+        r={visible ? size * 0.35 : 0}
+        fill="white"
+        opacity={visible ? 0.7 : 0}
+        style={{
+          transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          transitionDelay: `${event.delayMs + 100}ms`,
+        }}
+      />
+    </g>
   );
 }
 
@@ -86,18 +81,47 @@ interface FilterState {
   type: "all" | "gesprek" | "plaatsing";
 }
 
-export function NetherlandsHeatmap() {
+interface NetherlandsHeatmapProps {
+  isTVMode?: boolean;
+}
+
+export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps) {
   const [dotsVisible, setDotsVisible] = useState(false);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [hoveredDotId, setHoveredDotId] = useState<string | null>(null);
+  const [activeProvince, setActiveProvince] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     units: new Set<HeatmapUnit>(["operators", "monteurs", "engineering", "training"]),
     type: "all",
   });
+  const cycleIndexRef = useRef(0);
 
   useEffect(() => {
     const timer = setTimeout(() => setDotsVisible(true), 400);
     return () => clearTimeout(timer);
   }, []);
+
+  // TV auto-cycle: only provinces with vacancies
+  const provincesWithVacancies = useMemo(
+    () => provinceVacancies.filter((p) => p.total > 0),
+    []
+  );
+
+  useEffect(() => {
+    if (!isTVMode || provincesWithVacancies.length === 0) {
+      if (!isTVMode) setActiveProvince(null);
+      return;
+    }
+    // Start immediately
+    cycleIndexRef.current = 0;
+    setActiveProvince(provincesWithVacancies[0].provinceId);
+
+    const interval = setInterval(() => {
+      cycleIndexRef.current = (cycleIndexRef.current + 1) % provincesWithVacancies.length;
+      setActiveProvince(provincesWithVacancies[cycleIndexRef.current].provinceId);
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [isTVMode, provincesWithVacancies]);
 
   const filteredEvents = useMemo(() => {
     return heatmapEvents.filter((e) => {
@@ -108,7 +132,11 @@ export function NetherlandsHeatmap() {
   }, [filters]);
 
   const stats = useMemo(() => getHeatmapStats(filteredEvents), [filteredEvents]);
-  const hoveredEvent = hoveredId ? heatmapEvents.find((e) => e.id === hoveredId) : null;
+  const hoveredEvent = hoveredDotId ? heatmapEvents.find((e) => e.id === hoveredDotId) : null;
+
+  const activeVacancy = activeProvince ? getProvinceVacancy(activeProvince) : null;
+  const totalVacancies = useMemo(() => getTotalVacancies(), []);
+  const activeProvinceData = activeProvince ? provinces.find((p) => p.id === activeProvince) : null;
 
   const toggleUnit = (unit: HeatmapUnit) => {
     setFilters((prev) => {
@@ -122,11 +150,16 @@ export function NetherlandsHeatmap() {
     });
   };
 
+  const handleProvinceHover = useCallback((provinceId: string | null) => {
+    if (!isTVMode) {
+      setActiveProvince(provinceId);
+    }
+  }, [isTVMode]);
+
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full">
       {/* Map area */}
       <div className="flex-1 relative bg-card rounded-2xl border border-border p-6 overflow-hidden">
-        {/* Subtle gradient background */}
         <div
           className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{
@@ -135,59 +168,109 @@ export function NetherlandsHeatmap() {
         />
 
         <TooltipProvider delayDuration={0}>
-          <Tooltip>
-            <svg viewBox="0 0 613 724" className="w-full h-full max-h-[70vh]" preserveAspectRatio="xMidYMid meet">
-              <defs>
-                <style>{`
-                  @keyframes heatmap-pulse {
-                    0% { r: 4; opacity: 0.6; }
-                    100% { r: 20; opacity: 0; }
-                  }
-                `}</style>
-              </defs>
+          <svg viewBox="0 0 613 724" className="w-full h-full max-h-[70vh]" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <style>{`
+                @keyframes heatmap-pulse {
+                  0% { r: 4; opacity: 0.6; }
+                  100% { r: 20; opacity: 0; }
+                }
+              `}</style>
+              <filter id="province-glow">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
 
-              {/* Netherlands map */}
-              <image
-                href="/images/netherlands.svg"
-                x="0"
-                y="0"
-                width="613"
-                height="724"
-                style={{ opacity: 0.35, filter: "brightness(0.5) saturate(0.3)" }}
-              />
+            {/* Province paths */}
+            {provinces.map((province) => {
+              const isActive = activeProvince === province.id;
+              const vacancy = getProvinceVacancy(province.id);
+              const hasVacancies = vacancy && vacancy.total > 0;
+              return (
+                <path
+                  key={province.id}
+                  d={province.d}
+                  fill={isActive ? "hsla(175, 60%, 50%, 0.18)" : "hsla(220, 15%, 25%, 0.4)"}
+                  stroke={isActive ? "hsla(175, 60%, 50%, 0.7)" : "hsla(220, 10%, 40%, 0.5)"}
+                  strokeWidth={isActive ? 2 : 0.8}
+                  style={{
+                    transition: "all 0.6s ease",
+                    cursor: hasVacancies ? "pointer" : "default",
+                    filter: isActive ? "url(#province-glow)" : "none",
+                  }}
+                  onMouseEnter={() => handleProvinceHover(province.id)}
+                  onMouseLeave={() => handleProvinceHover(null)}
+                />
+              );
+            })}
 
-              {/* Dots */}
-              {filteredEvents.map((event) => (
+            {/* Dots */}
+            {filteredEvents.map((event) => (
+              <Tooltip key={event.id}>
                 <AnimatedDot
-                  key={event.id}
                   event={event}
                   visible={dotsVisible}
-                  isHighlighted={hoveredId === event.id}
-                  onHover={setHoveredId}
+                  isHighlighted={hoveredDotId === event.id}
+                  onHover={setHoveredDotId}
                 />
-              ))}
-            </svg>
+                {hoveredDotId === event.id && hoveredEvent && (
+                  <TooltipContent side="top" className="z-50">
+                    <div className="text-xs space-y-1">
+                      <p className="font-semibold">{hoveredEvent.city}</p>
+                      <p>
+                        <span
+                          className="inline-block w-2 h-2 rounded-full mr-1.5"
+                          style={{ backgroundColor: unitColors[hoveredEvent.unit].dot }}
+                        />
+                        {unitColors[hoveredEvent.unit].label} —{" "}
+                        {hoveredEvent.type === "gesprek" ? "Gesprek" : "Plaatsing"}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {hoveredEvent.company} • {hoveredEvent.consultant}
+                      </p>
+                      <p className="text-muted-foreground">{hoveredEvent.date}</p>
+                    </div>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            ))}
 
-            {hoveredEvent && (
-              <TooltipContent side="top" className="z-50">
-                <div className="text-xs space-y-1">
-                  <p className="font-semibold">{hoveredEvent.city}</p>
-                  <p>
-                    <span
-                      className="inline-block w-2 h-2 rounded-full mr-1.5"
-                      style={{ backgroundColor: unitColors[hoveredEvent.unit].dot }}
-                    />
-                    {unitColors[hoveredEvent.unit].label} —{" "}
-                    {hoveredEvent.type === "gesprek" ? "Gesprek" : "Plaatsing"}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {hoveredEvent.company} • {hoveredEvent.consultant}
-                  </p>
-                  <p className="text-muted-foreground">{hoveredEvent.date}</p>
-                </div>
-              </TooltipContent>
+            {/* Active province floating label */}
+            {activeProvinceData && activeVacancy && (
+              <g
+                style={{
+                  transition: "opacity 0.3s ease",
+                  opacity: 1,
+                }}
+              >
+                <rect
+                  x={activeProvinceData.center.x - 70}
+                  y={activeProvinceData.center.y - 22}
+                  width={140}
+                  height={32}
+                  rx={8}
+                  fill="hsla(220, 20%, 10%, 0.85)"
+                  stroke="hsla(175, 60%, 50%, 0.5)"
+                  strokeWidth={1}
+                />
+                <text
+                  x={activeProvinceData.center.x}
+                  y={activeProvinceData.center.y - 4}
+                  textAnchor="middle"
+                  fill="hsl(175, 60%, 70%)"
+                  fontSize={12}
+                  fontWeight={600}
+                  style={{ pointerEvents: "none" }}
+                >
+                  {activeProvinceData.name} — {activeVacancy.total} vacatures
+                </text>
+              </g>
             )}
-          </Tooltip>
+          </svg>
         </TooltipProvider>
       </div>
 
@@ -216,7 +299,7 @@ export function NetherlandsHeatmap() {
         </div>
 
         {/* Unit filters + stats */}
-        <div className="bg-card rounded-xl border border-border p-4 flex-1">
+        <div className="bg-card rounded-xl border border-border p-4">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
             Units
           </h3>
@@ -252,6 +335,61 @@ export function NetherlandsHeatmap() {
                 </button>
               );
             })}
+          </div>
+        </div>
+
+        {/* Open Vacatures */}
+        <div className="bg-card rounded-xl border border-border p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Open Vacatures
+            </h3>
+          </div>
+          <div className="transition-all duration-300">
+            {activeVacancy ? (
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm font-semibold text-foreground">{activeVacancy.name}</span>
+                  <span className="text-xl font-bold text-foreground tabular-nums">{activeVacancy.total}</span>
+                </div>
+                <div className="space-y-1.5">
+                  {(Object.keys(unitColors) as HeatmapUnit[]).map((unit) => (
+                    <div key={unit} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: unitColors[unit].dot }}
+                        />
+                        <span className="text-muted-foreground">{unitColors[unit].label}</span>
+                      </div>
+                      <span className="text-foreground tabular-nums font-medium">{activeVacancy.byUnit[unit]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted-foreground">Landelijk totaal</span>
+                  <span className="text-xl font-bold text-foreground tabular-nums">{totalVacancies.total}</span>
+                </div>
+                <div className="space-y-1.5">
+                  {(Object.keys(unitColors) as HeatmapUnit[]).map((unit) => (
+                    <div key={unit} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: unitColors[unit].dot }}
+                        />
+                        <span className="text-muted-foreground">{unitColors[unit].label}</span>
+                      </div>
+                      <span className="text-foreground tabular-nums font-medium">{totalVacancies.byUnit[unit]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

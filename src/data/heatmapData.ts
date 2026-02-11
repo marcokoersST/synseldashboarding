@@ -132,6 +132,69 @@ export function generateHeatmapEvents(count: number = 65): HeatmapEvent[] {
 
 export const heatmapEvents = generateHeatmapEvents(65);
 
+// Province vacancy data
+export interface ProvinceVacancies {
+  provinceId: string;
+  name: string;
+  total: number;
+  byUnit: Record<HeatmapUnit, number>;
+}
+
+function generateProvinceVacancies(): ProvinceVacancies[] {
+  const rng = seededRandom(99);
+  const provinceInfo = [
+    { id: "NL-GR", name: "Groningen" },
+    { id: "NL-FR", name: "Friesland" },
+    { id: "NL-DR", name: "Drenthe" },
+    { id: "NL-OV", name: "Overijssel" },
+    { id: "NL-FL", name: "Flevoland" },
+    { id: "NL-GE", name: "Gelderland" },
+    { id: "NL-UT", name: "Utrecht" },
+    { id: "NL-NH", name: "Noord-Holland" },
+    { id: "NL-ZH", name: "Zuid-Holland" },
+    { id: "NL-ZE", name: "Zeeland" },
+    { id: "NL-NB", name: "Noord-Brabant" },
+    { id: "NL-LI", name: "Limburg" },
+  ];
+
+  return provinceInfo.map((p) => {
+    // Some provinces have 0 vacancies
+    const hasVacancies = rng() > 0.2;
+    if (!hasVacancies) {
+      return { provinceId: p.id, name: p.name, total: 0, byUnit: { operators: 0, monteurs: 0, engineering: 0, training: 0 } };
+    }
+    const operators = Math.floor(rng() * 25) + 2;
+    const monteurs = Math.floor(rng() * 18) + 1;
+    const engineering = Math.floor(rng() * 12);
+    const training = Math.floor(rng() * 8);
+    return {
+      provinceId: p.id,
+      name: p.name,
+      total: operators + monteurs + engineering + training,
+      byUnit: { operators, monteurs, engineering, training },
+    };
+  });
+}
+
+export const provinceVacancies = generateProvinceVacancies();
+
+export function getProvinceVacancy(provinceId: string): ProvinceVacancies | undefined {
+  return provinceVacancies.find((p) => p.provinceId === provinceId);
+}
+
+export function getTotalVacancies(): { total: number; byUnit: Record<HeatmapUnit, number> } {
+  const byUnit = { operators: 0, monteurs: 0, engineering: 0, training: 0 };
+  let total = 0;
+  provinceVacancies.forEach((p) => {
+    total += p.total;
+    byUnit.operators += p.byUnit.operators;
+    byUnit.monteurs += p.byUnit.monteurs;
+    byUnit.engineering += p.byUnit.engineering;
+    byUnit.training += p.byUnit.training;
+  });
+  return { total, byUnit };
+}
+
 // Summary stats
 export function getHeatmapStats(events: HeatmapEvent[]) {
   const byUnit: Record<HeatmapUnit, { gesprekken: number; plaatsingen: number }> = {
