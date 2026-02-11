@@ -214,7 +214,7 @@ function ConnectorLine({
       />
       {/* Percentage */}
       <text x={mx + perpX} y={my + perpY} textAnchor="middle" dominantBaseline="middle"
-        fill="hsl(220, 10%, 55%)" fontSize="9" fontWeight="500" fontFamily="Inter, sans-serif"
+        fill="hsl(220, 10%, 55%)" fontSize="12" fontWeight="500" fontFamily="Inter, sans-serif"
         style={{ opacity: isVisible ? 1 : 0, transition: `opacity 0.3s ${delay + 500}ms` }}>
         {percentage}%
       </text>
