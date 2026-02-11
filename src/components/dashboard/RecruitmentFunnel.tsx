@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { cn } from "@/lib/utils";
@@ -20,13 +20,13 @@ interface StepData {
 }
 
 const currentData: StepData[] = [
-  { label: "Toegewezen kandidaten", shortLabel: "Toeg.", count: 120 },
-  { label: "Inschrijvingen", shortLabel: "Insch.", count: 65 },
-  { label: "Acquisities", shortLabel: "Acq.", count: 51 },
-  { label: "Uitnodiging", shortLabel: "Uitn.", count: 32 },
-  { label: "Gesprekken", shortLabel: "Gespr.", count: 23 },
-  { label: "Vervolg gesprekken", shortLabel: "Verv.g.", count: 11 },
-  { label: "Plaatsingen", shortLabel: "Plts.", count: 5 },
+  { label: "Toegewezen kandidaten", shortLabel: "Toegewezen", count: 120 },
+  { label: "Inschrijvingen", shortLabel: "Inschrijvingen", count: 65 },
+  { label: "Acquisities", shortLabel: "Acquisities", count: 51 },
+  { label: "Uitnodiging", shortLabel: "Uitnodiging", count: 32 },
+  { label: "Gesprekken", shortLabel: "Gesprekken", count: 23 },
+  { label: "Vervolg gesprekken", shortLabel: "Vervolg", count: 11 },
+  { label: "Plaatsingen", shortLabel: "Plaatsingen", count: 5 },
 ];
 
 const makeCompData = (counts: number[]): StepData[] =>
@@ -48,39 +48,24 @@ const comparisonDataByPeriod: Record<string, StepData[]> = {
   P13: makeCompData([135, 73, 57, 36, 26, 13, 7]),
 };
 
-const opacityMap = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4];
+const opacityMap = [1, 0.88, 0.76, 0.65, 0.55, 0.45, 0.35];
 
-// --- Circle positions in U-shape within SVG viewBox (500 x 320) ---
-// Top row L→R: steps 0,1,2
-// Right side down: 2→3
-// Bottom row R→L: 3,4,5
-// Bottom-left: 6
-
-const positions: { x: number; y: number }[] = [
-  { x: 70, y: 65 },   // 0 - Toeg.
-  { x: 250, y: 65 },  // 1 - Insch.
-  { x: 430, y: 65 },  // 2 - Acq.
-  { x: 430, y: 235 }, // 3 - Uitn.
-  { x: 250, y: 235 }, // 4 - Gespr.
-  { x: 250, y: 235 }, // 5 - Verv.g. (will offset)
-  { x: 70, y: 235 },  // 6 - Plts.
-];
-
-// Better U-shape: top row 0-1-2, right curve 2-3, bottom row 3-4-5-6
+// U-shape positions in a 600x380 viewBox
+// Top row L→R: 0,1,2 | Right curve: 2→3 | Bottom row R→L: 3,4,5,6
 const circlePositions = [
-  { x: 70, y: 60 },   // 0 Toeg.
-  { x: 250, y: 60 },  // 1 Insch.
-  { x: 430, y: 60 },  // 2 Acq.
-  { x: 430, y: 230 }, // 3 Uitn.
-  { x: 310, y: 230 }, // 4 Gespr.
-  { x: 190, y: 230 }, // 5 Verv.g.
-  { x: 70, y: 230 },  // 6 Plts.
+  { x: 80, y: 80 },    // 0 Toegewezen
+  { x: 300, y: 80 },   // 1 Inschrijvingen
+  { x: 520, y: 80 },   // 2 Acquisities
+  { x: 520, y: 290 },  // 3 Uitnodiging
+  { x: 373, y: 290 },  // 4 Gesprekken
+  { x: 227, y: 290 },  // 5 Vervolg
+  { x: 80, y: 290 },   // 6 Plaatsingen
 ];
 
 // Radius based on sqrt scale
 const getRadius = (count: number, maxCount: number): number => {
-  const minR = 18;
-  const maxR = 32;
+  const minR = 26;
+  const maxR = 42;
   return minR + (Math.sqrt(count) / Math.sqrt(maxCount)) * (maxR - minR);
 };
 
@@ -95,57 +80,86 @@ function StepCircle({
   isComparing: boolean; compCount?: number; isHovered: boolean;
   onHover: (i: number | null) => void;
 }) {
+  const gradId = `grad-${index}`;
+  const glowId = `glow-${index}`;
+  const labelY = cy > 150 ? cy + radius + 22 : cy - radius - 14;
+
   return (
     <g
-      className="cursor-default"
+      className="cursor-pointer"
       onMouseEnter={() => onHover(index)}
       onMouseLeave={() => onHover(null)}
       style={{
         transform: isVisible ? "scale(1)" : "scale(0)",
         transformOrigin: `${cx}px ${cy}px`,
-        transition: `transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
+        transition: `transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
       }}
     >
-      {/* Glow on hover */}
+      <defs>
+        <radialGradient id={gradId} cx="35%" cy="35%" r="65%">
+          <stop offset="0%" stopColor={`hsl(175 70% 55% / ${opacity})`} />
+          <stop offset="100%" stopColor={`hsl(175 55% 35% / ${opacity})`} />
+        </radialGradient>
+        <filter id={glowId}>
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* Hover glow ring */}
       {isHovered && (
-        <circle cx={cx} cy={cy} r={radius + 5} fill="none"
-          stroke="hsl(175 60% 45% / 0.3)" strokeWidth={2}
+        <circle cx={cx} cy={cy} r={radius + 7} fill="none"
+          stroke="hsl(175 60% 50% / 0.4)" strokeWidth={2.5}
+          filter={`url(#${glowId})`}
         />
       )}
-      {/* Main circle */}
+
+      {/* Main circle with gradient */}
       <circle cx={cx} cy={cy} r={radius}
-        fill={`hsl(175 60% 45% / ${opacity})`}
-        stroke="hsl(175 60% 45% / 0.3)" strokeWidth={1}
+        fill={`url(#${gradId})`}
+        stroke="hsl(175 50% 60% / 0.25)" strokeWidth={1.5}
       />
-      {/* Comparison ring */}
+
+      {/* Inner highlight for 3D feel */}
+      <circle cx={cx - radius * 0.15} cy={cy - radius * 0.15} r={radius * 0.55}
+        fill="hsl(175 80% 80% / 0.08)"
+      />
+
+      {/* Comparison dashed ring */}
       {isComparing && compCount !== undefined && (
-        <circle cx={cx} cy={cy} r={radius + 3}
+        <circle cx={cx} cy={cy} r={radius + 5}
           fill="none" stroke="hsl(45 30% 55%)" strokeWidth={2.5}
-          strokeDasharray="4 2"
+          strokeDasharray="5 3" opacity={0.8}
         />
       )}
+
       {/* Count text */}
       {isComparing && compCount !== undefined ? (
         <>
-          <text x={cx} y={cy - 4} textAnchor="middle" dominantBaseline="middle"
-            className="fill-white font-semibold" style={{ fontSize: 11 }}>
+          <text x={cx} y={cy - 6} textAnchor="middle" dominantBaseline="middle"
+            fill="white" fontWeight="700" fontSize="16" fontFamily="Inter, sans-serif">
             {count}
           </text>
-          <text x={cx} y={cy + 9} textAnchor="middle" dominantBaseline="middle"
-            className="font-medium" style={{ fontSize: 9, fill: "hsl(45 30% 70%)" }}>
+          <text x={cx} y={cy + 12} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(45 40% 75%)" fontWeight="600" fontSize="12" fontFamily="Inter, sans-serif">
             {compCount}
           </text>
         </>
       ) : (
-        <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
-          className="fill-white font-semibold" style={{ fontSize: 12 }}>
+        <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="middle"
+          fill="white" fontWeight="700" fontSize="18" fontFamily="Inter, sans-serif"
+          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
           {count}
         </text>
       )}
-      {/* Label below */}
-      <text x={cx} y={cy > 150 ? cy + radius + 16 : cy - radius - 8}
+
+      {/* Label */}
+      <text x={cx} y={labelY}
         textAnchor="middle" dominantBaseline="middle"
-        className="fill-muted-foreground" style={{ fontSize: 9 }}>
+        fill="hsl(220 10% 50%)" fontSize="11" fontWeight="500" fontFamily="Inter, sans-serif">
         {label}
       </text>
     </g>
@@ -158,51 +172,49 @@ function ConversionPath({
   x1: number; y1: number; x2: number; y2: number;
   percentage: number; index: number; delay: number; isVisible: boolean;
 }) {
-  // Determine if vertical or horizontal
   const isVertical = Math.abs(y2 - y1) > Math.abs(x2 - x1);
-  
-  // Build a curved path
   const mx = (x1 + x2) / 2;
   const my = (y1 + y2) / 2;
   let path: string;
-  
+
   if (isVertical) {
-    // Vertical curve (right side)
-    const cpx = x1 + 30;
+    const cpx = x1 + 40;
     path = `M ${x1} ${y1} Q ${cpx} ${my} ${x2} ${y2}`;
   } else {
-    // Horizontal line with slight curve
-    const cpy = Math.min(y1, y2) - 15;
+    const cpy = y1 < 150 ? Math.min(y1, y2) - 20 : Math.max(y1, y2) + 20;
     path = `M ${x1} ${y1} Q ${mx} ${cpy} ${x2} ${y2}`;
   }
 
-  // Path length estimate
-  const pathLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) * 1.2;
+  const pathLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) * 1.3;
 
   return (
     <g>
+      {/* Subtle background line */}
       <path d={path} fill="none"
-        stroke="hsl(220 15% 80%)" strokeWidth={1.5}
+        stroke="hsl(220 15% 90%)" strokeWidth={2} opacity={0.5}
+      />
+      {/* Animated foreground line */}
+      <path d={path} fill="none"
+        stroke="hsl(175 40% 65%)" strokeWidth={2}
         strokeDasharray={pathLength}
         strokeDashoffset={isVisible ? 0 : pathLength}
-        style={{
-          transition: `stroke-dashoffset 0.8s ease-out ${delay}ms`,
-        }}
+        strokeLinecap="round"
+        style={{ transition: `stroke-dashoffset 1s ease-out ${delay}ms` }}
       />
-      {/* Conversion label */}
-      <rect x={mx - 16} y={my - 8} width={32} height={16} rx={4}
-        fill="hsl(var(--card))" stroke="hsl(220 15% 88%)" strokeWidth={0.5}
+      {/* Conversion badge */}
+      <rect x={mx - 20} y={my - 10} width={40} height={20} rx={10}
+        fill="hsl(var(--card))" stroke="hsl(220 15% 86%)" strokeWidth={1}
         style={{
           opacity: isVisible ? 1 : 0,
-          transition: `opacity 0.3s ease-out ${delay + 400}ms`,
+          transition: `opacity 0.4s ease-out ${delay + 500}ms`,
+          filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.06))",
         }}
       />
-      <text x={mx} y={my} textAnchor="middle" dominantBaseline="middle"
-        className="font-medium" style={{
-          fontSize: 8.5,
-          fill: "hsl(175 60% 40%)",
+      <text x={mx} y={my + 1} textAnchor="middle" dominantBaseline="middle"
+        fill="hsl(175 50% 38%)" fontWeight="600" fontSize="11" fontFamily="Inter, sans-serif"
+        style={{
           opacity: isVisible ? 1 : 0,
-          transition: `opacity 0.3s ease-out ${delay + 400}ms`,
+          transition: `opacity 0.4s ease-out ${delay + 500}ms`,
         }}>
         {percentage}%
       </text>
@@ -225,7 +237,6 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
   const comparisonData = comparisonDataByPeriod[selectedPeriod];
   const maxCount = Math.max(...currentData.map(d => d.count));
 
-  // Conversion percentages between consecutive steps
   const conversions = useMemo(() =>
     currentData.slice(1).map((s, i) =>
       Math.round((s.count / currentData[i].count) * 100)
@@ -235,7 +246,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
     <AnimatedCard delay={delay}>
       <div ref={ref} className="bg-card rounded-xl p-5 border border-border">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-2">
           <div>
             <h3 className="text-sm font-medium text-foreground">Wervingstrechter</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Conversie per fase</p>
@@ -266,14 +277,13 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
         </div>
 
         {/* SVG Pipeline */}
-        <svg viewBox="0 0 500 290" className="w-full" style={{ minHeight: 200 }}>
-          {/* Conversion paths (draw between consecutive circles) */}
+        <svg viewBox="0 0 600 380" className="w-full" preserveAspectRatio="xMidYMid meet">
+          {/* Conversion paths */}
           {conversions.map((pct, i) => {
             const from = circlePositions[i];
             const to = circlePositions[i + 1];
             const r1 = getRadius(currentData[i].count, maxCount);
             const r2 = getRadius(currentData[i + 1].count, maxCount);
-            // Offset start/end by radius in the direction of travel
             const dx = to.x - from.x;
             const dy = to.y - from.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
@@ -323,11 +333,11 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
           {hoveredIndex === null ? (
             <div className="flex items-center justify-center gap-6">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-sm bg-teal" />
+                <div className="w-3 h-3 rounded-full bg-teal" />
                 <span className="text-xs text-muted-foreground">Huidig</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-sm bg-gold" />
+                <div className="w-3 h-3 rounded-full bg-gold" />
                 <span className="text-xs text-muted-foreground">{selectedPeriod}</span>
               </div>
             </div>
