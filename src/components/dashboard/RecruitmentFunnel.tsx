@@ -107,9 +107,11 @@ function StepNode({
   isComparing: boolean; compCount?: number; isHovered: boolean;
   onHover: (i: number | null) => void;
 }) {
-  // Label to the right of the circle
-  const labelX = cx + CIRCLE_R + 28;
-  const labelY = cy;
+  const isTop = index === 0;
+  const isBottom = index === 6;
+  const labelX = isTop || isBottom ? cx : cx + CIRCLE_R + 28;
+  const labelY = isTop ? cy - CIRCLE_R - 14 : isBottom ? cy + CIRCLE_R + 18 : cy;
+  const labelAnchor = isTop || isBottom ? "middle" : "start";
 
   return (
     <g
@@ -164,7 +166,7 @@ function StepNode({
 
       {/* Label to the right */}
       <text x={labelX} y={labelY}
-        textAnchor="start" dominantBaseline="middle"
+        textAnchor={labelAnchor} dominantBaseline="middle"
         fill="hsl(220, 10%, 40%)" fontSize="13" fontWeight="600" fontFamily="Inter, sans-serif">
         {label}
       </text>
