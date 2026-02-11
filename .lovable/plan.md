@@ -1,31 +1,20 @@
 
+# Scroll to top on navigation
 
-# Smooth sidebar closing animation
-
-## Root causes of the stutter
-
-1. **Re-mounting nav buttons**: The tooltip wrapper conditionally renders based on `isCollapsed` (lines 211-222). When toggling, every nav button unmounts and remounts in a different wrapper, breaking the CSS transition mid-animation.
-
-2. **Instant layout shifts**: `gap-3` stays constant while text shrinks to `max-w-0`, and `justify-center` toggles instantly via the `isCollapsed` check. These discrete CSS changes cause visible jumps.
-
-3. **Sub-items vanish instantly**: The submenu section uses `{hasSubItems && isExpanded && !isCollapsed && (...)}`, removing DOM elements immediately instead of animating them out.
+## Problem
+When navigating between pages (e.g., Dashboard to Manager Dashboard), the main content area retains its scroll position, so the new page appears scrolled down instead of starting at the top.
 
 ## Solution
+Add a `ScrollToTop` component that listens to route changes via `useLocation()` and scrolls the `<main>` element to the top on every navigation.
 
-### `src/components/dashboard/Sidebar.tsx`
+## Changes
 
-1. **Always render the Tooltip wrapper** for every nav item. Disable it when expanded by setting the tooltip content to only show when `isCollapsed` is true. This prevents re-mounting buttons during the transition.
+### New file: `src/components/layout/ScrollToTop.tsx`
+- A small component that uses `useLocation()` and `useEffect` to detect route changes.
+- On change, it finds the `<main>` scroll container and calls `scrollTo(0, 0)`.
 
-2. **Transition the gap**: Replace the static `gap-3` on nav buttons with a transitioning gap using a CSS approach -- switch to `gap-0` when collapsed and use padding/margin on the icon instead, or transition gap via inline style since Tailwind does not animate gap by default.
+### `src/components/layout/AppLayout.tsx`
+- Add a `ref` to the `<main>` element.
+- Render the `ScrollToTop` component inside the layout, passing the ref so it can scroll the correct container (since `window.scrollTo` won't work -- the scrollable element is `<main>`, not the window).
 
-3. **Remove instant class toggles**: Instead of toggling `justify-center` and `px-2` via `isCollapsed`, keep consistent padding and let the overflow + max-width transitions handle the visual collapse naturally.
-
-4. **Animate sub-items out**: Wrap sub-item sections in a container with `max-height` and `opacity` transitions so they shrink/fade out smoothly instead of disappearing instantly.
-
-## Technical details
-
-- Tooltip: always wrap, but only render `TooltipContent` when `isCollapsed` is true (or use `open={false}` when expanded)
-- Nav button padding: keep `px-3` always, the sidebar's overflow will clip content naturally
-- Sub-items container: use `transition-[max-height,opacity]` with `max-h-0 opacity-0` when collapsed vs `max-h-[500px] opacity-100` when expanded
-- Remove `justify-center` toggle -- icons naturally stay left-aligned and centered within the 64px width since they are `shrink-0` with fixed size
-
+Alternatively, a simpler approach: give `<main>` an `id` or use a ref, and use a `useEffect` with `useLocation().pathname` inside `AppLayout` directly to scroll it on route change -- no extra file needed.
