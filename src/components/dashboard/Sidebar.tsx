@@ -260,7 +260,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
 
         {/* User Profile */}
         <div className="p-3 border-t border-sidebar-border">
-          <div className="flex items-center p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer overflow-hidden">
+          <div className="flex items-center p-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors cursor-pointer">
             <Avatar className="w-9 h-9 shrink-0">
               <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" />
               <AvatarFallback>JD</AvatarFallback>
