@@ -116,7 +116,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border flex flex-col h-full">
+      <div className="bg-card rounded-xl p-5 border border-border flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-foreground">Persoonlijke Ontwikkeldoelen</h3>
           <button 
@@ -128,9 +128,9 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
           </button>
         </div>
         
-        <div className="flex-1 flex flex-col gap-4 min-h-0">
+        <div className="flex flex-col gap-4">
           {/* User Goals Section */}
-          <div className="flex-1 min-h-0 flex flex-col">
+          <div className="flex flex-col">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-medium text-muted-foreground">Mijn doelen</span>
               <span className="text-xs text-muted-foreground/60">({sortedUserGoals.length})</span>
@@ -154,7 +154,7 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
           
           {/* Manager Goals Section */}
           {sortedManagerGoals.length > 0 && (
-            <div className="flex-1 min-h-0 flex flex-col border-t border-border/50 pt-3">
+            <div className="flex flex-col border-t border-border/50 pt-3">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-3.5 h-3.5 text-gold" />
                 <span className="text-xs font-medium text-muted-foreground">Doelen van leidinggevende</span>
