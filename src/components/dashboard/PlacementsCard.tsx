@@ -215,7 +215,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
         </div>
 
         {!detailMode ? (
-          <>
+          <div className="flex flex-col flex-1 min-h-0">
             {/* Mini Chart */}
             <div ref={ref} className="h-16 mb-1">
               <ResponsiveContainer width="100%" height="100%">
@@ -247,9 +247,9 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             </div>
 
             {/* Candidates list */}
-            <div className="flex-1 min-h-0 border-t border-border pt-3">
+            <div className="flex-1 min-h-0 border-t border-border pt-3 flex flex-col">
               <h4 className="text-xs font-medium text-muted-foreground mb-2">Actieve gedetacheerden</h4>
-              <div className="h-[180px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" onScroll={handleScroll} ref={scrollRef}>
+              <div className="flex-1 min-h-0 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" onScroll={handleScroll} ref={scrollRef}>
                 <div className="space-y-2">
                   {candidates.map((candidate) => (
                     <div key={candidate.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
@@ -274,7 +274,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                 </div>
               </div>
             </div>
-          </>
+          </div>
         ) : (
           <div onClick={() => { if (chartClickedRef.current) { chartClickedRef.current = false; return; } setActiveLine(null); setLockedPeriod(null); }}>
             {/* Interactive Legend */}
@@ -325,7 +325,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             </div>
 
             {/* Dynamic Info Area */}
-            <div className="border-t border-border pt-3 space-y-2">
+            <div className="border-t border-border pt-3 space-y-2 min-h-[168px]">
               {activeData ? (
                 <>
                   <h4 className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
