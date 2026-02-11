@@ -126,9 +126,9 @@ export function Sidebar() {
         setExpandedItems(prev => [...prev, item.path]);
         setManuallyCollapsed(prev => prev.filter(p => p !== item.path));
       }
-    } else {
-      navigate(item.path);
     }
+    // Always navigate to the item's path
+    navigate(item.path);
   };
 
   const isSubItemActive = (path: string) => {
