@@ -148,7 +148,7 @@ function StepNode({
         </>
       ) : (
         <text x={cx} y={cy + 8} textAnchor="middle" dominantBaseline="middle"
-          fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="17" fontFamily="Inter, sans-serif">
+          fill="hsl(220, 15%, 20%)" fontWeight="700" fontSize="22" fontFamily="Inter, sans-serif">
           {count}
         </text>
       )}
