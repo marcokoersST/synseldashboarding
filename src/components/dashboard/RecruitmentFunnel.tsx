@@ -129,7 +129,7 @@ function StepNode({
 
       {/* Step number */}
       <text x={cx} y={cy - 7} textAnchor="middle" dominantBaseline="middle"
-        fill={color} fontSize="10" fontWeight="700" fontFamily="Inter, sans-serif"
+        fill={color} fontSize="13" fontWeight="700" fontFamily="Inter, sans-serif"
         opacity={0.6}>
         0{index + 1}
       </text>
