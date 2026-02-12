@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { heatmapEvents, unitColors, getHeatmapStats, HeatmapUnit, HeatmapEvent, provinceVacancies, getProvinceVacancy, getTotalVacancies } from "@/data/heatmapData";
 import { provinces } from "@/data/netherlandsProvinces";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MapPin } from "lucide-react";
 
 interface DotProps {
@@ -90,6 +89,8 @@ interface NetherlandsHeatmapProps {
 export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps) {
   const [dotsVisible, setDotsVisible] = useState(false);
   const [hoveredDotId, setHoveredDotId] = useState<string | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const mapContainerRef = useRef<HTMLDivElement>(null);
   const [activeProvince, setActiveProvince] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     units: new Set<HeatmapUnit>(["operators", "monteurs", "engineering", "training"]),
@@ -161,7 +162,16 @@ export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full">
       {/* Map area */}
-      <div className="flex-1 relative bg-card rounded-2xl border border-border p-6 overflow-hidden">
+      <div
+        ref={mapContainerRef}
+        className="flex-1 relative bg-card rounded-2xl border border-border p-6 overflow-hidden"
+        onMouseMove={(e) => {
+          if (mapContainerRef.current) {
+            const rect = mapContainerRef.current.getBoundingClientRect();
+            setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+          }
+        }}
+      >
         <div
           className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{
@@ -169,7 +179,6 @@ export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps
           }}
         />
 
-        <TooltipProvider delayDuration={0}>
           <svg viewBox="0 0 613 724" className="w-full h-full max-h-[70vh]" preserveAspectRatio="xMidYMid meet">
             <defs>
               <style>{`
@@ -212,36 +221,43 @@ export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps
 
             {/* Dots */}
             {filteredEvents.map((event) => (
-              <Tooltip key={event.id}>
-                <TooltipTrigger asChild>
-                  <AnimatedDot
-                    event={event}
-                    visible={dotsVisible}
-                    isHighlighted={hoveredDotId === event.id}
-                    onHover={setHoveredDotId}
-                  />
-                </TooltipTrigger>
-                <TooltipContent side="top" className="z-50">
-                  <div className="text-xs space-y-1">
-                    <p className="font-semibold">{event.city}</p>
-                    <p>
-                      <span
-                        className="inline-block w-2 h-2 rounded-full mr-1.5"
-                        style={{ backgroundColor: unitColors[event.unit].dot }}
-                      />
-                      {unitColors[event.unit].label} —{" "}
-                      {event.type === "gesprek" ? "Gesprek" : "Plaatsing"}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {event.company} • {event.consultant}
-                    </p>
-                    <p className="text-muted-foreground">{event.date}</p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
+              <AnimatedDot
+                key={event.id}
+                event={event}
+                visible={dotsVisible}
+                isHighlighted={hoveredDotId === event.id}
+                onHover={setHoveredDotId}
+              />
             ))}
           </svg>
-        </TooltipProvider>
+
+        {/* Custom HTML tooltip */}
+        {hoveredEvent && (
+          <div
+            className="absolute z-50 pointer-events-none rounded-md border bg-popover px-3 py-2 text-popover-foreground shadow-md"
+            style={{
+              left: mousePos.x + 12,
+              top: mousePos.y - 10,
+              transform: "translateY(-100%)",
+            }}
+          >
+            <div className="text-xs space-y-1">
+              <p className="font-semibold">{hoveredEvent.city}</p>
+              <p>
+                <span
+                  className="inline-block w-2 h-2 rounded-full mr-1.5"
+                  style={{ backgroundColor: unitColors[hoveredEvent.unit].dot }}
+                />
+                {unitColors[hoveredEvent.unit].label} —{" "}
+                {hoveredEvent.type === "gesprek" ? "Gesprek" : "Plaatsing"}
+              </p>
+              <p className="text-muted-foreground">
+                {hoveredEvent.company} • {hoveredEvent.consultant}
+              </p>
+              <p className="text-muted-foreground">{hoveredEvent.date}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Side panel */}
