@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { heatmapEvents, unitColors, getHeatmapStats, HeatmapUnit, HeatmapEvent, provinceVacancies, getProvinceVacancy, getTotalVacancies } from "@/data/heatmapData";
 import { provinces } from "@/data/netherlandsProvinces";
-import { MapPin } from "lucide-react";
+import { MapPin, Lock } from "lucide-react";
 
 interface DotProps {
   event: HeatmapEvent;
@@ -92,6 +92,8 @@ export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [activeProvince, setActiveProvince] = useState<string | null>(null);
+  const [lockedProvince, setLockedProvince] = useState<string | null>(null);
+  const provinceClickedRef = useRef(false);
   const [filters, setFilters] = useState<FilterState>({
     units: new Set<HeatmapUnit>(["operators", "monteurs", "engineering", "training"]),
     type: "all",
@@ -154,10 +156,30 @@ export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps
   };
 
   const handleProvinceHover = useCallback((provinceId: string | null) => {
-    if (!isTVMode) {
+    if (isTVMode || lockedProvince) return;
+    setActiveProvince(provinceId);
+  }, [isTVMode, lockedProvince]);
+
+  const handleProvinceClick = useCallback((provinceId: string) => {
+    if (isTVMode) return;
+    provinceClickedRef.current = true;
+    requestAnimationFrame(() => { provinceClickedRef.current = false; });
+    if (lockedProvince === provinceId) {
+      setLockedProvince(null);
+      setActiveProvince(null);
+    } else {
+      setLockedProvince(provinceId);
       setActiveProvince(provinceId);
     }
-  }, [isTVMode]);
+  }, [isTVMode, lockedProvince]);
+
+  const handleMapContainerClick = useCallback(() => {
+    if (isTVMode || provinceClickedRef.current) return;
+    if (lockedProvince) {
+      setLockedProvince(null);
+      setActiveProvince(null);
+    }
+  }, [isTVMode, lockedProvince]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full">
@@ -165,6 +187,7 @@ export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps
       <div
         ref={mapContainerRef}
         className="flex-1 relative bg-card rounded-2xl border border-border p-6 overflow-hidden"
+        onClick={handleMapContainerClick}
         onMouseMove={(e) => {
           if (mapContainerRef.current) {
             const rect = mapContainerRef.current.getBoundingClientRect();
@@ -215,6 +238,7 @@ export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps
                   }}
                   onMouseEnter={() => handleProvinceHover(province.id)}
                   onMouseLeave={() => handleProvinceHover(null)}
+                  onClick={(e) => { e.stopPropagation(); handleProvinceClick(province.id); }}
                 />
               );
             })}
@@ -336,7 +360,10 @@ export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps
             {activeVacancy ? (
               <div className="space-y-2">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-semibold text-foreground">{activeVacancy.name}</span>
+                  <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                    {activeVacancy.name}
+                    {lockedProvince && <Lock className="w-3 h-3 text-muted-foreground" />}
+                  </span>
                   <span className="text-xl font-bold text-foreground tabular-nums">{activeVacancy.total}</span>
                 </div>
                 <div className="space-y-1.5">
