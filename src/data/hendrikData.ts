@@ -132,6 +132,18 @@ export const followUpData = {
     avgReadTime: 8 + i * 3, // seconds
     avgScrollDepth: 90 - i * 7, // percentage
   })),
+  appointmentFollowUp: [
+    { consultant: "Sophie de Vries", type: "Terugmail", afspraak: "CV aanleveren na intake", deadline: "2026-02-10", status: "done" as const },
+    { consultant: "Bram Jansen", type: "Terugmail", afspraak: "Referenties opvragen", deadline: "2026-02-09", status: "overdue" as const },
+    { consultant: "Lisa van Dijk", type: "Intake opvolging", afspraak: "Beschikbaarheid bevestigen", deadline: "2026-02-11", status: "done" as const },
+    { consultant: "Thomas Bakker", type: "Inschrijving", afspraak: "Certificaten uploaden", deadline: "2026-02-12", status: "pending" as const },
+    { consultant: "Emma Visser", type: "Terugmail", afspraak: "Salarisvoorstel doorsturen", deadline: "2026-02-08", status: "overdue" as const },
+    { consultant: "Daan de Boer", type: "Intake opvolging", afspraak: "Contract tekenen", deadline: "2026-02-13", status: "pending" as const },
+    { consultant: "Fleur Mulder", type: "Inschrijving", afspraak: "Portfolio aanleveren", deadline: "2026-02-07", status: "done" as const },
+    { consultant: "Niels de Groot", type: "Terugmail", afspraak: "Feedback gesprek delen", deadline: "2026-02-06", status: "overdue" as const },
+    { consultant: "Anna Smit", type: "Intake opvolging", afspraak: "Startdatum bevestigen", deadline: "2026-02-14", status: "pending" as const },
+    { consultant: "Mark Peters", type: "Inschrijving", afspraak: "Motivatiebrief nazenden", deadline: "2026-02-11", status: "done" as const },
+  ],
   systemHygiene: consultants.map((name, i) => ({
     name,
     filledFields: 95 - i * 4,

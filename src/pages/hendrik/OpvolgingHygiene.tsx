@@ -34,6 +34,41 @@ export default function OpvolgingHygiene() {
           </Card>
         </AnimatedCard>
 
+        {/* Appointment follow-up table */}
+        <AnimatedCard delay={40} className="col-span-2">
+          <Card className="h-full">
+            <CardHeader><CardTitle className="text-base">Opvolging Afspraken (Inschrijving / Intake)</CardTitle></CardHeader>
+            <CardContent className="p-4">
+              <div className="space-y-1 text-sm">
+                <div className="grid grid-cols-5 text-xs font-medium text-muted-foreground pb-2 border-b">
+                  <span>Consultant</span>
+                  <span>Type</span>
+                  <span>Afspraak</span>
+                  <span className="text-center">Deadline</span>
+                  <span className="text-center">Status</span>
+                </div>
+                {followUpData.appointmentFollowUp.map((a, i) => (
+                  <div key={i} className="grid grid-cols-5 items-center py-1.5 border-b border-border/40">
+                    <span className="font-medium truncate">{a.consultant}</span>
+                    <span className="text-muted-foreground">{a.type}</span>
+                    <span className="truncate">{a.afspraak}</span>
+                    <span className="text-center text-muted-foreground">{a.deadline}</span>
+                    <span className="text-center">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                        a.status === "done" ? "bg-accent/20 text-accent" :
+                        a.status === "overdue" ? "bg-destructive/20 text-destructive" :
+                        "bg-primary/20 text-primary"
+                      }`}>
+                        {a.status === "done" ? "Afgerond" : a.status === "overdue" ? "Te laat" : "Lopend"}
+                      </span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+
         {/* Intake status */}
         <AnimatedCard delay={80}>
           <Card className="h-full">
