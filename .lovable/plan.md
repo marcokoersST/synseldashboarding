@@ -1,62 +1,44 @@
 
 
-## Fix Dot Tooltips on Heatmap
+## Province Click-to-Lock for Open Vacatures
 
-### Problem
-Radix UI's `Tooltip` component is designed for HTML elements, not SVG. When wrapping SVG `<g>` elements with `TooltipTrigger`, the positioning and event handling breaks because SVG elements don't report bounding rectangles the same way HTML elements do.
+### What Changes
+Clicking a province on the map will **lock** the "Open Vacatures" sidebar to show that province's data. The province stays highlighted and the sidebar stays pinned, even when moving the mouse away. Clicking anywhere else on the map (empty area or another province) unlocks it and returns to the default hover behavior. A small lock icon appears next to the province name when locked.
 
-### Solution
-Replace the Radix Tooltip approach for dots with a **custom HTML tooltip** that is positioned absolutely based on mouse coordinates. This is a common and reliable pattern for SVG-based visualizations.
+### How It Works
 
-### Changes (1 file: `src/components/tv/NetherlandsHeatmap.tsx`)
+**User flow:**
+1. Hover over a province -- sidebar shows that province's vacancies (existing behavior)
+2. Click a province -- sidebar **locks** to that province, lock icon appears next to name
+3. Move mouse away -- province stays highlighted, sidebar stays pinned
+4. Click the same province again OR click empty map area -- **unlocks**, returns to hover mode
+5. Click a different province while locked -- switches lock to the new province
 
-**1. Remove Radix Tooltip wrapping from dots**
-- Remove the `<Tooltip>`, `<TooltipTrigger>`, and `<TooltipContent>` wrappers around `AnimatedDot`
-- Render `AnimatedDot` directly inside the SVG
+### Technical Details (1 file: `src/components/tv/NetherlandsHeatmap.tsx`)
 
-**2. Track mouse position for tooltip**
-- Add `mousePosition` state (`{ x: number, y: number }`) updated via `onMouseMove` on the SVG container
-- When `hoveredDotId` is set, the tooltip appears at the mouse position
+**1. Add `lockedProvince` state**
+- New state: `const [lockedProvince, setLockedProvince] = useState<string | null>(null)`
+- `activeProvince` continues to track the visually highlighted province (hover or locked)
 
-**3. Add a custom HTML tooltip overlay**
-- Render an absolutely-positioned `<div>` outside the SVG (but inside the map container)
-- Show it only when `hoveredDotId` is not null
-- Position it using the tracked mouse coordinates relative to the container
-- Style it to match the existing tooltip design (dark background, rounded corners, same content layout)
+**2. Update `handleProvinceHover`**
+- When `lockedProvince` is set, hover no longer changes `activeProvince` -- it stays locked
+- When unlocked, hover works as before
 
-**4. Keep existing `onHover` logic on AnimatedDot**
-- `onMouseEnter` sets `hoveredDotId` and captures mouse position
-- `onMouseLeave` clears `hoveredDotId`
+**3. Add click handler on province paths**
+- Clicking a province: if it's already locked to that province, unlock (set `lockedProvince` to null); otherwise lock to that province
+- Uses a ref flag (`provinceClickedRef`) to prevent the container click handler from immediately unlocking
 
-### Technical Detail
+**4. Add click handler on map container**
+- Clicking empty map area (not on a province): clears `lockedProvince` and `activeProvince`
+- The `provinceClickedRef` flag ensures province clicks don't bubble up and trigger unlock
 
-```text
-Before (broken):
-  <svg>
-    <Tooltip>                    <-- HTML component
-      <TooltipTrigger asChild>   <-- expects HTML child
-        <AnimatedDot />          <-- SVG <g> element (incompatible)
-      </TooltipTrigger>
-      <TooltipContent />
-    </Tooltip>
-  </svg>
+**5. Show lock icon in sidebar**
+- Import `Lock` from lucide-react
+- When `lockedProvince` is set, show a small lock icon next to the province name in the "Open Vacatures" card
 
-After (working):
-  <div style="position: relative">
-    <svg>
-      <AnimatedDot onHover={...} />   <-- pure SVG, no Radix wrapping
-    </svg>
-    {hoveredDotId && (
-      <div className="tooltip" style={{ left, top }}>  <-- HTML tooltip outside SVG
-        ... event details ...
-      </div>
-    )}
-  </div>
-```
+**6. TV mode behavior**
+- Locking is disabled in TV mode (auto-cycle takes priority) -- click handlers are no-ops when `isTVMode` is true
 
-### What stays the same
-- AnimatedDot component (already has forwardRef and hover handlers)
-- Province highlighting and vacancy sidebar
-- All animations and filters
-- Radix TooltipProvider stays (used elsewhere in the app)
-
+### Visual Indicator
+- Locked province: same highlight styling as hover (teal fill + glow), plus a lock icon in the sidebar next to the province name
+- No additional map-level visual change needed -- the persistent highlight itself signals the lock
