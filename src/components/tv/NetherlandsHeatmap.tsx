@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { heatmapEvents, unitColors, getHeatmapStats, HeatmapUnit, HeatmapEvent, provinceVacancies, getProvinceVacancy, getTotalVacancies } from "@/data/heatmapData";
 import { provinces } from "@/data/netherlandsProvinces";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -11,16 +11,18 @@ interface DotProps {
   onHover: (id: string | null) => void;
 }
 
-function AnimatedDot({ event, visible, isHighlighted, onHover }: DotProps) {
+const AnimatedDot = React.forwardRef<SVGGElement, DotProps>(function AnimatedDot({ event, visible, isHighlighted, onHover, ...props }, ref) {
   const color = unitColors[event.unit];
   const size = event.type === "plaatsing" ? 6 : 4.5;
   const opacity = isHighlighted ? 1 : 0.85;
 
   return (
     <g
+      ref={ref}
       onMouseEnter={() => onHover(event.id)}
       onMouseLeave={() => onHover(null)}
       style={{ cursor: "pointer" }}
+      {...props}
     >
       <circle
         cx={event.lng}
@@ -74,7 +76,7 @@ function AnimatedDot({ event, visible, isHighlighted, onHover }: DotProps) {
       />
     </g>
   );
-}
+});
 
 interface FilterState {
   units: Set<HeatmapUnit>;
@@ -211,65 +213,33 @@ export function NetherlandsHeatmap({ isTVMode = false }: NetherlandsHeatmapProps
             {/* Dots */}
             {filteredEvents.map((event) => (
               <Tooltip key={event.id}>
-                <AnimatedDot
-                  event={event}
-                  visible={dotsVisible}
-                  isHighlighted={hoveredDotId === event.id}
-                  onHover={setHoveredDotId}
-                />
-                {hoveredDotId === event.id && hoveredEvent && (
-                  <TooltipContent side="top" className="z-50">
-                    <div className="text-xs space-y-1">
-                      <p className="font-semibold">{hoveredEvent.city}</p>
-                      <p>
-                        <span
-                          className="inline-block w-2 h-2 rounded-full mr-1.5"
-                          style={{ backgroundColor: unitColors[hoveredEvent.unit].dot }}
-                        />
-                        {unitColors[hoveredEvent.unit].label} —{" "}
-                        {hoveredEvent.type === "gesprek" ? "Gesprek" : "Plaatsing"}
-                      </p>
-                      <p className="text-muted-foreground">
-                        {hoveredEvent.company} • {hoveredEvent.consultant}
-                      </p>
-                      <p className="text-muted-foreground">{hoveredEvent.date}</p>
-                    </div>
-                  </TooltipContent>
-                )}
+                <TooltipTrigger asChild>
+                  <AnimatedDot
+                    event={event}
+                    visible={dotsVisible}
+                    isHighlighted={hoveredDotId === event.id}
+                    onHover={setHoveredDotId}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="z-50">
+                  <div className="text-xs space-y-1">
+                    <p className="font-semibold">{event.city}</p>
+                    <p>
+                      <span
+                        className="inline-block w-2 h-2 rounded-full mr-1.5"
+                        style={{ backgroundColor: unitColors[event.unit].dot }}
+                      />
+                      {unitColors[event.unit].label} —{" "}
+                      {event.type === "gesprek" ? "Gesprek" : "Plaatsing"}
+                    </p>
+                    <p className="text-muted-foreground">
+                      {event.company} • {event.consultant}
+                    </p>
+                    <p className="text-muted-foreground">{event.date}</p>
+                  </div>
+                </TooltipContent>
               </Tooltip>
             ))}
-
-            {/* Active province floating label */}
-            {activeProvinceData && activeVacancy && (
-              <g
-                style={{
-                  transition: "opacity 0.3s ease",
-                  opacity: 1,
-                }}
-              >
-                <rect
-                  x={activeProvinceData.center.x - 70}
-                  y={activeProvinceData.center.y - 22}
-                  width={140}
-                  height={32}
-                  rx={8}
-                  fill="hsla(220, 20%, 10%, 0.85)"
-                  stroke="hsla(175, 60%, 50%, 0.5)"
-                  strokeWidth={1}
-                />
-                <text
-                  x={activeProvinceData.center.x}
-                  y={activeProvinceData.center.y - 4}
-                  textAnchor="middle"
-                  fill="hsl(175, 60%, 70%)"
-                  fontSize={12}
-                  fontWeight={600}
-                  style={{ pointerEvents: "none" }}
-                >
-                  {activeProvinceData.name} — {activeVacancy.total} vacatures
-                </text>
-              </g>
-            )}
           </svg>
         </TooltipProvider>
       </div>
