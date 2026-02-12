@@ -39,6 +39,15 @@ const MatchKwaliteit = lazy(() => import("./pages/consultant/MatchKwaliteit"));
 const RouteNaar1 = lazy(() => import("./pages/consultant/RouteNaar1"));
 const ExtraDashboards = lazy(() => import("./pages/consultant/ExtraDashboards"));
 
+// Hendrik dashboards
+const HendrikOverzicht = lazy(() => import("./pages/hendrik/Overzicht"));
+const HendrikMailVoorstellen = lazy(() => import("./pages/hendrik/MailVoorstellen"));
+const HendrikDMUCorrectheid = lazy(() => import("./pages/hendrik/DMUCorrectheid"));
+const HendrikConversieFunnel = lazy(() => import("./pages/hendrik/ConversieFunnel"));
+const HendrikKlachtRisico = lazy(() => import("./pages/hendrik/KlachtRisico"));
+const HendrikOpvolgingHygiene = lazy(() => import("./pages/hendrik/OpvolgingHygiene"));
+const HendrikGamificationLevels = lazy(() => import("./pages/hendrik/GamificationLevels"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -82,6 +91,13 @@ const App = () => (
               <Route path="/consultant/match-kwaliteit" element={<MatchKwaliteit />} />
               <Route path="/consultant/route-naar-1" element={<RouteNaar1 />} />
               <Route path="/consultant/extra" element={<ExtraDashboards />} />
+              <Route path="/hendrik/overzicht" element={<HendrikOverzicht />} />
+              <Route path="/hendrik/mail-voorstellen" element={<HendrikMailVoorstellen />} />
+              <Route path="/hendrik/dmu-correctheid" element={<HendrikDMUCorrectheid />} />
+              <Route path="/hendrik/conversie-funnel" element={<HendrikConversieFunnel />} />
+              <Route path="/hendrik/klacht-risico" element={<HendrikKlachtRisico />} />
+              <Route path="/hendrik/opvolging" element={<HendrikOpvolgingHygiene />} />
+              <Route path="/hendrik/gamification" element={<HendrikGamificationLevels />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

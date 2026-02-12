@@ -13,7 +13,14 @@ import {
   Trophy,
   Users,
   TrendingUp,
-  ListOrdered
+  ListOrdered,
+  ClipboardCheck,
+  Mail,
+  UserCheck,
+  Filter,
+  AlertTriangle,
+  CalendarCheck,
+  Gamepad2
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -71,6 +78,20 @@ const navItems: NavItem[] = [
     path: "/manager-dashboard",
   },
   {
+    icon: ClipboardCheck,
+    label: "Dashboards Hendrik",
+    path: "/hendrik/overzicht",
+    subItems: [
+      { icon: ClipboardCheck, label: "Kwaliteitsoverzicht", path: "/hendrik/overzicht" },
+      { icon: Mail, label: "Mail & Voorstellen", path: "/hendrik/mail-voorstellen" },
+      { icon: UserCheck, label: "DMU/CP Correctheid", path: "/hendrik/dmu-correctheid" },
+      { icon: Filter, label: "Conversie Funnel", path: "/hendrik/conversie-funnel" },
+      { icon: AlertTriangle, label: "Klacht & Risico", path: "/hendrik/klacht-risico" },
+      { icon: CalendarCheck, label: "Opvolging & Hygiëne", path: "/hendrik/opvolging" },
+      { icon: Gamepad2, label: "Gamification Levels", path: "/hendrik/gamification" },
+    ]
+  },
+  {
     icon: Shield,
     label: "Super Admin",
     path: "/super-admin",
@@ -111,12 +132,14 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnSuperAdminPage = location.pathname.startsWith("/super-admin");
   const isOnTVPage = location.pathname.startsWith("/tv/");
   const isOnConsultantPage = location.pathname.startsWith("/consultant/");
+  const isOnHendrikPage = location.pathname.startsWith("/hendrik/");
   
   const autoExpanded = [
     ...(isOnComparisonPage ? ["/"] : []),
     ...(isOnSuperAdminPage ? ["/super-admin"] : []),
     ...(isOnTVPage ? ["/tv/sales-funnel-week"] : []),
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
+    ...(isOnHendrikPage ? ["/hendrik/overzicht"] : []),
   ].filter(path => !manuallyCollapsed.includes(path));
 
   const effectiveExpandedItems = [
