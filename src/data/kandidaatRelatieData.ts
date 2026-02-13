@@ -220,3 +220,56 @@ export const followUpMetrics: ConsultantFollowUp[] = [
     ],
   },
 ];
+
+// ── NPS Scores per Kandidaat ──
+
+export interface CandidateNPS {
+  candidateId: string;
+  name: string;
+  avatar: string;
+  consultant: string;
+  npsScore: number; // -100 to 100 scale, but we show 1-10
+  npsRating: number; // 1-10
+  category: "promoter" | "passive" | "detractor";
+  feedback: string;
+  date: string;
+}
+
+export const candidateNPSScores: CandidateNPS[] = [
+  { candidateId: "cand-0", name: "Kevin van der Berg", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face", consultant: "Sophie de Vries", npsRating: 10, npsScore: 100, category: "promoter", feedback: "Uitstekende begeleiding van begin tot eind. Voelde me echt gehoord.", date: "2 weken geleden" },
+  { candidateId: "cand-1", name: "Priya Sharma", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face", consultant: "Sophie de Vries", npsRating: 9, npsScore: 90, category: "promoter", feedback: "Snelle opvolging en goede match gevonden. Top service!", date: "1 week geleden" },
+  { candidateId: "cand-2", name: "Jordi Willemsen", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face", consultant: "Bram Jansen", npsRating: 8, npsScore: 80, category: "promoter", feedback: "Goed geholpen, alleen de briefing kon iets uitgebreider.", date: "3 dagen geleden" },
+  { candidateId: "cand-3", name: "Nadia el Amrani", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face", consultant: "Bram Jansen", npsRating: 6, npsScore: 20, category: "passive", feedback: "Proces duurde lang, maar uiteindelijk goed terechtgekomen.", date: "1 week geleden" },
+  { candidateId: "cand-4", name: "Ruben Hendriks", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face", consultant: "Lisa van Dijk", npsRating: 9, npsScore: 90, category: "promoter", feedback: "Lisa begreep precies wat ik zocht. Fantastisch!", date: "Vandaag" },
+  { candidateId: "cand-5", name: "Fatima Yilmaz", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face", consultant: "Lisa van Dijk", npsRating: 7, npsScore: 40, category: "passive", feedback: "Goede ervaring, maar had graag meer updates ontvangen.", date: "5 dagen geleden" },
+  { candidateId: "cand-6", name: "Thijs Vermeer", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&crop=face", consultant: "Thomas Bakker", npsRating: 10, npsScore: 100, category: "promoter", feedback: "De beste recruiter die ik ooit heb gehad. Echt persoonlijk.", date: "Gisteren" },
+  { candidateId: "cand-7", name: "Sanne Kuijpers", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=face", consultant: "Thomas Bakker", npsRating: 5, npsScore: -10, category: "detractor", feedback: "Terugbelafspraak niet nagekomen, daarna wel goed opgepakt.", date: "4 dagen geleden" },
+  { candidateId: "cand-8", name: "Dex van Leeuwen", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face", consultant: "Emma Visser", npsRating: 8, npsScore: 80, category: "promoter", feedback: "Prettig contact en goede voorbereiding op gesprekken.", date: "2 dagen geleden" },
+  { candidateId: "cand-9", name: "Maria Gonzalez", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face", consultant: "Emma Visser", npsRating: 9, npsScore: 90, category: "promoter", feedback: "Heel blij met de begeleiding. Droombaan gevonden!", date: "Vandaag" },
+  { candidateId: "cand-10", name: "Bram Dijkstra", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face", consultant: "Daan de Boer", npsRating: 6, npsScore: 20, category: "passive", feedback: "Redelijke ervaring. Communicatie kon beter.", date: "1 week geleden" },
+  { candidateId: "cand-11", name: "Yara de Jong", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=face", consultant: "Daan de Boer", npsRating: 10, npsScore: 100, category: "promoter", feedback: "Geweldige ervaring! Al mijn vrienden doorverwezen.", date: "3 dagen geleden" },
+];
+
+// ── Google Reviews (bedrijfsniveau) ──
+
+export interface GoogleReview {
+  author: string;
+  avatar: string;
+  rating: number; // 1-5 stars
+  text: string;
+  date: string;
+  linkedCandidate?: string;
+  linkedConsultant?: string;
+}
+
+export const googleReviews: GoogleReview[] = [
+  { author: "Kevin v.d. Berg", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face", rating: 5, text: "Synsel heeft mij fantastisch geholpen aan mijn droombaan als elektromonteur. Sophie was heel persoonlijk en betrokken.", date: "2 weken geleden", linkedConsultant: "Sophie de Vries" },
+  { author: "Thijs V.", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&crop=face", rating: 5, text: "Beste uitzendbureau waar ik ooit mee heb gewerkt. Ze luisteren écht naar wat je wilt.", date: "1 week geleden", linkedConsultant: "Thomas Bakker" },
+  { author: "Priya S.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face", rating: 4, text: "Goede ervaring, snelle plaatsing. Alleen de communicatie tussendoor kon iets frequenter.", date: "3 weken geleden", linkedConsultant: "Sophie de Vries" },
+  { author: "Maria G.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face", rating: 5, text: "Ik ben via Synsel aan mijn nieuwe baan gekomen en kon niet blijer zijn. Aanrader!", date: "5 dagen geleden", linkedConsultant: "Emma Visser" },
+  { author: "Anoniem", avatar: "", rating: 3, text: "Prima bureau, maar ik moest zelf vaak bellen voor updates. Uiteindelijk wel goed geholpen.", date: "1 maand geleden" },
+  { author: "Ruben H.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face", rating: 5, text: "Lisa heeft precies begrepen wat ik zocht. Binnen 2 weken geplaatst!", date: "Vandaag", linkedConsultant: "Lisa van Dijk" },
+];
+
+export const companyGoogleRating = 4.6;
+export const companyGoogleReviewCount = 127;

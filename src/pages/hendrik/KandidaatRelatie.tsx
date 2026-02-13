@@ -14,6 +14,10 @@ import {
   overallSentimentTrend,
   priorityLabels,
   followUpMetrics,
+  candidateNPSScores,
+  googleReviews,
+  companyGoogleRating,
+  companyGoogleReviewCount,
   type CandidateJourney,
 } from "@/data/kandidaatRelatieData";
 import { consultants } from "@/data/hendrikData";
@@ -330,6 +334,141 @@ export default function KandidaatRelatie() {
           </CardContent>
         </Card>
       </AnimatedCard>
+
+      {/* NPS Scores per Kandidaat + Google Reviews */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        {/* NPS Overview */}
+        <AnimatedCard delay={370} className="lg:col-span-2">
+          <Card className="bg-card border-border h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base text-foreground flex items-center gap-2">
+                <Star className="w-4 h-4 text-amber-400" />
+                NPS-Scores per Kandidaat
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Hoe tevreden zijn kandidaten over hun ervaring met de consultant?</p>
+            </CardHeader>
+            <CardContent>
+              {/* NPS summary bar */}
+              {(() => {
+                const npsFiltered = selectedConsultant === "all"
+                  ? candidateNPSScores
+                  : candidateNPSScores.filter((n) => n.consultant === selectedConsultant);
+                const promoters = npsFiltered.filter((n) => n.category === "promoter").length;
+                const passives = npsFiltered.filter((n) => n.category === "passive").length;
+                const detractors = npsFiltered.filter((n) => n.category === "detractor").length;
+                const total = npsFiltered.length || 1;
+                const npsValue = Math.round(((promoters - detractors) / total) * 100);
+                const avgRating = +(npsFiltered.reduce((s, n) => s + n.npsRating, 0) / total).toFixed(1);
+
+                return (
+                  <>
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="text-center">
+                        <p className="text-3xl font-bold text-foreground">{npsValue > 0 ? "+" : ""}{npsValue}</p>
+                        <p className="text-[10px] text-muted-foreground">NPS Score</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-3xl font-bold text-foreground">{avgRating}</p>
+                        <p className="text-[10px] text-muted-foreground">Gem. Rating</p>
+                      </div>
+                      <div className="flex-1 flex gap-1 h-4 rounded-full overflow-hidden">
+                        <div className="bg-emerald-500 transition-all" style={{ width: `${(promoters / total) * 100}%` }} />
+                        <div className="bg-amber-400 transition-all" style={{ width: `${(passives / total) * 100}%` }} />
+                        <div className="bg-red-500 transition-all" style={{ width: `${(detractors / total) * 100}%` }} />
+                      </div>
+                      <div className="flex gap-3 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> {promoters} Promoters</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400 inline-block" /> {passives} Passief</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> {detractors} Detractors</span>
+                      </div>
+                    </div>
+
+                    {/* Individual NPS rows */}
+                    <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                      {npsFiltered.map((nps) => (
+                        <div key={nps.candidateId} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+                          <Avatar className="w-8 h-8 border border-border shrink-0">
+                            <AvatarImage src={nps.avatar} alt={nps.name} />
+                            <AvatarFallback>{nps.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-foreground">{nps.name}</p>
+                              <Badge variant="outline" className={
+                                nps.category === "promoter" ? "border-emerald-500/40 text-emerald-400 text-[9px]" :
+                                nps.category === "passive" ? "border-amber-500/40 text-amber-400 text-[9px]" :
+                                "border-red-500/40 text-red-400 text-[9px]"
+                              }>
+                                {nps.npsRating}/10
+                              </Badge>
+                              <span className="text-[10px] text-muted-foreground ml-auto">{nps.date}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1 italic">"{nps.feedback}"</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+
+        {/* Google Reviews */}
+        <AnimatedCard delay={390}>
+          <Card className="bg-card border-border h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base text-foreground flex items-center gap-2">
+                <span className="text-lg">⭐</span>
+                Google Reviews
+              </CardTitle>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className={`w-4 h-4 ${s <= Math.round(companyGoogleRating) ? "text-amber-400 fill-amber-400" : "text-muted"}`} />
+                  ))}
+                </div>
+                <span className="text-sm font-semibold text-foreground">{companyGoogleRating}</span>
+                <span className="text-xs text-muted-foreground">({companyGoogleReviewCount} reviews)</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                {googleReviews.map((review, idx) => (
+                  <div key={idx} className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      {review.avatar ? (
+                        <Avatar className="w-6 h-6">
+                          <AvatarImage src={review.avatar} />
+                          <AvatarFallback>{review.author[0]}</AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground">{review.author[0]}</div>
+                      )}
+                      <span className="text-sm font-medium text-foreground">{review.author}</span>
+                      <div className="flex ml-auto">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} className={`w-3 h-3 ${s <= review.rating ? "text-amber-400 fill-amber-400" : "text-muted"}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground italic">"{review.text}"</p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-[10px] text-muted-foreground">{review.date}</span>
+                      {review.linkedConsultant && (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-border text-muted-foreground">
+                          → {review.linkedConsultant}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+      </div>
 
       {/* Bottom: Happiness Distribution */}
       <AnimatedCard delay={400}>
