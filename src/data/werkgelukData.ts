@@ -20,6 +20,15 @@ export interface HooraySentiment {
   trend: { period: string; geluk: number; autonomie: number; ontwikkeling: number; perspectief: number; doel: number }[];
 }
 
+export interface LeadershipScore {
+  openheid: number;       // Open & transparant opstellen
+  betrokkenheid: number;  // Betrokkenheid bij organisatie
+  ontwikkelbehoefte: number; // Aangeven wat nodig is voor groei
+  verantwoordelijkheid: number; // Verantwoordelijkheid nemen & dragen
+  overall: number;
+  bronnen: { bron: string; score: number }[];  // Scores per gesprekstype/bron
+}
+
 export interface ConsultantWerkgeluk {
   name: string;
   overallScore: number;
@@ -28,6 +37,7 @@ export interface ConsultantWerkgeluk {
   trophies: { label: string; date: string; emoji: string }[];
   droombaanCount: number;
   hooray: HooraySentiment;
+  leadership: LeadershipScore;
 }
 
 const baseDimensions = (kpi: number, salaris: number, kandidaat: number, erkenning: number, droombaan: number): WerkgelukDimension[] => [
@@ -37,6 +47,21 @@ const baseDimensions = (kpi: number, salaris: number, kandidaat: number, erkenni
   { key: "erkenning", label: "Waardering & Erkenning", emoji: "🏆", score: erkenning, trend: Math.round((Math.random() - 0.4) * 8), description: "Top noteringen, bokalen en awards behaald" },
   { key: "droombaan", label: "Droombaan Plaatsingen", emoji: "🎯", score: droombaan, trend: Math.round((Math.random() - 0.3) * 10), description: "Kandidaten succesvol aan hun droombaan geholpen" },
 ];
+
+function makeLeadership(openheid: number, betrokkenheid: number, ontwikkelbehoefte: number, verantwoordelijkheid: number): LeadershipScore {
+  const overall = Math.round((openheid + betrokkenheid + ontwikkelbehoefte + verantwoordelijkheid) / 4);
+  return {
+    openheid, betrokkenheid, ontwikkelbehoefte, verantwoordelijkheid, overall,
+    bronnen: [
+      { bron: "Telefonische Inschrijving", score: Math.round(openheid * 0.95 + Math.random() * 6 - 3) },
+      { bron: "Telefonische Acquisitie", score: Math.round(betrokkenheid * 0.9 + Math.random() * 8 - 4) },
+      { bron: "Intakegesprek", score: Math.round(ontwikkelbehoefte * 1.02 + Math.random() * 6 - 3) },
+      { bron: "Deal Sluiter", score: Math.round(verantwoordelijkheid * 0.97 + Math.random() * 6 - 3) },
+      { bron: "HR Hooray Vragenlijst", score: Math.round(overall * 1.01 + Math.random() * 4 - 2) },
+      { bron: "Hooray Documentatie", score: Math.round(overall * 0.98 + Math.random() * 4 - 2) },
+    ].map(b => ({ ...b, score: Math.min(100, Math.max(10, b.score)) })),
+  };
+}
 
 function makeHooray(geluk: number, autonomie: number, ontwikkeling: number, perspectief: number, doel: number): HooraySentiment {
   const overall = Math.round((geluk + autonomie + ontwikkeling + perspectief + doel) / 5);
@@ -64,14 +89,14 @@ function makeTrend(base: number[]) {
 }
 
 export const consultantWerkgeluk: ConsultantWerkgeluk[] = [
-  { name: "Sophie de Vries", overallScore: 88, dimensions: baseDimensions(92, 85, 90, 88, 82), periodTrend: makeTrend([72, 75, 78, 82, 85, 88]), trophies: [{ label: "Omzetkoning P12", date: "2025-12", emoji: "👑" }, { label: "Plaatsingskoning P11", date: "2025-10", emoji: "🥇" }, { label: "Beste NPS Q3", date: "2025-09", emoji: "⭐" }], droombaanCount: 14, hooray: makeHooray(92, 88, 85, 90, 87) },
-  { name: "Thomas Bakker", overallScore: 79, dimensions: baseDimensions(82, 78, 80, 72, 75), periodTrend: makeTrend([65, 68, 70, 73, 76, 79]), trophies: [{ label: "Gesprekken Guru P10", date: "2025-08", emoji: "🎙️" }], droombaanCount: 11, hooray: makeHooray(80, 75, 78, 72, 70) },
-  { name: "Emma Visser", overallScore: 75, dimensions: baseDimensions(78, 72, 82, 65, 70), periodTrend: makeTrend([60, 63, 66, 69, 72, 75]), trophies: [{ label: "Beste NPS P9", date: "2025-07", emoji: "⭐" }], droombaanCount: 9, hooray: makeHooray(78, 72, 80, 68, 65) },
-  { name: "Anna Smit", overallScore: 71, dimensions: baseDimensions(74, 70, 75, 60, 68), periodTrend: makeTrend([55, 58, 62, 65, 68, 71]), trophies: [], droombaanCount: 8, hooray: makeHooray(74, 68, 72, 65, 60) },
-  { name: "Fleur Mulder", overallScore: 65, dimensions: baseDimensions(68, 62, 70, 55, 60), periodTrend: makeTrend([48, 52, 55, 58, 62, 65]), trophies: [], droombaanCount: 6, hooray: makeHooray(65, 60, 62, 55, 52) },
-  { name: "Niels de Groot", overallScore: 60, dimensions: baseDimensions(62, 58, 65, 48, 55), periodTrend: makeTrend([42, 46, 50, 53, 57, 60]), trophies: [], droombaanCount: 5, hooray: makeHooray(58, 55, 60, 48, 45) },
-  { name: "Mark Peters", overallScore: 55, dimensions: baseDimensions(58, 52, 55, 45, 50), periodTrend: makeTrend([38, 42, 45, 48, 52, 55]), trophies: [{ label: "Margebaas P8", date: "2025-06", emoji: "💎" }], droombaanCount: 4, hooray: makeHooray(52, 48, 55, 42, 40) },
-  { name: "Daan de Boer", overallScore: 48, dimensions: baseDimensions(50, 45, 48, 38, 42), periodTrend: makeTrend([32, 35, 38, 42, 45, 48]), trophies: [], droombaanCount: 3, hooray: makeHooray(45, 40, 42, 35, 32) },
-  { name: "Bram Jansen", overallScore: 42, dimensions: baseDimensions(44, 40, 42, 32, 38), periodTrend: makeTrend([28, 30, 33, 36, 39, 42]), trophies: [], droombaanCount: 2, hooray: makeHooray(40, 35, 38, 28, 25) },
-  { name: "Lisa van Dijk", overallScore: 35, dimensions: baseDimensions(38, 32, 35, 25, 30), periodTrend: makeTrend([22, 25, 28, 30, 32, 35]), trophies: [], droombaanCount: 1, hooray: makeHooray(32, 28, 30, 22, 18) },
+  { name: "Sophie de Vries", overallScore: 88, dimensions: baseDimensions(92, 85, 90, 88, 82), periodTrend: makeTrend([72, 75, 78, 82, 85, 88]), trophies: [{ label: "Omzetkoning P12", date: "2025-12", emoji: "👑" }, { label: "Plaatsingskoning P11", date: "2025-10", emoji: "🥇" }, { label: "Beste NPS Q3", date: "2025-09", emoji: "⭐" }], droombaanCount: 14, hooray: makeHooray(92, 88, 85, 90, 87), leadership: makeLeadership(90, 92, 85, 88) },
+  { name: "Thomas Bakker", overallScore: 79, dimensions: baseDimensions(82, 78, 80, 72, 75), periodTrend: makeTrend([65, 68, 70, 73, 76, 79]), trophies: [{ label: "Gesprekken Guru P10", date: "2025-08", emoji: "🎙️" }], droombaanCount: 11, hooray: makeHooray(80, 75, 78, 72, 70), leadership: makeLeadership(78, 74, 72, 70) },
+  { name: "Emma Visser", overallScore: 75, dimensions: baseDimensions(78, 72, 82, 65, 70), periodTrend: makeTrend([60, 63, 66, 69, 72, 75]), trophies: [{ label: "Beste NPS P9", date: "2025-07", emoji: "⭐" }], droombaanCount: 9, hooray: makeHooray(78, 72, 80, 68, 65), leadership: makeLeadership(82, 70, 75, 68) },
+  { name: "Anna Smit", overallScore: 71, dimensions: baseDimensions(74, 70, 75, 60, 68), periodTrend: makeTrend([55, 58, 62, 65, 68, 71]), trophies: [], droombaanCount: 8, hooray: makeHooray(74, 68, 72, 65, 60), leadership: makeLeadership(72, 68, 65, 62) },
+  { name: "Fleur Mulder", overallScore: 65, dimensions: baseDimensions(68, 62, 70, 55, 60), periodTrend: makeTrend([48, 52, 55, 58, 62, 65]), trophies: [], droombaanCount: 6, hooray: makeHooray(65, 60, 62, 55, 52), leadership: makeLeadership(60, 58, 55, 52) },
+  { name: "Niels de Groot", overallScore: 60, dimensions: baseDimensions(62, 58, 65, 48, 55), periodTrend: makeTrend([42, 46, 50, 53, 57, 60]), trophies: [], droombaanCount: 5, hooray: makeHooray(58, 55, 60, 48, 45), leadership: makeLeadership(55, 52, 48, 45) },
+  { name: "Mark Peters", overallScore: 55, dimensions: baseDimensions(58, 52, 55, 45, 50), periodTrend: makeTrend([38, 42, 45, 48, 52, 55]), trophies: [{ label: "Margebaas P8", date: "2025-06", emoji: "💎" }], droombaanCount: 4, hooray: makeHooray(52, 48, 55, 42, 40), leadership: makeLeadership(48, 45, 42, 40) },
+  { name: "Daan de Boer", overallScore: 48, dimensions: baseDimensions(50, 45, 48, 38, 42), periodTrend: makeTrend([32, 35, 38, 42, 45, 48]), trophies: [], droombaanCount: 3, hooray: makeHooray(45, 40, 42, 35, 32), leadership: makeLeadership(42, 38, 35, 32) },
+  { name: "Bram Jansen", overallScore: 42, dimensions: baseDimensions(44, 40, 42, 32, 38), periodTrend: makeTrend([28, 30, 33, 36, 39, 42]), trophies: [], droombaanCount: 2, hooray: makeHooray(40, 35, 38, 28, 25), leadership: makeLeadership(35, 30, 28, 25) },
+  { name: "Lisa van Dijk", overallScore: 35, dimensions: baseDimensions(38, 32, 35, 25, 30), periodTrend: makeTrend([22, 25, 28, 30, 32, 35]), trophies: [], droombaanCount: 1, hooray: makeHooray(32, 28, 30, 22, 18), leadership: makeLeadership(28, 22, 20, 18) },
 ];

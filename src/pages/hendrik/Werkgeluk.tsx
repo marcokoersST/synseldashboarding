@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { consultantWerkgeluk, type HooraySentiment } from "@/data/werkgelukData";
+import { consultantWerkgeluk } from "@/data/werkgelukData";
 import {
-  Smile, TrendingUp, TrendingDown, Minus, Trophy, Target, Sparkles, Heart,
+  Smile, TrendingUp, TrendingDown, Minus, Trophy, Target, Sparkles, Heart, Shield, Crown,
 } from "lucide-react";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -299,8 +299,123 @@ export default function Werkgeluk() {
         </Card>
       </AnimatedCard>
 
-      {/* Leaderboard */}
+      {/* Leiderschapskwaliteiten */}
       <AnimatedCard delay={700}>
+        <Card className="bg-card border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Shield className="w-4 h-4 text-violet-400" />
+              Leiderschapskwaliteiten
+            </CardTitle>
+            <p className="text-[10px] text-muted-foreground">
+              Gebaseerd op transcripten (inschrijving, acquisitie, intake, deal sluiter) en HR Hooray documentatie & vragenlijsten
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Four leadership dimensions */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-foreground">Leiderschapsschaal</span>
+                  <Badge className={`${profile.leadership.overall >= 75 ? "bg-violet-500/20 text-violet-400 border-violet-500/30" : profile.leadership.overall >= 55 ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-destructive/20 text-destructive border-destructive/30"}`}>
+                    <Crown className="w-3 h-3 mr-1" />
+                    {profile.leadership.overall}% — {profile.leadership.overall >= 80 ? "Natuurlijk Leider" : profile.leadership.overall >= 65 ? "Groeiend Leiderschap" : profile.leadership.overall >= 50 ? "Basis Leiderschap" : "In Ontwikkeling"}
+                  </Badge>
+                </div>
+                {([
+                  { key: "openheid", label: "Openheid & Transparantie", emoji: "🪟", value: profile.leadership.openheid, desc: "Stelt zich open en eerlijk op richting collega's en leidinggevende" },
+                  { key: "betrokkenheid", label: "Organisatiebetrokkenheid", emoji: "🤝", value: profile.leadership.betrokkenheid, desc: "Betrokken bij organisatiedoelen, ontwikkelingen en teamresultaten" },
+                  { key: "ontwikkelbehoefte", label: "Ontwikkelbehoefte uitspreken", emoji: "💬", value: profile.leadership.ontwikkelbehoefte, desc: "Kan helder aangeven wat nodig is voor performance en werkplezier" },
+                  { key: "verantwoordelijkheid", label: "Verantwoordelijkheid nemen", emoji: "⚓", value: profile.leadership.verantwoordelijkheid, desc: "Neemt eigenaarschap in lastige situaties en denkt in oplossingen" },
+                ] as const).map((item) => (
+                  <div key={item.key}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{item.emoji}</span>
+                        <span className="text-xs text-foreground">{item.label}</span>
+                      </div>
+                      <span className={`text-xs font-bold ${scoreColor(item.value)}`}>{item.value}%</span>
+                    </div>
+                    <Progress value={item.value} className="h-2" />
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Score per bron */}
+              <div>
+                <p className="text-xs font-medium text-foreground mb-2">Score per bron (transcripten & Hooray)</p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={profile.leadership.bronnen} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+                    <XAxis dataKey="bron" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} angle={-20} textAnchor="end" height={60} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: 11 }} />
+                    <Bar dataKey="score" name="Leiderschapsscore" fill="hsl(265 70% 60%)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </AnimatedCard>
+
+      {/* Leadership ranking */}
+      <AnimatedCard delay={750}>
+        <Card className="bg-card border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Crown className="w-4 h-4 text-violet-400" />
+              Leiderschap Ranking
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10 text-[10px]">#</TableHead>
+                  <TableHead className="text-[10px]">Consultant</TableHead>
+                  <TableHead className="text-[10px] text-right">Overall</TableHead>
+                  <TableHead className="text-[10px] text-right">🪟 Open</TableHead>
+                  <TableHead className="text-[10px] text-right">🤝 Betrokken</TableHead>
+                  <TableHead className="text-[10px] text-right">💬 Ontwikkel</TableHead>
+                  <TableHead className="text-[10px] text-right">⚓ Verantw.</TableHead>
+                  <TableHead className="text-[10px] text-right">Niveau</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...consultantWerkgeluk].sort((a, b) => b.leadership.overall - a.leadership.overall).map((c, i) => {
+                  const isSelected = c.name === selectedName;
+                  const lvl = c.leadership.overall >= 80 ? "Natuurlijk Leider" : c.leadership.overall >= 65 ? "Groeiend" : c.leadership.overall >= 50 ? "Basis" : "In Ontwikkeling";
+                  return (
+                    <TableRow key={c.name} className={isSelected ? "bg-violet-500/10 font-semibold" : ""}>
+                      <TableCell className="py-1.5 text-xs">
+                        {i < 3 ? <Crown className={`w-3.5 h-3.5 ${i === 0 ? "text-violet-400" : i === 1 ? "text-gray-400" : "text-orange-400"}`} /> : <span className="text-muted-foreground">{i + 1}</span>}
+                      </TableCell>
+                      <TableCell className="py-1.5">
+                        <span className={`text-xs ${isSelected ? "text-violet-400" : "text-foreground"}`}>{c.name}</span>
+                      </TableCell>
+                      <TableCell className={`py-1.5 text-right text-xs font-bold ${scoreColor(c.leadership.overall)}`}>{c.leadership.overall}%</TableCell>
+                      <TableCell className="py-1.5 text-right text-xs">{c.leadership.openheid}%</TableCell>
+                      <TableCell className="py-1.5 text-right text-xs">{c.leadership.betrokkenheid}%</TableCell>
+                      <TableCell className="py-1.5 text-right text-xs">{c.leadership.ontwikkelbehoefte}%</TableCell>
+                      <TableCell className="py-1.5 text-right text-xs">{c.leadership.verantwoordelijkheid}%</TableCell>
+                      <TableCell className="py-1.5 text-right">
+                        <Badge variant="outline" className={`text-[9px] ${c.leadership.overall >= 75 ? "text-violet-400 border-violet-500/30" : c.leadership.overall >= 55 ? "text-amber-400 border-amber-500/30" : "text-muted-foreground"}`}>
+                          {lvl}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </AnimatedCard>
+
+      {/* Werkgeluk Leaderboard */}
+      <AnimatedCard delay={800}>
         <Card className="bg-card border-border/50">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
