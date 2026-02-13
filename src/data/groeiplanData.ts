@@ -87,6 +87,46 @@ const rawProfiles = [
   { name: "Lisa van Dijk", role: "Trainee", dept: "Engineering", rev: 280000, revT: 2000000, bonus: 400, bonusT: 10000, sal: 2400, nextSal: 2800, salProg: 14, plac: 1, placT: 8, qual: 4.8, aiCoach: 4.4, kpi: 38, conv: 1.1, nps: 4.5 },
 ];
 
+// Extended organization data (~50 consultants) for horse-race ranking
+export interface OrgConsultant {
+  name: string;
+  department: string;
+  role: string;
+  overallScore: number;
+  tier: string;
+  delta: number; // position change vs last period
+}
+
+const orgNames = [
+  "Sophie de Vries","Thomas Bakker","Emma Visser","Anna Smit","Fleur Mulder",
+  "Niels de Groot","Mark Peters","Daan de Boer","Bram Jansen","Lisa van Dijk",
+  "Roos Hendriks","Max Willems","Julia Verhoeven","Sven Dekker","Eva Brouwer",
+  "Cas Hoekstra","Mila van den Berg","Lars Schouten","Noor Bergman","Tim Vogel",
+  "Sara Kuijpers","Jesse Maas","Femke Bosman","Joris Kok","Lotte Blom",
+  "Ruben de Jong","Iris Vos","Thijs Scholten","Amber van Leeuwen","Stijn Post",
+  "Nina Vermeer","Wouter Groen","Tessa Kuiper","Daniël Prins","Merel van Vliet",
+  "Rick Huisman","Vera Jacobs","Pieter Meijer","Anouk Timmermans","Koen Bos",
+  "Lisanne de Wit","Sander Molenaar","Charlotte Smeets","Jasper van Dam","Fleur Aalbers",
+  "Hugo Dijkstra","Marie van Rijn","Bas Gielen","Eline Koster","Tom Verhagen",
+];
+const orgDepts = ["Engineering","Operators","Monteurs"];
+const orgRoles = ["Senior Recruiter","Recruiter","Recruiter","Junior Recruiter","Junior Recruiter","Trainee"];
+
+export const orgConsultants: OrgConsultant[] = orgNames.map((name, i) => {
+  const match = rawProfiles.find(p => p.name === name);
+  const score = match
+    ? Math.round(match.kpi * 0.3 + match.qual * 10 * 0.25 + match.aiCoach * 10 * 0.2 + match.salProg * 0.15 + (match.plac / match.placT) * 100 * 0.1)
+    : Math.max(20, Math.min(95, 90 - i * 1.4 + Math.round(Math.sin(i * 1.7) * 6)));
+  return {
+    name,
+    department: match?.dept || orgDepts[i % 3],
+    role: match?.role || orgRoles[i % orgRoles.length],
+    overallScore: score,
+    tier: getTier(score),
+    delta: Math.round(Math.sin(i * 2.1) * 3),
+  };
+}).sort((a, b) => b.overallScore - a.overallScore);
+
 export const consultantGrowthProfiles: ConsultantGrowthProfile[] = rawProfiles.map((p, idx) => {
   const overallScore = Math.round((p.kpi * 0.3 + p.qual * 10 * 0.25 + p.aiCoach * 10 * 0.2 + p.salProg * 0.15 + (p.plac / p.placT) * 100 * 0.1));
 
