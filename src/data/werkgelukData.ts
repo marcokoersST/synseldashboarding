@@ -20,13 +20,21 @@ export interface HooraySentiment {
   trend: { period: string; geluk: number; autonomie: number; ontwikkeling: number; perspectief: number; doel: number }[];
 }
 
-export interface LeadershipScore {
-  openheid: number;       // Open & transparant opstellen
-  betrokkenheid: number;  // Betrokkenheid bij organisatie
-  ontwikkelbehoefte: number; // Aangeven wat nodig is voor groei
-  verantwoordelijkheid: number; // Verantwoordelijkheid nemen & dragen
+export interface LeadershipShadow {
+  klaaggedrag: number;      // Mate van klagen / negativiteit
+  slachtofferschap: number; // Slachtofferrol aannemen
+  weerstand: number;        // Weerstand tegen verandering / feedback
   overall: number;
-  bronnen: { bron: string; score: number }[];  // Scores per gesprekstype/bron
+}
+
+export interface LeadershipScore {
+  openheid: number;
+  betrokkenheid: number;
+  ontwikkelbehoefte: number;
+  verantwoordelijkheid: number;
+  overall: number;
+  shadow: LeadershipShadow;
+  bronnen: { bron: string; leidend: number; schaduw: number }[];
 }
 
 export interface ConsultantWerkgeluk {
@@ -50,16 +58,24 @@ const baseDimensions = (kpi: number, salaris: number, kandidaat: number, erkenni
 
 function makeLeadership(openheid: number, betrokkenheid: number, ontwikkelbehoefte: number, verantwoordelijkheid: number): LeadershipScore {
   const overall = Math.round((openheid + betrokkenheid + ontwikkelbehoefte + verantwoordelijkheid) / 4);
+  // Shadow scores are inversely correlated — higher leadership = lower shadow
+  const shadowBase = Math.max(5, 100 - overall + Math.round(Math.random() * 10 - 5));
+  const klaag = Math.min(95, Math.max(5, shadowBase + Math.round(Math.random() * 12 - 6)));
+  const slacht = Math.min(95, Math.max(5, shadowBase + Math.round(Math.random() * 14 - 7)));
+  const weer = Math.min(95, Math.max(5, shadowBase + Math.round(Math.random() * 10 - 5)));
+  const shadowOverall = Math.round((klaag + slacht + weer) / 3);
+
   return {
     openheid, betrokkenheid, ontwikkelbehoefte, verantwoordelijkheid, overall,
+    shadow: { klaaggedrag: klaag, slachtofferschap: slacht, weerstand: weer, overall: shadowOverall },
     bronnen: [
-      { bron: "Telefonische Inschrijving", score: Math.round(openheid * 0.95 + Math.random() * 6 - 3) },
-      { bron: "Telefonische Acquisitie", score: Math.round(betrokkenheid * 0.9 + Math.random() * 8 - 4) },
-      { bron: "Intakegesprek", score: Math.round(ontwikkelbehoefte * 1.02 + Math.random() * 6 - 3) },
-      { bron: "Deal Sluiter", score: Math.round(verantwoordelijkheid * 0.97 + Math.random() * 6 - 3) },
-      { bron: "HR Hooray Vragenlijst", score: Math.round(overall * 1.01 + Math.random() * 4 - 2) },
-      { bron: "Hooray Documentatie", score: Math.round(overall * 0.98 + Math.random() * 4 - 2) },
-    ].map(b => ({ ...b, score: Math.min(100, Math.max(10, b.score)) })),
+      { bron: "Tel. Inschrijving", leidend: Math.min(100, Math.max(10, Math.round(openheid * 0.95 + Math.random() * 6 - 3))), schaduw: Math.min(95, Math.max(5, Math.round(klaag * 0.9 + Math.random() * 8 - 4))) },
+      { bron: "Tel. Acquisitie", leidend: Math.min(100, Math.max(10, Math.round(betrokkenheid * 0.9 + Math.random() * 8 - 4))), schaduw: Math.min(95, Math.max(5, Math.round(slacht * 0.95 + Math.random() * 6 - 3))) },
+      { bron: "Intakegesprek", leidend: Math.min(100, Math.max(10, Math.round(ontwikkelbehoefte * 1.02 + Math.random() * 6 - 3))), schaduw: Math.min(95, Math.max(5, Math.round(weer * 0.92 + Math.random() * 8 - 4))) },
+      { bron: "Deal Sluiter", leidend: Math.min(100, Math.max(10, Math.round(verantwoordelijkheid * 0.97 + Math.random() * 6 - 3))), schaduw: Math.min(95, Math.max(5, Math.round(klaag * 0.88 + Math.random() * 10 - 5))) },
+      { bron: "Hooray Vragenlijst", leidend: Math.min(100, Math.max(10, Math.round(overall * 1.01 + Math.random() * 4 - 2))), schaduw: Math.min(95, Math.max(5, Math.round(shadowOverall * 1.02 + Math.random() * 4 - 2))) },
+      { bron: "Hooray Documentatie", leidend: Math.min(100, Math.max(10, Math.round(overall * 0.98 + Math.random() * 4 - 2))), schaduw: Math.min(95, Math.max(5, Math.round(shadowOverall * 0.97 + Math.random() * 6 - 3))) },
+    ],
   };
 }
 
