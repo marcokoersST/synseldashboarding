@@ -91,6 +91,7 @@ const navItems: NavItem[] = [
       { icon: CalendarCheck, label: "Opvolging & Hygiëne", path: "/hendrik/opvolging" },
       { icon: Gamepad2, label: "Gamification Levels", path: "/hendrik/gamification" },
       { icon: MapPin, label: "Actuele Uitnodigingen", path: "/hendrik/uitnodigingen" },
+      { icon: Trophy, label: "AI-Coach Ranking", path: "/hendrik/ai-coach" },
     ]
   },
   {
