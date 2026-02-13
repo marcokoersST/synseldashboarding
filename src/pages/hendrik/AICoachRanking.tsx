@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ConsultantLayout } from "@/components/consultant/ConsultantLayout";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
@@ -6,11 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { consultantCoachRankings, coachCategories, periodLabels, type PeriodKey } from "@/data/aiCoachData";
-import { Trophy, Phone, Handshake, UserCheck, Sparkles, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
+import { Trophy, Phone, Handshake, UserCheck, Sparkles, ChevronDown, ChevronRight, AlertTriangle, TrendingUp } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from "recharts";
 
 const coachIcons = [Phone, Phone, UserCheck, Handshake];
 const coachColors = ["text-blue-400", "text-emerald-400", "text-amber-400", "text-purple-400"];
+const chartColors = ["#60a5fa", "#34d399", "#fbbf24", "#a78bfa"];
 
 function scoreBadge(score: number) {
   if (score >= 8) return <Badge className="bg-accent/20 text-accent border-accent/30 text-xs">{score.toFixed(1)}</Badge>;
@@ -28,6 +31,7 @@ function rankIcon(rank: number) {
 export default function AICoachRanking() {
   const [period, setPeriod] = useState<PeriodKey>("week");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [selectedConsultant, setSelectedConsultant] = useState(consultantCoachRankings[0].name);
 
   const sorted = [...consultantCoachRankings]
     .map((c) => {
@@ -35,6 +39,17 @@ export default function AICoachRanking() {
       return { ...c, activeScores: pd.scores, activeAverage: pd.average, devPoints: pd.developmentPoints };
     })
     .sort((a, b) => b.activeAverage - a.activeAverage);
+
+  const trendChartData = useMemo(() => {
+    const consultant = consultantCoachRankings.find(c => c.name === selectedConsultant);
+    if (!consultant) return [];
+    const trend = consultant.trendData[period] || [];
+    return trend.map(tp => ({
+      name: tp.label,
+      ...tp.scores,
+      Gemiddeld: tp.average,
+    }));
+  }, [selectedConsultant, period]);
 
   return (
     <ConsultantLayout title="AI-Coach Ranking" subtitle="Beoordeling per gespreksonderdeel op basis van transcript-analyse">
@@ -79,8 +94,71 @@ export default function AICoachRanking() {
         })}
       </div>
 
+      {/* Trend chart */}
+      <AnimatedCard delay={300}>
+        <Card className="bg-card border-border/50 mb-6">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-accent" />
+                Score-ontwikkeling per {periodLabels[period].toLowerCase()}
+              </CardTitle>
+              <Select value={selectedConsultant} onValueChange={setSelectedConsultant}>
+                <SelectTrigger className="w-52 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {consultantCoachRankings.map(c => (
+                    <SelectItem key={c.name} value={c.name} className="text-xs">{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-xs text-muted-foreground">Beoordeling 1–10 per gespreksonderdeel over tijd</p>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={trendChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis domain={[0, 10]} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                <ReferenceLine y={6} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" opacity={0.3} label={{ value: "Norm", position: "insideTopLeft", fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                    fontSize: 12,
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                {coachCategories.map((cat, i) => (
+                  <Line
+                    key={cat}
+                    type="monotone"
+                    dataKey={cat}
+                    stroke={chartColors[i]}
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: chartColors[i] }}
+                    activeDot={{ r: 5 }}
+                  />
+                ))}
+                <Line
+                  type="monotone"
+                  dataKey="Gemiddeld"
+                  stroke="hsl(var(--accent))"
+                  strokeWidth={2.5}
+                  strokeDasharray="6 3"
+                  dot={{ r: 3, fill: "hsl(var(--accent))" }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </AnimatedCard>
+
       {/* Main ranking table */}
-      <AnimatedCard delay={350}>
+      <AnimatedCard delay={450}>
         <Card className="bg-card border-border/50">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
