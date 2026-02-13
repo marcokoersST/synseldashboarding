@@ -41,23 +41,27 @@ export default function OpvolgingHygiene() {
             <CardHeader><CardTitle className="text-base">Opvolging Afspraken (Inschrijving / Acquisitie / Intake)</CardTitle></CardHeader>
             <CardContent className="p-4">
               <div className="space-y-1 text-sm">
-                <div className="grid grid-cols-7 text-xs font-medium text-muted-foreground pb-2 border-b">
-                  <span>Consultant</span>
-                  <span>Type</span>
-                  <span>Afspraak</span>
-                  <span className="text-center">Deadline</span>
-                  <span className="text-center">Mail verstuurd</span>
-                  <span className="text-center">Nagekomen</span>
-                  <span className="text-center">Status</span>
+                <div className="grid grid-cols-8 text-xs font-medium text-muted-foreground pb-2 border-b">
+                   <span>Consultant</span>
+                   <span>Type</span>
+                   <span>Afspraak</span>
+                   <span className="text-center">Deadline</span>
+                   <span className="text-center">Mail verstuurd</span>
+                   <span className="text-center">Nagebeld acq.</span>
+                   <span className="text-center">Nagekomen</span>
+                   <span className="text-center">Status</span>
                 </div>
                 {followUpData.appointmentFollowUp.map((a, i) => (
-                  <div key={i} className="grid grid-cols-7 items-center py-1.5 border-b border-border/40">
+                  <div key={i} className="grid grid-cols-8 items-center py-1.5 border-b border-border/40">
                     <span className="font-medium truncate">{a.consultant}</span>
                     <span className="text-muted-foreground">{a.type}</span>
                     <span className="truncate">{a.afspraak}</span>
                     <span className="text-center text-muted-foreground">{a.deadline}</span>
                     <span className="flex justify-center">
                       {a.mailVerstuurd ? <Check className="w-4 h-4 text-accent" /> : <X className="w-4 h-4 text-destructive" />}
+                    </span>
+                    <span className="flex justify-center">
+                      {a.nagebeldAcquisitie ? <Check className="w-4 h-4 text-accent" /> : <X className="w-4 h-4 text-destructive" />}
                     </span>
                     <span className="flex justify-center">
                       {a.afspraakNagekomen ? <Check className="w-4 h-4 text-accent" /> : <X className="w-4 h-4 text-destructive" />}
