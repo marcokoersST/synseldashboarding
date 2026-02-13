@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { consultantWerkgeluk } from "@/data/werkgelukData";
 import {
-  Smile, TrendingUp, TrendingDown, Minus, Trophy, Target, Sparkles, Heart, Shield, Crown,
+  Smile, TrendingUp, TrendingDown, Minus, Trophy, Target, Sparkles, Heart, Shield, Crown, AlertTriangle,
 } from "lucide-react";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -299,13 +299,13 @@ export default function Werkgeluk() {
         </Card>
       </AnimatedCard>
 
-      {/* Leiderschapskwaliteiten */}
+      {/* Leiderschapskwaliteiten — Leidend vs Schaduw */}
       <AnimatedCard delay={700}>
         <Card className="bg-card border-border/50">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <Shield className="w-4 h-4 text-violet-400" />
-              Leiderschapskwaliteiten
+              Leiderschapskwaliteiten — Leidend vs. Schaduw
             </CardTitle>
             <p className="text-[10px] text-muted-foreground">
               Gebaseerd op transcripten (inschrijving, acquisitie, intake, deal sluiter) en HR Hooray documentatie & vragenlijsten
@@ -313,48 +313,104 @@ export default function Werkgeluk() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Four leadership dimensions */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-foreground">Leiderschapsschaal</span>
-                  <Badge className={`${profile.leadership.overall >= 75 ? "bg-violet-500/20 text-violet-400 border-violet-500/30" : profile.leadership.overall >= 55 ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-destructive/20 text-destructive border-destructive/30"}`}>
-                    <Crown className="w-3 h-3 mr-1" />
-                    {profile.leadership.overall}% — {profile.leadership.overall >= 80 ? "Natuurlijk Leider" : profile.leadership.overall >= 65 ? "Groeiend Leiderschap" : profile.leadership.overall >= 50 ? "Basis Leiderschap" : "In Ontwikkeling"}
+              {/* Leidende kant */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Crown className="w-4 h-4 text-violet-400" />
+                  <span className="text-xs font-semibold text-foreground">Leidende kant</span>
+                  <Badge className={`ml-auto ${profile.leadership.overall >= 75 ? "bg-violet-500/20 text-violet-400 border-violet-500/30" : profile.leadership.overall >= 55 ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-destructive/20 text-destructive border-destructive/30"}`}>
+                    {profile.leadership.overall}%
                   </Badge>
                 </div>
-                {([
-                  { key: "openheid", label: "Openheid & Transparantie", emoji: "🪟", value: profile.leadership.openheid, desc: "Stelt zich open en eerlijk op richting collega's en leidinggevende" },
-                  { key: "betrokkenheid", label: "Organisatiebetrokkenheid", emoji: "🤝", value: profile.leadership.betrokkenheid, desc: "Betrokken bij organisatiedoelen, ontwikkelingen en teamresultaten" },
-                  { key: "ontwikkelbehoefte", label: "Ontwikkelbehoefte uitspreken", emoji: "💬", value: profile.leadership.ontwikkelbehoefte, desc: "Kan helder aangeven wat nodig is voor performance en werkplezier" },
-                  { key: "verantwoordelijkheid", label: "Verantwoordelijkheid nemen", emoji: "⚓", value: profile.leadership.verantwoordelijkheid, desc: "Neemt eigenaarschap in lastige situaties en denkt in oplossingen" },
-                ] as const).map((item) => (
-                  <div key={item.key}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{item.emoji}</span>
-                        <span className="text-xs text-foreground">{item.label}</span>
+                <div className="space-y-3">
+                  {([
+                    { key: "openheid", label: "Openheid & Transparantie", emoji: "🪟", value: profile.leadership.openheid, desc: "Stelt zich open en eerlijk op richting collega's en leidinggevende" },
+                    { key: "betrokkenheid", label: "Organisatiebetrokkenheid", emoji: "🤝", value: profile.leadership.betrokkenheid, desc: "Betrokken bij organisatiedoelen, ontwikkelingen en teamresultaten" },
+                    { key: "ontwikkelbehoefte", label: "Ontwikkelbehoefte uitspreken", emoji: "💬", value: profile.leadership.ontwikkelbehoefte, desc: "Kan helder aangeven wat nodig is voor performance en werkplezier" },
+                    { key: "verantwoordelijkheid", label: "Verantwoordelijkheid nemen", emoji: "⚓", value: profile.leadership.verantwoordelijkheid, desc: "Neemt eigenaarschap in lastige situaties en denkt in oplossingen" },
+                  ] as const).map((item) => (
+                    <div key={item.key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">{item.emoji}</span>
+                          <span className="text-xs text-foreground">{item.label}</span>
+                        </div>
+                        <span className={`text-xs font-bold ${scoreColor(item.value)}`}>{item.value}%</span>
                       </div>
-                      <span className={`text-xs font-bold ${scoreColor(item.value)}`}>{item.value}%</span>
+                      <Progress value={item.value} className="h-2" />
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{item.desc}</p>
                     </div>
-                    <Progress value={item.value} className="h-2" />
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{item.desc}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
-              {/* Score per bron */}
+              {/* Schaduwzijde */}
               <div>
-                <p className="text-xs font-medium text-foreground mb-2">Score per bron (transcripten & Hooray)</p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={profile.leadership.bronnen} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
-                    <XAxis dataKey="bron" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} angle={-20} textAnchor="end" height={60} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: 11 }} />
-                    <Bar dataKey="score" name="Leiderschapsscore" fill="hsl(265 70% 60%)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertTriangle className="w-4 h-4 text-red-400" />
+                  <span className="text-xs font-semibold text-foreground">Schaduwzijde</span>
+                  <Badge className={`ml-auto ${profile.leadership.shadow.overall <= 25 ? "bg-accent/20 text-accent border-accent/30" : profile.leadership.shadow.overall <= 45 ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-destructive/20 text-destructive border-destructive/30"}`}>
+                    {profile.leadership.shadow.overall}% signalen
+                  </Badge>
+                </div>
+                <div className="space-y-3">
+                  {([
+                    { key: "klaaggedrag", label: "Klaaggedrag & Negativiteit", emoji: "😤", value: profile.leadership.shadow.klaaggedrag, desc: "Frequentie van klagen, negatieve uitingen en focus op problemen i.p.v. oplossingen" },
+                    { key: "slachtofferschap", label: "Slachtofferschap", emoji: "😞", value: profile.leadership.shadow.slachtofferschap, desc: "Mate van slachtofferrol in salesgesprekken en Hooray-vragenlijsten" },
+                    { key: "weerstand", label: "Weerstand & Afschuiven", emoji: "🚫", value: profile.leadership.shadow.weerstand, desc: "Weerstand tegen feedback, verandering en het afschuiven van verantwoordelijkheid" },
+                  ] as const).map((item) => (
+                    <div key={item.key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">{item.emoji}</span>
+                          <span className="text-xs text-foreground">{item.label}</span>
+                        </div>
+                        {/* Inverse color: low = good (green), high = bad (red) */}
+                        <span className={`text-xs font-bold ${item.value <= 25 ? "text-accent" : item.value <= 45 ? "text-amber-400" : "text-destructive"}`}>{item.value}%</span>
+                      </div>
+                      <div className="h-2 rounded-full overflow-hidden bg-muted/30">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${item.value <= 25 ? "bg-emerald-500/60" : item.value <= 45 ? "bg-amber-500/60" : "bg-red-500/60"}`}
+                          style={{ width: `${item.value}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Net Leadership Score */}
+                <div className="mt-4 p-3 rounded-lg bg-muted/20 border border-border/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-foreground">Netto Leiderschapsscore</span>
+                    {(() => {
+                      const net = profile.leadership.overall - profile.leadership.shadow.overall;
+                      return (
+                        <span className={`text-sm font-bold ${net >= 40 ? "text-accent" : net >= 15 ? "text-amber-400" : "text-destructive"}`}>
+                          {net > 0 ? "+" : ""}{net}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Leidend ({profile.leadership.overall}%) minus Schaduw ({profile.leadership.shadow.overall}%)</p>
+                </div>
               </div>
+            </div>
+
+            {/* Bron chart: Leidend vs Schaduw per bron */}
+            <div className="mt-6">
+              <p className="text-xs font-medium text-foreground mb-2">Leidend vs. Schaduw per bron</p>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={profile.leadership.bronnen} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+                  <XAxis dataKey="bron" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} angle={-15} textAnchor="end" height={55} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                  <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: 11 }} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="leidend" name="Leidend" fill="hsl(265 70% 60%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="schaduw" name="Schaduw" fill="hsl(0 70% 55%)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
@@ -375,18 +431,20 @@ export default function Werkgeluk() {
                 <TableRow>
                   <TableHead className="w-10 text-[10px]">#</TableHead>
                   <TableHead className="text-[10px]">Consultant</TableHead>
-                  <TableHead className="text-[10px] text-right">Overall</TableHead>
-                  <TableHead className="text-[10px] text-right">🪟 Open</TableHead>
-                  <TableHead className="text-[10px] text-right">🤝 Betrokken</TableHead>
-                  <TableHead className="text-[10px] text-right">💬 Ontwikkel</TableHead>
-                  <TableHead className="text-[10px] text-right">⚓ Verantw.</TableHead>
+                  <TableHead className="text-[10px] text-right">Leidend</TableHead>
+                  <TableHead className="text-[10px] text-right">Schaduw</TableHead>
+                  <TableHead className="text-[10px] text-right">Netto</TableHead>
+                  <TableHead className="text-[10px] text-right">😤 Klaag</TableHead>
+                  <TableHead className="text-[10px] text-right">😞 Slachtof.</TableHead>
+                  <TableHead className="text-[10px] text-right">🚫 Weerstand</TableHead>
                   <TableHead className="text-[10px] text-right">Niveau</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[...consultantWerkgeluk].sort((a, b) => b.leadership.overall - a.leadership.overall).map((c, i) => {
+                {[...consultantWerkgeluk].sort((a, b) => (b.leadership.overall - b.leadership.shadow.overall) - (a.leadership.overall - a.leadership.shadow.overall)).map((c, i) => {
                   const isSelected = c.name === selectedName;
-                  const lvl = c.leadership.overall >= 80 ? "Natuurlijk Leider" : c.leadership.overall >= 65 ? "Groeiend" : c.leadership.overall >= 50 ? "Basis" : "In Ontwikkeling";
+                  const net = c.leadership.overall - c.leadership.shadow.overall;
+                  const lvl = net >= 40 ? "Natuurlijk Leider" : net >= 15 ? "Groeiend" : net >= 0 ? "Basis" : "Aandachtspunt";
                   return (
                     <TableRow key={c.name} className={isSelected ? "bg-violet-500/10 font-semibold" : ""}>
                       <TableCell className="py-1.5 text-xs">
@@ -396,12 +454,13 @@ export default function Werkgeluk() {
                         <span className={`text-xs ${isSelected ? "text-violet-400" : "text-foreground"}`}>{c.name}</span>
                       </TableCell>
                       <TableCell className={`py-1.5 text-right text-xs font-bold ${scoreColor(c.leadership.overall)}`}>{c.leadership.overall}%</TableCell>
-                      <TableCell className="py-1.5 text-right text-xs">{c.leadership.openheid}%</TableCell>
-                      <TableCell className="py-1.5 text-right text-xs">{c.leadership.betrokkenheid}%</TableCell>
-                      <TableCell className="py-1.5 text-right text-xs">{c.leadership.ontwikkelbehoefte}%</TableCell>
-                      <TableCell className="py-1.5 text-right text-xs">{c.leadership.verantwoordelijkheid}%</TableCell>
+                      <TableCell className={`py-1.5 text-right text-xs ${c.leadership.shadow.overall <= 25 ? "text-accent" : c.leadership.shadow.overall <= 45 ? "text-amber-400" : "text-destructive"}`}>{c.leadership.shadow.overall}%</TableCell>
+                      <TableCell className={`py-1.5 text-right text-xs font-bold ${net >= 40 ? "text-accent" : net >= 15 ? "text-amber-400" : "text-destructive"}`}>{net > 0 ? "+" : ""}{net}</TableCell>
+                      <TableCell className="py-1.5 text-right text-xs text-muted-foreground">{c.leadership.shadow.klaaggedrag}%</TableCell>
+                      <TableCell className="py-1.5 text-right text-xs text-muted-foreground">{c.leadership.shadow.slachtofferschap}%</TableCell>
+                      <TableCell className="py-1.5 text-right text-xs text-muted-foreground">{c.leadership.shadow.weerstand}%</TableCell>
                       <TableCell className="py-1.5 text-right">
-                        <Badge variant="outline" className={`text-[9px] ${c.leadership.overall >= 75 ? "text-violet-400 border-violet-500/30" : c.leadership.overall >= 55 ? "text-amber-400 border-amber-500/30" : "text-muted-foreground"}`}>
+                        <Badge variant="outline" className={`text-[9px] ${net >= 40 ? "text-violet-400 border-violet-500/30" : net >= 15 ? "text-amber-400 border-amber-500/30" : "text-destructive border-destructive/30"}`}>
                           {lvl}
                         </Badge>
                       </TableCell>
