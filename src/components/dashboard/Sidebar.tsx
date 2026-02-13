@@ -20,7 +20,8 @@ import {
   Filter,
   AlertTriangle,
   CalendarCheck,
-  Gamepad2
+  Gamepad2,
+  MapPin
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -89,6 +90,7 @@ const navItems: NavItem[] = [
       { icon: AlertTriangle, label: "Klacht & Risico", path: "/hendrik/klacht-risico" },
       { icon: CalendarCheck, label: "Opvolging & Hygiëne", path: "/hendrik/opvolging" },
       { icon: Gamepad2, label: "Gamification Levels", path: "/hendrik/gamification" },
+      { icon: MapPin, label: "Actuele Uitnodigingen", path: "/hendrik/uitnodigingen" },
     ]
   },
   {
