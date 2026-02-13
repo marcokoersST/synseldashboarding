@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { ConsultantLayout } from "@/components/consultant/ConsultantLayout";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { consultantCoachRankings, coachCategories } from "@/data/aiCoachData";
-import { Trophy, Phone, Handshake, UserCheck, Sparkles } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { consultantCoachRankings, coachCategories, periodLabels, type PeriodKey } from "@/data/aiCoachData";
+import { Trophy, Phone, Handshake, UserCheck, Sparkles, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 
 const coachIcons = [Phone, Phone, UserCheck, Handshake];
 const coachColors = ["text-blue-400", "text-emerald-400", "text-amber-400", "text-purple-400"];
@@ -24,16 +26,37 @@ function rankIcon(rank: number) {
 }
 
 export default function AICoachRanking() {
-  const sorted = [...consultantCoachRankings].sort((a, b) => b.average - a.average);
+  const [period, setPeriod] = useState<PeriodKey>("week");
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+
+  const sorted = [...consultantCoachRankings]
+    .map((c) => {
+      const pd = c.periodData[period];
+      return { ...c, activeScores: pd.scores, activeAverage: pd.average, devPoints: pd.developmentPoints };
+    })
+    .sort((a, b) => b.activeAverage - a.activeAverage);
 
   return (
     <ConsultantLayout title="AI-Coach Ranking" subtitle="Beoordeling per gespreksonderdeel op basis van transcript-analyse">
+      {/* Period selector */}
+      <div className="mb-5">
+        <Tabs value={period} onValueChange={(v) => { setPeriod(v as PeriodKey); setExpandedRow(null); }}>
+          <TabsList className="bg-secondary">
+            {(Object.keys(periodLabels) as PeriodKey[]).map((k) => (
+              <TabsTrigger key={k} value={k} className="text-xs px-4">
+                {periodLabels[k]}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+
       {/* Summary tiles */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {coachCategories.map((cat, i) => {
           const Icon = coachIcons[i];
           const best = sorted.reduce((top, c) => {
-            const s = c.scores.find(s => s.category === cat)?.score ?? 0;
+            const s = c.activeScores.find(s => s.category === cat)?.score ?? 0;
             return s > top.score ? { name: c.name, score: s } : top;
           }, { name: "", score: 0 });
 
@@ -60,17 +83,24 @@ export default function AICoachRanking() {
       <AnimatedCard delay={350}>
         <Card className="bg-card border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-accent" />
-              Ranking op AI-Coach Beoordeling
-            </CardTitle>
-            <p className="text-xs text-muted-foreground">Score per gespreksonderdeel (0 – 10) op basis van automatische transcript-analyse</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-accent" />
+                  Ranking op AI-Coach Beoordeling
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Score per gespreksonderdeel (0 – 10) · <span className="text-accent font-medium">{periodLabels[period]}</span> · Klik op een rij voor ontwikkelpunten
+                </p>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/40">
-                  <TableHead className="w-12 text-center">#</TableHead>
+                  <TableHead className="w-10 text-center">#</TableHead>
+                  <TableHead className="w-8"></TableHead>
                   <TableHead>Consultant</TableHead>
                   {coachCategories.map((cat, i) => {
                     const Icon = coachIcons[i];
@@ -92,19 +122,58 @@ export default function AICoachRanking() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sorted.map((c, idx) => (
-                  <TableRow key={c.name} className="border-border/30 hover:bg-muted/30">
-                    <TableCell className="text-center">{rankIcon(idx + 1)}</TableCell>
-                    <TableCell className="font-medium text-sm">{c.name}</TableCell>
-                    {coachCategories.map(cat => {
-                      const s = c.scores.find(s => s.category === cat)?.score ?? 0;
-                      return <TableCell key={cat} className="text-center">{scoreBadge(s)}</TableCell>;
-                    })}
-                    <TableCell className="text-center font-bold text-sm">
-                      {scoreBadge(c.average)}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {sorted.map((c, idx) => {
+                  const isExpanded = expandedRow === c.name;
+                  return (
+                    <>
+                      <TableRow
+                        key={c.name}
+                        className="border-border/30 hover:bg-muted/30 cursor-pointer"
+                        onClick={() => setExpandedRow(isExpanded ? null : c.name)}
+                      >
+                        <TableCell className="text-center">{rankIcon(idx + 1)}</TableCell>
+                        <TableCell className="px-0">
+                          {isExpanded
+                            ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                            : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
+                        </TableCell>
+                        <TableCell className="font-medium text-sm">{c.name}</TableCell>
+                        {coachCategories.map(cat => {
+                          const s = c.activeScores.find(s => s.category === cat)?.score ?? 0;
+                          return <TableCell key={cat} className="text-center">{scoreBadge(s)}</TableCell>;
+                        })}
+                        <TableCell className="text-center font-bold text-sm">
+                          {scoreBadge(c.activeAverage)}
+                        </TableCell>
+                      </TableRow>
+                      {isExpanded && (
+                        <TableRow key={`${c.name}-dev`} className="border-border/20 bg-muted/10">
+                          <TableCell colSpan={3} className="pt-1 pb-3 align-top">
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold flex items-center gap-1 mb-1">
+                              <AlertTriangle className="w-3 h-3 text-amber-400" /> Ontwikkelpunten ({periodLabels[period]})
+                            </span>
+                          </TableCell>
+                          {coachCategories.map((cat, ci) => (
+                            <TableCell key={cat} className="align-top pt-1 pb-3">
+                              <div className="space-y-1.5">
+                                {(c.devPoints[cat] || []).map((dp, di) => (
+                                  <div key={di} className="flex items-start gap-1.5">
+                                    <span className={`mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 ${coachColors[ci].replace("text-", "bg-")}`} />
+                                    <div>
+                                      <p className="text-[11px] font-medium text-foreground leading-tight">{dp.label}</p>
+                                      <p className="text-[10px] text-muted-foreground leading-snug">{dp.description}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </TableCell>
+                          ))}
+                          <TableCell />
+                        </TableRow>
+                      )}
+                    </>
+                  );
+                })}
               </TableBody>
             </Table>
           </CardContent>
