@@ -67,7 +67,7 @@ export default function Werkgeluk() {
       </div>
 
       {/* KPI tiles */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
         <AnimatedCard delay={0}>
           <Card className="bg-card border-border/50">
             <CardContent className="p-4 text-center">
@@ -146,6 +146,7 @@ export default function Werkgeluk() {
                   <Line type="monotone" dataKey="salaris" name="Salaris" stroke="#fbbf24" strokeWidth={1.5} strokeDasharray="4 2" dot={{ r: 2 }} />
                   <Line type="monotone" dataKey="kandidaat" name="Kandidaat" stroke="#f472b6" strokeWidth={1.5} strokeDasharray="4 2" dot={{ r: 2 }} />
                   <Line type="monotone" dataKey="droombaan" name="Droombaan" stroke="#34d399" strokeWidth={1.5} strokeDasharray="4 2" dot={{ r: 2 }} />
+                  <Line type="monotone" dataKey="ontwikkeling" name="Ontwikkeling" stroke="#c084fc" strokeWidth={1.5} strokeDasharray="4 2" dot={{ r: 2 }} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
