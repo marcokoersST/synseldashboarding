@@ -136,3 +136,87 @@ export const priorityLabels: Record<string, string> = {
   ontwikkeling: "📈 Ontwikkelperspectief",
   carrierestap: "🚀 Carrièrestap",
 };
+
+// ── Opvolging & Betrokkenheid Kwaliteit ──
+
+export interface FollowUpMetric {
+  label: string;
+  emoji: string;
+  score: number; // 0-100
+  description: string;
+}
+
+export interface ConsultantFollowUp {
+  consultant: string;
+  overallScore: number;
+  metrics: FollowUpMetric[];
+}
+
+export const followUpMetrics: ConsultantFollowUp[] = [
+  {
+    consultant: "Sophie de Vries",
+    overallScore: 92,
+    metrics: [
+      { label: "Bellen vóór gesprek", emoji: "📞", score: 95, description: "Kandidaat gebeld ter voorbereiding op sollicitatiegesprek" },
+      { label: "Briefing kwaliteit", emoji: "📋", score: 90, description: "Kandidaat goed gebrieft over bedrijf, functie en gesprekspartners" },
+      { label: "Nabellen na gesprek", emoji: "⏱️", score: 88, description: "Binnen 2 uur nagebeld na afloop van het gesprek" },
+      { label: "Afspraken nakomen", emoji: "🤝", score: 96, description: "Terugbelafspraken en deadlines consequent nagekomen" },
+      { label: "Proactief contact", emoji: "💬", score: 90, description: "Proactief tussentijds contact opgenomen met kandidaat" },
+    ],
+  },
+  {
+    consultant: "Bram Jansen",
+    overallScore: 78,
+    metrics: [
+      { label: "Bellen vóór gesprek", emoji: "📞", score: 82, description: "Kandidaat gebeld ter voorbereiding op sollicitatiegesprek" },
+      { label: "Briefing kwaliteit", emoji: "📋", score: 74, description: "Kandidaat goed gebrieft over bedrijf, functie en gesprekspartners" },
+      { label: "Nabellen na gesprek", emoji: "⏱️", score: 70, description: "Binnen 2 uur nagebeld na afloop van het gesprek" },
+      { label: "Afspraken nakomen", emoji: "🤝", score: 85, description: "Terugbelafspraken en deadlines consequent nagekomen" },
+      { label: "Proactief contact", emoji: "💬", score: 78, description: "Proactief tussentijds contact opgenomen met kandidaat" },
+    ],
+  },
+  {
+    consultant: "Lisa van Dijk",
+    overallScore: 85,
+    metrics: [
+      { label: "Bellen vóór gesprek", emoji: "📞", score: 88, description: "Kandidaat gebeld ter voorbereiding op sollicitatiegesprek" },
+      { label: "Briefing kwaliteit", emoji: "📋", score: 82, description: "Kandidaat goed gebrieft over bedrijf, functie en gesprekspartners" },
+      { label: "Nabellen na gesprek", emoji: "⏱️", score: 80, description: "Binnen 2 uur nagebeld na afloop van het gesprek" },
+      { label: "Afspraken nakomen", emoji: "🤝", score: 92, description: "Terugbelafspraken en deadlines consequent nagekomen" },
+      { label: "Proactief contact", emoji: "💬", score: 84, description: "Proactief tussentijds contact opgenomen met kandidaat" },
+    ],
+  },
+  {
+    consultant: "Thomas Bakker",
+    overallScore: 65,
+    metrics: [
+      { label: "Bellen vóór gesprek", emoji: "📞", score: 60, description: "Kandidaat gebeld ter voorbereiding op sollicitatiegesprek" },
+      { label: "Briefing kwaliteit", emoji: "📋", score: 55, description: "Kandidaat goed gebrieft over bedrijf, functie en gesprekspartners" },
+      { label: "Nabellen na gesprek", emoji: "⏱️", score: 68, description: "Binnen 2 uur nagebeld na afloop van het gesprek" },
+      { label: "Afspraken nakomen", emoji: "🤝", score: 72, description: "Terugbelafspraken en deadlines consequent nagekomen" },
+      { label: "Proactief contact", emoji: "💬", score: 70, description: "Proactief tussentijds contact opgenomen met kandidaat" },
+    ],
+  },
+  {
+    consultant: "Emma Visser",
+    overallScore: 88,
+    metrics: [
+      { label: "Bellen vóór gesprek", emoji: "📞", score: 90, description: "Kandidaat gebeld ter voorbereiding op sollicitatiegesprek" },
+      { label: "Briefing kwaliteit", emoji: "📋", score: 86, description: "Kandidaat goed gebrieft over bedrijf, functie en gesprekspartners" },
+      { label: "Nabellen na gesprek", emoji: "⏱️", score: 85, description: "Binnen 2 uur nagebeld na afloop van het gesprek" },
+      { label: "Afspraken nakomen", emoji: "🤝", score: 94, description: "Terugbelafspraken en deadlines consequent nagekomen" },
+      { label: "Proactief contact", emoji: "💬", score: 86, description: "Proactief tussentijds contact opgenomen met kandidaat" },
+    ],
+  },
+  {
+    consultant: "Daan de Boer",
+    overallScore: 71,
+    metrics: [
+      { label: "Bellen vóór gesprek", emoji: "📞", score: 72, description: "Kandidaat gebeld ter voorbereiding op sollicitatiegesprek" },
+      { label: "Briefing kwaliteit", emoji: "📋", score: 65, description: "Kandidaat goed gebrieft over bedrijf, functie en gesprekspartners" },
+      { label: "Nabellen na gesprek", emoji: "⏱️", score: 68, description: "Binnen 2 uur nagebeld na afloop van het gesprek" },
+      { label: "Afspraken nakomen", emoji: "🤝", score: 78, description: "Terugbelafspraken en deadlines consequent nagekomen" },
+      { label: "Proactief contact", emoji: "💬", score: 72, description: "Proactief tussentijds contact opgenomen met kandidaat" },
+    ],
+  },
+];

@@ -13,12 +13,14 @@ import {
   stageEmoji,
   overallSentimentTrend,
   priorityLabels,
+  followUpMetrics,
   type CandidateJourney,
 } from "@/data/kandidaatRelatieData";
 import { consultants } from "@/data/hendrikData";
 import {
   Heart, Smile, Meh, Frown, Sparkles, MessageCircleHeart,
   Search, Star, TrendingUp, Users, Brain, Target,
+  Phone, CheckCircle2, XCircle, ClipboardCheck, Clock,
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -256,6 +258,75 @@ export default function KandidaatRelatie() {
                 </div>
               );
             })}
+          </CardContent>
+        </Card>
+      </AnimatedCard>
+
+      {/* Opvolging & Betrokkenheid Kwaliteit */}
+      <AnimatedCard delay={350}>
+        <Card className="bg-card border-border mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base text-foreground flex items-center gap-2">
+              <ClipboardCheck className="w-4 h-4 text-teal-400" />
+              Opvolging & Betrokkenheid Kwaliteit
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Hoe goed worden kandidaten begeleid? Bellen vóór het gesprek, briefing, snel nabellen en afspraken nakomen.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const data = selectedConsultant === "all"
+                ? followUpMetrics
+                : followUpMetrics.filter((f) => f.consultant === selectedConsultant);
+              if (data.length === 0) return <p className="text-sm text-muted-foreground">Geen data beschikbaar voor deze consultant.</p>;
+
+              return (
+                <div className="space-y-4">
+                  {data.map((entry) => (
+                    <div key={entry.consultant} className="p-4 rounded-xl bg-muted/30 border border-border/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold text-foreground">{entry.consultant}</p>
+                        <Badge
+                          variant="outline"
+                          className={
+                            entry.overallScore >= 85
+                              ? "border-emerald-500/40 text-emerald-400"
+                              : entry.overallScore >= 70
+                                ? "border-blue-500/40 text-blue-400"
+                                : "border-amber-500/40 text-amber-400"
+                          }
+                        >
+                          Score: {entry.overallScore}%
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                        {entry.metrics.map((m) => (
+                          <div key={m.label} className="text-center">
+                            <span className="text-xl">{m.emoji}</span>
+                            <p className="text-[11px] font-medium text-foreground mt-1">{m.label}</p>
+                            <div className="mt-1.5 h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-700"
+                                style={{
+                                  width: `${m.score}%`,
+                                  background: m.score >= 85
+                                    ? "hsl(142, 71%, 45%)"
+                                    : m.score >= 70
+                                      ? "hsl(217, 91%, 60%)"
+                                      : "hsl(38, 92%, 50%)",
+                                }}
+                              />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-1">{m.score}%</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
       </AnimatedCard>
