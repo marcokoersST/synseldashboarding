@@ -6,12 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { consultantGrowthProfiles } from "@/data/groeiplanData";
+import { consultantGrowthProfiles, orgConsultants } from "@/data/groeiplanData";
 import {
   Target, ShieldCheck, Brain, Euro, Filter, Heart,
   TrendingUp, Award, AlertTriangle, ChevronRight, Sparkles,
-  Star, Users, BarChart3
+  Star, Users, BarChart3, Trophy, ArrowUp, ArrowDown, Minus
 } from "lucide-react";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -278,6 +279,143 @@ export default function ConsultantGroeiplan() {
           </CardContent>
         </Card>
       </AnimatedCard>
+
+      {/* Horse Race Ranking */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        {/* Unit Ranking */}
+        <AnimatedCard delay={750}>
+          <Card className="bg-card border-border/50 h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Users className="w-4 h-4 text-accent" />
+                Ranking binnen unit ({profile.department})
+              </CardTitle>
+              <p className="text-[10px] text-muted-foreground">Positie t.o.v. collega's in je unit (max 12)</p>
+            </CardHeader>
+            <CardContent className="p-0">
+              {(() => {
+                const unitMembers = orgConsultants.filter(c => c.department === profile.department);
+                const rank = unitMembers.findIndex(c => c.name === profile.name) + 1;
+                return (
+                  <>
+                    <div className="px-4 pb-2 flex items-center gap-3">
+                      <span className="text-2xl font-bold text-foreground">#{rank}</span>
+                      <span className="text-xs text-muted-foreground">van {unitMembers.length}</span>
+                      <Progress value={(1 - (rank - 1) / unitMembers.length) * 100} className="h-2 flex-1" />
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-10 text-[10px]">#</TableHead>
+                          <TableHead className="text-[10px]">Consultant</TableHead>
+                          <TableHead className="text-[10px] text-right">Score</TableHead>
+                          <TableHead className="w-10 text-[10px] text-center">Δ</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {unitMembers.map((c, i) => {
+                          const isSelected = c.name === profile.name;
+                          return (
+                            <TableRow key={c.name} className={isSelected ? "bg-accent/10 font-semibold" : ""}>
+                              <TableCell className="py-1.5 text-xs">
+                                {i < 3 ? <Trophy className={`w-3.5 h-3.5 ${i === 0 ? "text-amber-400" : i === 1 ? "text-gray-400" : "text-orange-400"}`} /> : <span className="text-muted-foreground">{i + 1}</span>}
+                              </TableCell>
+                              <TableCell className="py-1.5">
+                                <span className={`text-xs ${isSelected ? "text-accent" : "text-foreground"}`}>{c.name}</span>
+                                <span className="text-[10px] text-muted-foreground ml-1.5">{c.role}</span>
+                              </TableCell>
+                              <TableCell className="py-1.5 text-right text-xs font-bold">{c.overallScore}</TableCell>
+                              <TableCell className="py-1.5 text-center">
+                                {c.delta > 0 ? <ArrowUp className="w-3 h-3 text-accent inline" /> : c.delta < 0 ? <ArrowDown className="w-3 h-3 text-destructive inline" /> : <Minus className="w-3 h-3 text-muted-foreground inline" />}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </>
+                );
+              })()}
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+
+        {/* Organization Ranking */}
+        <AnimatedCard delay={850}>
+          <Card className="bg-card border-border/50 h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-accent" />
+                Ranking organisatiebreed
+              </CardTitle>
+              <p className="text-[10px] text-muted-foreground">Positie t.o.v. alle ~50 consultants</p>
+            </CardHeader>
+            <CardContent className="p-0">
+              {(() => {
+                const rank = orgConsultants.findIndex(c => c.name === profile.name) + 1;
+                const total = orgConsultants.length;
+                const nearby = orgConsultants.map((c, i) => ({ ...c, pos: i + 1 })).filter(c => {
+                  const pos = orgConsultants.findIndex(x => x.name === c.name);
+                  return Math.abs(pos - (rank - 1)) <= 3 || pos < 3;
+                });
+                // Deduplicate and sort
+                const shown = [...new Map(nearby.map(c => [c.name, c])).values()].sort((a, b) => a.pos - b.pos);
+                return (
+                  <>
+                    <div className="px-4 pb-2 flex items-center gap-3">
+                      <span className="text-2xl font-bold text-foreground">#{rank}</span>
+                      <span className="text-xs text-muted-foreground">van {total}</span>
+                      <Progress value={(1 - (rank - 1) / total) * 100} className="h-2 flex-1" />
+                    </div>
+                    <div className="max-h-[320px] overflow-y-auto scrollbar-thin">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-10 text-[10px]">#</TableHead>
+                            <TableHead className="text-[10px]">Consultant</TableHead>
+                            <TableHead className="text-[10px]">Unit</TableHead>
+                            <TableHead className="text-[10px] text-right">Score</TableHead>
+                            <TableHead className="w-10 text-[10px] text-center">Δ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {shown.map((c, i) => {
+                            const isSelected = c.name === profile.name;
+                            const prevPos = i > 0 ? shown[i - 1].pos : 0;
+                            const showGap = i > 0 && c.pos - prevPos > 1;
+                            return (
+                              <>
+                                {showGap && (
+                                  <TableRow key={`gap-${i}`}>
+                                    <TableCell colSpan={5} className="py-0.5 text-center text-[10px] text-muted-foreground/50">···</TableCell>
+                                  </TableRow>
+                                )}
+                                <TableRow key={c.name} className={isSelected ? "bg-accent/10 font-semibold" : ""}>
+                                  <TableCell className="py-1.5 text-xs">
+                                    {c.pos <= 3 ? <Trophy className={`w-3.5 h-3.5 ${c.pos === 1 ? "text-amber-400" : c.pos === 2 ? "text-gray-400" : "text-orange-400"}`} /> : <span className="text-muted-foreground">{c.pos}</span>}
+                                  </TableCell>
+                                  <TableCell className="py-1.5">
+                                    <span className={`text-xs ${isSelected ? "text-accent" : "text-foreground"}`}>{c.name}</span>
+                                  </TableCell>
+                                  <TableCell className="py-1.5 text-[10px] text-muted-foreground">{c.department}</TableCell>
+                                  <TableCell className="py-1.5 text-right text-xs font-bold">{c.overallScore}</TableCell>
+                                  <TableCell className="py-1.5 text-center">
+                                    {c.delta > 0 ? <ArrowUp className="w-3 h-3 text-accent inline" /> : c.delta < 0 ? <ArrowDown className="w-3 h-3 text-destructive inline" /> : <Minus className="w-3 h-3 text-muted-foreground inline" />}
+                                  </TableCell>
+                                </TableRow>
+                              </>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </>
+                );
+              })()}
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+      </div>
     </ConsultantLayout>
   );
 }
