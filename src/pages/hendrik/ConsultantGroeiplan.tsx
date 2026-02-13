@@ -81,7 +81,7 @@ export default function ConsultantGroeiplan() {
       </div>
 
       {/* Overall score + key metrics row */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
         <AnimatedCard delay={0}>
           <Card className="bg-card border-border/50">
             <CardContent className="p-4 text-center">
@@ -96,8 +96,9 @@ export default function ConsultantGroeiplan() {
         {[
           { icon: BarChart3, label: "KPI Completie", value: profile.kpiCompletion, suffix: "%" },
           { icon: ShieldCheck, label: "Kwaliteit", value: profile.qualityScore, suffix: "/10", decimals: 1 },
-          { icon: Euro, label: "Omzet", value: profile.revenue / 1000, suffix: "k", prefix: "€" },
+          { icon: Euro, label: "Periode omzet", value: profile.revenue / 1000, suffix: "k", prefix: "€" },
           { icon: Award, label: "Plaatsingen", value: profile.placements, suffix: `/${profile.placementsTarget}` },
+          { icon: Users, label: "Detacheringen", value: profile.deployments, suffix: "" },
         ].map((m, i) => (
           <AnimatedCard key={m.label} delay={(i + 1) * 60}>
             <Card className="bg-card border-border/50">
