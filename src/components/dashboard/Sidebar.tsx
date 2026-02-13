@@ -23,7 +23,8 @@ import {
   Gamepad2,
   MapPin,
    Rocket,
-   Timer
+   Timer,
+   HeartHandshake
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -96,6 +97,7 @@ const navItems: NavItem[] = [
       { icon: Trophy, label: "AI-Coach Ranking", path: "/hendrik/ai-coach" },
       { icon: Rocket, label: "Consultant Groeiplan", path: "/hendrik/groeiplan" },
       { icon: Timer, label: "Snelheid Salesproces", path: "/hendrik/snelheid-salesproces" },
+      { icon: HeartHandshake, label: "Kandidaat Relatie", path: "/hendrik/kandidaat-relatie" },
     ]
   },
   {

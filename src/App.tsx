@@ -51,6 +51,7 @@ const HendrikUitnodigingenKaart = lazy(() => import("./pages/hendrik/Uitnodiging
 const HendrikAICoachRanking = lazy(() => import("./pages/hendrik/AICoachRanking"));
 const HendrikGroeiplan = lazy(() => import("./pages/hendrik/ConsultantGroeiplan"));
 const HendrikSnelheidSalesproces = lazy(() => import("./pages/hendrik/SnelheidSalesproces"));
+const HendrikKandidaatRelatie = lazy(() => import("./pages/hendrik/KandidaatRelatie"));
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,7 @@ const App = () => (
               <Route path="/hendrik/ai-coach" element={<HendrikAICoachRanking />} />
               <Route path="/hendrik/groeiplan" element={<HendrikGroeiplan />} />
               <Route path="/hendrik/snelheid-salesproces" element={<HendrikSnelheidSalesproces />} />
+              <Route path="/hendrik/kandidaat-relatie" element={<HendrikKandidaatRelatie />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
