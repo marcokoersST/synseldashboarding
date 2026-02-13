@@ -15,6 +15,14 @@ export interface DevelopmentAction {
   category: "kpi" | "kwaliteit" | "omzet" | "coaching";
 }
 
+export interface TrophyMoment {
+  date: string;
+  icon: string;
+  title: string;
+  description: string;
+  category: "ranking" | "kpi" | "kwaliteit" | "omzet" | "team" | "special";
+}
+
 export interface ConsultantGrowthProfile {
   name: string;
   role: string;
@@ -37,6 +45,7 @@ export interface ConsultantGrowthProfile {
   npsScore: number;
   dimensions: GrowthDimension[];
   developmentActions: DevelopmentAction[];
+  trophies: TrophyMoment[];
   periodTrend: { period: string; overall: number; kpi: number; quality: number; revenue: number }[];
 }
 
@@ -147,6 +156,31 @@ export const consultantGrowthProfiles: ConsultantGrowthProfile[] = rawProfiles.m
     revenue: Math.max(0, Math.min(100, Math.round((p.rev / p.revT) * 100) - 15 + i * 3)),
   }));
 
+  const trophyPool: TrophyMoment[] = [
+    { date: "2025-12", icon: "🥇", title: "#1 Omzetkoning P12", description: "Hoogste omzet van alle consultants in periode 12", category: "ranking" },
+    { date: "2025-11", icon: "🏆", title: "Top 3 Plaatsingskoning", description: "Derde plaats in het aantal plaatsingen in periode 11", category: "ranking" },
+    { date: "2025-10", icon: "⭐", title: "NPS Score 9+", description: "Gemiddelde kandidaat-NPS boven de 9.0 behaald", category: "kwaliteit" },
+    { date: "2025-09", icon: "🔥", title: "30-dagen belstreak", description: "30 opeenvolgende dagen minimaal 15 gesprekken gevoerd", category: "kpi" },
+    { date: "2025-08", icon: "💰", title: "€1M omzet mijlpaal", description: "De grens van €1.000.000 omzet doorbroken dit jaar", category: "omzet" },
+    { date: "2025-07", icon: "🎯", title: "100% KPI Completie", description: "Alle KPI-targets volledig behaald in periode 9", category: "kpi" },
+    { date: "2025-06", icon: "🤝", title: "Team Challenge Winner", description: "Winnend team bij de Q2 plaatsingen-challenge", category: "team" },
+    { date: "2025-05", icon: "💎", title: "Expert Level bereikt", description: "Doorgegroeid naar Expert-tier in het gamification systeem", category: "special" },
+    { date: "2025-04", icon: "📞", title: "Gesprekken Guru P6", description: "Meeste kwalitatieve gesprekken gevoerd in periode 6", category: "ranking" },
+    { date: "2025-03", icon: "✉️", title: "Beste Personalisatie", description: "Hoogste personalisatiescore op voorstelmails (92%)", category: "kwaliteit" },
+    { date: "2025-02", icon: "🚀", title: "Snelste Plaatsing", description: "Record: kandidaat geplaatst binnen 5 werkdagen", category: "special" },
+    { date: "2025-01", icon: "🏅", title: "Rookie of the Year", description: "Beste nieuwkomer van het afgelopen jaar", category: "special" },
+    { date: "2024-12", icon: "📈", title: "Margebaas Q4", description: "Hoogste gemiddelde marge per plaatsing in Q4", category: "omzet" },
+    { date: "2024-11", icon: "👑", title: "#1 AI-Coach Score", description: "Beste gemiddelde AI-Coach beoordeling van alle consultants", category: "kwaliteit" },
+  ];
+
+  // Assign trophies based on performance — top performers get more
+  const trophyCount = p.kpi >= 88 ? 10 : p.kpi >= 72 ? 7 : p.kpi >= 55 ? 4 : 2;
+  const startIdx = (idx * 3) % trophyPool.length;
+  const trophies: TrophyMoment[] = [];
+  for (let i = 0; i < trophyCount; i++) {
+    trophies.push(trophyPool[(startIdx + i) % trophyPool.length]);
+  }
+
   return {
     name: p.name,
     role: p.role,
@@ -169,6 +203,7 @@ export const consultantGrowthProfiles: ConsultantGrowthProfile[] = rawProfiles.m
     npsScore: p.nps,
     dimensions,
     developmentActions: pickActions(idx, 5),
+    trophies,
     periodTrend,
   };
 });
