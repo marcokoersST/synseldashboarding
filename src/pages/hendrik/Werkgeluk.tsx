@@ -7,13 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { consultantWerkgeluk } from "@/data/werkgelukData";
+import { consultantWerkgeluk, type HooraySentiment } from "@/data/werkgelukData";
 import {
-  Smile, TrendingUp, TrendingDown, Minus, Trophy, Target, Sparkles,
+  Smile, TrendingUp, TrendingDown, Minus, Trophy, Target, Sparkles, Heart,
 } from "lucide-react";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  BarChart, Bar,
   ResponsiveContainer,
 } from "recharts";
 
@@ -234,6 +235,69 @@ export default function Werkgeluk() {
           </AnimatedCard>
         </div>
       </div>
+
+      {/* HR Hooray Sentimentsscore */}
+      <AnimatedCard delay={650}>
+        <Card className="bg-card border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Heart className="w-4 h-4 text-pink-400" />
+              HR Hooray — Ontwikkelgesprek Sentiment
+            </CardTitle>
+            <p className="text-[10px] text-muted-foreground">
+              Analyse op basis van documentatie en vragenlijsten in Hooray · Laatste assessment: {profile.hooray.lastAssessment}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Hooray dimension bars */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-foreground">Overall Hooray Score</span>
+                  <span className={`text-lg font-bold ${scoreColor(profile.hooray.overall)}`}>{profile.hooray.overall}%</span>
+                </div>
+                {([
+                  { key: "geluk", label: "Geluk op de werkvloer", emoji: "😊", value: profile.hooray.geluk },
+                  { key: "autonomie", label: "Ervaren autonomie", emoji: "🧭", value: profile.hooray.autonomie },
+                  { key: "ontwikkeling", label: "Persoonlijke ontwikkeling", emoji: "🌱", value: profile.hooray.ontwikkeling },
+                  { key: "perspectief", label: "Perspectief & toekomstvisie", emoji: "🔭", value: profile.hooray.perspectief },
+                  { key: "doel", label: "Doel & motivatie", emoji: "🎯", value: profile.hooray.doel },
+                ] as const).map((item) => (
+                  <div key={item.key}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{item.emoji}</span>
+                        <span className="text-xs text-foreground">{item.label}</span>
+                      </div>
+                      <span className={`text-xs font-bold ${scoreColor(item.value)}`}>{item.value}%</span>
+                    </div>
+                    <Progress value={item.value} className="h-2" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Hooray trend chart */}
+              <div>
+                <p className="text-xs font-medium text-foreground mb-2">Sentiment ontwikkeling per kwartaal</p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={profile.hooray.trend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+                    <XAxis dataKey="period" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: 11 }} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Line type="monotone" dataKey="geluk" name="Geluk" stroke="#f472b6" strokeWidth={2} dot={{ r: 2.5 }} />
+                    <Line type="monotone" dataKey="autonomie" name="Autonomie" stroke="#60a5fa" strokeWidth={1.5} dot={{ r: 2 }} />
+                    <Line type="monotone" dataKey="ontwikkeling" name="Ontwikkeling" stroke="#34d399" strokeWidth={1.5} dot={{ r: 2 }} />
+                    <Line type="monotone" dataKey="perspectief" name="Perspectief" stroke="#fbbf24" strokeWidth={1.5} dot={{ r: 2 }} />
+                    <Line type="monotone" dataKey="doel" name="Doel" stroke="#a78bfa" strokeWidth={1.5} dot={{ r: 2 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </AnimatedCard>
 
       {/* Leaderboard */}
       <AnimatedCard delay={700}>
