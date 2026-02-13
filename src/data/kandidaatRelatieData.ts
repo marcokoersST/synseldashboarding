@@ -26,7 +26,7 @@ export interface CandidateJourney {
 export const stageLabels = [
   "Inschrijving",
   "Acquisitie",
-  "Gesprekken",
+  "Intake",
   "Dealsluiter",
   "Contract",
   "🎯 Droombaan",
