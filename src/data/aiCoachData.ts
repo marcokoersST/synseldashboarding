@@ -16,11 +16,18 @@ export interface PeriodScores {
   developmentPoints: Record<string, DevelopmentPoint[]>; // category -> top 3
 }
 
+export interface TrendPoint {
+  label: string;
+  scores: Record<string, number>; // category -> score
+  average: number;
+}
+
 export interface ConsultantCoachRanking {
   name: string;
   scores: CoachScore[];
   average: number;
   periodData: Record<string, PeriodScores>;
+  trendData: Record<string, TrendPoint[]>; // periodKey -> timeline
 }
 
 export type PeriodKey = "dag" | "week" | "periode" | "kwartaal" | "jaar";
@@ -104,11 +111,28 @@ const baseData = [
   { name: "Lisa van Dijk", base: [4.5, 4.2, 4.8, 4.0] },
 ];
 
+const trendLabels: Record<PeriodKey, string[]> = {
+  dag: ["Ma", "Di", "Wo", "Do", "Vr"],
+  week: ["Wk 1", "Wk 2", "Wk 3", "Wk 4", "Wk 5", "Wk 6", "Wk 7", "Wk 8"],
+  periode: ["P1", "P2", "P3", "P4", "P5", "P6"],
+  kwartaal: ["Q1", "Q2", "Q3", "Q4"],
+  jaar: ["2021", "2022", "2023", "2024", "2025"],
+};
+
+function trendScore(base: number, tIdx: number, catIdx: number, periodIdx: number): number {
+  // Create a progression pattern: generally improving over time with some variation
+  const progression = tIdx * 0.15;
+  const noise = Math.sin(tIdx * 3.7 + catIdx * 2.1 + periodIdx * 1.3) * 0.4;
+  return Math.max(1, Math.min(10, +(base - 1.0 + progression + noise).toFixed(1)));
+}
+
 export const consultantCoachRankings: ConsultantCoachRanking[] = baseData.map((d, consultantIdx) => {
   const scores = coachCategories.map((cat, ci) => ({ category: cat, score: d.base[ci] }));
   const average = +(scores.reduce((s, x) => s + x.score, 0) / scores.length).toFixed(1);
 
   const periodData: Record<string, PeriodScores> = {};
+  const trendData: Record<string, TrendPoint[]> = {};
+
   periods.forEach((period, pi) => {
     const pScores = coachCategories.map((cat, ci) => ({
       category: cat,
@@ -120,7 +144,18 @@ export const consultantCoachRankings: ConsultantCoachRanking[] = baseData.map((d
       devPoints[cat] = pickDevPoints(cat, consultantIdx + pi + ci);
     });
     periodData[period] = { scores: pScores, average: pAvg, developmentPoints: devPoints };
+
+    // Generate trend timeline
+    const labels = trendLabels[period];
+    trendData[period] = labels.map((label, tIdx) => {
+      const tScores: Record<string, number> = {};
+      coachCategories.forEach((cat, ci) => {
+        tScores[cat] = trendScore(d.base[ci], tIdx, ci, pi);
+      });
+      const tAvg = +(Object.values(tScores).reduce((s, v) => s + v, 0) / coachCategories.length).toFixed(1);
+      return { label, scores: tScores, average: tAvg };
+    });
   });
 
-  return { name: d.name, scores, average, periodData };
+  return { name: d.name, scores, average, periodData, trendData };
 });
