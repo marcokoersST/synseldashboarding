@@ -416,6 +416,44 @@ export default function ConsultantGroeiplan() {
           </Card>
         </AnimatedCard>
       </div>
+
+      {/* Trophy Cabinet */}
+      <AnimatedCard delay={950} className="mt-6">
+        <Card className="bg-card border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-400" />
+              Trofeeënkast — Moments of Fame
+            </CardTitle>
+            <p className="text-[10px] text-muted-foreground">
+              {profile.trophies.length} eervolle prestatie{profile.trophies.length !== 1 ? "s" : ""} behaald
+            </p>
+          </CardHeader>
+          <CardContent>
+            {profile.trophies.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-6">Nog geen trofeeën behaald — blijf werken aan je doelen!</p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {profile.trophies.map((t, i) => (
+                  <div
+                    key={i}
+                    className="group relative p-3 rounded-lg border border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-transparent hover:border-amber-500/40 hover:from-amber-500/10 transition-all"
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-2xl shrink-0">{t.icon}</span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-foreground leading-tight">{t.title}</p>
+                        <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">{t.description}</p>
+                        <p className="text-[10px] text-muted-foreground/60 mt-1">{t.date}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </AnimatedCard>
     </ConsultantLayout>
   );
 }
