@@ -38,7 +38,7 @@ export default function OpvolgingHygiene() {
         {/* Appointment follow-up table */}
         <AnimatedCard delay={40} className="col-span-2">
           <Card className="h-full">
-            <CardHeader><CardTitle className="text-base">Opvolging Afspraken (Inschrijving / Intake)</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Opvolging Afspraken (Inschrijving / Acquisitie / Intake)</CardTitle></CardHeader>
             <CardContent className="p-4">
               <div className="space-y-1 text-sm">
                 <div className="grid grid-cols-7 text-xs font-medium text-muted-foreground pb-2 border-b">
