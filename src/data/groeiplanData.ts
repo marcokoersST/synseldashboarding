@@ -38,6 +38,7 @@ export interface ConsultantGrowthProfile {
   salaryProgress: number; // 0-100
   placements: number;
   placementsTarget: number;
+  deployments: number;
   qualityScore: number; // 0-10
   aiCoachAvg: number; // 0-10
   kpiCompletion: number; // 0-100
@@ -84,16 +85,16 @@ function genTrend(base: number, variance: number): number[] {
 }
 
 const rawProfiles = [
-  { name: "Sophie de Vries", role: "Senior Recruiter", dept: "Engineering", rev: 1850000, revT: 2000000, bonus: 8200, bonusT: 10000, sal: 4200, nextSal: 4600, salProg: 92, plac: 7, placT: 8, qual: 8.4, aiCoach: 9.0, kpi: 94, conv: 3.1, nps: 9.2 },
-  { name: "Thomas Bakker", role: "Recruiter", dept: "Engineering", rev: 1620000, revT: 2000000, bonus: 7100, bonusT: 10000, sal: 3800, nextSal: 4200, salProg: 85, plac: 5, placT: 8, qual: 7.8, aiCoach: 8.3, kpi: 88, conv: 2.8, nps: 8.5 },
-  { name: "Emma Visser", role: "Senior Recruiter", dept: "Operators", rev: 1450000, revT: 2000000, bonus: 5800, bonusT: 10000, sal: 3600, nextSal: 4200, salProg: 78, plac: 6, placT: 8, qual: 7.5, aiCoach: 7.9, kpi: 82, conv: 3.4, nps: 8.1 },
-  { name: "Anna Smit", role: "Recruiter", dept: "Operators", rev: 1280000, revT: 2000000, bonus: 4250, bonusT: 10000, sal: 3200, nextSal: 3600, salProg: 68, plac: 5, placT: 8, qual: 7.1, aiCoach: 7.4, kpi: 76, conv: 4.2, nps: 7.8 },
-  { name: "Fleur Mulder", role: "Recruiter", dept: "Monteurs", rev: 1100000, revT: 2000000, bonus: 3500, bonusT: 10000, sal: 3000, nextSal: 3400, salProg: 58, plac: 4, placT: 8, qual: 6.8, aiCoach: 6.9, kpi: 72, conv: 2.6, nps: 7.2 },
-  { name: "Niels de Groot", role: "Junior Recruiter", dept: "Engineering", rev: 980000, revT: 2000000, bonus: 3200, bonusT: 10000, sal: 2900, nextSal: 3200, salProg: 52, plac: 3, placT: 8, qual: 6.5, aiCoach: 6.7, kpi: 68, conv: 2.2, nps: 6.9 },
-  { name: "Mark Peters", role: "Junior Recruiter", dept: "Monteurs", rev: 820000, revT: 2000000, bonus: 2400, bonusT: 10000, sal: 2800, nextSal: 3200, salProg: 42, plac: 2, placT: 8, qual: 6.2, aiCoach: 6.2, kpi: 62, conv: 1.9, nps: 6.5 },
-  { name: "Daan de Boer", role: "Junior Recruiter", dept: "Operators", rev: 650000, revT: 2000000, bonus: 1800, bonusT: 10000, sal: 2700, nextSal: 3000, salProg: 35, plac: 2, placT: 8, qual: 5.5, aiCoach: 5.6, kpi: 55, conv: 1.7, nps: 5.8 },
-  { name: "Bram Jansen", role: "Trainee", dept: "Monteurs", rev: 420000, revT: 2000000, bonus: 900, bonusT: 10000, sal: 2500, nextSal: 2800, salProg: 22, plac: 1, placT: 8, qual: 5.1, aiCoach: 5.0, kpi: 45, conv: 1.4, nps: 5.2 },
-  { name: "Lisa van Dijk", role: "Trainee", dept: "Engineering", rev: 280000, revT: 2000000, bonus: 400, bonusT: 10000, sal: 2400, nextSal: 2800, salProg: 14, plac: 1, placT: 8, qual: 4.8, aiCoach: 4.4, kpi: 38, conv: 1.1, nps: 4.5 },
+  { name: "Sophie de Vries", role: "Senior Recruiter", dept: "Engineering", rev: 1850000, revT: 2000000, bonus: 8200, bonusT: 10000, sal: 4200, nextSal: 4600, salProg: 92, plac: 7, placT: 8, depl: 5, qual: 8.4, aiCoach: 9.0, kpi: 94, conv: 3.1, nps: 9.2 },
+  { name: "Thomas Bakker", role: "Recruiter", dept: "Engineering", rev: 1620000, revT: 2000000, bonus: 7100, bonusT: 10000, sal: 3800, nextSal: 4200, salProg: 85, plac: 5, placT: 8, depl: 4, qual: 7.8, aiCoach: 8.3, kpi: 88, conv: 2.8, nps: 8.5 },
+  { name: "Emma Visser", role: "Senior Recruiter", dept: "Operators", rev: 1450000, revT: 2000000, bonus: 5800, bonusT: 10000, sal: 3600, nextSal: 4200, salProg: 78, plac: 6, placT: 8, depl: 4, qual: 7.5, aiCoach: 7.9, kpi: 82, conv: 3.4, nps: 8.1 },
+  { name: "Anna Smit", role: "Recruiter", dept: "Operators", rev: 1280000, revT: 2000000, bonus: 4250, bonusT: 10000, sal: 3200, nextSal: 3600, salProg: 68, plac: 5, placT: 8, depl: 3, qual: 7.1, aiCoach: 7.4, kpi: 76, conv: 4.2, nps: 7.8 },
+  { name: "Fleur Mulder", role: "Recruiter", dept: "Monteurs", rev: 1100000, revT: 2000000, bonus: 3500, bonusT: 10000, sal: 3000, nextSal: 3400, salProg: 58, plac: 4, placT: 8, depl: 3, qual: 6.8, aiCoach: 6.9, kpi: 72, conv: 2.6, nps: 7.2 },
+  { name: "Niels de Groot", role: "Junior Recruiter", dept: "Engineering", rev: 980000, revT: 2000000, bonus: 3200, bonusT: 10000, sal: 2900, nextSal: 3200, salProg: 52, plac: 3, placT: 8, depl: 2, qual: 6.5, aiCoach: 6.7, kpi: 68, conv: 2.2, nps: 6.9 },
+  { name: "Mark Peters", role: "Junior Recruiter", dept: "Monteurs", rev: 820000, revT: 2000000, bonus: 2400, bonusT: 10000, sal: 2800, nextSal: 3200, salProg: 42, plac: 2, placT: 8, depl: 1, qual: 6.2, aiCoach: 6.2, kpi: 62, conv: 1.9, nps: 6.5 },
+  { name: "Daan de Boer", role: "Junior Recruiter", dept: "Operators", rev: 650000, revT: 2000000, bonus: 1800, bonusT: 10000, sal: 2700, nextSal: 3000, salProg: 35, plac: 2, placT: 8, depl: 1, qual: 5.5, aiCoach: 5.6, kpi: 55, conv: 1.7, nps: 5.8 },
+  { name: "Bram Jansen", role: "Trainee", dept: "Monteurs", rev: 420000, revT: 2000000, bonus: 900, bonusT: 10000, sal: 2500, nextSal: 2800, salProg: 22, plac: 1, placT: 8, depl: 0, qual: 5.1, aiCoach: 5.0, kpi: 45, conv: 1.4, nps: 5.2 },
+  { name: "Lisa van Dijk", role: "Trainee", dept: "Engineering", rev: 280000, revT: 2000000, bonus: 400, bonusT: 10000, sal: 2400, nextSal: 2800, salProg: 14, plac: 1, placT: 8, depl: 0, qual: 4.8, aiCoach: 4.4, kpi: 38, conv: 1.1, nps: 4.5 },
 ];
 
 // Extended organization data (~50 consultants) for horse-race ranking
@@ -196,6 +197,7 @@ export const consultantGrowthProfiles: ConsultantGrowthProfile[] = rawProfiles.m
     salaryProgress: p.salProg,
     placements: p.plac,
     placementsTarget: p.placT,
+    deployments: p.depl,
     qualityScore: p.qual,
     aiCoachAvg: p.aiCoach,
     kpiCompletion: p.kpi,
