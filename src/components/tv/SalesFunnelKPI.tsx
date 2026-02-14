@@ -22,7 +22,7 @@ export function SalesFunnelKPI({ metric, index }: SalesFunnelKPIProps) {
       className={cn(
         "bg-card rounded-xl border border-border flex flex-col",
         "animate-fade-in",
-        compact ? "p-3 gap-1" : "p-5 gap-3"
+        compact ? "px-2 py-2 gap-1" : "px-3 py-4 gap-3"
       )}
       style={{ animationDelay: `${index * 80}ms` }}
     >

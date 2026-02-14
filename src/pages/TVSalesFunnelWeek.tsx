@@ -5,7 +5,6 @@ import { ConversionArrow } from "@/components/tv/ConversionArrow";
 import { CandidatesPipeline } from "@/components/tv/CandidatesPipeline";
 import { CallStats } from "@/components/tv/CallStats";
 import { UnitFunnelBreakdown } from "@/components/tv/UnitFunnelBreakdown";
-import { FunnelConversions } from "@/components/tv/FunnelConversions";
 import { weekFunnelMetrics, weekOverallConversions } from "@/data/tvData";
 import { cn } from "@/lib/utils";
 
@@ -28,16 +27,13 @@ function WeekContent() {
         ))}
       </div>
 
-      {/* Unit breakdown */}
+      {/* Unit breakdown + conversions merged */}
       <UnitFunnelBreakdown />
 
-      {/* Bottom row - stretches to fill remaining space in TV mode */}
+      {/* Bottom row */}
       <div className={cn("grid grid-cols-2", compact ? "gap-2 flex-1 min-h-0" : "gap-4")}>
-        <FunnelConversions />
-        <div className={cn("flex flex-col", compact ? "gap-2 h-full" : "gap-4")}>
-          <CallStats mode="week" />
-          <CandidatesPipeline />
-        </div>
+        <CallStats mode="week" />
+        <CandidatesPipeline />
       </div>
     </div>
   );
