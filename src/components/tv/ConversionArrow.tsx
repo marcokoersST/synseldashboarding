@@ -10,7 +10,7 @@ export function ConversionArrow({ rate }: ConversionArrowProps) {
   const compact = useTVCompact();
 
   return (
-    <div className="flex flex-col items-center justify-center shrink-0">
+    <div className={cn("flex flex-col items-center justify-center shrink-0", compact ? "px-2" : "px-1")}>
       <ChevronRight className={cn("text-muted-foreground", compact ? "w-4 h-4" : "w-5 h-5")} />
       <span className={cn(
         "font-bold tabular-nums",
