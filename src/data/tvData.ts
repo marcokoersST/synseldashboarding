@@ -158,20 +158,27 @@ export interface UnitFunnelRow {
   unit: string;
   subUnit?: string;
   color: string;
-  inschrijvingen: number;
-  intakes: number;
+  toegewezen: number;
+  ingeschreven: number;
   acquisities: number;
-  voorstellen: number;
-  gesprekken: number;
-  plaatsingen: number;
+  voorstellenPerKandidaat: number;
+  uitnodigingenTotaal: number;
+  nietUitgenodigd: number;
+  welUitgenodigd: number;
+  eersteGesprek: number;
+  geenEersteGesprek: number;
+  welEersteGesprek: number;
+  vervolgGesprek: number;
+  dealsluiter: number;
+  geplaatst: number;
 }
 
 export const weekUnitBreakdown: UnitFunnelRow[] = [
-  { unit: "Engineering", color: "hsl(var(--primary))", inschrijvingen: 14, intakes: 10, acquisities: 5, voorstellen: 8, gesprekken: 7, plaatsingen: 2 },
-  { unit: "Monteurs", color: "hsl(var(--chart-primary))", inschrijvingen: 8, intakes: 5, acquisities: 3, voorstellen: 4, gesprekken: 3, plaatsingen: 1 },
-  { unit: "Operators", color: "hsl(var(--accent))", inschrijvingen: 12, intakes: 8, acquisities: 4, voorstellen: 6, gesprekken: 5, plaatsingen: 2 },
-  { unit: "Trainingsunit", color: "hsl(var(--gold))", inschrijvingen: 5, intakes: 3, acquisities: 2, voorstellen: 3, gesprekken: 2, plaatsingen: 1 },
-  { unit: "New Performers", color: "hsl(var(--teal))", inschrijvingen: 3, intakes: 2, acquisities: 1, voorstellen: 1, gesprekken: 1, plaatsingen: 0 },
+  { unit: "Engineering", color: "hsl(var(--primary))", toegewezen: 18, ingeschreven: 14, acquisities: 5, voorstellenPerKandidaat: 2.1, uitnodigingenTotaal: 12, nietUitgenodigd: 4, welUitgenodigd: 8, eersteGesprek: 7, geenEersteGesprek: 3, welEersteGesprek: 4, vervolgGesprek: 3, dealsluiter: 2, geplaatst: 2 },
+  { unit: "Monteurs", color: "hsl(var(--chart-primary))", toegewezen: 10, ingeschreven: 8, acquisities: 3, voorstellenPerKandidaat: 1.8, uitnodigingenTotaal: 6, nietUitgenodigd: 2, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1 },
+  { unit: "Operators", color: "hsl(var(--accent))", toegewezen: 15, ingeschreven: 12, acquisities: 4, voorstellenPerKandidaat: 2.3, uitnodigingenTotaal: 9, nietUitgenodigd: 3, welUitgenodigd: 6, eersteGesprek: 5, geenEersteGesprek: 2, welEersteGesprek: 3, vervolgGesprek: 3, dealsluiter: 2, geplaatst: 2 },
+  { unit: "Trainingsunit", color: "hsl(var(--gold))", toegewezen: 7, ingeschreven: 5, acquisities: 2, voorstellenPerKandidaat: 1.5, uitnodigingenTotaal: 4, nietUitgenodigd: 1, welUitgenodigd: 3, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1 },
+  { unit: "New Performers", color: "hsl(var(--teal))", toegewezen: 4, ingeschreven: 3, acquisities: 1, voorstellenPerKandidaat: 1.0, uitnodigingenTotaal: 2, nietUitgenodigd: 1, welUitgenodigd: 1, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0 },
 ];
 
 export interface ConversionStep {

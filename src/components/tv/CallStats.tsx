@@ -71,22 +71,19 @@ export function CallStats({ mode }: CallStatsProps) {
           </div>
         ))}
       </div>
-      {/* Hide chart in TV compact mode */}
-      {!compact && (
-        <div className="h-36">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={weekCallStats}>
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-              <YAxis hide />
-              <Tooltip
-                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-                formatter={(v: number) => [v, "Gesprekken"]}
-              />
-              <Bar dataKey="outbound" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+      <div className={cn(compact ? "h-24" : "h-36")}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={weekCallStats}>
+            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: compact ? 10 : 12, fill: "hsl(var(--muted-foreground))" }} />
+            <YAxis hide />
+            <Tooltip
+              contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+              formatter={(v: number) => [v, "Gesprekken"]}
+            />
+            <Bar dataKey="outbound" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
