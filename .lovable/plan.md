@@ -1,29 +1,38 @@
 
-# Podium Visual: Top 3 Margebaas
 
-## Wat wordt er gebouwd
-Bovenaan de `/tv/beker` pagina komt een podium-visual die de top 3 van de Margebaas ranglijst toont in een klassieke podium-stijl (plek 2 links, plek 1 in het midden hoger, plek 3 rechts). Elk podiumblok toont de naam, rang-medaille en het margebedrag.
+# Podium opsplitsen: Visueel podium boven + Stats onder
 
-## Visueel ontwerp
-- Drie kolommen naast elkaar, de middelste (nr. 1) is het hoogst, links (nr. 2) iets lager, rechts (nr. 3) het laagst
-- Goud/zilver/brons kleuren voor de rang-indicatoren
-- Icoon (Crown/Trophy) bovenop het podium van de winnaar
-- Compact en passend binnen de bestaande TV layout
+## Wat verandert er
+Het huidige `MargePodium` component wordt opgesplitst in twee secties binnen dezelfde kaart:
+- **Boven (~60%)**: De podium-visual zoals nu (blokken met rang, naam, margebedrag)
+- **Onder (~40%)**: Een statistiekenoverzicht per top-3 persoon met hun marge, plaatsingen en gesprekken
+
+## Visueel
+
+```text
++--------------------------------------+
+|  Top 3 Margebaas                     |
+|                                      |
+|     [#2]    [#1]     [#3]            |  <- Podium visual
+|      naam   naam     naam            |
+|                                      |
+|--------------------------------------|
+|  Naam       Marge  Plaatsingen Gespr.|  <- Stats tabel
+|  Sophie     €420K     4         128  |
+|  Kevin      €380K     5         115  |
+|  Thomas     €310K     3          98  |
++--------------------------------------+
+```
 
 ## Technische aanpak
 
-### 1. Nieuw component: `src/components/tv/MargePodium.tsx`
-- Accepteert de `margeBaas` data (top 3 entries)
-- Rendert drie kolommen in flexbox met verschillende hoogtes via padding/margin
-- Layout: `[#2] [#1] [#3]` met #1 visueel hoger
-- Elke positie toont: medaille-kleur rang, naam, en geformateerd bedrag
-- Gebruikt bestaande kleuren: goud (`text-[hsl(45,80%,50%)]`), zilver (`text-muted-foreground`), brons (`text-[hsl(25,60%,45%)]`)
-- Animate met `animate-fade-in` zoals de bestaande kaarten
+### `src/components/tv/MargePodium.tsx`
+- Nieuwe props toevoegen: `plaatsingen` en `gesprekken` (arrays van `CompetitionEntry[]`)
+- De kaart splitsen in twee delen met een `Separator`
+- Bovenste deel: bestaande podium-visual (ongewijzigd)
+- Onderste deel: een compacte tabel met drie rijen (top 3), kolommen: Naam, Marge, Plaatsingen, Gesprekken
+- De waarden worden opgezocht per naam uit de meegegeven arrays
 
-### 2. Update: `src/pages/TVBekerDashboard.tsx`
-- Importeer het nieuwe `MargePodium` component
-- Plaats het bovenaan de pagina, voor de bestaande 2x2 grid van CompetitionCards
-- Geeft `margeBaas.slice(0, 3)` door als data
+### `src/pages/TVBekerDashboard.tsx`
+- Extra props doorgeven aan `MargePodium`: `plaatsingen={plaatsingsKoning}` en `gesprekken={gesprekkenGuru}`
 
-### Geen data-wijzigingen nodig
-De `margeBaas` array in `tvData.ts` bevat al de juiste top 3 entries met namen en bedragen.
