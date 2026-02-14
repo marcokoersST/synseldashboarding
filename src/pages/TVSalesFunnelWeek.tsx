@@ -31,12 +31,12 @@ function WeekContent() {
       {/* Unit breakdown */}
       <UnitFunnelBreakdown />
 
-      {/* Bottom row */}
+      {/* Bottom row - stretches to fill remaining space in TV mode */}
       <div className={cn("grid grid-cols-2", compact ? "gap-2 flex-1 min-h-0" : "gap-4")}>
         <FunnelConversions />
-        <div className={cn("flex flex-col", compact ? "gap-2" : "gap-4")}>
+        <div className={cn("flex flex-col", compact ? "gap-2 h-full" : "gap-4")}>
           <CallStats mode="week" />
-          {!compact && <CandidatesPipeline />}
+          <CandidatesPipeline />
         </div>
       </div>
     </div>

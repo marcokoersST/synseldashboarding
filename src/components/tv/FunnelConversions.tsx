@@ -13,7 +13,7 @@ export function FunnelConversions() {
   const compact = useTVCompact();
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border animate-fade-in", compact ? "p-3" : "p-5")}>
+    <div className={cn("bg-card rounded-xl border border-border animate-fade-in h-full", compact ? "p-3" : "p-5")}>
       <h3 className={cn("font-semibold text-foreground", compact ? "text-xs mb-2" : "text-sm mb-4")}>Conversiepercentages</h3>
 
       {/* Overall */}
