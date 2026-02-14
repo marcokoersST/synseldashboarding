@@ -1,48 +1,32 @@
 
 
-# TV Mode Visual Improvements - Weekweergave Sales Funnel
-
-## Problems identified from the screenshot
-
-1. The bottom row (Conversiepercentages + Belstatistieken) has massive empty whitespace - the cards don't stretch to fill the remaining screen height
-2. The overall layout doesn't distribute vertical space evenly across the three sections
-3. The Belstatistieken card wastes most of its vertical space since the bar chart is hidden in TV mode
+# Fix KPI Tiles, Unit Table Alignment & Merge Breakdown with Conversions
 
 ## Changes
 
-### 1. Page layout: `src/pages/TVSalesFunnelWeek.tsx`
-- In compact (TV) mode, make the bottom row use `flex-1` to stretch and fill all remaining vertical space
-- Ensure the three sections (KPI row, unit breakdown, bottom row) properly divide the screen height
+### 1. Shrink KPI tiles for more arrow room (`src/components/tv/SalesFunnelKPI.tsx`)
+- Reduce horizontal padding: compact mode from `p-3` to `px-2 py-2`, normal mode from `p-5` to `px-3 py-4`
+- This gives conversion arrows between tiles more breathing space
 
-### 2. Bottom row cards stretch: `src/components/tv/FunnelConversions.tsx`
-- Add `h-full` so it fills the available height in the grid cell
-- The per-unit conversion table can use the extra space naturally
+### 2. Align unit breakdown numbers to the left (`src/components/tv/UnitFunnelBreakdown.tsx`)
+- Change `text-right` to `text-left` on all `TableHead` and `TableCell` elements for metric columns
 
-### 3. Call Stats fill height: `src/components/tv/CallStats.tsx`  
-- Ensure the card stretches to fill its container in TV mode
-- Add the CandidatesPipeline content inline within the CallStats card in compact mode (instead of hiding it entirely) to use the empty space, OR simply let the card stretch with proper vertical distribution
+### 3. Merge "Uitsplitsing per Unit" and "Conversiepercentages" into one card
+- Combine both into a single component `src/components/tv/UnitFunnelBreakdown.tsx`
+- The card will have the title "Uitsplitsing per Unit & Conversies"
+- First section: the unit breakdown table (as-is, with left-aligned numbers)
+- Second section: the overall conversion badges and per-unit conversion table (moved from FunnelConversions)
+- In compact (TV) mode, both sections share the card with minimal spacing
+- In normal mode, a subtle separator divides them
 
-### 4. Add CandidatesPipeline back in compact mode: `src/pages/TVSalesFunnelWeek.tsx`
-- Currently `CandidatesPipeline` is hidden in compact mode (`!compact && <CandidatesPipeline />`), leaving the right column half-empty
-- Show it in compact mode too, but with reduced sizing, so the right column fills properly
+### 4. Update page layout (`src/pages/TVSalesFunnelWeek.tsx`)
+- Remove `FunnelConversions` from the bottom row since it's now merged into UnitFunnelBreakdown
+- The bottom row becomes just CallStats + CandidatesPipeline (single column or full width)
+- This simplifies the layout to: KPI row -> Merged breakdown/conversions -> CallStats + Pipeline
 
-### 5. Ensure all cards use full height
-- Both bottom cards get `h-full` class in compact mode
-- The grid row itself gets `flex-1 min-h-0` to consume remaining space
-
-## Technical details
-
-### `src/pages/TVSalesFunnelWeek.tsx`
-- Change the outer flex container in compact mode to properly distribute: KPI row (auto), Unit breakdown (auto), Bottom row (flex-1)
-- Show CandidatesPipeline in compact mode with smaller sizing
-- Bottom grid gets `flex-1 min-h-0` and children get `h-full`
-
-### `src/components/tv/FunnelConversions.tsx`
-- Add `h-full` to the root div so it stretches in the grid
-
-### `src/components/tv/CallStats.tsx`
-- Already has `h-full`, just ensure parent allows stretching
-
-### `src/components/tv/CandidatesPipeline.tsx`
-- Add compact mode support using `useTVCompact()` for smaller text/padding when shown in TV mode
+### Files to modify
+- `src/components/tv/SalesFunnelKPI.tsx` - reduce padding
+- `src/components/tv/UnitFunnelBreakdown.tsx` - left-align numbers, absorb FunnelConversions content
+- `src/pages/TVSalesFunnelWeek.tsx` - remove FunnelConversions import, adjust bottom row layout
+- `src/components/tv/FunnelConversions.tsx` - can be deleted (content moves into UnitFunnelBreakdown)
 
