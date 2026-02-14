@@ -1,20 +1,23 @@
 import { candidatePipeline } from "@/data/tvData";
+import { useTVCompact } from "./TVDashboardLayout";
+import { cn } from "@/lib/utils";
 
 export function CandidatesPipeline() {
+  const compact = useTVCompact();
   const total = candidatePipeline.reduce((s, p) => s + p.count, 0);
 
   return (
-    <div className="bg-card rounded-xl p-5 border border-border h-full">
-      <h3 className="text-sm font-semibold text-foreground mb-1">Kandidaten in Procedure</h3>
-      <p className="text-2xl font-bold text-foreground mb-4">{total} <span className="text-sm font-normal text-muted-foreground">kandidaten actief</span></p>
-      <div className="space-y-3">
+    <div className={cn("bg-card rounded-xl border border-border h-full", compact ? "p-3" : "p-5")}>
+      <h3 className={cn("font-semibold text-foreground", compact ? "text-xs mb-0.5" : "text-sm mb-1")}>Kandidaten in Procedure</h3>
+      <p className={cn("font-bold text-foreground", compact ? "text-lg mb-2" : "text-2xl mb-4")}>{total} <span className={cn("font-normal text-muted-foreground", compact ? "text-[10px]" : "text-sm")}>kandidaten actief</span></p>
+      <div className={cn(compact ? "space-y-1.5" : "space-y-3")}>
         {candidatePipeline.map((phase) => (
           <div key={phase.phase}>
-            <div className="flex justify-between text-sm mb-1">
+            <div className={cn("flex justify-between mb-0.5", compact ? "text-[10px]" : "text-sm")}>
               <span className="text-muted-foreground">{phase.phase}</span>
               <span className="font-medium text-foreground">{phase.count}</span>
             </div>
-            <div className="w-full h-2.5 rounded-full bg-secondary">
+            <div className={cn("w-full rounded-full bg-secondary", compact ? "h-1.5" : "h-2.5")}>
               <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{ width: `${(phase.count / total) * 100}%`, backgroundColor: phase.color }}
