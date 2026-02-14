@@ -1,4 +1,4 @@
-import { TVDashboardLayout } from "@/components/tv/TVDashboardLayout";
+import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { CompetitionCard } from "@/components/tv/CompetitionCard";
 import { MargePodium } from "@/components/tv/MargePodium";
 import { omzetKoning, plaatsingsKoning, margeBaas, gesprekkenGuru, totalPotentialMargin } from "@/data/tvData";
@@ -6,9 +6,52 @@ const fmt = (v: number) => `€${Math.abs(v) >= 1000 ? `${(Math.abs(v) / 1000).t
 const fmtCount = (v: number) => `${v} pl.`;
 const fmtGesprekken = (v: number) => `${v}`;
 
-export default function TVBekerDashboard() {
+function BekerContent() {
+  const compact = useTVCompact();
+
+  if (compact) {
+    return (
+      <div className="flex gap-4 h-full">
+        <div className="w-1/3 flex flex-col">
+          <MargePodium entries={margeBaas} />
+        </div>
+        <div className="w-2/3 grid grid-cols-2 grid-rows-2 gap-3">
+          <CompetitionCard
+            title="Omzetkoning"
+            icon="crown"
+            entries={omzetKoning.stijgers}
+            dalers={omzetKoning.dalers}
+            formatValue={(v) => `${v >= 0 ? "+" : ""}${fmt(v)}`}
+            subtitle="Grootste stijgers & dalers in omzet"
+          />
+          <CompetitionCard
+            title="Plaatsingskoning"
+            icon="trophy"
+            entries={plaatsingsKoning}
+            formatValue={fmtCount}
+            subtitle={`Potentiële marge: €${(totalPotentialMargin / 1000000).toFixed(1)}M`}
+          />
+          <CompetitionCard
+            title="Margebaas"
+            icon="wallet"
+            entries={margeBaas}
+            formatValue={fmt}
+            subtitle="Dealbedrag alle plaatsingen"
+          />
+          <CompetitionCard
+            title="Gesprekken Guru"
+            icon="message"
+            entries={gesprekkenGuru}
+            formatValue={fmtGesprekken}
+            subtitle="Totaal gesprekken in de periode"
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <TVDashboardLayout title="Beker Dashboard - Periode 6">
+    <>
       <MargePodium entries={margeBaas} />
       <div className="grid grid-cols-2 gap-4 mb-4">
         <CompetitionCard
@@ -43,6 +86,14 @@ export default function TVBekerDashboard() {
           subtitle="Totaal gesprekken in de periode"
         />
       </div>
+    </>
+  );
+}
+
+export default function TVBekerDashboard() {
+  return (
+    <TVDashboardLayout title="Beker Dashboard - Periode 6">
+      <BekerContent />
     </TVDashboardLayout>
   );
 }
