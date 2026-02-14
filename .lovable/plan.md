@@ -1,84 +1,65 @@
 
+# Weekweergave Sales Funnel - Enhanced with Unit Breakdowns & Conversions
 
-## Dashboards Hendrik - Nieuw Menu-onderdeel + 7 Dashboardpagina's
+## What changes
 
-### Overzicht
-Er wordt een nieuw collapsible menu-onderdeel "Dashboards Hendrik" toegevoegd aan de sidebar, met daaronder 7 dashboardpagina's die de gefaseerde aanpak uit de meeting weerspiegelen. Alle pagina's gebruiken dezelfde patronen als de bestaande consultant-dashboards (ConsultantLayout, AnimatedCard, Recharts).
+### 1. Expanded data model (`src/data/tvData.ts`)
+- Add unit-level breakdown data for each funnel metric (Engineering, Monteurs, Operators, Trainingsunit)
+- Trainingsunit will have a sub-breakdown into "Trainingsunit" and "New Performers"
+- Add conversion rates between funnel steps (overall + per unit)
+- Add "Gesprekken" (job interview invitations) count per unit for the call statistics section
 
-### Menu-items
+### 2. Unit Breakdown Section (new component `src/components/tv/UnitFunnelBreakdown.tsx`)
+- A table/card grid showing per unit how many Inschrijvingen, Intakes, Acquisities, Voorstellen, Gesprekken, and Plaatsingen they contributed
+- Trainingsunit row will have an indented "New Performers" sub-row beneath it, clearly nested to avoid confusion
+- Each unit gets its own color indicator for visual distinction
 
-| # | Label | Route | Inhoud |
-|---|-------|-------|--------|
-| 1 | Kwaliteitsoverzicht | /hendrik/overzicht | Hoofddashboard met KPI-samenvatting, risico-indicator per consultant, overall kwaliteitsscore |
-| 2 | Mail & Voorstellen | /hendrik/mail-voorstellen | Mailcounter, afwijzingen op voorstelmail, personalisatiegraad, volume-analyse |
-| 3 | DMU/CP Correctheid | /hendrik/dmu-correctheid | Correctheid DMU/contactpersonen, foutpercentages, top-offenders |
-| 4 | Conversie Funnel | /hendrik/conversie-funnel | Stapsgewijze conversierates: inschrijving > acquisitie > voorstellen > uitnodigingen > gesprekken |
-| 5 | Klacht & Risico | /hendrik/klacht-risico | Quick win: negatieve reacties/klachten per consultant, koppeling aan afwijzingen |
-| 6 | Opvolging & Hygiene | /hendrik/opvolging | Opvolging terugbelafspraken, intakes, notitielezing (leestijd-proxy), systeemhygiene |
-| 7 | Gamification Levels | /hendrik/gamification | Levelstructuur, ondergrenzen, privileges bij goed presteren, sancties bij onderprestatie |
+### 3. Conversion Rates Section (new component `src/components/tv/FunnelConversions.tsx`)
+- Shows step-by-step conversion rates: Inschrijvingen to Intakes, Intakes to Acquisities, etc.
+- Overall conversion rates displayed prominently
+- Per-unit conversion rates in a compact table below
 
-### Technische aanpak
+### 4. Enhanced Call Statistics (`src/components/tv/CallStats.tsx`)
+- Add a "Gesprekken" (job interview invitations) metric that is always visible
+- Show gesprekken count per unit
 
-**Nieuwe bestanden (9 stuks):**
-- `src/data/hendrikData.ts` -- Alle mock data voor de 7 pagina's
-- `src/pages/hendrik/Overzicht.tsx`
-- `src/pages/hendrik/MailVoorstellen.tsx`
-- `src/pages/hendrik/DMUCorrectheid.tsx`
-- `src/pages/hendrik/ConversieFunnel.tsx`
-- `src/pages/hendrik/KlachtRisico.tsx`
-- `src/pages/hendrik/OpvolgingHygiene.tsx`
-- `src/pages/hendrik/GamificationLevels.tsx`
+### 5. Updated page layout (`src/pages/TVSalesFunnelWeek.tsx`)
+- Keep the 6 KPI tiles at the top
+- Add a full-width unit breakdown table below
+- Add conversion rates visualization
+- Enhanced call stats with gesprekken always visible
 
-**Gewijzigde bestanden (2 stuks):**
-- `src/components/dashboard/Sidebar.tsx` -- Nieuw nav-item "Dashboards Hendrik" met 7 sub-items, geplaatst tussen "Manager Dashboard" en "Super Admin"
-- `src/App.tsx` -- 7 nieuwe lazy-loaded routes onder `/hendrik/*`
+## Technical Details
 
-### Per dashboard inhoud
+### Data structure additions in `tvData.ts`:
 
-**1. Kwaliteitsoverzicht**
-- 4 samenvattingstegels: overall kwaliteitsscore, aantal klachten deze periode, gemiddelde personalisatiegraad, DMU-foutpercentage
-- Tabel met consultants gesorteerd op kwaliteitsrisico (rood/oranje/groen)
-- Trendlijn kwaliteitsscore afgelopen 6 periodes
+```text
+Unit type: "Engineering" | "Monteurs" | "Operators" | "Trainingsunit"
 
-**2. Mail & Voorstellen**
-- Mailcounter per consultant (barchart)
-- Percentage afgewezen op voorstelmail (barchart vergelijking)
-- Personalisatiegraad indicator (gemiddeld % per consultant)
-- Volume-trend: mails verzonden per week (lijnchart)
+weekUnitBreakdown: array of {
+  unit: string
+  subUnit?: string (only for "New Performers" under Trainingsunit)
+  inschrijvingen, intakes, acquisities, voorstellen, gesprekken, plaatsingen
+}
 
-**3. DMU/CP Correctheid**
-- Donut chart: correct vs incorrect DMU-selecties
-- Tabel met recente fouten (consultant, klant, verwacht CP, geselecteerd CP)
-- Trendlijn correctheidspercentage per periode
+weekConversionRates: {
+  overall: { step pairs with percentages }
+  perUnit: { same per unit }
+}
+```
 
-**4. Conversie Funnel**
-- 5-staps horizontale funnel: Inschrijving > Acquisitie > Voorstellen > Uitnodigingen > Gesprekken
-- Conversiepercentage tussen elke stap
-- Per consultant vergelijkingstabel
-- Bottleneck-detectie (laagste conversie rood gemarkeerd)
+### Trainingsunit display logic:
+- Show "Trainingsunit" as a parent row with combined totals
+- Indent "New Performers" as a child row underneath
+- This avoids showing "Trainingsunit" twice; instead it reads as:
+  - Trainingsunit (total)
+    - w.v. New Performers (subset)
 
-**5. Klacht & Risico (Quick Win)**
-- Per consultant: aantal negatieve reacties, aantal klachten, correlatie met afwijzingen
-- Risicoscore-indicator (berekend uit klachten/afwijzingen ratio)
-- Top 5 risicoconsultants uitgelicht
-- Recente klachten-feed met details
+### Files to create:
+- `src/components/tv/UnitFunnelBreakdown.tsx` - Unit breakdown table
+- `src/components/tv/FunnelConversions.tsx` - Conversion rates display
 
-**6. Opvolging & Hygiene**
-- Opvolging terugbelafspraken: % nagekomen vs gemist
-- Intakes opvolging status
-- Notitielezing proxy: gemiddelde tijd/scroll per notitie per consultant
-- Systeemhygiene score (ingevulde velden, actuele statussen)
-
-**7. Gamification Levels**
-- Levelstructuur visualisatie (progressbar per consultant)
-- Huidige level per consultant met afstand tot volgende level
-- Ondergrensindicator (rode lijn)
-- Privileges/sancties overzicht per level
-- Leaderboard op kwaliteitsscore
-
-### Sidebar-integratie
-Het nieuwe menu-item gebruikt het `ClipboardCheck` icoon uit lucide-react en wordt geplaatst na "Manager Dashboard". Het gedrag (collapsible, auto-expand op actieve route, tooltip bij collapsed sidebar) volgt exact hetzelfde patroon als de bestaande "Consultant" en "TV Dashboards" secties.
-
-### Data
-Alle data is statische mock data in `hendrikData.ts`, consistent met de bestaande data-strategie. De data bevat realistische maar fictieve namen, percentages en trends.
-
+### Files to modify:
+- `src/data/tvData.ts` - Add unit breakdown data, conversion rates, gesprekken per unit
+- `src/components/tv/CallStats.tsx` - Add gesprekken metric (always visible)
+- `src/pages/TVSalesFunnelWeek.tsx` - Integrate new sections
