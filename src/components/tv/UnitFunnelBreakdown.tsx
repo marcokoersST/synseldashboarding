@@ -1,3 +1,4 @@
+import React from "react";
 import { weekUnitBreakdown, weekOverallConversions, weekUnitConversions } from "@/data/tvData";
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
@@ -6,15 +7,22 @@ import { ArrowRight } from "lucide-react";
 import { useTVCompact } from "./TVDashboardLayout";
 import { cn } from "@/lib/utils";
 
-const metricKeys = ["inschrijvingen", "intakes", "acquisities", "voorstellen", "gesprekken", "plaatsingen"] as const;
+const metricKeys = ["inschrijvingen", "acquisities", "voorstellen", "gesprekken", "plaatsingen"] as const;
 const metricLabels: Record<string, string> = {
   inschrijvingen: "Inschrijvingen",
-  intakes: "Intakes",
   acquisities: "Acquisities",
   voorstellen: "Voorstellen",
   gesprekken: "Gesprekken",
   plaatsingen: "Plaatsingen",
 };
+
+// Conversion pairs between adjacent visible columns
+const conversionPairs: { from: keyof typeof metricLabels; to: keyof typeof metricLabels }[] = [
+  { from: "inschrijvingen", to: "acquisities" },
+  { from: "acquisities", to: "voorstellen" },
+  { from: "voorstellen", to: "gesprekken" },
+  { from: "gesprekken", to: "plaatsingen" },
+];
 
 function rateColor(rate: number) {
   if (rate >= 70) return "text-accent";
@@ -39,8 +47,13 @@ export function UnitFunnelBreakdown() {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[140px]">Unit</TableHead>
-            {metricKeys.map((k) => (
-              <TableHead key={k} className="text-left">{metricLabels[k]}</TableHead>
+            {metricKeys.map((k, i) => (
+              <React.Fragment key={k}>
+                <TableHead className="text-left">{metricLabels[k]}</TableHead>
+                {i < metricKeys.length - 1 && (
+                  <TableHead className="text-center text-muted-foreground px-1">%</TableHead>
+                )}
+              </React.Fragment>
             ))}
           </TableRow>
         </TableHeader>
@@ -53,16 +66,40 @@ export function UnitFunnelBreakdown() {
                   {row.unit}
                 </span>
               </TableCell>
-              {metricKeys.map((k) => (
-                <TableCell key={k} className={cn("text-left tabular-nums font-semibold", compact && "py-1 text-xs")}>{row[k]}</TableCell>
-              ))}
+              {metricKeys.map((k, i) => {
+                const convRate = i < conversionPairs.length
+                  ? ((row[conversionPairs[i].to] / row[conversionPairs[i].from]) * 100)
+                  : null;
+                return (
+                  <React.Fragment key={k}>
+                    <TableCell className={cn("text-left tabular-nums font-semibold", compact && "py-1 text-xs")}>{row[k]}</TableCell>
+                    {i < metricKeys.length - 1 && convRate !== null && (
+                      <TableCell className={cn("text-center tabular-nums px-1", compact && "py-1 text-[10px]", rateColor(convRate))}>
+                        {convRate.toFixed(0)}%
+                      </TableCell>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </TableRow>
           ))}
           <TableRow className="border-t-2 border-border">
             <TableCell className={cn("font-bold", compact && "py-1 text-xs")}>Totaal</TableCell>
-            {metricKeys.map((k) => (
-              <TableCell key={k} className={cn("text-left tabular-nums font-bold", compact && "py-1 text-xs")}>{totals[k]}</TableCell>
-            ))}
+            {metricKeys.map((k, i) => {
+              const convRate = i < conversionPairs.length
+                ? ((totals[conversionPairs[i].to] / totals[conversionPairs[i].from]) * 100)
+                : null;
+              return (
+                <React.Fragment key={k}>
+                  <TableCell className={cn("text-left tabular-nums font-bold", compact && "py-1 text-xs")}>{totals[k]}</TableCell>
+                  {i < metricKeys.length - 1 && convRate !== null && (
+                    <TableCell className={cn("text-center tabular-nums font-bold px-1", compact && "py-1 text-[10px]", rateColor(convRate))}>
+                      {convRate.toFixed(0)}%
+                    </TableCell>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </TableRow>
         </TableBody>
       </Table>
