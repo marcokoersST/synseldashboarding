@@ -1,7 +1,7 @@
 import { TVDashboardLayout } from "@/components/tv/TVDashboardLayout";
 import { CompetitionCard } from "@/components/tv/CompetitionCard";
+import { MargePodium } from "@/components/tv/MargePodium";
 import { omzetKoning, plaatsingsKoning, margeBaas, gesprekkenGuru, totalPotentialMargin } from "@/data/tvData";
-
 const fmt = (v: number) => `€${Math.abs(v) >= 1000 ? `${(Math.abs(v) / 1000).toFixed(0)}K` : Math.abs(v).toLocaleString("nl-NL")}`;
 const fmtCount = (v: number) => `${v} pl.`;
 const fmtGesprekken = (v: number) => `${v}`;
@@ -9,6 +9,7 @@ const fmtGesprekken = (v: number) => `${v}`;
 export default function TVBekerDashboard() {
   return (
     <TVDashboardLayout title="Beker Dashboard - Periode 6">
+      <MargePodium entries={margeBaas} />
       <div className="grid grid-cols-2 gap-4 mb-4">
         <CompetitionCard
           title="Omzetkoning"
