@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import type { CompetitionEntry } from "@/data/tvData";
 
 const medalStyles = [
-  { color: "text-[hsl(45,80%,50%)]", bg: "bg-[hsl(45,80%,50%,0.15)]", border: "border-[hsl(45,80%,50%,0.3)]", height: "h-48" },
-  { color: "text-muted-foreground", bg: "bg-muted/30", border: "border-border", height: "h-36" },
-  { color: "text-[hsl(25,60%,45%)]", bg: "bg-[hsl(25,60%,45%,0.15)]", border: "border-[hsl(25,60%,45%,0.3)]", height: "h-28" },
+  { color: "text-[hsl(45,80%,50%)]", bg: "bg-[hsl(45,80%,50%,0.15)]", border: "border-[hsl(45,80%,50%,0.3)]", height: "h-32" },
+  { color: "text-muted-foreground", bg: "bg-muted/30", border: "border-border", height: "h-24" },
+  { color: "text-[hsl(25,60%,45%)]", bg: "bg-[hsl(25,60%,45%,0.15)]", border: "border-[hsl(25,60%,45%,0.3)]", height: "h-20" },
 ];
 
 const fmt = (v: number) => `€${(v / 1000).toFixed(0)}K`;
@@ -24,12 +24,12 @@ export function MargePodium({ entries }: MargePodiumProps) {
   const ranks = [2, 1, 3];
 
   return (
-    <div className="bg-card rounded-xl border border-border p-4 h-full animate-fade-in flex flex-col">
+    <div className="bg-card rounded-xl border border-border p-4 mb-4 animate-fade-in">
       <div className="flex items-center gap-2 mb-3">
         <Medal className="w-5 h-5 text-primary" />
         <h3 className="text-sm font-semibold text-foreground">Top 3 Margebaas</h3>
       </div>
-      <div className="flex items-end justify-center gap-3 flex-1">
+      <div className="flex items-end justify-center gap-3">
         {order.map((entry, i) => {
           const style = styleOrder[i];
           const rank = ranks[i];
