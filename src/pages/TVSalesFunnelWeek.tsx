@@ -14,7 +14,7 @@ function WeekContent() {
   return (
     <div className={cn("flex flex-col", compact ? "gap-2 h-full" : "gap-4")}>
       {/* KPI tiles with conversion arrows */}
-      <div className="flex items-stretch gap-0">
+      <div className={cn("flex items-stretch", compact ? "gap-1" : "gap-0")}>
         {weekFunnelMetrics.map((m, i) => (
           <div key={m.label} className="contents">
             <div className="flex-1 min-w-0">
