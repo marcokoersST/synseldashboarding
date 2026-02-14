@@ -22,16 +22,16 @@ export function SalesFunnelKPI({ metric, index }: SalesFunnelKPIProps) {
       className={cn(
         "bg-card rounded-xl border border-border flex flex-col",
         "animate-fade-in",
-        compact ? "px-2 py-2 gap-1" : "px-3 py-4 gap-3"
+        compact ? "px-2 py-1.5 gap-0.5" : "px-3 py-3 gap-2"
       )}
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon className={cn(compact ? "w-4 h-4" : "w-5 h-5")} />
-        <span className={cn("font-medium", compact ? "text-xs" : "text-sm")}>{metric.label}</span>
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <Icon className={cn(compact ? "w-3 h-3" : "w-4 h-4")} />
+        <span className={cn("font-medium truncate", compact ? "text-[10px]" : "text-xs")}>{metric.label}</span>
       </div>
-      <p className={cn("font-bold text-foreground", compact ? "text-xl" : "text-3xl")}>{metric.value}</p>
-      <div className={cn("flex items-center gap-1 font-medium", compact ? "text-xs" : "text-sm", isPositive ? "text-accent" : "text-destructive")}>
+      <p className={cn("font-bold text-foreground", compact ? "text-lg" : "text-2xl")}>{metric.value}</p>
+      <div className={cn("flex items-center gap-1 font-medium", compact ? "text-[10px]" : "text-xs", isPositive ? "text-accent" : "text-destructive")}>
         {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
         <span>{isPositive ? "+" : ""}{metric.change}%</span>
         <span className="text-muted-foreground font-normal ml-1">{compact ? "v. periode" : "t.o.v. vorige periode"}</span>
