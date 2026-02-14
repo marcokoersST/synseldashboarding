@@ -1,6 +1,7 @@
 import { Crown, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTVCompact } from "@/components/tv/TVDashboardLayout";
+import { Separator } from "@/components/ui/separator";
 import type { CompetitionEntry } from "@/data/tvData";
 
 const medalStyles = [
@@ -13,9 +14,15 @@ const fmt = (v: number) => `€${(v / 1000).toFixed(0)}K`;
 
 interface MargePodiumProps {
   entries: CompetitionEntry[];
+  plaatsingen?: CompetitionEntry[];
+  gesprekken?: CompetitionEntry[];
 }
 
-export function MargePodium({ entries }: MargePodiumProps) {
+function findValue(entries: CompetitionEntry[] | undefined, name: string): number | undefined {
+  return entries?.find((e) => e.name === name)?.value;
+}
+
+export function MargePodium({ entries, plaatsingen, gesprekken }: MargePodiumProps) {
   const compact = useTVCompact();
   const top3 = entries.slice(0, 3);
   if (top3.length < 3) return null;
@@ -29,11 +36,14 @@ export function MargePodium({ entries }: MargePodiumProps) {
       "bg-card rounded-xl border border-border animate-fade-in flex flex-col",
       compact ? "p-3 h-full" : "p-4 mb-4"
     )}>
-      <div className="flex items-center gap-2 mb-3">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-2">
         <Medal className={cn("text-primary", compact ? "w-4 h-4" : "w-5 h-5")} />
         <h3 className={cn("font-semibold text-foreground", compact ? "text-xs" : "text-sm")}>Top 3 Margebaas</h3>
       </div>
-      <div className={cn("flex items-end justify-center gap-3", compact ? "flex-1 min-h-0" : "")}>
+
+      {/* Podium Visual */}
+      <div className={cn("flex items-end justify-center gap-3", compact ? "flex-[6] min-h-0" : "")}>
         {order.map((entry, i) => {
           const style = styleOrder[i];
           const rank = ranks[i];
@@ -56,6 +66,48 @@ export function MargePodium({ entries }: MargePodiumProps) {
           );
         })}
       </div>
+
+      {/* Stats Table */}
+      {(plaatsingen || gesprekken) && (
+        <>
+          <Separator className="my-2" />
+          <div className={cn("flex-[4] min-h-0 overflow-auto")}>
+            <table className="w-full">
+              <thead>
+                <tr className={cn("text-muted-foreground", compact ? "text-[10px]" : "text-xs")}>
+                  <th className="text-left font-medium pb-1 pl-1">Naam</th>
+                  <th className="text-right font-medium pb-1">Marge</th>
+                  {plaatsingen && <th className="text-right font-medium pb-1">Pl.</th>}
+                  {gesprekken && <th className="text-right font-medium pb-1 pr-1">Gespr.</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {top3.map((entry, i) => (
+                  <tr key={entry.name} className={cn(
+                    "border-t border-border/50",
+                    compact ? "text-[11px]" : "text-xs"
+                  )}>
+                    <td className={cn("py-1 pl-1 font-medium text-foreground truncate max-w-[120px]", medalStyles[i].color)}>
+                      {entry.name}
+                    </td>
+                    <td className="py-1 text-right text-foreground font-semibold">{fmt(entry.value)}</td>
+                    {plaatsingen && (
+                      <td className="py-1 text-right text-foreground">
+                        {findValue(plaatsingen, entry.name) ?? "–"}
+                      </td>
+                    )}
+                    {gesprekken && (
+                      <td className="py-1 text-right text-foreground pr-1">
+                        {findValue(gesprekken, entry.name) ?? "–"}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

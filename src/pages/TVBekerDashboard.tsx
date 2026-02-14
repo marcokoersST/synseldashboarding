@@ -13,7 +13,7 @@ function BekerContent() {
     return (
       <div className="flex gap-4 h-full">
         <div className="w-1/3 flex flex-col">
-          <MargePodium entries={margeBaas} />
+          <MargePodium entries={margeBaas} plaatsingen={plaatsingsKoning} gesprekken={gesprekkenGuru} />
         </div>
         <div className="w-2/3 grid grid-cols-2 grid-rows-2 gap-3">
           <CompetitionCard
@@ -52,7 +52,7 @@ function BekerContent() {
 
   return (
     <>
-      <MargePodium entries={margeBaas} />
+      <MargePodium entries={margeBaas} plaatsingen={plaatsingsKoning} gesprekken={gesprekkenGuru} />
       <div className="grid grid-cols-2 gap-4 mb-4">
         <CompetitionCard
           title="Omzetkoning"
