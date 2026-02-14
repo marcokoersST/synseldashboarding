@@ -170,8 +170,8 @@ export const weekUnitBreakdown: UnitFunnelRow[] = [
   { unit: "Engineering", color: "hsl(var(--primary))", inschrijvingen: 14, intakes: 10, acquisities: 5, voorstellen: 8, gesprekken: 7, plaatsingen: 2 },
   { unit: "Monteurs", color: "hsl(var(--chart-primary))", inschrijvingen: 8, intakes: 5, acquisities: 3, voorstellen: 4, gesprekken: 3, plaatsingen: 1 },
   { unit: "Operators", color: "hsl(var(--accent))", inschrijvingen: 12, intakes: 8, acquisities: 4, voorstellen: 6, gesprekken: 5, plaatsingen: 2 },
-  { unit: "Trainingsunit", color: "hsl(var(--gold))", inschrijvingen: 8, intakes: 5, acquisities: 3, voorstellen: 4, gesprekken: 3, plaatsingen: 1 },
-  { unit: "Trainingsunit", subUnit: "New Performers", color: "hsl(var(--gold))", inschrijvingen: 3, intakes: 2, acquisities: 1, voorstellen: 1, gesprekken: 1, plaatsingen: 0 },
+  { unit: "Trainingsunit", color: "hsl(var(--gold))", inschrijvingen: 5, intakes: 3, acquisities: 2, voorstellen: 3, gesprekken: 2, plaatsingen: 1 },
+  { unit: "New Performers", color: "hsl(var(--teal))", inschrijvingen: 3, intakes: 2, acquisities: 1, voorstellen: 1, gesprekken: 1, plaatsingen: 0 },
 ];
 
 export interface ConversionStep {
@@ -216,11 +216,18 @@ export const weekUnitConversions: UnitConversion[] = [
     { from: "Gesprekken", to: "Plaatsingen", rate: 40.0 },
   ]},
   { unit: "Trainingsunit", conversions: [
-    { from: "Inschrijvingen", to: "Intakes", rate: 62.5 },
-    { from: "Intakes", to: "Acquisities", rate: 60.0 },
-    { from: "Acquisities", to: "Voorstellen", rate: 133.3 },
-    { from: "Voorstellen", to: "Gesprekken", rate: 75.0 },
-    { from: "Gesprekken", to: "Plaatsingen", rate: 33.3 },
+    { from: "Inschrijvingen", to: "Intakes", rate: 60.0 },
+    { from: "Intakes", to: "Acquisities", rate: 66.7 },
+    { from: "Acquisities", to: "Voorstellen", rate: 150.0 },
+    { from: "Voorstellen", to: "Gesprekken", rate: 66.7 },
+    { from: "Gesprekken", to: "Plaatsingen", rate: 50.0 },
+  ]},
+  { unit: "New Performers", conversions: [
+    { from: "Inschrijvingen", to: "Intakes", rate: 66.7 },
+    { from: "Intakes", to: "Acquisities", rate: 50.0 },
+    { from: "Acquisities", to: "Voorstellen", rate: 100.0 },
+    { from: "Voorstellen", to: "Gesprekken", rate: 100.0 },
+    { from: "Gesprekken", to: "Plaatsingen", rate: 0.0 },
   ]},
 ];
 
@@ -228,7 +235,8 @@ export const weekGesprekkenPerUnit = [
   { unit: "Engineering", gesprekken: 7 },
   { unit: "Monteurs", gesprekken: 3 },
   { unit: "Operators", gesprekken: 5 },
-  { unit: "Trainingsunit", gesprekken: 3 },
+  { unit: "Trainingsunit", gesprekken: 2 },
+  { unit: "New Performers", gesprekken: 1 },
 ];
 
 export const bonusData = {
