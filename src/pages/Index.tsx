@@ -15,6 +15,8 @@ import { ChatWidget } from "@/components/dashboard/ChatWidget";
 import { CallsStatsCard, EmailStatsCard } from "@/components/dashboard/CommunicationStatsCard";
 import { AINpsCard } from "@/components/dashboard/AINpsCard";
 import { ForecastGoalsProvider } from "@/contexts/ForecastGoalsContext";
+import { ProjectionCard } from "@/components/dashboard/ProjectionCard";
+import { consultantProjections } from "@/data/projectionData";
 
 const Index = () => {
   return (
@@ -40,6 +42,24 @@ const Index = () => {
       {/* Revenue Chart - Full Width */}
       <div className="mb-4">
         <RevenueChart delay={400} />
+      </div>
+
+      {/* Projection Cards */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <ProjectionCard
+          title="Projectie Plaatsingen"
+          description="Gebaseerd op het aantal gesprekken"
+          data={consultantProjections.plaatsingen}
+          inputMetrics={consultantProjections.plaatsingenMetrics}
+          delay={420}
+        />
+        <ProjectionCard
+          title="Projectie Gesprekken"
+          description="Gebaseerd op acquisities, telefoonduur en e-mails"
+          data={consultantProjections.gesprekken}
+          inputMetrics={consultantProjections.gesprekkenMetrics}
+          delay={440}
+        />
       </div>
       
       {/* Middle Row - Team Leaderboard takes 2 columns */}

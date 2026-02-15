@@ -2,6 +2,8 @@ import { DepartmentKPICard } from "@/components/admin/DepartmentKPICard";
 import { CompanyLeaderboard } from "@/components/admin/CompanyLeaderboard";
 import { DepartmentRevenueChart } from "@/components/admin/DepartmentRevenueChart";
 import { departments } from "@/data/adminData";
+import { ProjectionCard } from "@/components/dashboard/ProjectionCard";
+import { companyProjections } from "@/data/projectionData";
 
 export default function SuperAdminDashboard() {
   return (
@@ -30,6 +32,24 @@ export default function SuperAdminDashboard() {
         <div className="col-span-1">
           <DepartmentRevenueChart delay={500} />
         </div>
+      </div>
+
+      {/* Projection Cards */}
+      <div className="grid grid-cols-2 gap-5 mt-5">
+        <ProjectionCard
+          title="Projectie Plaatsingen"
+          description="Gebaseerd op het aantal gesprekken"
+          data={companyProjections.plaatsingen}
+          inputMetrics={companyProjections.plaatsingenMetrics}
+          delay={600}
+        />
+        <ProjectionCard
+          title="Projectie Gesprekken"
+          description="Gebaseerd op acquisities, telefoonduur en e-mails"
+          data={companyProjections.gesprekken}
+          inputMetrics={companyProjections.gesprekkenMetrics}
+          delay={650}
+        />
       </div>
     </>
   );
