@@ -1,38 +1,100 @@
 
 
-# Podium opsplitsen: Visueel podium boven + Stats onder
+# Projectiekaarten: Plaatsingen & Gesprekken
 
-## Wat verandert er
-Het huidige `MargePodium` component wordt opgesplitst in twee secties binnen dezelfde kaart:
-- **Boven (~60%)**: De podium-visual zoals nu (blokken met rang, naam, margebedrag)
-- **Onder (~40%)**: Een statistiekenoverzicht per top-3 persoon met hun marge, plaatsingen en gesprekken
+## Wat wordt er gebouwd
+Twee nieuwe projectiekaarten worden toegevoegd aan drie dashboards:
 
-## Visueel
+1. **Projectie Plaatsingen** - toont historische plaatsingen (2-3 weken) + projectielijn komende weken. Uitleg: "Gebaseerd op het aantal gesprekken"
+2. **Projectie Gesprekken** - toont historische gesprekken (2-3 weken) + projectielijn komende weken. Uitleg: "Gebaseerd op acquisities, telefoonduur en e-mails"
+
+Beide kaarten hebben een lijndiagram met een solid lijn voor historische data en een dashed lijn voor de projectie.
+
+## Waar komen ze te staan
+- **Consultant Dashboard (Index)**: Onder de bestaande progress cards, gebaseerd op eigen performance
+- **Manager Dashboard**: Nieuwe rij onder de bestaande grid, geaggregeerd over het team
+- **Super Admin Dashboard**: Nieuwe rij onder de departmentkaarten, geaggregeerd over heel het bedrijf
+
+## Visueel ontwerp per kaart
 
 ```text
-+--------------------------------------+
-|  Top 3 Margebaas                     |
-|                                      |
-|     [#2]    [#1]     [#3]            |  <- Podium visual
-|      naam   naam     naam            |
-|                                      |
-|--------------------------------------|
-|  Naam       Marge  Plaatsingen Gespr.|  <- Stats tabel
-|  Sophie     €420K     4         128  |
-|  Kevin      €380K     5         115  |
-|  Thomas     €310K     3          98  |
-+--------------------------------------+
++------------------------------------------+
+| Projectie Plaatsingen          info-icon  |
+| Gebaseerd op aantal gesprekken            |
+|                                           |
+|  Historisch (3 wk)    Projectie (3 wk)    |
+|  ----[solid]----+----[dashed]------>      |
+|                                           |
+|  Wk 4: 3  |  Wk 5: 2  |  Wk 6: 4        |
+|  Wk 7: ~4  |  Wk 8: ~5  |  Wk 9: ~5     |
++------------------------------------------+
 ```
 
 ## Technische aanpak
 
-### `src/components/tv/MargePodium.tsx`
-- Nieuwe props toevoegen: `plaatsingen` en `gesprekken` (arrays van `CompetitionEntry[]`)
-- De kaart splitsen in twee delen met een `Separator`
-- Bovenste deel: bestaande podium-visual (ongewijzigd)
-- Onderste deel: een compacte tabel met drie rijen (top 3), kolommen: Naam, Marge, Plaatsingen, Gesprekken
-- De waarden worden opgezocht per naam uit de meegegeven arrays
+### 1. Nieuwe data: `src/data/projectionData.ts`
+- Weekgebaseerde data (niet periodegebaseerd) voor de laatste 3 weken + 3 weken vooruit
+- Interface `WeekProjectionPoint`: `{ week: string, historical: number | null, projected: number | null }`
+- Drie schaalniveaus:
+  - `consultantProjections` - persoonlijke data (kleine aantallen)
+  - `teamProjections` - team-geaggregeerd (middelgrote aantallen)
+  - `companyProjections` - bedrijfsbreed (grote aantallen)
+- Elke set bevat `plaatsingen` en `gesprekken` arrays
+- Input-indicatoren per niveau: acquisities, telefoonduur, emails (als context-getallen)
 
-### `src/pages/TVBekerDashboard.tsx`
-- Extra props doorgeven aan `MargePodium`: `plaatsingen={plaatsingsKoning}` en `gesprekken={gesprekkenGuru}`
+### 2. Nieuw component: `src/components/dashboard/ProjectionCard.tsx`
+- Herbruikbaar component voor alle drie dashboards
+- Props:
+  - `title`: "Projectie Plaatsingen" of "Projectie Gesprekken"
+  - `description`: uitleg waarop gebaseerd (bijv. "Gebaseerd op aantal gesprekken")
+  - `data`: `WeekProjectionPoint[]`
+  - `inputMetrics`: array van `{ label: string, value: number }` (de onderliggende drivers)
+  - `delay`: animatie delay
+  - `color`: lijnkleur (standaard teal)
+- Bevat:
+  - Header met titel + info-tooltip met uitleg
+  - Lijndiagram (Recharts) met solid historisch + dashed projectie
+  - Onder het diagram: compacte rij met de input-metrics die de projectie voeden
+- Gebruikt bestaande `AnimatedCard`, `AnimatedNumber`, `useAnimateOnMount`
+
+### 3. Update: `src/pages/Index.tsx` (Consultant Dashboard)
+- Importeer `ProjectionCard` en consultant-level data
+- Voeg een nieuwe rij toe na de "Revenue Chart" sectie:
+  ```
+  <div className="grid grid-cols-2 gap-4 mb-4">
+    <ProjectionCard title="Projectie Plaatsingen" ... />
+    <ProjectionCard title="Projectie Gesprekken" ... />
+  </div>
+  ```
+- Data gebaseerd op eigen performance van de consultant
+
+### 4. Update: `src/pages/ManagerDashboard.tsx`
+- Importeer `ProjectionCard` en team-level data
+- Voeg een nieuwe rij toe onder de bestaande grid:
+  ```
+  <div className="grid grid-cols-2 gap-4 mt-5">
+    <ProjectionCard title="Projectie Plaatsingen" ... />
+    <ProjectionCard title="Projectie Gesprekken" ... />
+  </div>
+  ```
+
+### 5. Update: `src/pages/SuperAdminDashboard.tsx`
+- Importeer `ProjectionCard` en company-level data
+- Voeg een nieuwe rij toe onder de leaderboard/chart sectie:
+  ```
+  <div className="grid grid-cols-2 gap-5 mt-5">
+    <ProjectionCard title="Projectie Plaatsingen" ... />
+    <ProjectionCard title="Projectie Gesprekken" ... />
+  </div>
+  ```
+
+### Samenvatting bestanden
+
+| Bestand | Actie |
+|---------|-------|
+| `src/data/projectionData.ts` | Nieuw - mock data op drie niveaus |
+| `src/components/dashboard/ProjectionCard.tsx` | Nieuw - herbruikbaar chart component |
+| `src/pages/Index.tsx` | Wijzig - voeg 2 ProjectionCards toe |
+| `src/pages/ManagerDashboard.tsx` | Wijzig - voeg 2 ProjectionCards toe |
+| `src/pages/SuperAdminDashboard.tsx` | Wijzig - voeg 2 ProjectionCards toe |
 
