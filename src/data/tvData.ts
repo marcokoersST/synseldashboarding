@@ -291,6 +291,31 @@ export const weekMailStats = {
   ],
 };
 
+// Unified Beker Consultant data (combines margeBaas, plaatsingsKoning, gesprekkenGuru, omzetKoning, acqMails)
+export interface BekerConsultant {
+  rank: number;
+  name: string;
+  unit: string;
+  marge: number;
+  plaatsingen: number;
+  gesprekken: number;
+  omzetChange: number;
+  acqMails: number;
+}
+
+export const bekerConsultants: BekerConsultant[] = [
+  { rank: 1, name: "Sophie de Vries", unit: "Engineering", marge: 420000, plaatsingen: 4, gesprekken: 128, omzetChange: 180000, acqMails: 42 },
+  { rank: 2, name: "Kevin Hendriks", unit: "Operators", marge: 380000, plaatsingen: 5, gesprekken: 115, omzetChange: 95000, acqMails: 38 },
+  { rank: 3, name: "Thomas Bakker", unit: "Engineering", marge: 310000, plaatsingen: 3, gesprekken: 98, omzetChange: 120000, acqMails: 35 },
+  { rank: 4, name: "Mark de Groot", unit: "Operators", marge: 275000, plaatsingen: 4, gesprekken: 105, omzetChange: 68000, acqMails: 31 },
+  { rank: 5, name: "Emma Visser", unit: "Engineering", marge: 240000, plaatsingen: 3, gesprekken: 88, omzetChange: 82000, acqMails: 28 },
+  { rank: 6, name: "Jan Smit", unit: "Monteurs", marge: 195000, plaatsingen: 2, gesprekken: 92, omzetChange: -32000, acqMails: 24 },
+  { rank: 7, name: "Rianne Willems", unit: "Trainingsunit", marge: 165000, plaatsingen: 2, gesprekken: 76, omzetChange: -45000, acqMails: 18 },
+  { rank: 8, name: "Lisa de Boer", unit: "Monteurs", marge: 140000, plaatsingen: 1, gesprekken: 68, omzetChange: -18000, acqMails: 22 },
+  { rank: 9, name: "Daan Bos", unit: "New Performers", marge: 85000, plaatsingen: 1, gesprekken: 54, omzetChange: 28000, acqMails: 12 },
+  { rank: 10, name: "Fleur de Jong", unit: "Operators", marge: 62000, plaatsingen: 1, gesprekken: 42, omzetChange: 15000, acqMails: 14 },
+];
+
 export const bonusData = {
   lastMonth: 12500,
   last12Months: 148000,
