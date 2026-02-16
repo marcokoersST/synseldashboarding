@@ -4,7 +4,7 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
 import { useTVCompact } from "./TVDashboardLayout";
-import { ConversionLegendPopover } from "./ConversionLegend";
+import { ConversionLegendPopover, getConversionIcon } from "./ConversionLegend";
 import { cn } from "@/lib/utils";
 
 type SubCol =
@@ -138,19 +138,26 @@ export function UnitFunnelBreakdown() {
           {/* Row 2: Sub-column labels */}
           <TableRow>
             {columnGroups.flatMap((g, gi) =>
-              g.subs.map((sub, si) => (
-                <TableHead
-                  key={`${gi}-${si}`}
-                  className={cn(
-                    "text-center whitespace-nowrap",
-                    si === 0 && "border-l border-border/50",
-                    sub.type === "conv" ? "text-muted-foreground bg-muted/30" : "",
-                    compact ? "text-[9px] px-1 py-1" : "text-[10px] px-1.5"
-                  )}
-                >
-                  {sub.label}
-                </TableHead>
-              ))
+              g.subs.map((sub, si) => {
+                const IconComp = sub.type === "conv" || sub.label === "Gem. dagen" ? getConversionIcon(sub.label) : undefined;
+                return (
+                  <TableHead
+                    key={`${gi}-${si}`}
+                    className={cn(
+                      "text-center whitespace-nowrap",
+                      si === 0 && "border-l border-border/50",
+                      sub.type === "conv" ? "text-muted-foreground bg-muted/30" : "",
+                      compact ? "text-[9px] px-1 py-1" : "text-[10px] px-1.5"
+                    )}
+                  >
+                    {IconComp ? (
+                      <span className="inline-flex items-center justify-center" title={sub.label}>
+                        <IconComp className={cn(compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
+                      </span>
+                    ) : sub.label}
+                  </TableHead>
+                );
+              })
             )}
           </TableRow>
         </TableHeader>
