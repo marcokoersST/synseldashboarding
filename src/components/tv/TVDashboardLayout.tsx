@@ -12,22 +12,22 @@ interface TVDashboardLayoutProps {
 export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  useEffect(() => {
-    const handler = () => {
-      if (!document.fullscreenElement) {
-        setIsFullscreen(false);
-      }
-    };
-    document.addEventListener("fullscreenchange", handler);
-    return () => document.removeEventListener("fullscreenchange", handler);
-  }, []);
-
   const toggleFullscreen = async () => {
-    if (!document.fullscreenElement) {
-      await document.documentElement.requestFullscreen();
+    if (!isFullscreen) {
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch (err) {
+        // Fullscreen API may fail in iframes — UI overlay still works
+      }
       setIsFullscreen(true);
     } else {
-      await document.exitFullscreen();
+      try {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        }
+      } catch (err) {
+        // ignore
+      }
       setIsFullscreen(false);
     }
   };
