@@ -120,8 +120,19 @@ function RanglijstenContent() {
   const [selectedPeriode, setSelectedPeriode] = useState("P1");
   const [selectedWeek, setSelectedWeek] = useState("W1");
   const [unit, setUnit] = useState("Alle units");
-  const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(() => {
+    try {
+      const saved = sessionStorage.getItem("ranglijsten-columns");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [...allColumnTitles];
+  });
   const isCompact = useTVCompact();
+
+  // Persist column selection across mode switches
+  useEffect(() => {
+    sessionStorage.setItem("ranglijsten-columns", JSON.stringify(selectedColumns));
+  }, [selectedColumns]);
 
   // Auto-swap between week and periode in TV mode
   const [autoView, setAutoView] = useState<"week" | "periode">("week");
