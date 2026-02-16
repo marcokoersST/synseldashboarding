@@ -1,38 +1,54 @@
 
 
-# Ranglijsten TV Modus Verbeteringen
+# Fix: Naadloze overgang top 10 en alleen vast in TV modus
 
-## Wijzigingen in `src/pages/TVRanglijsten.tsx`
+## Problemen
+1. Er is een zichtbare witte lijn/scheiding tussen de top 10 en de rest van de lijst (door de aparte `div` containers met `mt-3`)
+2. De top 10 is nu altijd apart gerenderd, ook in de normale overzichtsmodus -- dit moet alleen in TV modus zo zijn
 
-### 1. Scroll snelheid verlagen
-De huidige interval is 40ms met 1px stappen - dit wordt vertraagd naar 80ms per stap, zodat de lijst rustiger scrollt.
+## Oplossing
 
-### 2. Top 4-10 highlight zichtbaarder maken
-De huidige styling voor rank 4-10 is `bg-muted/30` wat nauwelijks zichtbaar is. Dit wordt gewijzigd naar `bg-blue-50/60` met een subtiele linkerrand (`border-l-[2px] border-l-blue-300`) zodat de top 10 duidelijk opvalt.
+### `src/pages/TVRanglijsten.tsx`
 
-### 3. Top 10 altijd zichtbaar in TV modus
-In plaats van de hele lijst te scrollen, wordt de lijst opgesplitst in twee delen:
-- **Top 10**: altijd zichtbaar bovenaan (geen scroll)
-- **Rank 11+**: scrollt automatisch eronder
+**Rendering logica aanpassen op basis van `isCompact`:**
 
-De `AutoScrollArea` component krijgt een `splitAt` prop zodat alleen het onderste deel scrollt.
+- **TV modus (`isCompact = true`)**: Behoud de huidige twee-delige structuur (top 10 vast + rank 11+ scrollt), maar verwijder de extra margin (`mt-3`) tussen de twee secties zodat er geen zichtbare scheiding is
+- **Overzichtsmodus (`isCompact = false`)**: Render alle entries in een enkele doorlopende lijst binnen de scroll-area, zonder opsplitsing
 
-### 4. Opacity voor entries met waarde 0
-Naam en waarde krijgen `opacity-50` wanneer `entry.value === 0`.
+Concreet:
 
-## Technische details
+| Modus | Gedrag |
+|-------|--------|
+| TV (compact) | Top 10 vast, rank 11+ scrollt, geen visuele scheiding ertussen |
+| Overzicht (normaal) | Alle entries in een enkele doorlopende lijst |
 
-| Onderdeel | Huidige waarde | Nieuwe waarde |
-|-----------|---------------|---------------|
-| Scroll interval | 40ms | 80ms |
-| Top 4-10 styling | `bg-muted/30` | `bg-blue-50/60 border-l-[2px] border-l-blue-300` |
-| Lijst structuur (TV) | Alles scrollt | Top 10 vast, rest scrollt |
-| Waarde 0 styling | Normaal | `opacity-50` op naam en waarde |
+### Technische aanpak
 
-### Aanpak AutoScrollArea
-De component wordt aangepast zodat `children` wordt opgesplitst in twee secties via een wrapper in de rendering van de entries: de top 10 entries worden buiten de scroll-container geplaatst en de overige entries binnen de auto-scroll container.
+De rendering in de kolom-loop wordt conditioneel:
+
+```
+{isCompact ? (
+  <>
+    {/* Top 10 - vast, geen extra margin onderaan */}
+    <div className="mt-3 space-y-0">
+      {top10Entries...}
+    </div>
+    {/* Rank 11+ - direct aansluitend, auto-scroll */}
+    <AutoScrollArea isCompact={isCompact}>
+      {rest...}
+    </AutoScrollArea>
+  </>
+) : (
+  /* Alle entries in een enkele lijst */
+  <div className="mt-3 space-y-0 h-[calc(100vh-320px)] overflow-y-auto">
+    {allEntries...}
+  </div>
+)}
+```
+
+De witte lijn verdwijnt doordat de `AutoScrollArea` geen extra `mt-3` of padding meer heeft ten opzichte van de top 10 sectie.
 
 | Bestand | Actie |
-|--------|-------|
-| `src/pages/TVRanglijsten.tsx` | Alle 4 wijzigingen |
+|---------|-------|
+| `src/pages/TVRanglijsten.tsx` | Conditionele rendering: split alleen in TV modus, naadloze aansluiting |
 
