@@ -16,9 +16,7 @@ function parseBenchmark(b: string): number {
 export function ConversionFormulasCard() {
   const compact = useTVCompact();
 
-  // Get actual totals for each conversion
   const actuals = conversionFormulas.map((f) => {
-    // Find matching conv sub in columnGroups
     for (const g of columnGroups) {
       for (const sub of g.subs) {
         if (sub.type === "conv") {
@@ -44,6 +42,7 @@ export function ConversionFormulasCard() {
           const actualNum = parseFloat(actualStr);
           const benchNum = parseBenchmark(f.benchmark);
           const colorClass = !isNaN(actualNum) ? rateVsBenchmark(actualNum, benchNum) : "text-muted-foreground";
+          const IconComp = f.icon;
 
           return (
             <div
@@ -51,10 +50,11 @@ export function ConversionFormulasCard() {
               className={cn(
                 "grid items-center rounded",
                 compact
-                  ? "grid-cols-[80px_1fr_36px_36px] gap-1 text-[9px] px-1 py-0.5"
-                  : "grid-cols-[110px_1fr_50px_50px] gap-2 text-xs px-2 py-1 bg-muted/20"
+                  ? "grid-cols-[12px_70px_1fr_28px_28px] gap-1 text-[9px] px-1 py-0.5"
+                  : "grid-cols-[16px_100px_1fr_50px_50px] gap-2 text-xs px-2 py-1 bg-muted/20"
               )}
             >
+              <IconComp className={cn("text-muted-foreground", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
               <span className="text-muted-foreground truncate">{f.group}</span>
               <span className="font-medium text-foreground truncate">{f.formula}</span>
               <span className={cn("text-right font-bold tabular-nums", colorClass)}>{actualStr}</span>
