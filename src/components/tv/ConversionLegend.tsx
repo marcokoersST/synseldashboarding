@@ -31,16 +31,16 @@ function getConversionIcon(label: string): LucideIcon | undefined {
 }
 
 const conversionFormulas: FormulaRow[] = [
-  { group: "1. Inschrijvingen", label: "Inschr. %", formula: "Ingeschreven / Toegewezen", benchmark: "≥ 75%", icon: UserCheck },
-  { group: "1. Inschrijvingen", label: "Intake %", formula: "Intakes / Ingeschreven", benchmark: "≥ 50%", icon: ClipboardCheck },
-  { group: "2. Acquisitie", label: "Acq. %", formula: "Acquisities / Ingeschreven", benchmark: "≥ 35%", icon: TrendingUp },
-  { group: "2. Acquisitie", label: "Acq. ratio", formula: "Acquisities / Toegewezen", benchmark: "≥ 25%", icon: Target },
-  { group: "3. Voorstellen", label: "Voorst. %", formula: "Voorstellen via email / Ingeschreven", benchmark: "≥ 40%", icon: Send },
-  { group: "4. Uitnodigingen", label: "Uitn. %", formula: "Uitnodigingen totaal / Acquisities", benchmark: "≥ 60%", icon: CalendarCheck },
-  { group: "5. Gesprekken", label: "Gespr. %", formula: "1e gesprek / Acquisities", benchmark: "≥ 50%", icon: MessageSquare },
-  { group: "6. Vervolg", label: "Verv. %", formula: "Wel 1e gesprek / Vervolg gesprek", benchmark: "≥ 70%", icon: Repeat },
-  { group: "7. Geplaatst", label: "Plts. %", formula: "Geplaatst / Ingeschreven", benchmark: "≥ 15%", icon: CheckCircle },
-  { group: "7. Geplaatst", label: "Hit rate", formula: "Geplaatst / Toegewezen", benchmark: "≥ 10%", icon: Crosshair },
+  { group: "Inschrijving", label: "Inschr. %", formula: "Ingeschreven ÷ Toegewezen", benchmark: "≥ 75%", icon: UserCheck },
+  { group: "Intake", label: "Intake %", formula: "Intakes ÷ Ingeschreven", benchmark: "≥ 50%", icon: ClipboardCheck },
+  { group: "Acquisitie", label: "Acq. %", formula: "Acquisities ÷ Ingeschreven", benchmark: "≥ 35%", icon: TrendingUp },
+  { group: "Acq. ratio", label: "Acq. ratio", formula: "Acquisities ÷ Toegewezen", benchmark: "≥ 25%", icon: Target },
+  { group: "Voorstellen", label: "Voorst. %", formula: "Voorstellen via email ÷ Ingeschreven", benchmark: "≥ 40%", icon: Send },
+  { group: "Uitnodigingen", label: "Uitn. %", formula: "Uitnodigingen totaal ÷ Acquisities", benchmark: "≥ 60%", icon: CalendarCheck },
+  { group: "Gesprekken", label: "Gespr. %", formula: "1e gesprek ÷ Acquisities", benchmark: "≥ 50%", icon: MessageSquare },
+  { group: "Vervolg", label: "Verv. %", formula: "Wel 1e gesprek ÷ Vervolg gesprek", benchmark: "≥ 70%", icon: Repeat },
+  { group: "Plaatsing", label: "Plts. %", formula: "Geplaatst ÷ Ingeschreven", benchmark: "≥ 15%", icon: CheckCircle },
+  { group: "Hit rate", label: "Hit rate", formula: "Geplaatst ÷ Toegewezen", benchmark: "≥ 10%", icon: Crosshair },
 ];
 
 export { conversionFormulas, conversionIconMap, getConversionIcon };
