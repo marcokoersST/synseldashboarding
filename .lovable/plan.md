@@ -1,35 +1,29 @@
 
 
-# Period Selector in beide modi beschikbaar maken
+# Dynamische dropdown: Weken of Periodes op basis van toggle
 
-## Probleem
-De Week/Periode toggle (badges) is momenteel alleen zichtbaar in TV modus. In de overzichtsmodus wordt dit gestuurd via een dropdown, maar de gebruiker wil dezelfde toggle-functionaliteit ook in de overzichtsmodus.
+## Wat verandert er
+De dropdown naast de Week/Periode toggle past zich aan op basis van de geselecteerde modus:
+- **Week geselecteerd**: dropdown toont weeknummers (W1 t/m W53)
+- **Periode geselecteerd**: dropdown toont periodenummers (P1 t/m P13)
 
-## Oplossing
-De `tvViewMode` state hernoemen naar een generieke `viewMode` state en de klikbare badges (Week / Periode) ook tonen in de overzichtsmodus. De "Auto" optie blijft exclusief voor TV modus (want auto-swap is alleen relevant daar).
+## Wijzigingen
 
-### Wijzigingen in `src/pages/TVRanglijsten.tsx`
+### `src/data/ranglijstenData.ts`
+- Weeknummers toevoegen aan `ranglijstenFilters`: een array `weeknummers` met W1 t/m W53
 
-1. **Dropdown "Week/Periode/Jaar" vervangen door badges** in de overzichtsmodus filter-balk
-   - Twee klikbare badges: **Week** en **Periode**
-   - Dezelfde styling als in TV modus (variant default/secondary)
+### `src/pages/TVRanglijsten.tsx`
 
-2. **View-logica aanpassen** (lijn 140):
-   - Momenteel: `isCompact ? autoView : (periode === "Periode" ? "periode" : "week")`
-   - Nieuw: In overzichtsmodus ook de `tvViewMode` state gebruiken (als die op "week" of "periode" staat)
-   - De bestaande `periode` dropdown wordt verwijderd en vervangen door de badges
+1. **Nieuwe state voor weeknummer**: `selectedWeek` naast de bestaande `selectedPeriode`
+2. **Dropdown dynamisch maken** (regel 202-211):
+   - Als `tvViewMode === "week"`: toon weeknummers uit `ranglijstenFilters.weeknummers`, gekoppeld aan `selectedWeek`
+   - Als `tvViewMode === "periode"`: toon periodenummers uit `ranglijstenFilters.periodenummers`, gekoppeld aan `selectedPeriode`
+   - Breedte van de trigger past mee (iets breder voor weeknummers)
 
-3. **Auto optie alleen in TV modus**:
-   - In TV modus: drie badges (Auto / Week / Periode)
-   - In overzichtsmodus: twee badges (Week / Periode)
-
-| Onderdeel | Overzichtsmodus | TV modus |
-|-----------|----------------|----------|
-| Week badge | Ja | Ja |
-| Periode badge | Ja | Ja |
-| Auto badge | Nee | Ja |
-| Dropdown | Verwijderd | n.v.t. |
+### Technisch overzicht
 
 | Bestand | Actie |
 |---------|-------|
-| `src/pages/TVRanglijsten.tsx` | Badges in beide modi, dropdown verwijderen, view-logica aanpassen |
+| `src/data/ranglijstenData.ts` | `weeknummers: ["W1", "W2", ..., "W53"]` toevoegen aan filters |
+| `src/pages/TVRanglijsten.tsx` | Conditionele dropdown-inhoud op basis van `tvViewMode`, extra `selectedWeek` state |
+
