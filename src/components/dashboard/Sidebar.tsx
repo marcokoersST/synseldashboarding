@@ -82,6 +82,10 @@ const navItems: NavItem[] = [
     icon: Briefcase, 
     label: "Manager Dashboard", 
     path: "/manager-dashboard",
+    subItems: [
+      { icon: Briefcase, label: "Overzicht", path: "/manager-dashboard" },
+      { icon: TrendingUp, label: "Acquisitie Conversie", path: "/manager-dashboard/acquisitie-conversie" },
+    ]
   },
   {
     icon: ClipboardCheck,
@@ -154,6 +158,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnConsultantPage = location.pathname.startsWith("/consultant/");
   const isOnHendrikPage = location.pathname.startsWith("/hendrik/");
   const isOnPeterJanPage = location.pathname.startsWith("/peter-jan/");
+  const isOnManagerPage = location.pathname.startsWith("/manager-dashboard");
   
   const autoExpanded = [
     ...(isOnComparisonPage ? ["/"] : []),
@@ -162,6 +167,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
     ...(isOnHendrikPage ? ["/hendrik/overzicht"] : []),
     ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
+    ...(isOnManagerPage ? ["/manager-dashboard"] : []),
   ].filter(path => !manuallyCollapsed.includes(path));
 
   const effectiveExpandedItems = [

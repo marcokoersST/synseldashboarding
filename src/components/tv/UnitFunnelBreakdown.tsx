@@ -35,6 +35,8 @@ const columnGroups: ColumnGroup[] = [
     group: "3. Voorstellen",
     subs: [
       { type: "value", key: "voorstellenPerKandidaat", label: "Per kandidaat", decimals: 1 },
+      { type: "value", key: "voorstellenViaEmail", label: "Via email" },
+      { type: "conv", from: "voorstellenViaEmail", to: "ingeschreven", label: "#" },
     ],
   },
   {
@@ -43,6 +45,7 @@ const columnGroups: ColumnGroup[] = [
       { type: "value", key: "uitnodigingenTotaal", label: "Totaal" },
       { type: "value", key: "nietUitgenodigd", label: "Niet uitgen." },
       { type: "value", key: "welUitgenodigd", label: "Wel uitgen." },
+      { type: "conv", from: "uitnodigingenTotaal", to: "acquisities", label: "#" },
     ],
   },
   {
@@ -51,6 +54,7 @@ const columnGroups: ColumnGroup[] = [
       { type: "value", key: "eersteGesprek", label: "1e gesprek" },
       { type: "value", key: "geenEersteGesprek", label: "Geen 1e" },
       { type: "value", key: "welEersteGesprek", label: "Wel 1e" },
+      { type: "conv", from: "eersteGesprek", to: "acquisities", label: "#" },
     ],
   },
   {
@@ -58,12 +62,14 @@ const columnGroups: ColumnGroup[] = [
     subs: [
       { type: "value", key: "vervolgGesprek", label: "Vervolg/meeloop" },
       { type: "value", key: "dealsluiter", label: "Dealsluiter" },
+      { type: "conv", from: "welEersteGesprek", to: "vervolgGesprek", label: "#" },
     ],
   },
   {
     group: "7. Geplaatst",
     subs: [
       { type: "value", key: "geplaatst", label: "Geplaatst" },
+      { type: "conv", from: "geplaatst", to: "ingeschreven", label: "#" },
     ],
   },
 ];
@@ -96,6 +102,9 @@ function getTotalValue(sub: SubCol): string {
   if (sub.decimals !== undefined) return (total / weekUnitBreakdown.length).toFixed(sub.decimals);
   return String(total);
 }
+
+export { columnGroups, rateColor, getCellValue, getTotalValue };
+export type { SubCol, ColumnGroup };
 
 export function UnitFunnelBreakdown() {
   const compact = useTVCompact();

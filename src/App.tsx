@@ -56,6 +56,7 @@ const HendrikWerkgeluk = lazy(() => import("./pages/hendrik/Werkgeluk"));
 
 // Peter-Jan dashboards
 const PeterJanSalesFlow = lazy(() => import("./pages/peter-jan/SalesFlowDashboards"));
+const AcquisitieConversie = lazy(() => import("./pages/manager/AcquisitieConversie"));
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="/vergelijking" element={<VergelijkingOverview />} />
               <Route path="/vergelijking/:memberId" element={<Vergelijking />} />
               <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+              <Route path="/manager-dashboard/acquisitie-conversie" element={<AcquisitieConversie />} />
               <Route path="/super-admin" element={<SuperAdminDashboard />} />
               <Route path="/super-admin/emulate" element={<SuperAdminEmulate />} />
               <Route path="/tv/sales-funnel-week" element={<TVSalesFunnelWeek />} />
