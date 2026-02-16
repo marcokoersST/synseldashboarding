@@ -1,30 +1,32 @@
 
-# Intakes samenvoegen als subkolommen van Inschrijvingen
+
+# Intakes verwijderen als apart KPI-tegel en conversie-stap
 
 ## Probleem
-"Intakes" staat nog steeds als aparte kolomgroep "2. Intakes" in de tabel. Dit moet samengevoegd worden als subkolommen binnen "1. Inschrijvingen".
+Intakes wordt nog steeds als aparte KPI-tegel bovenaan de Sales Funnel pagina's getoond (zowel Week als Periode). De conversie-pijlen refereren ook nog naar Intakes als aparte stap. Dit is inconsistent met de tabel eronder waar Intakes al onderdeel is van "1. Inschrijvingen".
 
 ## Wijzigingen
 
-### `src/components/tv/UnitFunnelBreakdown.tsx`
+### 1. `src/data/tvData.ts`
 
-1. **Intakes verplaatsen** -- De twee sub-kolommen (`Intakes` en `Intake %`) worden toegevoegd aan het einde van de `subs` array van "1. Inschrijvingen"
-2. **Aparte groep verwijderen** -- De "2. Intakes" groep (regels 28-34) wordt verwijderd
-3. **Hernummeren** -- Alle volgende groepen schuiven een nummer op:
-   - "3. Acquisitie" wordt "2. Acquisitie"
-   - "4. Voorstellen" wordt "3. Voorstellen"
-   - "5. Uitnodigingen" wordt "4. Uitnodigingen"
-   - "6. Gesprekken" wordt "5. Gesprekken"
-   - "7. Vervolg" wordt "6. Vervolg"
-   - "8. Geplaatst" wordt "7. Geplaatst"
+**Week funnel metrics** -- Verwijder de "Intakes" entry uit `weekFunnelMetrics`:
+- Was: Inschrijvingen, Intakes, Acquisities, Voorstellen, Gesprekken, Plaatsingen
+- Wordt: Inschrijvingen, Acquisities, Voorstellen, Gesprekken, Plaatsingen
 
-### Resultaat
+**Period funnel metrics** -- Verwijder de "Intakes" entry uit `periodFunnelMetrics`:
+- Was: Inschrijvingen, Intakes, Acquisities, Voorstellen, Gesprekken
+- Wordt: Inschrijvingen, Acquisities, Voorstellen, Gesprekken
 
-De "1. Inschrijvingen" groep bevat dan 5 subkolommen:
+**Week overall conversions** -- Verwijder de twee Intakes-gerelateerde stappen en voeg een directe Inschrijvingen-naar-Acquisities conversie toe:
+- Was: Inschrijvingen->Intakes, Intakes->Acquisities, Acquisities->Voorstellen, ...
+- Wordt: Inschrijvingen->Acquisities (35.7%), Acquisities->Voorstellen, Voorstellen->Gesprekken, Gesprekken->Plaatsingen
 
-```text
-1. Inschrijvingen
-  Toegewezen | Ingeschreven | Inschr. % | Intakes | Intake %
-```
+### 2. `src/pages/TVSalesFunnelPeriod.tsx`
 
-Alleen bestand `src/components/tv/UnitFunnelBreakdown.tsx` wordt aangepast.
+De grid past zich automatisch aan (minder tiles), maar de `grid-cols-5` moet worden aangepast naar `grid-cols-4` omdat er nu 4 in plaats van 5 KPI-tegels zijn.
+
+### Geen wijzigingen nodig
+- `TVSalesFunnelWeek.tsx` -- gebruikt een flexbox layout die automatisch aanpast
+- `SalesFunnelKPI.tsx` -- component blijft ongewijzigd
+- `ConversionLegend.tsx` -- al correct bijgewerkt
+- `UnitFunnelBreakdown.tsx` -- al correct bijgewerkt
