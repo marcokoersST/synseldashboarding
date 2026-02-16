@@ -210,5 +210,6 @@ export const ranglijstenFilters = {
   jaren: [2024, 2025, 2026],
   periodes: ["Week", "Periode", "Jaar"],
   periodenummers: ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13"],
+  weeknummers: Array.from({ length: 53 }, (_, i) => `W${i + 1}`),
   units: ["Alle units", "Accountmanagement", "Customer Success", "Early Performers", "Engineering", "Instroom", "Monteurs", "Operators", "Suriname", "Synsel Techniek", "Trainingsunit"],
 };

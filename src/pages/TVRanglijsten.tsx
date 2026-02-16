@@ -118,6 +118,7 @@ function RanglijstenContent() {
   const [jaar, setJaar] = useState("2026");
   
   const [selectedPeriode, setSelectedPeriode] = useState("P1");
+  const [selectedWeek, setSelectedWeek] = useState("W1");
   const [unit, setUnit] = useState("Alle units");
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const isCompact = useTVCompact();
@@ -199,13 +200,16 @@ function RanglijstenContent() {
               </Badge>
             </div>
 
-            <Select value={selectedPeriode} onValueChange={setSelectedPeriode}>
-              <SelectTrigger className="w-[100px] bg-card border-border">
-                <SelectValue placeholder="Periode" />
+            <Select
+              value={tvViewMode === "week" ? selectedWeek : selectedPeriode}
+              onValueChange={tvViewMode === "week" ? setSelectedWeek : setSelectedPeriode}
+            >
+              <SelectTrigger className={cn("bg-card border-border", tvViewMode === "week" ? "w-[110px]" : "w-[100px]")}>
+                <SelectValue placeholder={tvViewMode === "week" ? "Week" : "Periode"} />
               </SelectTrigger>
               <SelectContent>
-                {ranglijstenFilters.periodenummers.map((p) => (
-                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                {(tvViewMode === "week" ? ranglijstenFilters.weeknummers : ranglijstenFilters.periodenummers).map((item) => (
+                  <SelectItem key={item} value={item}>{item}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
