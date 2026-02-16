@@ -162,6 +162,7 @@ export interface UnitFunnelRow {
   ingeschreven: number;
   acquisities: number;
   voorstellenPerKandidaat: number;
+  voorstellenViaEmail: number;
   uitnodigingenTotaal: number;
   nietUitgenodigd: number;
   welUitgenodigd: number;
@@ -173,13 +174,40 @@ export interface UnitFunnelRow {
   geplaatst: number;
 }
 
+export interface ConsultantFunnelRow extends Omit<UnitFunnelRow, 'color'> {
+  name: string;
+}
+
 export const weekUnitBreakdown: UnitFunnelRow[] = [
-  { unit: "Engineering", color: "hsl(var(--primary))", toegewezen: 18, ingeschreven: 14, acquisities: 5, voorstellenPerKandidaat: 2.1, uitnodigingenTotaal: 12, nietUitgenodigd: 4, welUitgenodigd: 8, eersteGesprek: 7, geenEersteGesprek: 3, welEersteGesprek: 4, vervolgGesprek: 3, dealsluiter: 2, geplaatst: 2 },
-  { unit: "Monteurs", color: "hsl(var(--chart-primary))", toegewezen: 10, ingeschreven: 8, acquisities: 3, voorstellenPerKandidaat: 1.8, uitnodigingenTotaal: 6, nietUitgenodigd: 2, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1 },
-  { unit: "Operators", color: "hsl(var(--accent))", toegewezen: 15, ingeschreven: 12, acquisities: 4, voorstellenPerKandidaat: 2.3, uitnodigingenTotaal: 9, nietUitgenodigd: 3, welUitgenodigd: 6, eersteGesprek: 5, geenEersteGesprek: 2, welEersteGesprek: 3, vervolgGesprek: 3, dealsluiter: 2, geplaatst: 2 },
-  { unit: "Trainingsunit", color: "hsl(var(--gold))", toegewezen: 7, ingeschreven: 5, acquisities: 2, voorstellenPerKandidaat: 1.5, uitnodigingenTotaal: 4, nietUitgenodigd: 1, welUitgenodigd: 3, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1 },
-  { unit: "New Performers", color: "hsl(var(--teal))", toegewezen: 4, ingeschreven: 3, acquisities: 1, voorstellenPerKandidaat: 1.0, uitnodigingenTotaal: 2, nietUitgenodigd: 1, welUitgenodigd: 1, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0 },
+  { unit: "Engineering", color: "hsl(var(--primary))", toegewezen: 18, ingeschreven: 14, acquisities: 5, voorstellenPerKandidaat: 2.1, voorstellenViaEmail: 6, uitnodigingenTotaal: 12, nietUitgenodigd: 4, welUitgenodigd: 8, eersteGesprek: 7, geenEersteGesprek: 3, welEersteGesprek: 4, vervolgGesprek: 3, dealsluiter: 2, geplaatst: 2 },
+  { unit: "Monteurs", color: "hsl(var(--chart-primary))", toegewezen: 10, ingeschreven: 8, acquisities: 3, voorstellenPerKandidaat: 1.8, voorstellenViaEmail: 3, uitnodigingenTotaal: 6, nietUitgenodigd: 2, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1 },
+  { unit: "Operators", color: "hsl(var(--accent))", toegewezen: 15, ingeschreven: 12, acquisities: 4, voorstellenPerKandidaat: 2.3, voorstellenViaEmail: 5, uitnodigingenTotaal: 9, nietUitgenodigd: 3, welUitgenodigd: 6, eersteGesprek: 5, geenEersteGesprek: 2, welEersteGesprek: 3, vervolgGesprek: 3, dealsluiter: 2, geplaatst: 2 },
+  { unit: "Trainingsunit", color: "hsl(var(--gold))", toegewezen: 7, ingeschreven: 5, acquisities: 2, voorstellenPerKandidaat: 1.5, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 1, welUitgenodigd: 3, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1 },
+  { unit: "New Performers", color: "hsl(var(--teal))", toegewezen: 4, ingeschreven: 3, acquisities: 1, voorstellenPerKandidaat: 1.0, voorstellenViaEmail: 1, uitnodigingenTotaal: 2, nietUitgenodigd: 1, welUitgenodigd: 1, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0 },
 ];
+
+// Consultant-level breakdown per unit for Manager Acquisitie Conversie
+export const consultantFunnelData: Record<string, ConsultantFunnelRow[]> = {
+  Engineering: [
+    { unit: "Engineering", name: "Sophie de Vries", toegewezen: 7, ingeschreven: 6, acquisities: 2, voorstellenPerKandidaat: 2.5, voorstellenViaEmail: 3, uitnodigingenTotaal: 5, nietUitgenodigd: 1, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1 },
+    { unit: "Engineering", name: "Thomas Bakker", toegewezen: 6, ingeschreven: 5, acquisities: 2, voorstellenPerKandidaat: 1.8, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 2, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1 },
+    { unit: "Engineering", name: "Emma Visser", toegewezen: 5, ingeschreven: 3, acquisities: 1, voorstellenPerKandidaat: 2.0, voorstellenViaEmail: 1, uitnodigingenTotaal: 3, nietUitgenodigd: 1, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0 },
+  ],
+  Monteurs: [
+    { unit: "Monteurs", name: "Jan Smit", toegewezen: 5, ingeschreven: 4, acquisities: 2, voorstellenPerKandidaat: 2.0, voorstellenViaEmail: 2, uitnodigingenTotaal: 3, nietUitgenodigd: 1, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1 },
+    { unit: "Monteurs", name: "Lisa de Boer", toegewezen: 5, ingeschreven: 4, acquisities: 1, voorstellenPerKandidaat: 1.5, voorstellenViaEmail: 1, uitnodigingenTotaal: 3, nietUitgenodigd: 1, welUitgenodigd: 2, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 0, geplaatst: 0 },
+  ],
+  Operators: [
+    { unit: "Operators", name: "Kevin Hendriks", toegewezen: 8, ingeschreven: 7, acquisities: 2, voorstellenPerKandidaat: 2.5, voorstellenViaEmail: 3, uitnodigingenTotaal: 5, nietUitgenodigd: 1, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1 },
+    { unit: "Operators", name: "Mark de Groot", toegewezen: 7, ingeschreven: 5, acquisities: 2, voorstellenPerKandidaat: 2.0, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 2, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1 },
+  ],
+  Trainingsunit: [
+    { unit: "Trainingsunit", name: "Rianne Willems", toegewezen: 7, ingeschreven: 5, acquisities: 2, voorstellenPerKandidaat: 1.5, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 1, welUitgenodigd: 3, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1 },
+  ],
+  "New Performers": [
+    { unit: "New Performers", name: "Daan Bos", toegewezen: 4, ingeschreven: 3, acquisities: 1, voorstellenPerKandidaat: 1.0, voorstellenViaEmail: 1, uitnodigingenTotaal: 2, nietUitgenodigd: 1, welUitgenodigd: 1, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0 },
+  ],
+};
 
 export interface ConversionStep {
   from: string;

@@ -79,9 +79,9 @@ export function CallStats({ mode }: CallStatsProps) {
         {weekGesprekkenPerUnit.map((u, i) => (
           <div key={u.unit} className={cn("bg-muted/50 rounded-lg", compact ? "px-2 py-1 text-[10px]" : "px-3 py-1.5 text-xs")}>
             <span className="text-muted-foreground">{u.unit}: </span>
-            <span className="font-semibold text-foreground">{u.gesprekken}g</span>
+            <span className="font-semibold text-foreground">{u.gesprekken} gespr.</span>
             <span className="text-muted-foreground"> / </span>
-            <span className="font-semibold text-foreground">{weekMailStats.perUnit[i]?.mails ?? 0}m</span>
+            <span className="font-semibold text-foreground">{weekMailStats.perUnit[i]?.mails ?? 0} mails</span>
           </div>
         ))}
       </div>
