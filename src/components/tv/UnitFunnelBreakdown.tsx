@@ -125,7 +125,7 @@ export function UnitFunnelBreakdown() {
               <TableHead
                 key={g.group}
                 colSpan={g.subs.length}
-                className={cn("text-center border-l border-border/50 text-muted-foreground", compact ? "text-[10px] px-1" : "text-xs")}
+                className={cn("text-center border-l border-border/50 text-muted-foreground", compact ? "text-[10px] px-1" : "text-[10px]")}
               >
                 {g.group}
               </TableHead>
@@ -141,7 +141,7 @@ export function UnitFunnelBreakdown() {
                     "text-center whitespace-nowrap",
                     si === 0 && "border-l border-border/50",
                     sub.type === "conv" ? "text-muted-foreground bg-muted/30" : "",
-                    compact ? "text-[9px] px-1 py-1" : "text-[11px] px-2"
+                    compact ? "text-[9px] px-1 py-1" : "text-[10px] px-1.5"
                   )}
                 >
                   {sub.label}
@@ -171,7 +171,7 @@ export function UnitFunnelBreakdown() {
                         "text-center tabular-nums",
                         si === 0 && "border-l border-border/50",
                         isConv ? cn("bg-muted/30 font-bold", convRate !== null && rateColor(convRate)) : "font-semibold",
-                        compact ? "py-1 text-[10px] px-1" : "text-xs px-2"
+                        compact ? "py-1 text-[10px] px-1" : "text-[11px] px-1.5"
                       )}
                     >
                       {val}
@@ -196,7 +196,7 @@ export function UnitFunnelBreakdown() {
                       "text-center tabular-nums font-bold",
                       si === 0 && "border-l border-border/50",
                       isConv ? cn("bg-muted/30", convRate !== null && rateColor(convRate)) : "",
-                      compact ? "py-1 text-[10px] px-1" : "text-xs px-2"
+                      compact ? "py-1 text-[10px] px-1" : "text-[11px] px-1.5"
                     )}
                   >
                     {val}
