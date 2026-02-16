@@ -21,19 +21,6 @@ interface ConsultantInfo {
 }
 
 const consultants: ConsultantInfo[] = [
-  // Accountmanagement
-  { name: "Elmar Koopman", unit: "Accountmanagement" },
-  { name: "Bas de Ruiter", unit: "Accountmanagement" },
-  { name: "Jort Koggel", unit: "Accountmanagement" },
-  { name: "Thom Auf der Heide", unit: "Accountmanagement" },
-  { name: "Robert Zielhuis", unit: "Accountmanagement" },
-  { name: "Lars van Summeren", unit: "Accountmanagement" },
-  // Customer Success
-  { name: "Bart van Vliet", unit: "Customer Success" },
-  { name: "Robin van Brussel", unit: "Customer Success" },
-  { name: "Elianne van Dalen", unit: "Customer Success" },
-  { name: "Thijs Udink", unit: "Customer Success" },
-  { name: "Joey Pol", unit: "Customer Success" },
   // Early Performers
   { name: "Eric Hutchison", unit: "Early Performers" },
   { name: "Falco Zegveld", unit: "Early Performers" },
@@ -82,13 +69,6 @@ const consultants: ConsultantInfo[] = [
   { name: "Ashwin Ramdin", unit: "Suriname" },
   { name: "Priya Mohan", unit: "Suriname" },
   { name: "Raj Chotkan", unit: "Suriname" },
-  // Synsel Techniek
-  { name: "Vincent Maas", unit: "Synsel Techniek" },
-  { name: "Jeroen van der Heijden", unit: "Synsel Techniek" },
-  { name: "Bas Vermeer", unit: "Synsel Techniek" },
-  { name: "Tom de Graaf", unit: "Synsel Techniek" },
-  { name: "Nick Kok", unit: "Synsel Techniek" },
-  { name: "Erik van Dam", unit: "Synsel Techniek" },
   // Trainingsunit
   { name: "Anne Prins", unit: "Trainingsunit" },
   { name: "Sophie Kuijpers", unit: "Trainingsunit" },
@@ -100,8 +80,8 @@ const consultants: ConsultantInfo[] = [
 
 // Names of "hot" consultants (high growth / momentum)
 const hotNames = new Set([
-  "Elmar Koopman", "Jort Koggel", "Joey de Vries", "Tim Visser",
-  "Senna Ekkers", "Britt Hendriks", "Vincent Maas", "Thomas Kramer",
+  "Joey de Vries", "Tim Visser",
+  "Senna Ekkers", "Britt Hendriks", "Thomas Kramer",
 ]);
 
 function generateRanking(topValues: number[]): RankingEntry[] {
@@ -211,5 +191,5 @@ export const ranglijstenFilters = {
   periodes: ["Week", "Periode", "Jaar"],
   periodenummers: ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13"],
   weeknummers: Array.from({ length: 53 }, (_, i) => `W${i + 1}`),
-  units: ["Alle units", "Accountmanagement", "Customer Success", "Early Performers", "Engineering", "Instroom", "Monteurs", "Operators", "Suriname", "Synsel Techniek", "Trainingsunit"],
+  units: ["Alle units", "Early Performers", "Engineering", "Instroom", "Monteurs", "Operators", "Suriname", "Trainingsunit"],
 };
