@@ -221,4 +221,9 @@
   .progress-glow {
     box-shadow: 0 0 8px currentColor;
   }
+
+  /* Disable hover animations in TV mode */
+  .tv-mode .hover-lift:hover {
+    box-shadow: none;
+  }
 }
