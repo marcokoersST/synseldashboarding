@@ -29,6 +29,7 @@ const columnGroups: ColumnGroup[] = [
     subs: [
       { type: "value", key: "acquisities", label: "Acquisitie" },
       { type: "conv", from: "acquisities", to: "ingeschreven", label: "#" },
+      { type: "conv", from: "acquisities", to: "toegewezen", label: "Acq. ratio" },
     ],
   },
   {
@@ -69,7 +70,9 @@ const columnGroups: ColumnGroup[] = [
     group: "7. Geplaatst",
     subs: [
       { type: "value", key: "geplaatst", label: "Geplaatst" },
+      { type: "value", key: "gemDagenTotPlaatsing", label: "Gem. dagen" },
       { type: "conv", from: "geplaatst", to: "ingeschreven", label: "#" },
+      { type: "conv", from: "geplaatst", to: "toegewezen", label: "Hit rate" },
     ],
   },
 ];
