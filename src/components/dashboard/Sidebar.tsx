@@ -222,10 +222,9 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
           <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
             <span className="text-sidebar-primary-foreground font-bold text-sm">S</span>
           </div>
-          <span className={cn(
-            "text-sidebar-accent-foreground font-semibold text-lg whitespace-nowrap overflow-hidden transition-[opacity,max-width,margin-left] duration-300",
-            isCollapsed ? "opacity-0 max-w-0 ml-0" : "opacity-100 max-w-[180px] ml-3"
-          )}>Synsel AI</span>
+          {!isCollapsed && (
+            <span className="text-sidebar-accent-foreground font-semibold text-lg whitespace-nowrap ml-3">Synsel AI</span>
+          )}
         </div>
 
         {/* Main Navigation */}
@@ -251,15 +250,11 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
                         )}
                       >
                         <item.icon className="w-5 h-5 shrink-0" />
-                        <span className={cn(
-                          "flex-1 text-left min-w-0 truncate whitespace-nowrap overflow-hidden transition-[opacity,max-width,margin-left] duration-300",
-                          isCollapsed ? "opacity-0 max-w-0 ml-0" : "opacity-100 max-w-[200px] ml-3"
-                        )}>{item.label}</span>
-                        {hasSubItems && (
-                          <span className={cn(
-                            "shrink-0 transition-[opacity,max-width] duration-300 overflow-hidden",
-                            isCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[24px]"
-                          )}>
+                        {!isCollapsed && (
+                          <span className="flex-1 text-left min-w-0 truncate whitespace-nowrap ml-3">{item.label}</span>
+                        )}
+                        {!isCollapsed && hasSubItems && (
+                          <span className="shrink-0">
                             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                           </span>
                         )}
@@ -317,17 +312,15 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
               <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" />
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
-            <div className={cn(
-              "flex-1 min-w-0 whitespace-nowrap overflow-hidden transition-[opacity,max-width,margin-left] duration-300",
-              isCollapsed ? "opacity-0 max-w-0 ml-0" : "opacity-100 max-w-[180px] ml-3"
-            )}>
-              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">Jouw naam</p>
-              <p className="text-xs text-sidebar-foreground truncate">Recruitment Consultant</p>
-            </div>
-            <LogOut className={cn(
-              "w-4 h-4 text-sidebar-foreground shrink-0 transition-[opacity,max-width] duration-300",
-              isCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[16px]"
-            )} />
+            {!isCollapsed && (
+              <>
+                <div className="flex-1 min-w-0 whitespace-nowrap ml-3">
+                  <p className="text-sm font-medium text-sidebar-accent-foreground truncate">Jouw naam</p>
+                  <p className="text-xs text-sidebar-foreground truncate">Recruitment Consultant</p>
+                </div>
+                <LogOut className="w-4 h-4 text-sidebar-foreground shrink-0" />
+              </>
+            )}
           </div>
         </div>
 
