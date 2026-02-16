@@ -86,6 +86,17 @@ export function CallStats({ mode }: CallStatsProps) {
           ))}
         </div>
       )}
+      {/* Chart legend */}
+      <div className={cn("flex items-center justify-end", compact ? "gap-3 mb-1" : "gap-4 mb-2")}>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(var(--primary))" }} />
+          <span className="text-[10px] text-muted-foreground font-medium">Gesprekken</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(var(--gold))" }} />
+          <span className="text-[10px] text-muted-foreground font-medium">Acq. mails</span>
+        </div>
+      </div>
       <div className={cn("min-h-0", compact ? "flex-1" : "h-36")}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={combinedDailyData} margin={{ top: 15, right: 0, bottom: 0, left: 0 }}>
