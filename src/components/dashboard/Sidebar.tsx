@@ -25,7 +25,8 @@ import {
    Rocket,
    Timer,
    HeartHandshake,
-   Smile
+   Smile,
+   LineChart
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -103,6 +104,14 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: LineChart,
+    label: "Dashboards Peter-Jan",
+    path: "/peter-jan/sales-flow",
+    subItems: [
+      { icon: TrendingUp, label: "Sales Flow Dashboards", path: "/peter-jan/sales-flow" }
+    ]
+  },
+  {
     icon: Shield,
     label: "Super Admin",
     path: "/super-admin",
@@ -144,6 +153,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnTVPage = location.pathname.startsWith("/tv/");
   const isOnConsultantPage = location.pathname.startsWith("/consultant/");
   const isOnHendrikPage = location.pathname.startsWith("/hendrik/");
+  const isOnPeterJanPage = location.pathname.startsWith("/peter-jan/");
   
   const autoExpanded = [
     ...(isOnComparisonPage ? ["/"] : []),
@@ -151,6 +161,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnTVPage ? ["/tv/sales-funnel-week"] : []),
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
     ...(isOnHendrikPage ? ["/hendrik/overzicht"] : []),
+    ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
   ].filter(path => !manuallyCollapsed.includes(path));
 
   const effectiveExpandedItems = [

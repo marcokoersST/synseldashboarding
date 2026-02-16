@@ -54,6 +54,9 @@ const HendrikSnelheidSalesproces = lazy(() => import("./pages/hendrik/SnelheidSa
 const HendrikKandidaatRelatie = lazy(() => import("./pages/hendrik/KandidaatRelatie"));
 const HendrikWerkgeluk = lazy(() => import("./pages/hendrik/Werkgeluk"));
 
+// Peter-Jan dashboards
+const PeterJanSalesFlow = lazy(() => import("./pages/peter-jan/SalesFlowDashboards"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -110,6 +113,7 @@ const App = () => (
               <Route path="/hendrik/snelheid-salesproces" element={<HendrikSnelheidSalesproces />} />
               <Route path="/hendrik/kandidaat-relatie" element={<HendrikKandidaatRelatie />} />
               <Route path="/hendrik/werkgeluk" element={<HendrikWerkgeluk />} />
+              <Route path="/peter-jan/sales-flow" element={<PeterJanSalesFlow />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
