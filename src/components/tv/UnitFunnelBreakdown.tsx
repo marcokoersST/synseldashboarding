@@ -4,6 +4,7 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
 import { useTVCompact } from "./TVDashboardLayout";
+import { ConversionLegendPopover } from "./ConversionLegend";
 import { cn } from "@/lib/utils";
 
 type SubCol =
@@ -114,7 +115,10 @@ export function UnitFunnelBreakdown() {
 
   return (
     <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto", compact ? "p-3" : "p-5")}>
-      <h3 className={cn("font-semibold text-foreground", compact ? "text-xs mb-2" : "text-sm mb-4")}>Uitsplitsing per Unit & Conversies</h3>
+      <div className={cn("flex items-center gap-1.5", compact ? "mb-2" : "mb-4")}>
+        <h3 className={cn("font-semibold text-foreground", compact ? "text-xs" : "text-sm")}>Uitsplitsing per Unit & Conversies</h3>
+        {!compact && <ConversionLegendPopover />}
+      </div>
 
       <Table>
         <TableHeader>
