@@ -1,39 +1,61 @@
 
 
-# Conversieformules verbeteren
+# Redesign Beker Dashboard TV Mode
 
-## Problemen
-1. **Dubbel "Inschrijvingen"**: De groepsnaam toont twee keer "1. Inschrijvingen" voor zowel Inschr. % als Intake %. Dit moet duidelijker met een specifiekere label per rij.
-2. **Deelteken**: Het `/` symbool wordt gebruikt als deelteken in formules, maar moet `÷` zijn.
-3. **Tekst afgekapt in TV-modus**: De groepsnamen worden ingekort (truncated) met `80px` breedte terwijl er genoeg ruimte is.
+## Current State
+The TV mode shows a podium (1/3 width) and 4 small competition cards (2/3 width), each only listing top 5. There is wasted space and limited individual-level data.
 
-## Wijzigingen
+## New Design
 
-### `src/components/tv/ConversionLegend.tsx`
+Replace the current split layout with a full-width design consisting of two sections:
 
-1. **Specifiekere groepslabels** -- Geef elke rij een uniek, beschrijvend label in de `group` kolom zodat het niet twee keer "1. Inschrijvingen" toont:
-   - "1. Inschrijvingen" + "Inschr. %" wordt groep "Inschrijving"
-   - "1. Inschrijvingen" + "Intake %" wordt groep "Intake"
-   - "2. Acquisitie" + "Acq. %" wordt groep "Acquisitie"
-   - "2. Acquisitie" + "Acq. ratio" wordt groep "Acq. ratio"
-   - "3. Voorstellen" blijft "Voorstellen"
-   - "4. Uitnodigingen" blijft "Uitnodigingen"
-   - "5. Gesprekken" blijft "Gesprekken"
-   - "6. Vervolg" blijft "Vervolg"
-   - "7. Geplaatst" + "Plts. %" wordt "Plaatsing"
-   - "7. Geplaatst" + "Hit rate" wordt "Hit rate"
+### Top: Compact Podium Bar
+A slim horizontal bar showing the top 3 Margebaas with gold/silver/bronze styling -- no tall podium columns, just a compact visual header.
 
-2. **Deelteken** -- Vervang alle `/` in formule-strings door `÷`:
-   - "Ingeschreven / Toegewezen" wordt "Ingeschreven ÷ Toegewezen"
-   - Idem voor alle andere formules
+### Bottom: Full Consultant Leaderboard Table
+A comprehensive table showing **all consultants** with multiple metrics side by side:
 
-3. **Popover formules** -- Dezelfde wijzigingen gelden automatisch voor de popover (gebruikt dezelfde `conversionFormulas` array)
+```text
+Rank | Naam          | Unit        | Marge   | Plaatsingen | Gesprekken | Omzet +/-   | Acq. mails
+#1   | Sophie de V.  | Engineering | €420K   | 4           | 128        | +€180K      | 42
+#2   | Kevin H.      | Operators   | €380K   | 5           | 115        | +€95K       | 38
+...
+```
 
-### `src/components/tv/ConversionFormulasCard.tsx`
+- Top 3 rows highlighted with gold/silver/bronze left border
+- Department shown as a colored dot or badge
+- Omzet change column with green/red color coding (stijgers/dalers merged into one view)
+- Scrollable if more than ~10 rows, with top 3 sticky
 
-4. **Bredere groepskolom in TV-modus** -- Vergroot de groepskolom van `80px` naar `110px` in compact mode en van `100px` naar `130px` in normaal mode. Verwijder `truncate` class van de groepsnaam zodat tekst niet wordt afgekapt.
+### Data Enrichment
+Extend `tvData.ts` with a unified `bekerConsultants` array that combines data from all four existing competition datasets (margeBaas, plaatsingsKoning, gesprekkenGuru, omzetKoning) plus adds acquisitie mails per consultant. This gives one row per consultant with 5+ metrics.
 
-## Technisch detail
+## Files to Change
 
-Alleen de `conversionFormulas` array en de grid-template in `ConversionFormulasCard` worden aangepast. Geen wijzigingen nodig in `UnitFunnelBreakdown.tsx` omdat die component zijn eigen `columnGroups` gebruikt (met genummerde groepen voor de tabelkop).
+### 1. `src/data/tvData.ts`
+- Add new `bekerConsultants` array combining all individual metrics into one dataset (~10 consultants)
+
+### 2. `src/components/tv/BekerLeaderboard.tsx` (new)
+- Full-width leaderboard table component
+- Compact header row with column labels
+- Rows with rank medal styling for top 3, highlighted rows for top 10
+- Columns: Rank, Naam, Unit, Marge, Plaatsingen, Gesprekken, Omzet +/-, Acq. mails
+- Green/red styling for omzet change values
+
+### 3. `src/components/tv/BekerPodiumBar.tsx` (new)
+- Slim horizontal top bar replacing the tall vertical podium
+- Shows #2 | #1 | #3 in a compact row with crown icon for #1
+- Displays name + marge value per position
+
+### 4. `src/pages/TVBekerDashboard.tsx`
+- TV mode: vertical flex with BekerPodiumBar (slim, fixed height) + BekerLeaderboard (flex-1, fills remaining space)
+- Normal mode: keep current layout with MargePodium + CompetitionCards (unchanged)
+
+## Technical Details
+
+- The leaderboard uses a standard HTML table with Tailwind styling
+- Top 3 rows get a colored left border (gold, silver, bronze) matching existing `medalStyles`
+- Unit column uses the existing unit colors from `weekUnitBreakdown`
+- Omzet change uses `text-accent` for positive and `text-destructive` for negative values
+- In TV mode, text sizes use `text-sm` for readability on large displays
 
