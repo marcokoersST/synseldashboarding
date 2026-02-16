@@ -1,4 +1,4 @@
-import { Info, Percent, Target, Crosshair, Clock, type LucideIcon } from "lucide-react";
+import { Info, UserCheck, TrendingUp, Target, Send, CalendarCheck, MessageSquare, Repeat, CheckCircle, Crosshair, Clock, type LucideIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import React from "react";
@@ -13,8 +13,14 @@ interface FormulaRow {
 
 /** Map of conversion label → icon component */
 const conversionIconMap: Record<string, LucideIcon> = {
-  "#": Percent,
+  "Inschr. %": UserCheck,
+  "Acq. %": TrendingUp,
   "Acq. ratio": Target,
+  "Voorst. %": Send,
+  "Uitn. %": CalendarCheck,
+  "Gespr. %": MessageSquare,
+  "Verv. %": Repeat,
+  "Plts. %": CheckCircle,
   "Hit rate": Crosshair,
   "Gem. dagen": Clock,
 };
@@ -24,14 +30,14 @@ function getConversionIcon(label: string): LucideIcon | undefined {
 }
 
 const conversionFormulas: FormulaRow[] = [
-  { group: "1. Inschrijvingen", label: "#", formula: "Ingeschreven / Toegewezen", benchmark: "≥ 75%", icon: Percent },
-  { group: "2. Acquisitie", label: "#", formula: "Acquisities / Ingeschreven", benchmark: "≥ 35%", icon: Percent },
+  { group: "1. Inschrijvingen", label: "Inschr. %", formula: "Ingeschreven / Toegewezen", benchmark: "≥ 75%", icon: UserCheck },
+  { group: "2. Acquisitie", label: "Acq. %", formula: "Acquisities / Ingeschreven", benchmark: "≥ 35%", icon: TrendingUp },
   { group: "2. Acquisitie", label: "Acq. ratio", formula: "Acquisities / Toegewezen", benchmark: "≥ 25%", icon: Target },
-  { group: "3. Voorstellen", label: "#", formula: "Voorstellen via email / Ingeschreven", benchmark: "≥ 40%", icon: Percent },
-  { group: "4. Uitnodigingen", label: "#", formula: "Uitnodigingen totaal / Acquisities", benchmark: "≥ 60%", icon: Percent },
-  { group: "5. Gesprekken", label: "#", formula: "1e gesprek / Acquisities", benchmark: "≥ 50%", icon: Percent },
-  { group: "6. Vervolg", label: "#", formula: "Wel 1e gesprek / Vervolg gesprek", benchmark: "≥ 70%", icon: Percent },
-  { group: "7. Geplaatst", label: "#", formula: "Geplaatst / Ingeschreven", benchmark: "≥ 15%", icon: Percent },
+  { group: "3. Voorstellen", label: "Voorst. %", formula: "Voorstellen via email / Ingeschreven", benchmark: "≥ 40%", icon: Send },
+  { group: "4. Uitnodigingen", label: "Uitn. %", formula: "Uitnodigingen totaal / Acquisities", benchmark: "≥ 60%", icon: CalendarCheck },
+  { group: "5. Gesprekken", label: "Gespr. %", formula: "1e gesprek / Acquisities", benchmark: "≥ 50%", icon: MessageSquare },
+  { group: "6. Vervolg", label: "Verv. %", formula: "Wel 1e gesprek / Vervolg gesprek", benchmark: "≥ 70%", icon: Repeat },
+  { group: "7. Geplaatst", label: "Plts. %", formula: "Geplaatst / Ingeschreven", benchmark: "≥ 15%", icon: CheckCircle },
   { group: "7. Geplaatst", label: "Hit rate", formula: "Geplaatst / Toegewezen", benchmark: "≥ 10%", icon: Crosshair },
 ];
 
@@ -78,8 +84,14 @@ export function ConversionLegendPopover({ compact }: { compact?: boolean }) {
             <span><span className="inline-block w-2 h-2 rounded-full bg-destructive mr-1" />&lt; 40%</span>
           </div>
           <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground">
-            <span className="flex items-center gap-1"><Percent className="w-2.5 h-2.5" /> Stap-conversie</span>
-            <span className="flex items-center gap-1"><Target className="w-2.5 h-2.5" /> Acquisitie ratio</span>
+            <span className="flex items-center gap-1"><UserCheck className="w-2.5 h-2.5" /> Inschrijving</span>
+            <span className="flex items-center gap-1"><TrendingUp className="w-2.5 h-2.5" /> Acquisitie</span>
+            <span className="flex items-center gap-1"><Target className="w-2.5 h-2.5" /> Acq. ratio</span>
+            <span className="flex items-center gap-1"><Send className="w-2.5 h-2.5" /> Voorstellen</span>
+            <span className="flex items-center gap-1"><CalendarCheck className="w-2.5 h-2.5" /> Uitnodigingen</span>
+            <span className="flex items-center gap-1"><MessageSquare className="w-2.5 h-2.5" /> Gesprekken</span>
+            <span className="flex items-center gap-1"><Repeat className="w-2.5 h-2.5" /> Vervolg</span>
+            <span className="flex items-center gap-1"><CheckCircle className="w-2.5 h-2.5" /> Plaatsing</span>
             <span className="flex items-center gap-1"><Crosshair className="w-2.5 h-2.5" /> Hit rate</span>
             <span className="flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Dagen</span>
           </div>
