@@ -227,6 +227,52 @@ export const weekOverallConversions: ConversionStep[] = [
   { from: "Gesprekken", to: "Plaatsingen", rate: 33.3 },
 ];
 
+export const periodOverallConversions: ConversionStep[] = [
+  { from: "Inschrijvingen", to: "Acquisities", rate: 36.6 },
+  { from: "Acquisities", to: "Voorstellen", rate: 139.7 },
+  { from: "Voorstellen", to: "Gesprekken", rate: 82.1 },
+];
+
+export const periodUnitBreakdown: UnitFunnelRow[] = [
+  { unit: "Engineering", color: "hsl(var(--primary))", toegewezen: 72, ingeschreven: 56, intakes: 40, acquisities: 20, voorstellenPerKandidaat: 2.2, voorstellenViaEmail: 24, uitnodigingenTotaal: 48, nietUitgenodigd: 16, welUitgenodigd: 32, eersteGesprek: 28, geenEersteGesprek: 12, welEersteGesprek: 16, vervolgGesprek: 12, dealsluiter: 8, geplaatst: 8, gemDagenTotPlaatsing: 27 },
+  { unit: "Monteurs", color: "hsl(var(--chart-primary))", toegewezen: 40, ingeschreven: 32, intakes: 24, acquisities: 12, voorstellenPerKandidaat: 1.9, voorstellenViaEmail: 12, uitnodigingenTotaal: 24, nietUitgenodigd: 8, welUitgenodigd: 16, eersteGesprek: 12, geenEersteGesprek: 4, welEersteGesprek: 8, vervolgGesprek: 8, dealsluiter: 4, geplaatst: 4, gemDagenTotPlaatsing: 34 },
+  { unit: "Operators", color: "hsl(var(--accent))", toegewezen: 60, ingeschreven: 48, intakes: 32, acquisities: 16, voorstellenPerKandidaat: 2.4, voorstellenViaEmail: 20, uitnodigingenTotaal: 36, nietUitgenodigd: 12, welUitgenodigd: 24, eersteGesprek: 20, geenEersteGesprek: 8, welEersteGesprek: 12, vervolgGesprek: 12, dealsluiter: 8, geplaatst: 8, gemDagenTotPlaatsing: 21 },
+  { unit: "Trainingsunit", color: "hsl(var(--gold))", toegewezen: 28, ingeschreven: 20, intakes: 12, acquisities: 8, voorstellenPerKandidaat: 1.6, voorstellenViaEmail: 8, uitnodigingenTotaal: 16, nietUitgenodigd: 4, welUitgenodigd: 12, eersteGesprek: 8, geenEersteGesprek: 4, welEersteGesprek: 4, vervolgGesprek: 4, dealsluiter: 4, geplaatst: 4, gemDagenTotPlaatsing: 40 },
+  { unit: "New Performers", color: "hsl(var(--teal))", toegewezen: 16, ingeschreven: 12, intakes: 4, acquisities: 4, voorstellenPerKandidaat: 1.1, voorstellenViaEmail: 4, uitnodigingenTotaal: 8, nietUitgenodigd: 4, welUitgenodigd: 4, eersteGesprek: 4, geenEersteGesprek: 0, welEersteGesprek: 4, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
+];
+
+export const periodCallStatsDaily: DayCallStat[] = [
+  { day: "Wk1", outbound: 285, duration: 2400 },
+  { day: "Wk2", outbound: 310, duration: 2680 },
+  { day: "Wk3", outbound: 265, duration: 2200 },
+  { day: "Wk4", outbound: 340, duration: 2920 },
+];
+
+export const periodGesprekkenPerUnit = [
+  { unit: "Engineering", gesprekken: 28 },
+  { unit: "Monteurs", gesprekken: 12 },
+  { unit: "Operators", gesprekken: 20 },
+  { unit: "Trainingsunit", gesprekken: 8 },
+  { unit: "New Performers", gesprekken: 4 },
+];
+
+export const periodMailStats = {
+  totalAcquisitieMails: 536,
+  perDay: [
+    { day: "Wk1", mails: 128 },
+    { day: "Wk2", mails: 142 },
+    { day: "Wk3", mails: 108 },
+    { day: "Wk4", mails: 158 },
+  ],
+  perUnit: [
+    { unit: "Engineering", mails: 168 },
+    { unit: "Monteurs", mails: 96 },
+    { unit: "Operators", mails: 152 },
+    { unit: "Trainingsunit", mails: 72 },
+    { unit: "New Performers", mails: 48 },
+  ],
+};
+
 export const weekUnitConversions: UnitConversion[] = [
   { unit: "Engineering", conversions: [
     { from: "Inschrijvingen", to: "Intakes", rate: 71.4 },
