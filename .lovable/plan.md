@@ -1,54 +1,44 @@
 
+# Toggle voor Week/Periode modus in TV Ranglijsten
 
-# Fix: Naadloze overgang top 10 en alleen vast in TV modus
-
-## Problemen
-1. Er is een zichtbare witte lijn/scheiding tussen de top 10 en de rest van de lijst (door de aparte `div` containers met `mt-3`)
-2. De top 10 is nu altijd apart gerenderd, ook in de normale overzichtsmodus -- dit moet alleen in TV modus zo zijn
+## Huidige situatie
+In TV modus wisselt het dashboard automatisch elke 10 seconden tussen Week en Periode. Er is geen manier om dit te beperken tot alleen Week of alleen Periode.
 
 ## Oplossing
+Een driedelige toggle toevoegen naast de bestaande Week/Periode badges in TV modus. De gebruiker kan kiezen uit:
+- **Auto** (standaard): wisselt automatisch tussen Week en Periode (huidig gedrag)
+- **Week**: toont alleen Week
+- **Periode**: toont alleen Periode
 
-### `src/pages/TVRanglijsten.tsx`
+De bestaande badges worden omgebouwd tot klikbare knoppen.
 
-**Rendering logica aanpassen op basis van `isCompact`:**
+## Wijzigingen in `src/pages/TVRanglijsten.tsx`
 
-- **TV modus (`isCompact = true`)**: Behoud de huidige twee-delige structuur (top 10 vast + rank 11+ scrollt), maar verwijder de extra margin (`mt-3`) tussen de twee secties zodat er geen zichtbare scheiding is
-- **Overzichtsmodus (`isCompact = false`)**: Render alle entries in een enkele doorlopende lijst binnen de scroll-area, zonder opsplitsing
+### Nieuwe state
+Een `tvViewMode` state met drie opties: `"auto"`, `"week"`, `"periode"`. Standaard `"auto"`.
 
-Concreet:
+### Aangepaste auto-swap logica
+De `useEffect` voor auto-swap wordt aangepast:
+- Als `tvViewMode === "auto"`: huidige gedrag (wissel elke 10s)
+- Als `tvViewMode === "week"`: zet `autoView` vast op `"week"`, geen interval
+- Als `tvViewMode === "periode"`: zet `autoView` vast op `"periode"`, geen interval
 
-| Modus | Gedrag |
-|-------|--------|
-| TV (compact) | Top 10 vast, rank 11+ scrollt, geen visuele scheiding ertussen |
-| Overzicht (normaal) | Alle entries in een enkele doorlopende lijst |
-
-### Technische aanpak
-
-De rendering in de kolom-loop wordt conditioneel:
+### UI in TV modus
+De huidige twee badges worden vervangen door drie klikbare badges:
 
 ```
-{isCompact ? (
-  <>
-    {/* Top 10 - vast, geen extra margin onderaan */}
-    <div className="mt-3 space-y-0">
-      {top10Entries...}
-    </div>
-    {/* Rank 11+ - direct aansluitend, auto-scroll */}
-    <AutoScrollArea isCompact={isCompact}>
-      {rest...}
-    </AutoScrollArea>
-  </>
-) : (
-  /* Alle entries in een enkele lijst */
-  <div className="mt-3 space-y-0 h-[calc(100vh-320px)] overflow-y-auto">
-    {allEntries...}
-  </div>
-)}
+[Auto] [Week] [Periode]
 ```
 
-De witte lijn verdwijnt doordat de `AutoScrollArea` geen extra `mt-3` of padding meer heeft ten opzichte van de top 10 sectie.
+- De actieve modus-badge krijgt `variant="default"`
+- De inactieve badges krijgen `variant="secondary"` met een `cursor-pointer` en `onClick`
+- Bij "Auto" modus wordt de huidige actieve view (Week/Periode) subtiel aangegeven via een extra indicator (bijv. een klein puntje of de tekst wordt vet)
 
-| Bestand | Actie |
-|---------|-------|
-| `src/pages/TVRanglijsten.tsx` | Conditionele rendering: split alleen in TV modus, naadloze aansluiting |
+### Technisch overzicht
 
+| Onderdeel | Detail |
+|-----------|--------|
+| Nieuwe state | `tvViewMode: "auto" | "week" | "periode"` |
+| useEffect aanpassing | Conditioneel interval starten of vaste view zetten |
+| UI element | 3 klikbare badges in de TV header |
+| Bestand | `src/pages/TVRanglijsten.tsx` |
