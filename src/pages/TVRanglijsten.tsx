@@ -256,7 +256,7 @@ export default function TVRanglijsten() {
                       "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5",
                       entry.rank <= 10 ? "border-b border-border/20" : "border-b border-border/10",
                       getRankStyle(entry.rank),
-                      entry.isHot && "bg-orange-50/60"
+                      entry.isHot && entry.value > 0 && "bg-orange-50/60"
                     )}
                   >
                     <span className={cn(
@@ -268,7 +268,7 @@ export default function TVRanglijsten() {
                     </span>
                     <span className={cn(
                       "truncate flex-1 text-foreground",
-                      entry.isHot && "text-orange-700 font-medium"
+                      entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
                     )}>
                       {entry.name}
                     </span>
@@ -277,7 +277,7 @@ export default function TVRanglijsten() {
                       entry.rank <= 3 ? "font-bold" : "font-semibold",
                       "text-foreground"
                     )}>
-                      {entry.isHot && <Flame className="w-3 h-3 text-orange-500" />}
+                      {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
                       {entry.value}
                     </span>
                   </div>
