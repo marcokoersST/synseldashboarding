@@ -1,32 +1,39 @@
 
 
-# Intakes verwijderen als apart KPI-tegel en conversie-stap
+# Conversieformules verbeteren
 
-## Probleem
-Intakes wordt nog steeds als aparte KPI-tegel bovenaan de Sales Funnel pagina's getoond (zowel Week als Periode). De conversie-pijlen refereren ook nog naar Intakes als aparte stap. Dit is inconsistent met de tabel eronder waar Intakes al onderdeel is van "1. Inschrijvingen".
+## Problemen
+1. **Dubbel "Inschrijvingen"**: De groepsnaam toont twee keer "1. Inschrijvingen" voor zowel Inschr. % als Intake %. Dit moet duidelijker met een specifiekere label per rij.
+2. **Deelteken**: Het `/` symbool wordt gebruikt als deelteken in formules, maar moet `÷` zijn.
+3. **Tekst afgekapt in TV-modus**: De groepsnamen worden ingekort (truncated) met `80px` breedte terwijl er genoeg ruimte is.
 
 ## Wijzigingen
 
-### 1. `src/data/tvData.ts`
+### `src/components/tv/ConversionLegend.tsx`
 
-**Week funnel metrics** -- Verwijder de "Intakes" entry uit `weekFunnelMetrics`:
-- Was: Inschrijvingen, Intakes, Acquisities, Voorstellen, Gesprekken, Plaatsingen
-- Wordt: Inschrijvingen, Acquisities, Voorstellen, Gesprekken, Plaatsingen
+1. **Specifiekere groepslabels** -- Geef elke rij een uniek, beschrijvend label in de `group` kolom zodat het niet twee keer "1. Inschrijvingen" toont:
+   - "1. Inschrijvingen" + "Inschr. %" wordt groep "Inschrijving"
+   - "1. Inschrijvingen" + "Intake %" wordt groep "Intake"
+   - "2. Acquisitie" + "Acq. %" wordt groep "Acquisitie"
+   - "2. Acquisitie" + "Acq. ratio" wordt groep "Acq. ratio"
+   - "3. Voorstellen" blijft "Voorstellen"
+   - "4. Uitnodigingen" blijft "Uitnodigingen"
+   - "5. Gesprekken" blijft "Gesprekken"
+   - "6. Vervolg" blijft "Vervolg"
+   - "7. Geplaatst" + "Plts. %" wordt "Plaatsing"
+   - "7. Geplaatst" + "Hit rate" wordt "Hit rate"
 
-**Period funnel metrics** -- Verwijder de "Intakes" entry uit `periodFunnelMetrics`:
-- Was: Inschrijvingen, Intakes, Acquisities, Voorstellen, Gesprekken
-- Wordt: Inschrijvingen, Acquisities, Voorstellen, Gesprekken
+2. **Deelteken** -- Vervang alle `/` in formule-strings door `÷`:
+   - "Ingeschreven / Toegewezen" wordt "Ingeschreven ÷ Toegewezen"
+   - Idem voor alle andere formules
 
-**Week overall conversions** -- Verwijder de twee Intakes-gerelateerde stappen en voeg een directe Inschrijvingen-naar-Acquisities conversie toe:
-- Was: Inschrijvingen->Intakes, Intakes->Acquisities, Acquisities->Voorstellen, ...
-- Wordt: Inschrijvingen->Acquisities (35.7%), Acquisities->Voorstellen, Voorstellen->Gesprekken, Gesprekken->Plaatsingen
+3. **Popover formules** -- Dezelfde wijzigingen gelden automatisch voor de popover (gebruikt dezelfde `conversionFormulas` array)
 
-### 2. `src/pages/TVSalesFunnelPeriod.tsx`
+### `src/components/tv/ConversionFormulasCard.tsx`
 
-De grid past zich automatisch aan (minder tiles), maar de `grid-cols-5` moet worden aangepast naar `grid-cols-4` omdat er nu 4 in plaats van 5 KPI-tegels zijn.
+4. **Bredere groepskolom in TV-modus** -- Vergroot de groepskolom van `80px` naar `110px` in compact mode en van `100px` naar `130px` in normaal mode. Verwijder `truncate` class van de groepsnaam zodat tekst niet wordt afgekapt.
 
-### Geen wijzigingen nodig
-- `TVSalesFunnelWeek.tsx` -- gebruikt een flexbox layout die automatisch aanpast
-- `SalesFunnelKPI.tsx` -- component blijft ongewijzigd
-- `ConversionLegend.tsx` -- al correct bijgewerkt
-- `UnitFunnelBreakdown.tsx` -- al correct bijgewerkt
+## Technisch detail
+
+Alleen de `conversionFormulas` array en de grid-template in `ConversionFormulasCard` worden aangepast. Geen wijzigingen nodig in `UnitFunnelBreakdown.tsx` omdat die component zijn eigen `columnGroups` gebruikt (met genummerde groepen voor de tabelkop).
+
