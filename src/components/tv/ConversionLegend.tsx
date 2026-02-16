@@ -1,4 +1,4 @@
-import { Info, UserCheck, TrendingUp, Target, Send, CalendarCheck, MessageSquare, Repeat, CheckCircle, Crosshair, Clock, type LucideIcon } from "lucide-react";
+import { Info, UserCheck, TrendingUp, Target, Send, CalendarCheck, MessageSquare, Repeat, CheckCircle, Crosshair, Clock, ClipboardCheck, type LucideIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import React from "react";
@@ -14,6 +14,7 @@ interface FormulaRow {
 /** Map of conversion label → icon component */
 const conversionIconMap: Record<string, LucideIcon> = {
   "Inschr. %": UserCheck,
+  "Intake %": ClipboardCheck,
   "Acq. %": TrendingUp,
   "Acq. ratio": Target,
   "Voorst. %": Send,
@@ -31,6 +32,7 @@ function getConversionIcon(label: string): LucideIcon | undefined {
 
 const conversionFormulas: FormulaRow[] = [
   { group: "1. Inschrijvingen", label: "Inschr. %", formula: "Ingeschreven / Toegewezen", benchmark: "≥ 75%", icon: UserCheck },
+  { group: "1. Inschrijvingen", label: "Intake %", formula: "Intakes / Ingeschreven", benchmark: "≥ 50%", icon: ClipboardCheck },
   { group: "2. Acquisitie", label: "Acq. %", formula: "Acquisities / Ingeschreven", benchmark: "≥ 35%", icon: TrendingUp },
   { group: "2. Acquisitie", label: "Acq. ratio", formula: "Acquisities / Toegewezen", benchmark: "≥ 25%", icon: Target },
   { group: "3. Voorstellen", label: "Voorst. %", formula: "Voorstellen via email / Ingeschreven", benchmark: "≥ 40%", icon: Send },
@@ -85,6 +87,7 @@ export function ConversionLegendPopover({ compact }: { compact?: boolean }) {
           </div>
           <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground">
             <span className="flex items-center gap-1"><UserCheck className="w-2.5 h-2.5" /> Inschrijving</span>
+            <span className="flex items-center gap-1"><ClipboardCheck className="w-2.5 h-2.5" /> Intake</span>
             <span className="flex items-center gap-1"><TrendingUp className="w-2.5 h-2.5" /> Acquisitie</span>
             <span className="flex items-center gap-1"><Target className="w-2.5 h-2.5" /> Acq. ratio</span>
             <span className="flex items-center gap-1"><Send className="w-2.5 h-2.5" /> Voorstellen</span>
