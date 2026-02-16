@@ -1,53 +1,50 @@
 
+# Fix TV Sales Funnel layout issues en overflow problemen
 
-# Sidebar tooltip fix, TV layout optimalisatie en extra conversiedata
+## Probleem 1: Te veel witruimte in TV modus
+De bottom tiles (Bel- & Mailstatistieken en Kandidaten in Procedure) nemen te veel verticale ruimte in. De tabel moet de primaire focus zijn.
 
-## 1. Sidebar: Tekst verbergen bij ingeklapt (alleen tooltip bij hover)
+**Oplossing in `src/pages/TVSalesFunnelWeek.tsx`:**
+- Bottom row `max-h-[180px]` verlagen naar `max-h-[140px]`
+- Gap tussen secties verkleinen van `gap-2` naar `gap-1` in compact mode
 
-**Probleem:** Wanneer de sidebar is ingeklapt, zijn de tekstlabels nog zichtbaar naast de icoontjes (zie screenshot). Ze zouden volledig verborgen moeten zijn en alleen als tooltip verschijnen bij hover.
+**Oplossing in `src/components/tv/CallStats.tsx`:**
+- Compact mode: KPI font-size verkleinen van `text-lg` naar `text-base`
+- Chart hoogte van `h-16` naar `h-12`
+- Icon sizes verkleinen in compact mode
 
-**Oplossing:** In `src/components/dashboard/Sidebar.tsx` de tekst-span en chevron in de ingeklapte state volledig verbergen met `hidden` of `display: none` in plaats van alleen `opacity-0`. De `max-w-0` werkt samen met `overflow-hidden` maar het element neemt nog steeds ruimte in. Aanpassen zodat de tekst echt onzichtbaar is en geen ruimte inneemt wanneer `isCollapsed` true is.
+**Oplossing in `src/components/tv/CandidatesPipeline.tsx`:**
+- Compact mode: progress bars van `h-1.5` naar `h-1`
+- `space-y-1` naar `space-y-0.5`
+- Titel en totaal compacter
 
-**Bestand:** `src/components/dashboard/Sidebar.tsx`
-- Zorg dat de label-span `pointer-events-none` en `absolute` positioning krijgt bij collapsed state, zodat het geen ruimte inneemt
-- Alternatief: conditioneel de tekst niet renderen wanneer collapsed, en alleen de Tooltip laten zien
+## Probleem 2: Kandidaten in Procedure / Geplaatst out of bounds
+De content loopt buiten de card-grenzen.
 
-## 2. TV Mode: Meer ruimte voor de tabel, minder witruimte in onderste tiles
+**Oplossing in `src/components/tv/CandidatesPipeline.tsx`:**
+- `overflow-hidden` toevoegen aan de content wrapper (al aanwezig op outer div, maar inner content loopt over)
+- Zorgen dat de content past binnen de max-height constraint door `overflow-y-auto` op de progress bars sectie
 
-**Probleem:** In TV modus (compact) nemen de twee onderste tiles (Bel- & Mailstatistieken en Kandidaten in Procedure) te veel ruimte in met veel witruimte, terwijl de funnel-tabel de hoofdfocus zou moeten zijn.
+## Probleem 3: Tabel buiten bounds in overview mode met sidebar open
+De UnitFunnelBreakdown tabel heeft veel kolommen en past niet horizontaal als de sidebar 264px inneemt.
 
-**Oplossing:** De layout in `TVSalesFunnelWeek.tsx` aanpassen:
-- De onderste rij kleiner maken door een vaste maximale hoogte te geven in compact mode
-- De tabel (`UnitFunnelBreakdown`) als flex-1 laten groeien zodat die de meeste ruimte krijgt
-- In de twee bottom-tiles de compacte weergave verder verkleinen (minder padding, kleinere charts)
+**Oplossing in `src/components/tv/UnitFunnelBreakdown.tsx`:**
+- De wrapper div heeft al `overflow-x-auto`, maar de parent in overview mode beperkt dit niet goed
+- Table font sizes verkleinen in non-compact mode: headers naar `text-[10px]`, cellen naar `text-[11px]`
+- Padding op cellen verkleinen: `px-2` naar `px-1.5`
 
-**Bestanden:**
-- `src/pages/TVSalesFunnelWeek.tsx` -- layout aanpassen: tabel krijgt `flex-1 min-h-0`, bottom row krijgt een max-height
-- `src/components/tv/CallStats.tsx` -- in compact mode het barchart nog kleiner maken (h-16 ipv h-24), KPI's compacter
-- `src/components/tv/CandidatesPipeline.tsx` -- in compact mode compactere spacing
+**Oplossing in `src/pages/TVSalesFunnelWeek.tsx`:**
+- In overview (non-compact) mode, de table wrapper `overflow-x-auto` toevoegen met `max-w-full`
 
-## 3. Extra conversie-specificaties toevoegen aan de tabel
-
-Meer detaildata toevoegen aan de UnitFunnelBreakdown tabel die relevant is voor de sales funnel. Nieuwe conversie-inzichten:
-
-| Nieuwe kolom | Groep | Berekening |
-|-------------|-------|-----------|
-| Gem. dagen tot plaatsing | 7. Geplaatst | Nieuw dataveld `gemDagenTotPlaatsing` |
-| Hit rate (totaal) | 7. Geplaatst | geplaatst / toegewezen (overall conversie) |
-| Acquisitie ratio | 2. Acquisitie | acquisities / toegewezen |
-
-**Bestanden:**
-- `src/data/tvData.ts` -- Nieuw veld `gemDagenTotPlaatsing` toevoegen aan `UnitFunnelRow` en mock data
-- `src/components/tv/UnitFunnelBreakdown.tsx` -- Extra conversiekolommen toevoegen
+**Oplossing in `src/components/layout/AppLayout.tsx`:**
+- Main content area `overflow-x-hidden` toevoegen zodat de tabel niet buiten het viewport steekt en de scroll binnen de tabel-container blijft
 
 ## Technisch overzicht
 
 | Bestand | Actie |
 |---------|-------|
-| `src/components/dashboard/Sidebar.tsx` | Tekst volledig verbergen bij collapsed state, alleen tooltip bij hover |
-| `src/pages/TVSalesFunnelWeek.tsx` | Layout herschikken: tabel als primair element, bottom row compacter |
-| `src/components/tv/CallStats.tsx` | Compact mode: kleinere chart (h-16), compactere KPI's |
-| `src/components/tv/CandidatesPipeline.tsx` | Compact mode: compactere spacing |
-| `src/data/tvData.ts` | Nieuw veld `gemDagenTotPlaatsing` toevoegen |
-| `src/components/tv/UnitFunnelBreakdown.tsx` | Extra conversiekolommen: hit rate, acquisitie ratio, gem. dagen |
-
+| `src/pages/TVSalesFunnelWeek.tsx` | Bottom row compacter (max-h-[140px]), gaps verkleinen, overflow containment |
+| `src/components/tv/CallStats.tsx` | Compact mode: kleinere fonts, chart h-12, compactere KPIs |
+| `src/components/tv/CandidatesPipeline.tsx` | Compact mode: kleinere bars, tighter spacing, overflow-y-auto op content |
+| `src/components/tv/UnitFunnelBreakdown.tsx` | Kleinere font sizes en padding in non-compact mode voor betere fit |
+| `src/components/layout/AppLayout.tsx` | `overflow-x-hidden` op main voor horizontale containment |
