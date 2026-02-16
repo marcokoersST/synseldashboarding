@@ -36,6 +36,20 @@ export function ConversionFormulasCard() {
       <h3 className={cn("font-semibold text-foreground", compact ? "text-xs mb-1" : "text-sm mb-3")}>
         Conversieformules & Benchmarks
       </h3>
+      {/* Column headers */}
+      <div className={cn(
+        "grid items-center border-b border-border text-muted-foreground font-medium uppercase tracking-wide",
+        compact
+          ? "grid-cols-[16px_80px_1fr_48px_48px] gap-2 text-[9px] px-1.5 pb-1 mb-1"
+          : "grid-cols-[16px_100px_1fr_60px_60px] gap-3 text-[10px] px-2 pb-1.5 mb-1.5"
+      )}>
+        <span />
+        <span>Groep</span>
+        <span>Formule</span>
+        <span className="text-right">Actueel</span>
+        <span className="text-right">Doel</span>
+      </div>
+
       <div className={cn("overflow-y-auto flex-1", compact ? "space-y-1" : "space-y-1.5")}>
         {conversionFormulas.map((f, i) => {
           const actualStr = actuals[i];
@@ -50,11 +64,11 @@ export function ConversionFormulasCard() {
               className={cn(
                 "grid items-center rounded",
                 compact
-                  ? "grid-cols-[14px_80px_1fr_32px_32px] gap-1.5 text-[11px] px-1.5 py-1"
-                  : "grid-cols-[16px_100px_1fr_50px_50px] gap-2 text-xs px-2 py-1 bg-muted/20"
+                  ? "grid-cols-[16px_80px_1fr_48px_48px] gap-2 text-[11px] px-1.5 py-1"
+                  : "grid-cols-[16px_100px_1fr_60px_60px] gap-3 text-xs px-2 py-1 bg-muted/20"
               )}
             >
-              <IconComp className={cn("text-muted-foreground", compact ? "w-3 h-3" : "w-3 h-3")} />
+              <IconComp className="text-muted-foreground w-3 h-3" />
               <span className="text-muted-foreground truncate">{f.group}</span>
               <span className="font-medium text-foreground truncate">{f.formula}</span>
               <span className={cn("text-right font-bold tabular-nums", colorClass)}>{actualStr}</span>
