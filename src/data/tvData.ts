@@ -246,6 +246,24 @@ export const weekGesprekkenPerUnit = [
   { unit: "New Performers", gesprekken: 1 },
 ];
 
+export const weekMailStats = {
+  totalAcquisitieMails: 134,
+  perDay: [
+    { day: "Ma", mails: 32 },
+    { day: "Di", mails: 28 },
+    { day: "Wo", mails: 22 },
+    { day: "Do", mails: 35 },
+    { day: "Vr", mails: 17 },
+  ],
+  perUnit: [
+    { unit: "Engineering", mails: 42 },
+    { unit: "Monteurs", mails: 24 },
+    { unit: "Operators", mails: 38 },
+    { unit: "Trainingsunit", mails: 18 },
+    { unit: "New Performers", mails: 12 },
+  ],
+};
+
 export const bonusData = {
   lastMonth: 12500,
   last12Months: 148000,
