@@ -102,7 +102,7 @@ function AutoScrollArea({ children, isCompact }: { children: React.ReactNode; is
   );
 }
 
-export default function TVRanglijsten() {
+function RanglijstenContent() {
   const [jaar, setJaar] = useState("2026");
   const [periode, setPeriode] = useState("Week");
   const [selectedPeriode, setSelectedPeriode] = useState("P1");
@@ -127,20 +127,19 @@ export default function TVRanglijsten() {
   const toggleColumn = useCallback((title: string) => {
     setSelectedColumns((prev) => {
       if (prev.includes(title)) {
-        if (prev.length <= 1) return prev; // keep at least 1
+        if (prev.length <= 1) return prev;
         return prev.filter((t) => t !== title);
       }
       return [...prev, title];
     });
   }, []);
 
-  // Determine active columns
   const activeView = isCompact ? autoView : (periode === "Periode" ? "periode" : "week");
   const allColumns = activeView === "periode" ? ranglijstenPeriodeColumns : ranglijstenWeekColumns;
   const columns = allColumns.filter((col) => selectedColumns.includes(col.title));
 
   return (
-    <TVDashboardLayout title="Ranglijsten">
+    <>
       {/* Filters + TV indicator */}
       <div className="flex items-center gap-4 mb-4">
         {!isCompact && (
@@ -287,6 +286,14 @@ export default function TVRanglijsten() {
           </div>
         ))}
       </div>
+    </>
+  );
+}
+
+export default function TVRanglijsten() {
+  return (
+    <TVDashboardLayout title="Ranglijsten">
+      <RanglijstenContent />
     </TVDashboardLayout>
   );
 }
