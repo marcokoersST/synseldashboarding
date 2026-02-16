@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
-import { ranglijstenWeekColumns, ranglijstenPeriodeColumns, ranglijstenFilters } from "@/data/ranglijstenData";
+import { ranglijstenWeekColumns, ranglijstenPeriodeColumns, ranglijstenFilters, allColumnTitles } from "@/data/ranglijstenData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3 } from "lucide-react";
 
 function ComparisonBar({ current, previous }: { current: number; previous: number }) {
   const delta = previous > 0 ? ((current - previous) / previous) * 100 : 0;
@@ -14,7 +17,7 @@ function ComparisonBar({ current, previous }: { current: number; previous: numbe
 
   return (
     <div className="mt-2 space-y-1">
-      <div className="relative h-1.5 rounded-full bg-muted overflow-hidden">
+      <div className="relative h-2 rounded-full bg-muted overflow-hidden">
         <div
           className="absolute inset-y-0 left-0 rounded-full bg-primary/25"
           style={{ width: `${previousPct}%` }}
@@ -24,7 +27,12 @@ function ComparisonBar({ current, previous }: { current: number; previous: numbe
           style={{ width: `${currentPct}%` }}
         />
       </div>
-      <p className="text-[10px] text-muted-foreground">
+      <p className="text-xs text-muted-foreground flex items-center gap-1">
+        {delta >= 0 ? (
+          <TrendingUp className="w-3 h-3 text-accent" />
+        ) : (
+          <TrendingDown className="w-3 h-3 text-destructive" />
+        )}
         <span className={cn("font-semibold", delta >= 0 ? "text-accent" : "text-destructive")}>
           {delta >= 0 ? "+" : ""}{delta.toFixed(0)}%
         </span>
@@ -42,10 +50,64 @@ function getRankStyle(rank: number) {
   return "";
 }
 
+function RankIcon({ rank }: { rank: number }) {
+  if (rank === 1) return <Trophy className="w-3.5 h-3.5 text-amber-500" />;
+  if (rank === 2) return <Medal className="w-3.5 h-3.5 text-slate-400" />;
+  if (rank === 3) return <Medal className="w-3.5 h-3.5 text-orange-400" />;
+  return null;
+}
+
+function AutoScrollArea({ children, isCompact }: { children: React.ReactNode; isCompact: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const directionRef = useRef<"down" | "up">("down");
+  const pauseRef = useRef(false);
+
+  useEffect(() => {
+    if (!isCompact) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const interval = setInterval(() => {
+      if (pauseRef.current) return;
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      if (maxScroll <= 0) return;
+
+      if (directionRef.current === "down") {
+        el.scrollTop += 1;
+        if (el.scrollTop >= maxScroll) {
+          directionRef.current = "up";
+          pauseRef.current = true;
+          setTimeout(() => { pauseRef.current = false; }, 2000);
+        }
+      } else {
+        el.scrollTop -= 1;
+        if (el.scrollTop <= 0) {
+          directionRef.current = "down";
+          pauseRef.current = true;
+          setTimeout(() => { pauseRef.current = false; }, 2000);
+        }
+      }
+    }, 40);
+
+    return () => clearInterval(interval);
+  }, [isCompact]);
+
+  return (
+    <div
+      ref={containerRef}
+      className={cn("mt-3 overflow-hidden", isCompact ? "h-[calc(100vh-240px)]" : "h-[calc(100vh-320px)] overflow-y-auto")}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function TVRanglijsten() {
   const [jaar, setJaar] = useState("2026");
   const [periode, setPeriode] = useState("Week");
-  const [unit, setUnit] = useState("Unit");
+  const [selectedPeriode, setSelectedPeriode] = useState("P1");
+  const [unit, setUnit] = useState("Alle units");
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const isCompact = useTVCompact();
 
   // Auto-swap between week and periode in TV mode
@@ -62,9 +124,20 @@ export default function TVRanglijsten() {
     return () => clearInterval(interval);
   }, [isCompact]);
 
+  const toggleColumn = useCallback((title: string) => {
+    setSelectedColumns((prev) => {
+      if (prev.includes(title)) {
+        if (prev.length <= 1) return prev; // keep at least 1
+        return prev.filter((t) => t !== title);
+      }
+      return [...prev, title];
+    });
+  }, []);
+
   // Determine active columns
   const activeView = isCompact ? autoView : (periode === "Periode" ? "periode" : "week");
-  const columns = activeView === "periode" ? ranglijstenPeriodeColumns : ranglijstenWeekColumns;
+  const allColumns = activeView === "periode" ? ranglijstenPeriodeColumns : ranglijstenWeekColumns;
+  const columns = allColumns.filter((col) => selectedColumns.includes(col.title));
 
   return (
     <TVDashboardLayout title="Ranglijsten">
@@ -73,7 +146,7 @@ export default function TVRanglijsten() {
         {!isCompact && (
           <>
             <Select value={jaar} onValueChange={setJaar}>
-              <SelectTrigger className="w-[160px] bg-card border-border">
+              <SelectTrigger className="w-[140px] bg-card border-border">
                 <SelectValue placeholder="Jaar" />
               </SelectTrigger>
               <SelectContent>
@@ -84,7 +157,7 @@ export default function TVRanglijsten() {
             </Select>
 
             <Select value={periode} onValueChange={setPeriode}>
-              <SelectTrigger className="w-[160px] bg-card border-border">
+              <SelectTrigger className="w-[140px] bg-card border-border">
                 <SelectValue placeholder="Periode" />
               </SelectTrigger>
               <SelectContent>
@@ -93,6 +166,40 @@ export default function TVRanglijsten() {
                 ))}
               </SelectContent>
             </Select>
+
+            <Select value={selectedPeriode} onValueChange={setSelectedPeriode}>
+              <SelectTrigger className="w-[100px] bg-card border-border">
+                <SelectValue placeholder="Periode" />
+              </SelectTrigger>
+              <SelectContent>
+                {ranglijstenFilters.periodenummers.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Columns3 className="w-4 h-4" />
+                  Kolommen ({selectedColumns.length})
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56">
+                <p className="text-sm font-medium mb-3">Zichtbare kolommen</p>
+                <div className="space-y-2">
+                  {allColumnTitles.map((title) => (
+                    <label key={title} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={selectedColumns.includes(title)}
+                        onCheckedChange={() => toggleColumn(title)}
+                      />
+                      {title}
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
 
             <div className="flex-1" />
 
@@ -140,7 +247,7 @@ export default function TVRanglijsten() {
             </p>
             <ComparisonBar current={col.total} previous={col.previousTotal} />
 
-            <ScrollArea className={cn("mt-3", isCompact ? "h-[calc(100vh-240px)]" : "h-[calc(100vh-320px)]")}>
+            <AutoScrollArea isCompact={isCompact}>
               <div className="space-y-0">
                 {col.entries.map((entry) => (
                   <div
@@ -148,27 +255,35 @@ export default function TVRanglijsten() {
                     className={cn(
                       "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5",
                       entry.rank <= 10 ? "border-b border-border/20" : "border-b border-border/10",
-                      getRankStyle(entry.rank)
+                      getRankStyle(entry.rank),
+                      entry.isHot && "bg-orange-50/60"
                     )}
                   >
                     <span className={cn(
-                      "w-5 text-right shrink-0 text-xs",
+                      "w-5 text-right shrink-0 text-xs flex items-center justify-end gap-0.5",
                       entry.rank <= 3 ? "font-bold" : "text-muted-foreground"
                     )}>
-                      {entry.rank}.
+                      <RankIcon rank={entry.rank} />
+                      {entry.rank > 3 && `${entry.rank}.`}
                     </span>
-                    <span className="truncate flex-1 text-foreground">{entry.name}</span>
                     <span className={cn(
-                      "tabular-nums shrink-0",
+                      "truncate flex-1 text-foreground",
+                      entry.isHot && "text-orange-700 font-medium"
+                    )}>
+                      {entry.name}
+                    </span>
+                    <span className={cn(
+                      "tabular-nums shrink-0 flex items-center gap-1",
                       entry.rank <= 3 ? "font-bold" : "font-semibold",
                       "text-foreground"
                     )}>
+                      {entry.isHot && <Flame className="w-3 h-3 text-orange-500" />}
                       {entry.value}
                     </span>
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </AutoScrollArea>
           </div>
         ))}
       </div>
