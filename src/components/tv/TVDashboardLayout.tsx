@@ -35,7 +35,7 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
   if (isFullscreen) {
     return (
       <TVCompactContext.Provider value={true}>
-        <div className="fixed inset-0 bg-white text-foreground overflow-hidden z-[9999]">
+        <div className="fixed inset-0 bg-white text-foreground overflow-hidden z-[9999] tv-mode">
           <div className="p-4 h-screen flex flex-col">
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-xl font-bold">{title}</h1>
