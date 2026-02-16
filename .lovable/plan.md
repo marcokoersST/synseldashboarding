@@ -1,39 +1,46 @@
 
 
-# Conversieformules verbeteren
+# Update Sales Funnel (Periode) to match Week design
 
-## Problemen
-1. **Dubbel "Inschrijvingen"**: De groepsnaam toont twee keer "1. Inschrijvingen" voor zowel Inschr. % als Intake %. Dit moet duidelijker met een specifiekere label per rij.
-2. **Deelteken**: Het `/` symbool wordt gebruikt als deelteken in formules, maar moet `÷` zijn.
-3. **Tekst afgekapt in TV-modus**: De groepsnamen worden ingekort (truncated) met `80px` breedte terwijl er genoeg ruimte is.
+## Overview
+The Period page currently has a very basic layout (just 4 KPI tiles + 2 bottom cards). It needs to match the Week page's full-featured design with conversion arrows, unit breakdown table, and 3-column bottom row in TV mode.
 
-## Wijzigingen
+## Changes
 
-### `src/components/tv/ConversionLegend.tsx`
+### 1. `src/data/tvData.ts` -- Add period-specific data
 
-1. **Specifiekere groepslabels** -- Geef elke rij een uniek, beschrijvend label in de `group` kolom zodat het niet twee keer "1. Inschrijvingen" toont:
-   - "1. Inschrijvingen" + "Inschr. %" wordt groep "Inschrijving"
-   - "1. Inschrijvingen" + "Intake %" wordt groep "Intake"
-   - "2. Acquisitie" + "Acq. %" wordt groep "Acquisitie"
-   - "2. Acquisitie" + "Acq. ratio" wordt groep "Acq. ratio"
-   - "3. Voorstellen" blijft "Voorstellen"
-   - "4. Uitnodigingen" blijft "Uitnodigingen"
-   - "5. Gesprekken" blijft "Gesprekken"
-   - "6. Vervolg" blijft "Vervolg"
-   - "7. Geplaatst" + "Plts. %" wordt "Plaatsing"
-   - "7. Geplaatst" + "Hit rate" wordt "Hit rate"
+- **`periodOverallConversions`**: Conversion rates between period KPI steps (Inschrijvingen -> Acquisities -> Voorstellen -> Gesprekken), same structure as `weekOverallConversions` but with 3 steps instead of 4 (no Plaatsingen in period metrics).
+- **`periodUnitBreakdown`**: Unit breakdown data for the period view, same `UnitFunnelRow[]` structure as `weekUnitBreakdown` but with scaled-up numbers (roughly 4x week values to represent a full period).
+- **Period call/mail stats**: Add `periodCallStatsDaily` (daily breakdown chart data for period), `periodGesprekkenPerUnit`, and `periodMailStats` to enable the full CallStats "week" mode layout for period view.
 
-2. **Deelteken** -- Vervang alle `/` in formule-strings door `÷`:
-   - "Ingeschreven / Toegewezen" wordt "Ingeschreven ÷ Toegewezen"
-   - Idem voor alle andere formules
+### 2. `src/components/tv/UnitFunnelBreakdown.tsx` -- Accept data as prop
 
-3. **Popover formules** -- Dezelfde wijzigingen gelden automatisch voor de popover (gebruikt dezelfde `conversionFormulas` array)
+- Add an optional `data` prop to accept either `weekUnitBreakdown` or `periodUnitBreakdown`
+- Default to `weekUnitBreakdown` if no prop is provided (backward compatible)
+- Update `getTotalValue` to accept a data parameter instead of hardcoding `weekUnitBreakdown`
 
-### `src/components/tv/ConversionFormulasCard.tsx`
+### 3. `src/components/tv/ConversionFormulasCard.tsx` -- Accept data as prop
 
-4. **Bredere groepskolom in TV-modus** -- Vergroot de groepskolom van `80px` naar `110px` in compact mode en van `100px` naar `130px` in normaal mode. Verwijder `truncate` class van de groepsnaam zodat tekst niet wordt afgekapt.
+- Add an optional `data` prop to pass through to `getTotalValue` so it calculates actuals from the correct dataset (week vs period)
 
-## Technisch detail
+### 4. `src/pages/TVSalesFunnelPeriod.tsx` -- Full redesign
 
-Alleen de `conversionFormulas` array en de grid-template in `ConversionFormulasCard` worden aangepast. Geen wijzigingen nodig in `UnitFunnelBreakdown.tsx` omdat die component zijn eigen `columnGroups` gebruikt (met genummerde groepen voor de tabelkop).
+Replace the simple layout with the same structure as the Week page:
+
+- Wrap content in a `PeriodContent` child component that uses `useTVCompact()`
+- **Top row**: KPI tiles with conversion arrows between them (using `periodFunnelMetrics` + `periodOverallConversions`)
+- **Middle section**: `UnitFunnelBreakdown` with period data (flex-[3] in compact mode)
+- **Bottom row**: 3-column grid in TV mode with `CallStats mode="period"` (updated to show chart), `CandidatesPipeline`, and `ConversionFormulasCard`; 2-column in normal mode
+
+### 5. `src/components/tv/CallStats.tsx` -- Enhance period mode
+
+Currently period mode shows only summary stats (no chart). Update it to match the week mode layout:
+- Add daily chart data for the period (using new `periodCallStatsDaily` data)
+- Show the same 4 KPI summary boxes (Uitgaand, Gesprekstijd, Gesprekken, Acq. mails)
+- Show unit breakdown badges
+- Show combined bar chart with legend
+
+## Technical Details
+
+The key architectural change is making `UnitFunnelBreakdown` and `ConversionFormulasCard` data-driven via props rather than hardcoded to week data. The `getTotalValue` function will need to be parameterized to accept a `UnitFunnelRow[]` array. The `columnGroups` definition stays the same since both week and period share the same funnel structure.
 
