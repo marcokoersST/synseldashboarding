@@ -1,9 +1,7 @@
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { CompetitionCard } from "@/components/tv/CompetitionCard";
 import { MargePodium } from "@/components/tv/MargePodium";
-import { BekerPodiumBar } from "@/components/tv/BekerPodiumBar";
-import { BekerLeaderboard } from "@/components/tv/BekerLeaderboard";
-import { omzetKoning, plaatsingsKoning, margeBaas, gesprekkenGuru, totalPotentialMargin, bekerConsultants } from "@/data/tvData";
+import { omzetKoning, plaatsingsKoning, margeBaas, gesprekkenGuru, totalPotentialMargin } from "@/data/tvData";
 const fmt = (v: number) => `€${Math.abs(v) >= 1000 ? `${(Math.abs(v) / 1000).toFixed(0)}K` : Math.abs(v).toLocaleString("nl-NL")}`;
 const fmtCount = (v: number) => `${v} pl.`;
 const fmtGesprekken = (v: number) => `${v}`;
@@ -13,9 +11,41 @@ function BekerContent() {
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-3 h-full">
-        <BekerPodiumBar consultants={bekerConsultants} />
-        <BekerLeaderboard consultants={bekerConsultants} />
+      <div className="flex gap-4 h-full">
+        <div className="w-1/3 flex flex-col">
+          <MargePodium entries={margeBaas} plaatsingen={plaatsingsKoning} gesprekken={gesprekkenGuru} />
+        </div>
+        <div className="w-2/3 grid grid-cols-2 grid-rows-2 gap-3">
+          <CompetitionCard
+            title="Omzetkoning"
+            icon="crown"
+            entries={omzetKoning.stijgers}
+            dalers={omzetKoning.dalers}
+            formatValue={(v) => `${v >= 0 ? "+" : ""}${fmt(v)}`}
+            subtitle="Grootste stijgers & dalers in omzet"
+          />
+          <CompetitionCard
+            title="Plaatsingskoning"
+            icon="trophy"
+            entries={plaatsingsKoning}
+            formatValue={fmtCount}
+            subtitle={`Potentiële marge: €${(totalPotentialMargin / 1000000).toFixed(1)}M`}
+          />
+          <CompetitionCard
+            title="Margebaas"
+            icon="wallet"
+            entries={margeBaas}
+            formatValue={fmt}
+            subtitle="Dealbedrag alle plaatsingen"
+          />
+          <CompetitionCard
+            title="Gesprekken Guru"
+            icon="message"
+            entries={gesprekkenGuru}
+            formatValue={fmtGesprekken}
+            subtitle="Totaal gesprekken in de periode"
+          />
+        </div>
       </div>
     );
   }
