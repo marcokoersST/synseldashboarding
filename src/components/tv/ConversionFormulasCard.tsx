@@ -40,8 +40,8 @@ export function ConversionFormulasCard() {
       <div className={cn(
         "grid items-center border-b border-border text-muted-foreground font-medium uppercase tracking-wide",
         compact
-          ? "grid-cols-[16px_80px_1fr_48px_48px] gap-2 text-[9px] px-1.5 pb-1 mb-1"
-          : "grid-cols-[16px_100px_1fr_60px_60px] gap-3 text-[10px] px-2 pb-1.5 mb-1.5"
+          ? "grid-cols-[16px_110px_1fr_48px_48px] gap-2 text-[9px] px-1.5 pb-1 mb-1"
+          : "grid-cols-[16px_130px_1fr_60px_60px] gap-3 text-[10px] px-2 pb-1.5 mb-1.5"
       )}>
         <span />
         <span>Groep</span>
@@ -64,12 +64,12 @@ export function ConversionFormulasCard() {
               className={cn(
                 "grid items-center rounded",
                 compact
-                  ? "grid-cols-[16px_80px_1fr_48px_48px] gap-2 text-[11px] px-1.5 py-1"
-                  : "grid-cols-[16px_100px_1fr_60px_60px] gap-3 text-xs px-2 py-1 bg-muted/20"
+                  ? "grid-cols-[16px_110px_1fr_48px_48px] gap-2 text-[11px] px-1.5 py-1"
+                  : "grid-cols-[16px_130px_1fr_60px_60px] gap-3 text-xs px-2 py-1 bg-muted/20"
               )}
             >
               <IconComp className="text-muted-foreground w-3 h-3" />
-              <span className="text-muted-foreground truncate">{f.group}</span>
+              <span className="text-muted-foreground">{f.group}</span>
               <span className="font-medium text-foreground truncate">{f.formula}</span>
               <span className={cn("text-right font-bold tabular-nums", colorClass)}>{actualStr}</span>
               <span className="text-right text-muted-foreground tabular-nums">{f.benchmark}</span>
