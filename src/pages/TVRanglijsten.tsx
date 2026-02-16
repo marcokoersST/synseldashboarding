@@ -57,20 +57,30 @@ function RankIcon({ rank }: { rank: number }) {
   return null;
 }
 
-function AutoScrollArea({ children, isCompact }: { children: React.ReactNode; isCompact: boolean }) {
+function AutoScrollArea({ children, isCompact, onCycleComplete }: { children: React.ReactNode; isCompact: boolean; onCycleComplete?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const directionRef = useRef<"down" | "up">("down");
   const pauseRef = useRef(false);
+  const onCycleCompleteRef = useRef(onCycleComplete);
+  onCycleCompleteRef.current = onCycleComplete;
 
   useEffect(() => {
     if (!isCompact) return;
     const el = containerRef.current;
     if (!el) return;
 
+    // Reset scroll position on mount/re-mount
+    el.scrollTop = 0;
+    directionRef.current = "down";
+
     const interval = setInterval(() => {
       if (pauseRef.current) return;
       const maxScroll = el.scrollHeight - el.clientHeight;
-      if (maxScroll <= 0) return;
+      if (maxScroll <= 0) {
+        // Nothing to scroll — signal cycle complete immediately
+        onCycleCompleteRef.current?.();
+        return;
+      }
 
       if (directionRef.current === "down") {
         el.scrollTop += 1;
@@ -84,6 +94,8 @@ function AutoScrollArea({ children, isCompact }: { children: React.ReactNode; is
         if (el.scrollTop <= 0) {
           directionRef.current = "down";
           pauseRef.current = true;
+          // Full cycle complete (down then back up) — signal swap
+          onCycleCompleteRef.current?.();
           setTimeout(() => { pauseRef.current = false; }, 2000);
         }
       }
@@ -114,6 +126,22 @@ function RanglijstenContent() {
   const [autoView, setAutoView] = useState<"week" | "periode">("week");
   const [tvViewMode, setTvViewMode] = useState<"auto" | "week" | "periode">("auto");
 
+  const scrollCycleCountRef = useRef(0);
+
+  const handleScrollCycleComplete = useCallback(() => {
+    if (!isCompact || tvViewMode !== "auto") return;
+    scrollCycleCountRef.current += 1;
+    // We get one callback per column — swap after first column signals
+    if (scrollCycleCountRef.current === 1) {
+      setAutoView((v) => (v === "week" ? "periode" : "week"));
+    }
+  }, [isCompact, tvViewMode]);
+
+  // Reset cycle counter whenever the view actually changes
+  useEffect(() => {
+    scrollCycleCountRef.current = 0;
+  }, [autoView]);
+
   useEffect(() => {
     if (!isCompact) {
       setAutoView("week");
@@ -121,10 +149,6 @@ function RanglijstenContent() {
     }
     if (tvViewMode === "week") { setAutoView("week"); return; }
     if (tvViewMode === "periode") { setAutoView("periode"); return; }
-    const interval = setInterval(() => {
-      setAutoView((v) => (v === "week" ? "periode" : "week"));
-    }, 10000);
-    return () => clearInterval(interval);
   }, [isCompact, tvViewMode]);
 
   const toggleColumn = useCallback((title: string) => {
@@ -301,7 +325,7 @@ function RanglijstenContent() {
                     </div>
                   ))}
                 </div>
-                <AutoScrollArea isCompact={isCompact}>
+                <AutoScrollArea isCompact={isCompact} onCycleComplete={handleScrollCycleComplete}>
                   <div className="space-y-0">
                     {col.entries.filter(e => e.rank > 10).map((entry) => (
                       <div
