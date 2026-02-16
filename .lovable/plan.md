@@ -1,40 +1,30 @@
 
-# Data Labels op Barchart -- CallStats
+# ConversionFormulasCard -- Kolom Headers & Meer Ruimte
 
 ## Probleem
-De barchart in "Bel- & Mailstatistieken" toont alleen waarden bij hover (tooltip). De gebruiker wil de aantallen direct zichtbaar boven de bars en de categorienaam (dag) onder de bars.
-
-## Oplossing
-Recharts `LabelList` component gebruiken om data labels direct op de bars te renderen, zonder hover nodig.
+De "Actueel" en "Benchmark" waarden staan te dicht op elkaar zonder kolomheaders, waardoor het onduidelijk is welke kolom wat voorstelt. De data ziet er "crammed" uit.
 
 ## Wijzigingen
 
-### `src/components/tv/CallStats.tsx`
+### `src/components/tv/ConversionFormulasCard.tsx`
 
-1. **Import `LabelList`** uit recharts naast de bestaande imports
-2. **Voeg `LabelList` toe aan beide `Bar` componenten**:
-   - `<Bar dataKey="outbound">` krijgt een `<LabelList position="top" />` die het aantal gesprekken boven elke bar toont
-   - `<Bar dataKey="mails">` krijgt een `<LabelList position="top" />` die het aantal mails boven elke bar toont
-3. **Styling**: Labels krijgen `fontSize: 10`, `fill: "hsl(var(--foreground))"`, en `fontWeight: 600` voor leesbaarheid
-4. **XAxis blijft behouden** -- de dagnamen (Ma, Di, Wo, etc.) staan al onder de bars via de XAxis component
-5. **Tooltip behouden** als extra detail bij hover, maar de primaire info is nu altijd zichtbaar
-6. **Top margin verhogen** op de `BarChart` (`margin.top` van 5 naar 15) zodat de labels boven de hoogste bar niet worden afgesneden
+1. **Kolomheaders toevoegen** -- Een header-rij boven de data met labels: "Groep", "Formule", "Actueel" en "Doel"
+2. **Kolom breedtes vergroten** -- De grid template aanpassen:
+   - Compact: `grid-cols-[14px_80px_1fr_32px_32px]` wordt `grid-cols-[16px_80px_1fr_48px_48px]`
+   - Normaal: `grid-cols-[16px_100px_1fr_50px_50px]` wordt `grid-cols-[16px_100px_1fr_60px_60px]`
+3. **Gap vergroten** -- `gap-1.5` naar `gap-2` (compact) en `gap-2` naar `gap-3` (normaal) voor meer horizontale ruimte
+4. **Header styling** -- Headers in `text-[10px] text-muted-foreground font-medium uppercase tracking-wide` met een subtiele border-bottom
 
 ### Technisch detail
 
 ```text
-Huidige bar rendering:
-  <Bar dataKey="outbound" ... />
-  <Bar dataKey="mails" ... />
+Huidige grid:
+  [icon 14px] [groep 80px] [formule 1fr] [actueel 32px] [doel 32px]  gap-1.5
 
-Nieuwe bar rendering:
-  <Bar dataKey="outbound" ...>
-    <LabelList dataKey="outbound" position="top" fontSize={10} fill="hsl(var(--foreground))" fontWeight={600} />
-  </Bar>
-  <Bar dataKey="mails" ...>
-    <LabelList dataKey="mails" position="top" fontSize={10} fill="hsl(var(--gold))" fontWeight={600} />
-  </Bar>
+Nieuwe grid:
+  Header rij:  [—] [Groep] [Formule] [Actueel] [Doel]
+  Data rijen:  [icon 16px] [groep 80px] [formule 1fr] [actueel 48px] [doel 48px]  gap-2
 ```
 
 Bestand dat gewijzigd wordt:
-- `src/components/tv/CallStats.tsx`
+- `src/components/tv/ConversionFormulasCard.tsx`
