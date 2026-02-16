@@ -12,7 +12,7 @@ function WeekContent() {
   const compact = useTVCompact();
 
   return (
-    <div className={cn("flex flex-col h-full", compact ? "gap-2" : "gap-4")}>
+    <div className={cn("flex flex-col h-full", compact ? "gap-1" : "gap-4")}>
       {/* KPI tiles with conversion arrows */}
       <div className={cn("flex items-stretch shrink-0", compact ? "gap-1" : "gap-0")}>
         {weekFunnelMetrics.map((m, i) => (
@@ -33,7 +33,7 @@ function WeekContent() {
       </div>
 
       {/* Bottom row - compact */}
-      <div className={cn("grid grid-cols-2 shrink-0", compact ? "gap-2 max-h-[180px]" : "gap-4")}>
+      <div className={cn("grid grid-cols-2 shrink-0", compact ? "gap-1 max-h-[140px]" : "gap-4")}>
         <CallStats mode="week" />
         <CandidatesPipeline />
       </div>

@@ -55,22 +55,22 @@ export function CallStats({ mode }: CallStatsProps) {
       <div className={cn("grid grid-cols-4", compact ? "gap-2 mb-1" : "gap-4 mb-4")}>
         <div className="text-center">
           <Phone className="w-4 h-4 text-primary mx-auto mb-1" />
-          <p className={cn("font-bold text-foreground", compact ? "text-lg" : "text-2xl")}>{totalOutbound}</p>
+          <p className={cn("font-bold text-foreground", compact ? "text-base" : "text-2xl")}>{totalOutbound}</p>
           <p className="text-xs text-muted-foreground">Uitgaand</p>
         </div>
         <div className="text-center">
           <Clock className="w-4 h-4 text-accent mx-auto mb-1" />
-          <p className={cn("font-bold text-foreground", compact ? "text-lg" : "text-2xl")}>{hours}u {mins}m</p>
+          <p className={cn("font-bold text-foreground", compact ? "text-base" : "text-2xl")}>{hours}u {mins}m</p>
           <p className="text-xs text-muted-foreground">Gesprekstijd</p>
         </div>
         <div className="text-center">
           <CalendarCheck className="w-4 h-4 text-chart-primary mx-auto mb-1" />
-          <p className={cn("font-bold text-foreground", compact ? "text-lg" : "text-2xl")}>{totalGesprekken}</p>
+          <p className={cn("font-bold text-foreground", compact ? "text-base" : "text-2xl")}>{totalGesprekken}</p>
           <p className="text-xs text-muted-foreground">Gesprekken</p>
         </div>
         <div className="text-center">
           <Mail className="w-4 h-4 text-gold mx-auto mb-1" />
-          <p className={cn("font-bold text-foreground", compact ? "text-lg" : "text-2xl")}>{weekMailStats.totalAcquisitieMails}</p>
+          <p className={cn("font-bold text-foreground", compact ? "text-base" : "text-2xl")}>{weekMailStats.totalAcquisitieMails}</p>
           <p className="text-xs text-muted-foreground">Acq. mails</p>
         </div>
       </div>
@@ -86,7 +86,7 @@ export function CallStats({ mode }: CallStatsProps) {
           ))}
         </div>
       )}
-      <div className={cn(compact ? "h-16" : "h-36")}>
+      <div className={cn(compact ? "h-12" : "h-36")}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={combinedDailyData}>
             <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: compact ? 10 : 12, fill: "hsl(var(--muted-foreground))" }} />
