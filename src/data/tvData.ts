@@ -45,7 +45,6 @@ export interface PeriodRevenue {
 // Dashboard 1: Week Sales Funnel
 export const weekFunnelMetrics: FunnelMetric[] = [
   { label: "Inschrijvingen", value: 42, change: 12, icon: "UserPlus" },
-  { label: "Intakes", value: 28, change: 5, icon: "ClipboardList" },
   { label: "Acquisities", value: 15, change: -3, icon: "Target" },
   { label: "Voorstellen", value: 22, change: 8, icon: "FileText" },
   { label: "Gesprekken", value: 18, change: 2, icon: "MessageSquare" },
@@ -55,7 +54,6 @@ export const weekFunnelMetrics: FunnelMetric[] = [
 // Dashboard 2: Period Sales Funnel
 export const periodFunnelMetrics: FunnelMetric[] = [
   { label: "Inschrijvingen", value: 186, change: 9, icon: "UserPlus" },
-  { label: "Intakes", value: 124, change: 4, icon: "ClipboardList" },
   { label: "Acquisities", value: 68, change: -2, icon: "Target" },
   { label: "Voorstellen", value: 95, change: 11, icon: "FileText" },
   { label: "Gesprekken", value: 78, change: 6, icon: "MessageSquare" },
@@ -223,8 +221,7 @@ export interface UnitConversion {
 }
 
 export const weekOverallConversions: ConversionStep[] = [
-  { from: "Inschrijvingen", to: "Intakes", rate: 66.7 },
-  { from: "Intakes", to: "Acquisities", rate: 53.6 },
+  { from: "Inschrijvingen", to: "Acquisities", rate: 35.7 },
   { from: "Acquisities", to: "Voorstellen", rate: 146.7 },
   { from: "Voorstellen", to: "Gesprekken", rate: 81.8 },
   { from: "Gesprekken", to: "Plaatsingen", rate: 33.3 },
