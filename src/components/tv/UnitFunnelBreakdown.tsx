@@ -114,9 +114,9 @@ export function UnitFunnelBreakdown() {
   const compact = useTVCompact();
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto", compact ? "p-3" : "p-5")}>
+    <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto h-full", compact ? "p-3" : "p-5")}>
       <div className={cn("flex items-center gap-1.5", compact ? "mb-2" : "mb-4")}>
-        <h3 className={cn("font-semibold text-foreground", compact ? "text-xs" : "text-sm")}>Uitsplitsing per Unit & Conversies</h3>
+        <h3 className={cn("font-semibold text-foreground", compact ? "text-sm" : "text-sm")}>Uitsplitsing per Unit & Conversies</h3>
         {!compact && <ConversionLegendPopover />}
       </div>
 
@@ -129,7 +129,7 @@ export function UnitFunnelBreakdown() {
               <TableHead
                 key={g.group}
                 colSpan={g.subs.length}
-                className={cn("text-center border-l border-border/50 text-muted-foreground", compact ? "text-[10px] px-1" : "text-[10px]")}
+                className={cn("text-center border-l border-border/50 text-muted-foreground", compact ? "text-xs px-1.5" : "text-[10px]")}
               >
                 {g.group}
               </TableHead>
@@ -147,12 +147,12 @@ export function UnitFunnelBreakdown() {
                       "text-center whitespace-nowrap",
                       si === 0 && "border-l border-border/50",
                       sub.type === "conv" ? "text-muted-foreground bg-muted/30" : "",
-                      compact ? "text-[9px] px-1 py-1" : "text-[10px] px-1.5"
+                      compact ? "text-[11px] px-1.5 py-1.5" : "text-[10px] px-1.5"
                     )}
                   >
                     {IconComp ? (
                       <span className="inline-flex items-center justify-center" title={sub.label}>
-                        <IconComp className={cn(compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
+                        <IconComp className={cn(compact ? "w-3.5 h-3.5" : "w-3 h-3")} />
                       </span>
                     ) : sub.label}
                   </TableHead>
@@ -164,9 +164,9 @@ export function UnitFunnelBreakdown() {
         <TableBody>
           {weekUnitBreakdown.map((row) => (
             <TableRow key={row.unit}>
-              <TableCell className={cn("font-medium", compact && "py-1 text-xs")}>
+              <TableCell className={cn("font-medium", compact ? "py-1.5 text-sm" : "")}>
                 <span className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: row.color }} />
+                  <span className="w-3 h-3 rounded-full shrink-0" style={{ background: row.color }} />
                   {row.unit}
                 </span>
               </TableCell>
@@ -181,8 +181,8 @@ export function UnitFunnelBreakdown() {
                       className={cn(
                         "text-center tabular-nums",
                         si === 0 && "border-l border-border/50",
-                        isConv ? cn("bg-muted/30 font-bold", convRate !== null && rateColor(convRate)) : "font-semibold",
-                        compact ? "py-1 text-[10px] px-1" : "text-[11px] px-1.5"
+                      isConv ? cn("bg-muted/30 font-bold", convRate !== null && rateColor(convRate)) : "font-semibold",
+                        compact ? "py-1.5 text-xs px-1.5" : "text-[11px] px-1.5"
                       )}
                     >
                       {val}
@@ -194,7 +194,7 @@ export function UnitFunnelBreakdown() {
           ))}
           {/* Totals row */}
           <TableRow className="border-t-2 border-border">
-            <TableCell className={cn("font-bold", compact && "py-1 text-xs")}>Totaal</TableCell>
+            <TableCell className={cn("font-bold", compact ? "py-1.5 text-sm" : "")}>Totaal</TableCell>
             {columnGroups.flatMap((g, gi) =>
               g.subs.map((sub, si) => {
                 const isConv = sub.type === "conv";
@@ -207,7 +207,7 @@ export function UnitFunnelBreakdown() {
                       "text-center tabular-nums font-bold",
                       si === 0 && "border-l border-border/50",
                       isConv ? cn("bg-muted/30", convRate !== null && rateColor(convRate)) : "",
-                      compact ? "py-1 text-[10px] px-1" : "text-[11px] px-1.5"
+                      compact ? "py-1.5 text-xs px-1.5" : "text-[11px] px-1.5"
                     )}
                   >
                     {val}

@@ -29,12 +29,12 @@ function WeekContent() {
       </div>
 
       {/* Unit breakdown + conversions merged - main focus */}
-      <div className="flex-1 min-h-0 overflow-auto">
+      <div className={cn("min-h-0 overflow-auto", compact ? "flex-[2]" : "flex-1")}>
         <UnitFunnelBreakdown />
       </div>
 
-      {/* Bottom row - compact */}
-      <div className={cn("grid shrink-0", compact ? "grid-cols-3 gap-1 max-h-[140px]" : "grid-cols-2 gap-4")}>
+      {/* Bottom row - fills remaining space */}
+      <div className={cn("grid min-h-0", compact ? "grid-cols-3 gap-1 flex-1" : "grid-cols-2 gap-4 shrink-0")}>
         <CallStats mode="week" />
         <CandidatesPipeline />
         {compact && <ConversionFormulasCard />}

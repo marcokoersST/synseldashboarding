@@ -32,11 +32,11 @@ export function ConversionFormulasCard() {
   });
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border h-full overflow-hidden", compact ? "p-2" : "p-5")}>
-      <h3 className={cn("font-semibold text-foreground", compact ? "text-[10px] mb-1" : "text-sm mb-3")}>
+    <div className={cn("bg-card rounded-xl border border-border h-full overflow-hidden flex flex-col", compact ? "p-3" : "p-5")}>
+      <h3 className={cn("font-semibold text-foreground", compact ? "text-xs mb-1" : "text-sm mb-3")}>
         Conversieformules & Benchmarks
       </h3>
-      <div className={cn("overflow-y-auto", compact ? "space-y-0.5" : "space-y-1.5")}>
+      <div className={cn("overflow-y-auto flex-1", compact ? "space-y-1" : "space-y-1.5")}>
         {conversionFormulas.map((f, i) => {
           const actualStr = actuals[i];
           const actualNum = parseFloat(actualStr);
@@ -50,11 +50,11 @@ export function ConversionFormulasCard() {
               className={cn(
                 "grid items-center rounded",
                 compact
-                  ? "grid-cols-[12px_70px_1fr_28px_28px] gap-1 text-[9px] px-1 py-0.5"
+                  ? "grid-cols-[14px_80px_1fr_32px_32px] gap-1.5 text-[11px] px-1.5 py-1"
                   : "grid-cols-[16px_100px_1fr_50px_50px] gap-2 text-xs px-2 py-1 bg-muted/20"
               )}
             >
-              <IconComp className={cn("text-muted-foreground", compact ? "w-2.5 h-2.5" : "w-3 h-3")} />
+              <IconComp className={cn("text-muted-foreground", compact ? "w-3 h-3" : "w-3 h-3")} />
               <span className="text-muted-foreground truncate">{f.group}</span>
               <span className="font-medium text-foreground truncate">{f.formula}</span>
               <span className={cn("text-right font-bold tabular-nums", colorClass)}>{actualStr}</span>
