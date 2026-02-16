@@ -50,9 +50,9 @@ export function CallStats({ mode }: CallStatsProps) {
   }));
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border h-full overflow-hidden", compact ? "p-2" : "p-5")}>
-      <h3 className={cn("font-semibold text-foreground", compact ? "text-[10px] mb-1" : "text-sm mb-4")}>Bel- & Mailstatistieken</h3>
-      <div className={cn("grid grid-cols-4", compact ? "gap-2 mb-1" : "gap-4 mb-4")}>
+    <div className={cn("bg-card rounded-xl border border-border h-full overflow-hidden flex flex-col", compact ? "p-3" : "p-5")}>
+      <h3 className={cn("font-semibold text-foreground", compact ? "text-xs mb-1" : "text-sm mb-4")}>Bel- & Mailstatistieken</h3>
+      <div className={cn("grid grid-cols-4", compact ? "gap-2 mb-2" : "gap-4 mb-4")}>
         <div className="text-center">
           <Phone className="w-4 h-4 text-primary mx-auto mb-1" />
           <p className={cn("font-bold text-foreground", compact ? "text-base" : "text-2xl")}>{totalOutbound}</p>
@@ -74,8 +74,8 @@ export function CallStats({ mode }: CallStatsProps) {
           <p className="text-xs text-muted-foreground">Acq. mails</p>
         </div>
       </div>
-      {!compact && (
-        <div className="flex flex-wrap gap-2 mb-4">
+      {(
+        <div className={cn("flex flex-wrap gap-2", compact ? "mb-1" : "mb-4")}>
           {weekGesprekkenPerUnit.map((u, i) => (
             <div key={u.unit} className="bg-muted/50 rounded-lg px-3 py-1.5 text-xs">
               <span className="text-muted-foreground">{u.unit}: </span>
@@ -86,7 +86,7 @@ export function CallStats({ mode }: CallStatsProps) {
           ))}
         </div>
       )}
-      <div className={cn(compact ? "h-12" : "h-36")}>
+      <div className={cn("min-h-0", compact ? "flex-1" : "h-36")}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={combinedDailyData}>
             <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: compact ? 10 : 12, fill: "hsl(var(--muted-foreground))" }} />
