@@ -22,14 +22,14 @@ const columnGroups: ColumnGroup[] = [
     subs: [
       { type: "value", key: "toegewezen", label: "Toegewezen" },
       { type: "value", key: "ingeschreven", label: "Ingeschreven" },
-      { type: "conv", from: "ingeschreven", to: "toegewezen", label: "#" },
+      { type: "conv", from: "ingeschreven", to: "toegewezen", label: "Inschr. %" },
     ],
   },
   {
     group: "2. Acquisitie",
     subs: [
       { type: "value", key: "acquisities", label: "Acquisitie" },
-      { type: "conv", from: "acquisities", to: "ingeschreven", label: "#" },
+      { type: "conv", from: "acquisities", to: "ingeschreven", label: "Acq. %" },
       { type: "conv", from: "acquisities", to: "toegewezen", label: "Acq. ratio" },
     ],
   },
@@ -38,7 +38,7 @@ const columnGroups: ColumnGroup[] = [
     subs: [
       { type: "value", key: "voorstellenPerKandidaat", label: "Per kandidaat", decimals: 1 },
       { type: "value", key: "voorstellenViaEmail", label: "Via email" },
-      { type: "conv", from: "voorstellenViaEmail", to: "ingeschreven", label: "#" },
+      { type: "conv", from: "voorstellenViaEmail", to: "ingeschreven", label: "Voorst. %" },
     ],
   },
   {
@@ -47,7 +47,7 @@ const columnGroups: ColumnGroup[] = [
       { type: "value", key: "uitnodigingenTotaal", label: "Totaal" },
       { type: "value", key: "nietUitgenodigd", label: "Niet uitgen." },
       { type: "value", key: "welUitgenodigd", label: "Wel uitgen." },
-      { type: "conv", from: "uitnodigingenTotaal", to: "acquisities", label: "#" },
+      { type: "conv", from: "uitnodigingenTotaal", to: "acquisities", label: "Uitn. %" },
     ],
   },
   {
@@ -56,7 +56,7 @@ const columnGroups: ColumnGroup[] = [
       { type: "value", key: "eersteGesprek", label: "1e gesprek" },
       { type: "value", key: "geenEersteGesprek", label: "Geen 1e" },
       { type: "value", key: "welEersteGesprek", label: "Wel 1e" },
-      { type: "conv", from: "eersteGesprek", to: "acquisities", label: "#" },
+      { type: "conv", from: "eersteGesprek", to: "acquisities", label: "Gespr. %" },
     ],
   },
   {
@@ -64,7 +64,7 @@ const columnGroups: ColumnGroup[] = [
     subs: [
       { type: "value", key: "vervolgGesprek", label: "Vervolg/meeloop" },
       { type: "value", key: "dealsluiter", label: "Dealsluiter" },
-      { type: "conv", from: "welEersteGesprek", to: "vervolgGesprek", label: "#" },
+      { type: "conv", from: "welEersteGesprek", to: "vervolgGesprek", label: "Verv. %" },
     ],
   },
   {
@@ -72,7 +72,7 @@ const columnGroups: ColumnGroup[] = [
     subs: [
       { type: "value", key: "geplaatst", label: "Geplaatst" },
       { type: "value", key: "gemDagenTotPlaatsing", label: "Gem. dagen" },
-      { type: "conv", from: "geplaatst", to: "ingeschreven", label: "#" },
+      { type: "conv", from: "geplaatst", to: "ingeschreven", label: "Plts. %" },
       { type: "conv", from: "geplaatst", to: "toegewezen", label: "Hit rate" },
     ],
   },
