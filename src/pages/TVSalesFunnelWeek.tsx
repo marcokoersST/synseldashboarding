@@ -5,6 +5,7 @@ import { ConversionArrow } from "@/components/tv/ConversionArrow";
 import { CandidatesPipeline } from "@/components/tv/CandidatesPipeline";
 import { CallStats } from "@/components/tv/CallStats";
 import { UnitFunnelBreakdown } from "@/components/tv/UnitFunnelBreakdown";
+import { ConversionFormulasCard } from "@/components/tv/ConversionFormulasCard";
 import { weekFunnelMetrics, weekOverallConversions } from "@/data/tvData";
 import { cn } from "@/lib/utils";
 
@@ -33,9 +34,10 @@ function WeekContent() {
       </div>
 
       {/* Bottom row - compact */}
-      <div className={cn("grid grid-cols-2 shrink-0", compact ? "gap-1 max-h-[140px]" : "gap-4")}>
+      <div className={cn("grid shrink-0", compact ? "grid-cols-3 gap-1 max-h-[140px]" : "grid-cols-2 gap-4")}>
         <CallStats mode="week" />
         <CandidatesPipeline />
+        {compact && <ConversionFormulasCard />}
       </div>
     </div>
   );
