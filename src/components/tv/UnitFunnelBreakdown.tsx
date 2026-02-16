@@ -1,5 +1,6 @@
 import React from "react";
 import { weekUnitBreakdown, UnitFunnelRow } from "@/data/tvData";
+
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
@@ -97,23 +98,28 @@ function getCellValue(row: UnitFunnelRow, sub: SubCol): string {
   return `${((from / to) * 100).toFixed(0)}%`;
 }
 
-function getTotalValue(sub: SubCol): string {
+function getTotalValue(sub: SubCol, data: UnitFunnelRow[] = weekUnitBreakdown): string {
   if (sub.type === "conv") {
-    const from = weekUnitBreakdown.reduce((s, r) => s + (r[sub.from] as number), 0);
-    const to = weekUnitBreakdown.reduce((s, r) => s + (r[sub.to] as number), 0);
+    const from = data.reduce((s, r) => s + (r[sub.from] as number), 0);
+    const to = data.reduce((s, r) => s + (r[sub.to] as number), 0);
     if (to === 0) return "0%";
     return `${((from / to) * 100).toFixed(0)}%`;
   }
-  const total = weekUnitBreakdown.reduce((s, r) => s + (r[sub.key] as number), 0);
-  if (sub.decimals !== undefined) return (total / weekUnitBreakdown.length).toFixed(sub.decimals);
+  const total = data.reduce((s, r) => s + (r[sub.key] as number), 0);
+  if (sub.decimals !== undefined) return (total / data.length).toFixed(sub.decimals);
   return String(total);
 }
 
 export { columnGroups, rateColor, getCellValue, getTotalValue };
 export type { SubCol, ColumnGroup };
 
-export function UnitFunnelBreakdown() {
+interface UnitFunnelBreakdownProps {
+  data?: UnitFunnelRow[];
+}
+
+export function UnitFunnelBreakdown({ data }: UnitFunnelBreakdownProps = {}) {
   const compact = useTVCompact();
+  const rows = data ?? weekUnitBreakdown;
 
   return (
     <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto h-full", compact ? "p-3" : "p-5")}>
@@ -164,7 +170,7 @@ export function UnitFunnelBreakdown() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {weekUnitBreakdown.map((row) => (
+          {rows.map((row) => (
             <TableRow key={row.unit}>
               <TableCell className={cn("font-medium", compact ? "py-1.5 text-sm" : "")}>
                 <span className="flex items-center gap-2">
@@ -200,7 +206,7 @@ export function UnitFunnelBreakdown() {
             {columnGroups.flatMap((g, gi) =>
               g.subs.map((sub, si) => {
                 const isConv = sub.type === "conv";
-                const val = getTotalValue(sub);
+                const val = getTotalValue(sub, rows);
                 const convRate = isConv ? parseFloat(val) : null;
                 return (
                   <TableCell

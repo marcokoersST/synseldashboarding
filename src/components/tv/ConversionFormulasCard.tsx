@@ -2,6 +2,7 @@ import { useTVCompact } from "./TVDashboardLayout";
 import { conversionFormulas } from "./ConversionLegend";
 import { columnGroups, getTotalValue } from "./UnitFunnelBreakdown";
 import { cn } from "@/lib/utils";
+import { weekUnitBreakdown, UnitFunnelRow } from "@/data/tvData";
 
 function rateVsBenchmark(actual: number, benchmark: number) {
   if (actual >= benchmark) return "text-accent";
@@ -13,8 +14,13 @@ function parseBenchmark(b: string): number {
   return parseFloat(b.replace("≥ ", "").replace("%", ""));
 }
 
-export function ConversionFormulasCard() {
+interface ConversionFormulasCardProps {
+  data?: UnitFunnelRow[];
+}
+
+export function ConversionFormulasCard({ data }: ConversionFormulasCardProps = {}) {
   const compact = useTVCompact();
+  const rows = data ?? weekUnitBreakdown;
 
   const actuals = conversionFormulas.map((f) => {
     for (const g of columnGroups) {
@@ -23,7 +29,7 @@ export function ConversionFormulasCard() {
           const groupMatch = g.group === f.group;
           const labelMatch = sub.label === f.label;
           if (groupMatch && labelMatch) {
-            return getTotalValue(sub);
+            return getTotalValue(sub, rows);
           }
         }
       }
