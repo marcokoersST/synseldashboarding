@@ -23,17 +23,12 @@ const columnGroups: ColumnGroup[] = [
       { type: "value", key: "toegewezen", label: "Toegewezen" },
       { type: "value", key: "ingeschreven", label: "Ingeschreven" },
       { type: "conv", from: "ingeschreven", to: "toegewezen", label: "Inschr. %" },
-    ],
-  },
-  {
-    group: "2. Intakes",
-    subs: [
       { type: "value", key: "intakes", label: "Intakes" },
       { type: "conv", from: "intakes", to: "ingeschreven", label: "Intake %" },
     ],
   },
   {
-    group: "3. Acquisitie",
+    group: "2. Acquisitie",
     subs: [
       { type: "value", key: "acquisities", label: "Acquisitie" },
       { type: "conv", from: "acquisities", to: "ingeschreven", label: "Acq. %" },
@@ -41,7 +36,7 @@ const columnGroups: ColumnGroup[] = [
     ],
   },
   {
-    group: "4. Voorstellen",
+    group: "3. Voorstellen",
     subs: [
       { type: "value", key: "voorstellenPerKandidaat", label: "Per kandidaat", decimals: 1 },
       { type: "value", key: "voorstellenViaEmail", label: "Via email" },
@@ -49,7 +44,7 @@ const columnGroups: ColumnGroup[] = [
     ],
   },
   {
-    group: "5. Uitnodigingen",
+    group: "4. Uitnodigingen",
     subs: [
       { type: "value", key: "uitnodigingenTotaal", label: "Totaal" },
       { type: "value", key: "nietUitgenodigd", label: "Niet uitgen." },
@@ -58,7 +53,7 @@ const columnGroups: ColumnGroup[] = [
     ],
   },
   {
-    group: "6. Gesprekken",
+    group: "5. Gesprekken",
     subs: [
       { type: "value", key: "eersteGesprek", label: "1e gesprek" },
       { type: "value", key: "geenEersteGesprek", label: "Geen 1e" },
@@ -67,7 +62,7 @@ const columnGroups: ColumnGroup[] = [
     ],
   },
   {
-    group: "7. Vervolg",
+    group: "6. Vervolg",
     subs: [
       { type: "value", key: "vervolgGesprek", label: "Vervolg/meeloop" },
       { type: "value", key: "dealsluiter", label: "Dealsluiter" },
@@ -75,7 +70,7 @@ const columnGroups: ColumnGroup[] = [
     ],
   },
   {
-    group: "8. Geplaatst",
+    group: "7. Geplaatst",
     subs: [
       { type: "value", key: "geplaatst", label: "Geplaatst" },
       { type: "value", key: "gemDagenTotPlaatsing", label: "Gem. dagen" },
