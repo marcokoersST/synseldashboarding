@@ -46,7 +46,7 @@ function getRankStyle(rank: number) {
   if (rank === 1) return "border-l-[3px] border-l-amber-400 bg-amber-50/50 font-semibold";
   if (rank === 2) return "border-l-[3px] border-l-slate-400 bg-amber-50/40 font-semibold";
   if (rank === 3) return "border-l-[3px] border-l-orange-400 bg-amber-50/30 font-semibold";
-  if (rank <= 10) return "bg-muted/30";
+  if (rank <= 10) return "border-l-[2px] border-l-blue-300 bg-blue-50/60";
   return "";
 }
 
@@ -87,7 +87,7 @@ function AutoScrollArea({ children, isCompact }: { children: React.ReactNode; is
           setTimeout(() => { pauseRef.current = false; }, 2000);
         }
       }
-    }, 40);
+    }, 80);
 
     return () => clearInterval(interval);
   }, [isCompact]);
@@ -246,24 +246,56 @@ function RanglijstenContent() {
             </p>
             <ComparisonBar current={col.total} previous={col.previousTotal} />
 
+            {/* Top 10 - always visible */}
+            <div className="mt-3 space-y-0">
+              {col.entries.filter(e => e.rank <= 10).map((entry) => (
+                <div
+                  key={`${entry.rank}-${entry.name}`}
+                  className={cn(
+                    "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/20",
+                    getRankStyle(entry.rank),
+                    entry.isHot && entry.value > 0 && "bg-orange-50/60",
+                    entry.value === 0 && "opacity-50"
+                  )}
+                >
+                  <span className={cn(
+                    "w-5 text-right shrink-0 text-xs flex items-center justify-end gap-0.5",
+                    entry.rank <= 3 ? "font-bold" : "text-muted-foreground"
+                  )}>
+                    <RankIcon rank={entry.rank} />
+                    {entry.rank > 3 && `${entry.rank}.`}
+                  </span>
+                  <span className={cn(
+                    "truncate flex-1 text-foreground",
+                    entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
+                  )}>
+                    {entry.name}
+                  </span>
+                  <span className={cn(
+                    "tabular-nums shrink-0 flex items-center gap-1",
+                    entry.rank <= 3 ? "font-bold" : "font-semibold",
+                    "text-foreground"
+                  )}>
+                    {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
+                    {entry.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Rank 11+ - auto-scrolls in TV mode */}
             <AutoScrollArea isCompact={isCompact}>
               <div className="space-y-0">
-                {col.entries.map((entry) => (
+                {col.entries.filter(e => e.rank > 10).map((entry) => (
                   <div
                     key={`${entry.rank}-${entry.name}`}
                     className={cn(
-                      "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5",
-                      entry.rank <= 10 ? "border-b border-border/20" : "border-b border-border/10",
-                      getRankStyle(entry.rank),
-                      entry.isHot && entry.value > 0 && "bg-orange-50/60"
+                      "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/10",
+                      entry.value === 0 && "opacity-50"
                     )}
                   >
-                    <span className={cn(
-                      "w-5 text-right shrink-0 text-xs flex items-center justify-end gap-0.5",
-                      entry.rank <= 3 ? "font-bold" : "text-muted-foreground"
-                    )}>
-                      <RankIcon rank={entry.rank} />
-                      {entry.rank > 3 && `${entry.rank}.`}
+                    <span className="w-5 text-right shrink-0 text-xs text-muted-foreground">
+                      {entry.rank}.
                     </span>
                     <span className={cn(
                       "truncate flex-1 text-foreground",
@@ -272,9 +304,7 @@ function RanglijstenContent() {
                       {entry.name}
                     </span>
                     <span className={cn(
-                      "tabular-nums shrink-0 flex items-center gap-1",
-                      entry.rank <= 3 ? "font-bold" : "font-semibold",
-                      "text-foreground"
+                      "tabular-nums shrink-0 flex items-center gap-1 font-semibold text-foreground"
                     )}>
                       {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
                       {entry.value}
