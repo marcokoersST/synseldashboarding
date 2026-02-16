@@ -1,5 +1,5 @@
 import { Phone, Clock, CalendarCheck, Mail } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import { weekCallStats, periodCallStats, weekGesprekkenPerUnit, weekMailStats } from "@/data/tvData";
 import { useTVCompact } from "./TVDashboardLayout";
 import { cn } from "@/lib/utils";
@@ -88,14 +88,18 @@ export function CallStats({ mode }: CallStatsProps) {
       )}
       <div className={cn("min-h-0", compact ? "flex-1" : "h-36")}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={combinedDailyData}>
+          <BarChart data={combinedDailyData} margin={{ top: 15, right: 0, bottom: 0, left: 0 }}>
             <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: compact ? 10 : 12, fill: "hsl(var(--muted-foreground))" }} />
             <YAxis hide />
             <Tooltip
               contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
             />
-            <Bar dataKey="outbound" name="Gesprekken" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="mails" name="Acq. mails" fill="hsl(var(--gold))" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="outbound" name="Gesprekken" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="outbound" position="top" fontSize={10} fill="hsl(var(--foreground))" fontWeight={600} />
+            </Bar>
+            <Bar dataKey="mails" name="Acq. mails" fill="hsl(var(--gold))" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="mails" position="top" fontSize={10} fill="hsl(var(--gold))" fontWeight={600} />
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
