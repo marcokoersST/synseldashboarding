@@ -1,24 +1,30 @@
 
-# Hover-animatie uitschakelen in TV Modus
+# Intakes samenvoegen als subkolommen van Inschrijvingen
 
 ## Probleem
-In TV-modus (fullscreen) zijn hover-animaties op kaarten niet nuttig -- niemand hovert met een muis over een TV-scherm. De `.hover-lift` effecten (border + shadow bij hover) moeten uitgeschakeld worden in TV-modus.
-
-## Oplossing
-CSS-only aanpak met een marker class op de TV fullscreen container.
+"Intakes" staat nog steeds als aparte kolomgroep "2. Intakes" in de tabel. Dit moet samengevoegd worden als subkolommen binnen "1. Inschrijvingen".
 
 ## Wijzigingen
 
-### 1. `src/components/tv/TVDashboardLayout.tsx`
-- Voeg class `tv-mode` toe aan de fullscreen container div (naast de bestaande classes)
+### `src/components/tv/UnitFunnelBreakdown.tsx`
 
-### 2. `src/index.css`
-- Voeg een CSS-regel toe die `.hover-lift:hover` effecten neutraliseert binnen `.tv-mode`:
+1. **Intakes verplaatsen** -- De twee sub-kolommen (`Intakes` en `Intake %`) worden toegevoegd aan het einde van de `subs` array van "1. Inschrijvingen"
+2. **Aparte groep verwijderen** -- De "2. Intakes" groep (regels 28-34) wordt verwijderd
+3. **Hernummeren** -- Alle volgende groepen schuiven een nummer op:
+   - "3. Acquisitie" wordt "2. Acquisitie"
+   - "4. Voorstellen" wordt "3. Voorstellen"
+   - "5. Uitnodigingen" wordt "4. Uitnodigingen"
+   - "6. Gesprekken" wordt "5. Gesprekken"
+   - "7. Vervolg" wordt "6. Vervolg"
+   - "8. Geplaatst" wordt "7. Geplaatst"
 
-```css
-.tv-mode .hover-lift:hover {
-  box-shadow: none;
-}
+### Resultaat
+
+De "1. Inschrijvingen" groep bevat dan 5 subkolommen:
+
+```text
+1. Inschrijvingen
+  Toegewezen | Ingeschreven | Inschr. % | Intakes | Intake %
 ```
 
-Dit schakelt het hover-effect uit voor alle kaarten en componenten die `hover-lift` gebruiken wanneer ze zich binnen de TV-modus container bevinden, zonder code in individuele componenten aan te passen.
+Alleen bestand `src/components/tv/UnitFunnelBreakdown.tsx` wordt aangepast.
