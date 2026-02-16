@@ -112,17 +112,20 @@ function RanglijstenContent() {
 
   // Auto-swap between week and periode in TV mode
   const [autoView, setAutoView] = useState<"week" | "periode">("week");
+  const [tvViewMode, setTvViewMode] = useState<"auto" | "week" | "periode">("auto");
 
   useEffect(() => {
     if (!isCompact) {
       setAutoView("week");
       return;
     }
+    if (tvViewMode === "week") { setAutoView("week"); return; }
+    if (tvViewMode === "periode") { setAutoView("periode"); return; }
     const interval = setInterval(() => {
       setAutoView((v) => (v === "week" ? "periode" : "week"));
     }, 10000);
     return () => clearInterval(interval);
-  }, [isCompact]);
+  }, [isCompact, tvViewMode]);
 
   const toggleColumn = useCallback((title: string) => {
     setSelectedColumns((prev) => {
@@ -220,14 +223,23 @@ function RanglijstenContent() {
             <div className="flex-1" />
             <div className="flex items-center gap-2">
               <Badge
-                variant={autoView === "week" ? "default" : "secondary"}
-                className="transition-all duration-300"
+                variant={tvViewMode === "auto" ? "default" : "secondary"}
+                className="transition-all duration-300 cursor-pointer"
+                onClick={() => setTvViewMode("auto")}
+              >
+                Auto {tvViewMode === "auto" && <span className="ml-1 text-[10px] opacity-70">({autoView === "week" ? "W" : "P"})</span>}
+              </Badge>
+              <Badge
+                variant={tvViewMode === "week" ? "default" : "secondary"}
+                className="transition-all duration-300 cursor-pointer"
+                onClick={() => setTvViewMode("week")}
               >
                 Week
               </Badge>
               <Badge
-                variant={autoView === "periode" ? "default" : "secondary"}
-                className="transition-all duration-300"
+                variant={tvViewMode === "periode" ? "default" : "secondary"}
+                className="transition-all duration-300 cursor-pointer"
+                onClick={() => setTvViewMode("periode")}
               >
                 Periode
               </Badge>
