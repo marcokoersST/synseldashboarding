@@ -104,7 +104,7 @@ function AutoScrollArea({ children, isCompact }: { children: React.ReactNode; is
 
 function RanglijstenContent() {
   const [jaar, setJaar] = useState("2026");
-  const [periode, setPeriode] = useState("Week");
+  
   const [selectedPeriode, setSelectedPeriode] = useState("P1");
   const [unit, setUnit] = useState("Alle units");
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
@@ -137,7 +137,7 @@ function RanglijstenContent() {
     });
   }, []);
 
-  const activeView = isCompact ? autoView : (periode === "Periode" ? "periode" : "week");
+  const activeView = isCompact ? autoView : (tvViewMode === "periode" ? "periode" : "week");
   const allColumns = activeView === "periode" ? ranglijstenPeriodeColumns : ranglijstenWeekColumns;
   const columns = allColumns.filter((col) => selectedColumns.includes(col.title));
 
@@ -158,16 +158,22 @@ function RanglijstenContent() {
               </SelectContent>
             </Select>
 
-            <Select value={periode} onValueChange={setPeriode}>
-              <SelectTrigger className="w-[140px] bg-card border-border">
-                <SelectValue placeholder="Periode" />
-              </SelectTrigger>
-              <SelectContent>
-                {ranglijstenFilters.periodes.map((p) => (
-                  <SelectItem key={p} value={p}>{p}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant={tvViewMode === "week" ? "default" : "secondary"}
+                className="transition-all duration-300 cursor-pointer"
+                onClick={() => setTvViewMode("week")}
+              >
+                Week
+              </Badge>
+              <Badge
+                variant={tvViewMode === "periode" ? "default" : "secondary"}
+                className="transition-all duration-300 cursor-pointer"
+                onClick={() => setTvViewMode("periode")}
+              >
+                Periode
+              </Badge>
+            </div>
 
             <Select value={selectedPeriode} onValueChange={setSelectedPeriode}>
               <SelectTrigger className="w-[100px] bg-card border-border">
