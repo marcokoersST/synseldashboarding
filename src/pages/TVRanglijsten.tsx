@@ -95,7 +95,7 @@ function AutoScrollArea({ children, isCompact }: { children: React.ReactNode; is
   return (
     <div
       ref={containerRef}
-      className={cn("mt-3 overflow-hidden", isCompact ? "h-[calc(100vh-240px)]" : "h-[calc(100vh-320px)] overflow-y-auto")}
+      className={cn("overflow-hidden", isCompact ? "h-[calc(100vh-240px)]" : "h-[calc(100vh-320px)] overflow-y-auto")}
     >
       {children}
     </div>
@@ -246,56 +246,91 @@ function RanglijstenContent() {
             </p>
             <ComparisonBar current={col.total} previous={col.previousTotal} />
 
-            {/* Top 10 - always visible */}
-            <div className="mt-3 space-y-0">
-              {col.entries.filter(e => e.rank <= 10).map((entry) => (
-                <div
-                  key={`${entry.rank}-${entry.name}`}
-                  className={cn(
-                    "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/20",
-                    getRankStyle(entry.rank),
-                    entry.isHot && entry.value > 0 && "bg-orange-50/60",
-                    entry.value === 0 && "opacity-50"
-                  )}
-                >
-                  <span className={cn(
-                    "w-5 text-right shrink-0 text-xs flex items-center justify-end gap-0.5",
-                    entry.rank <= 3 ? "font-bold" : "text-muted-foreground"
-                  )}>
-                    <RankIcon rank={entry.rank} />
-                    {entry.rank > 3 && `${entry.rank}.`}
-                  </span>
-                  <span className={cn(
-                    "truncate flex-1 text-foreground",
-                    entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
-                  )}>
-                    {entry.name}
-                  </span>
-                  <span className={cn(
-                    "tabular-nums shrink-0 flex items-center gap-1",
-                    entry.rank <= 3 ? "font-bold" : "font-semibold",
-                    "text-foreground"
-                  )}>
-                    {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
-                    {entry.value}
-                  </span>
+            {isCompact ? (
+              <>
+                <div className="mt-3 space-y-0">
+                  {col.entries.filter(e => e.rank <= 10).map((entry) => (
+                    <div
+                      key={`${entry.rank}-${entry.name}`}
+                      className={cn(
+                        "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/20",
+                        getRankStyle(entry.rank),
+                        entry.isHot && entry.value > 0 && "bg-orange-50/60",
+                        entry.value === 0 && "opacity-50"
+                      )}
+                    >
+                      <span className={cn(
+                        "w-5 text-right shrink-0 text-xs flex items-center justify-end gap-0.5",
+                        entry.rank <= 3 ? "font-bold" : "text-muted-foreground"
+                      )}>
+                        <RankIcon rank={entry.rank} />
+                        {entry.rank > 3 && `${entry.rank}.`}
+                      </span>
+                      <span className={cn(
+                        "truncate flex-1 text-foreground",
+                        entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
+                      )}>
+                        {entry.name}
+                      </span>
+                      <span className={cn(
+                        "tabular-nums shrink-0 flex items-center gap-1",
+                        entry.rank <= 3 ? "font-bold" : "font-semibold",
+                        "text-foreground"
+                      )}>
+                        {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
+                        {entry.value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            {/* Rank 11+ - auto-scrolls in TV mode */}
-            <AutoScrollArea isCompact={isCompact}>
-              <div className="space-y-0">
-                {col.entries.filter(e => e.rank > 10).map((entry) => (
+                <AutoScrollArea isCompact={isCompact}>
+                  <div className="space-y-0">
+                    {col.entries.filter(e => e.rank > 10).map((entry) => (
+                      <div
+                        key={`${entry.rank}-${entry.name}`}
+                        className={cn(
+                          "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/10",
+                          entry.value === 0 && "opacity-50"
+                        )}
+                      >
+                        <span className="w-5 text-right shrink-0 text-xs text-muted-foreground">
+                          {entry.rank}.
+                        </span>
+                        <span className={cn(
+                          "truncate flex-1 text-foreground",
+                          entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
+                        )}>
+                          {entry.name}
+                        </span>
+                        <span className={cn(
+                          "tabular-nums shrink-0 flex items-center gap-1 font-semibold text-foreground"
+                        )}>
+                          {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
+                          {entry.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </AutoScrollArea>
+              </>
+            ) : (
+              <div className="mt-3 space-y-0 h-[calc(100vh-320px)] overflow-y-auto">
+                {col.entries.map((entry) => (
                   <div
                     key={`${entry.rank}-${entry.name}`}
                     className={cn(
-                      "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/10",
+                      "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/20",
+                      getRankStyle(entry.rank),
+                      entry.isHot && entry.value > 0 && "bg-orange-50/60",
                       entry.value === 0 && "opacity-50"
                     )}
                   >
-                    <span className="w-5 text-right shrink-0 text-xs text-muted-foreground">
-                      {entry.rank}.
+                    <span className={cn(
+                      "w-5 text-right shrink-0 text-xs flex items-center justify-end gap-0.5",
+                      entry.rank <= 3 ? "font-bold" : "text-muted-foreground"
+                    )}>
+                      <RankIcon rank={entry.rank} />
+                      {entry.rank > 3 && `${entry.rank}.`}
                     </span>
                     <span className={cn(
                       "truncate flex-1 text-foreground",
@@ -304,7 +339,9 @@ function RanglijstenContent() {
                       {entry.name}
                     </span>
                     <span className={cn(
-                      "tabular-nums shrink-0 flex items-center gap-1 font-semibold text-foreground"
+                      "tabular-nums shrink-0 flex items-center gap-1",
+                      entry.rank <= 3 ? "font-bold" : "font-semibold",
+                      "text-foreground"
                     )}>
                       {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
                       {entry.value}
@@ -312,7 +349,7 @@ function RanglijstenContent() {
                   </div>
                 ))}
               </div>
-            </AutoScrollArea>
+            )}
           </div>
         ))}
       </div>
