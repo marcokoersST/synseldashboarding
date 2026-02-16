@@ -1,100 +1,70 @@
 
 
-# Projectiekaarten: Plaatsingen & Gesprekken
+# Ranglijsten TV Dashboard: Top 10 highlight, vergelijkingsbalk & auto-swap
 
-## Wat wordt er gebouwd
-Twee nieuwe projectiekaarten worden toegevoegd aan drie dashboards:
+## Wat verandert er
 
-1. **Projectie Plaatsingen** - toont historische plaatsingen (2-3 weken) + projectielijn komende weken. Uitleg: "Gebaseerd op het aantal gesprekken"
-2. **Projectie Gesprekken** - toont historische gesprekken (2-3 weken) + projectielijn komende weken. Uitleg: "Gebaseerd op acquisities, telefoonduur en e-mails"
+### 1. Top 10 visueel markeren
+De eerste 10 entries in elke kolom krijgen een subtiele achtergrondkleur en dikker lettertype om ze te onderscheiden van de rest. De top 3 krijgt extra nadruk (goud/zilver/brons accentkleur links).
 
-Beide kaarten hebben een lijndiagram met een solid lijn voor historische data en een dashed lijn voor de projectie.
+### 2. Vergelijkingsbalk onder het scorecard-getal
+Onder elk groot totaalgetal komt een compacte vergelijkingsbalk die het huidige weekcijfer vergelijkt met de vorige periode. Dit toont:
+- Een horizontale balk (huidige waarde vs. vorige periode)
+- Een delta-label (bijv. "+12%" of "-5%") met kleurcodering (groen/rood)
+- Tekst "t.o.v. vorige periode"
 
-## Waar komen ze te staan
-- **Consultant Dashboard (Index)**: Onder de bestaande progress cards, gebaseerd op eigen performance
-- **Manager Dashboard**: Nieuwe rij onder de bestaande grid, geaggregeerd over het team
-- **Super Admin Dashboard**: Nieuwe rij onder de departmentkaarten, geaggregeerd over heel het bedrijf
+### 3. Standaard filter op "deze week"
+De pagina opent standaard op de huidige week in plaats van een generieke "Week" filter.
 
-## Visueel ontwerp per kaart
+### 4. Auto-swap in TV modus
+In fullscreen TV modus wisselt de pagina automatisch (elke ~10 seconden) tussen de "Week" en "Periode" weergave. Een indicator toont welke view actief is.
+
+## Visueel ontwerp
 
 ```text
 +------------------------------------------+
-| Projectie Plaatsingen          info-icon  |
-| Gebaseerd op aantal gesprekken            |
-|                                           |
-|  Historisch (3 wk)    Projectie (3 wk)    |
-|  ----[solid]----+----[dashed]------>      |
-|                                           |
-|  Wk 4: 3  |  Wk 5: 2  |  Wk 6: 4        |
-|  Wk 7: ~4  |  Wk 8: ~5  |  Wk 9: ~5     |
+| Inschrijvingen                           |
+|                                          |
+|  1.830                                   |
+|  [====== huidige ======]                 |
+|  [==== vorige ====    ] +8% t.o.v. P5    |
+|                                          |
+|  1. Elmar Koopman          125  <-- goud |
+|  2. Bas de Ruiter           95  <-- zilver|
+|  3. Jort Koggel             93  <-- brons|
+|  4. Thom Auf der Heide      88  <-- top10|
+|  ...                                     |
+| 10. Thijs Udink             65  <-- top10|
+| 11. Joey Pol                63  <-- gewoon|
 +------------------------------------------+
 ```
 
 ## Technische aanpak
 
-### 1. Nieuwe data: `src/data/projectionData.ts`
-- Weekgebaseerde data (niet periodegebaseerd) voor de laatste 3 weken + 3 weken vooruit
-- Interface `WeekProjectionPoint`: `{ week: string, historical: number | null, projected: number | null }`
-- Drie schaalniveaus:
-  - `consultantProjections` - persoonlijke data (kleine aantallen)
-  - `teamProjections` - team-geaggregeerd (middelgrote aantallen)
-  - `companyProjections` - bedrijfsbreed (grote aantallen)
-- Elke set bevat `plaatsingen` en `gesprekken` arrays
-- Input-indicatoren per niveau: acquisities, telefoonduur, emails (als context-getallen)
+### `src/data/ranglijstenData.ts`
+- Voeg `previousTotal` toe aan `RankingColumn` interface (vergelijkingswaarde vorige periode)
+- Voeg `ranglijstenWeekColumns` en `ranglijstenPeriodeColumns` toe als aparte datasets
+- Voeg mock data toe voor beide views met realistische maar verschillende getallen
 
-### 2. Nieuw component: `src/components/dashboard/ProjectionCard.tsx`
-- Herbruikbaar component voor alle drie dashboards
-- Props:
-  - `title`: "Projectie Plaatsingen" of "Projectie Gesprekken"
-  - `description`: uitleg waarop gebaseerd (bijv. "Gebaseerd op aantal gesprekken")
-  - `data`: `WeekProjectionPoint[]`
-  - `inputMetrics`: array van `{ label: string, value: number }` (de onderliggende drivers)
-  - `delay`: animatie delay
-  - `color`: lijnkleur (standaard teal)
-- Bevat:
-  - Header met titel + info-tooltip met uitleg
-  - Lijndiagram (Recharts) met solid historisch + dashed projectie
-  - Onder het diagram: compacte rij met de input-metrics die de projectie voeden
-- Gebruikt bestaande `AnimatedCard`, `AnimatedNumber`, `useAnimateOnMount`
+### `src/pages/TVRanglijsten.tsx`
+- Importeer `useTVCompact` uit TVDashboardLayout
+- Voeg state toe voor actieve view (`"week" | "periode"`)
+- In TV modus: `useEffect` met `setInterval` (10s) die tussen week/periode wisselt
+- In normale modus: toon week (standaard), periode switchen via filter
+- Per ranking entry: conditionele styling voor top 3 (goud/zilver/brons linkerborder) en top 4-10 (lichte achtergrond)
+- Onder het totaalgetal: vergelijkingsbalk component met `previousTotal` data
+- Voeg een subtiele "Week / Periode" indicator toe in TV modus die toont welke view actief is
 
-### 3. Update: `src/pages/Index.tsx` (Consultant Dashboard)
-- Importeer `ProjectionCard` en consultant-level data
-- Voeg een nieuwe rij toe na de "Revenue Chart" sectie:
-  ```
-  <div className="grid grid-cols-2 gap-4 mb-4">
-    <ProjectionCard title="Projectie Plaatsingen" ... />
-    <ProjectionCard title="Projectie Gesprekken" ... />
-  </div>
-  ```
-- Data gebaseerd op eigen performance van de consultant
-
-### 4. Update: `src/pages/ManagerDashboard.tsx`
-- Importeer `ProjectionCard` en team-level data
-- Voeg een nieuwe rij toe onder de bestaande grid:
-  ```
-  <div className="grid grid-cols-2 gap-4 mt-5">
-    <ProjectionCard title="Projectie Plaatsingen" ... />
-    <ProjectionCard title="Projectie Gesprekken" ... />
-  </div>
-  ```
-
-### 5. Update: `src/pages/SuperAdminDashboard.tsx`
-- Importeer `ProjectionCard` en company-level data
-- Voeg een nieuwe rij toe onder de leaderboard/chart sectie:
-  ```
-  <div className="grid grid-cols-2 gap-5 mt-5">
-    <ProjectionCard title="Projectie Plaatsingen" ... />
-    <ProjectionCard title="Projectie Gesprekken" ... />
-  </div>
-  ```
+### Styling details
+- Top 3: linkerborder 3px (rank 1: `border-l-amber-400`, rank 2: `border-l-slate-400`, rank 3: `border-l-orange-400`) + `bg-amber-50/50` achtergrond
+- Top 4-10: `bg-muted/30` achtergrond
+- Vergelijkingsbalk: twee geneste divs met `bg-primary/20` (vorige) en `bg-primary` (huidige), hoogte 6px, afgerond
+- Auto-swap indicator: kleine pill/badge rechtsboven met "Week" of "Periode" + fade-transitie
 
 ### Samenvatting bestanden
 
 | Bestand | Actie |
 |---------|-------|
-| `src/data/projectionData.ts` | Nieuw - mock data op drie niveaus |
-| `src/components/dashboard/ProjectionCard.tsx` | Nieuw - herbruikbaar chart component |
-| `src/pages/Index.tsx` | Wijzig - voeg 2 ProjectionCards toe |
-| `src/pages/ManagerDashboard.tsx` | Wijzig - voeg 2 ProjectionCards toe |
-| `src/pages/SuperAdminDashboard.tsx` | Wijzig - voeg 2 ProjectionCards toe |
+| `src/data/ranglijstenData.ts` | Wijzig - voeg previousTotal, week/periode datasets toe |
+| `src/pages/TVRanglijsten.tsx` | Wijzig - top 10 styling, vergelijkingsbalk, auto-swap logica |
 
