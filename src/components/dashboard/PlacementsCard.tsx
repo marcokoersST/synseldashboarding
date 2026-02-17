@@ -38,7 +38,6 @@ const LEGEND_GROUPS: Record<string, string[]> = {
   minimumNorm: ["minimumNorm"],
   fastLane: ["fastLane"],
   bestPerformer: ["bestPerformer", "bestPerformerProj"],
-  afvallers: ["afvallers"],
 };
 
 const periodStats: Record<number, { totaal: number; actief: number; afvallers: number }> = {
@@ -161,7 +160,6 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
     { key: "minimumNorm", label: "Min. Norm", swatch: <div className="w-3.5 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.minimumNorm} 0 2px, transparent 2px 5px)` }} /> },
     { key: "fastLane", label: "Fast Lane", swatch: <div className="w-3.5 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.fastLane} 0 2px, transparent 2px 5px)` }} /> },
     { key: "bestPerformer", label: "Best Perf.", swatch: <div className="w-3.5 h-[2px] rounded-full" style={{ backgroundColor: COLORS.bestPerformer }} /> },
-    { key: "afvallers", label: "Afvallers", swatch: <div className="w-3.5 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.afvallers} 0 2px, transparent 2px 5px)` }} /> },
   ];
 
   return (
@@ -351,7 +349,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                   <Line type="monotone" dataKey="fastLane" stroke={COLORS.fastLane} strokeWidth={1.5} strokeDasharray={activeLine === "fastLane" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("fastLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
                   <Line type="monotone" dataKey="bestPerformer" stroke={COLORS.bestPerformer} strokeWidth={2} dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 2.5, fillOpacity: getLineOpacity("bestPerformer") }} connectNulls={false} strokeOpacity={getLineOpacity("bestPerformer")} style={{ transition: "stroke-opacity 300ms ease" }} />
                   <Line type="monotone" dataKey="bestPerformerProj" stroke={COLORS.bestPerformer} strokeWidth={2} strokeDasharray={activeLine === "bestPerformer" ? "0" : "6 4"} dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 2.5, fillOpacity: getLineOpacity("bestPerformerProj") }} connectNulls={false} strokeOpacity={getLineOpacity("bestPerformerProj")} style={{ transition: "stroke-opacity 300ms ease" }} />
-                  <Line type="monotone" dataKey="afvallers" stroke={COLORS.afvallers} strokeWidth={1.5} strokeDasharray={activeLine === "afvallers" ? "0" : "4 3"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("afvallers")} style={{ transition: "stroke-opacity 300ms ease" }} />
+                  
                   <Line type="monotone" dataKey="historical" stroke="hsl(var(--teal))" strokeWidth={2.5} dot={{ fill: 'hsl(var(--teal))', strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("historical") }} connectNulls={false} strokeOpacity={getLineOpacity("historical")} style={{ transition: "stroke-opacity 300ms ease" }} />
                   <Line type="monotone" dataKey="projected" stroke="hsl(var(--teal))" strokeWidth={2.5} strokeDasharray={activeLine === "prognose" ? "0" : "6 4"} dot={{ fill: 'hsl(var(--teal))', strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("projected") }} connectNulls={false} strokeOpacity={getLineOpacity("projected")} style={{ transition: "stroke-opacity 300ms ease" }} />
                 </LineChart>
@@ -371,10 +369,9 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                     { label: "Min. Norm", value: activeData.minimumNorm, color: COLORS.minimumNorm },
                     { label: "Fast Lane", value: activeData.fastLane, color: COLORS.fastLane },
                     { label: "Best Performer", value: activeData.bestPerformer ?? activeData.bestPerformerProj, color: COLORS.bestPerformer },
-                    { label: "Afvallers", value: activeData.afvallers, color: COLORS.afvallers },
                   ].filter(item => item.value != null).map((item) => {
                     const yours = activeData.historical ?? activeData.projected ?? 0;
-                    const delta = item.label === "Werkelijk" || item.label === "Prognose" || item.label === "Afvallers" ? null : yours - (item.value ?? 0);
+                    const delta = item.label === "Werkelijk" || item.label === "Prognose" ? null : yours - (item.value ?? 0);
                     return (
                       <div key={item.label} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/30">
                         <div className="flex items-center gap-2">
@@ -382,7 +379,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                           <span className="text-xs text-muted-foreground">{item.label}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`text-xs font-medium ${item.label === "Afvallers" ? 'text-destructive' : 'text-foreground'}`}>{item.value}</span>
+                          <span className="text-xs font-medium text-foreground">{item.value}</span>
                           {delta != null && (
                             <div className={`flex items-center gap-0.5 text-xs font-medium ${delta >= 0 ? 'text-teal' : 'text-destructive'}`}>
                               {delta >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
@@ -416,14 +413,6 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                       </div>
                     );
                   })}
-                  {/* Afvallers row in default view */}
-                  <div className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/30">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS.afvallers }} />
-                      <span className="text-xs text-muted-foreground">Afvallers</span>
-                    </div>
-                    <span className="text-xs font-medium text-destructive">{stats.afvallers}</span>
-                  </div>
                 </>
               )}
             </div>
