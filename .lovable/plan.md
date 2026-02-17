@@ -1,46 +1,54 @@
 
 
-# Update Sales Funnel (Periode) to match Week design
+# "Komende Afvallers" toevoegen aan Plaatsingen kaart
 
-## Overview
-The Period page currently has a very basic layout (just 4 KPI tiles + 2 bottom cards). It needs to match the Week page's full-featured design with conversion arrows, unit breakdown table, and 3-column bottom row in TV mode.
+## Wat verandert er
 
-## Changes
+### 1. Nieuw scorecard "Komende afvallers"
+Naast de bestaande **Totaal** en **Actief** statistieken komt een derde metric: **Komende afvallers** -- het aantal gedetacheerden waarvan het contract binnenkort afloopt. Dit wordt weergegeven in destructive/oranje kleur om aandacht te trekken.
 
-### 1. `src/data/tvData.ts` -- Add period-specific data
+```text
+28          5          2
+Totaal    Actief    Komende afvallers
+```
 
-- **`periodOverallConversions`**: Conversion rates between period KPI steps (Inschrijvingen -> Acquisities -> Voorstellen -> Gesprekken), same structure as `weekOverallConversions` but with 3 steps instead of 4 (no Plaatsingen in period metrics).
-- **`periodUnitBreakdown`**: Unit breakdown data for the period view, same `UnitFunnelRow[]` structure as `weekUnitBreakdown` but with scaled-up numbers (roughly 4x week values to represent a full period).
-- **Period call/mail stats**: Add `periodCallStatsDaily` (daily breakdown chart data for period), `periodGesprekkenPerUnit`, and `periodMailStats` to enable the full CallStats "week" mode layout for period view.
+### 2. Data-uitbreiding
+- Voeg `afvallers` toe aan `periodStats` per periode (bijv. P6 = 2 afvallers)
+- Voeg een `isEndingSoon` vlag toe aan de kandidaatgeneratie (contract eindigt binnen 30 dagen)
+- Voeg `afvallers` toe aan `combinedData` voor de detail chart (per periode het aantal verwachte stoppers)
 
-### 2. `src/components/tv/UnitFunnelBreakdown.tsx` -- Accept data as prop
+### 3. Lijstweergave (standaard modus)
+- De kandidatenlijst krijgt een extra sectie **"Komende afvallers"** onder "Actieve gedetacheerden"
+- Kandidaten met een einddatum binnen 30 dagen worden hier getoond met een rode/oranje einddatum-styling
+- Gescheiden door een subtiele border
 
-- Add an optional `data` prop to accept either `weekUnitBreakdown` or `periodUnitBreakdown`
-- Default to `weekUnitBreakdown` if no prop is provided (backward compatible)
-- Update `getTotalValue` to accept a data parameter instead of hardcoding `weekUnitBreakdown`
+### 4. Detail modus (chart)
+- Een nieuwe **rode gestippelde lijn** "Afvallers" wordt toegevoegd aan de chart die per periode laat zien hoeveel kandidaten stoppen
+- De lijn wordt opgenomen in de interactive legend als nieuw item
+- In de hover/lock info area verschijnt een extra rij "Afvallers" met het aantal voor die specifieke periode
+- De "Jouw positie" default view toont ook het afvaller-aantal voor de geselecteerde periode
 
-### 3. `src/components/tv/ConversionFormulasCard.tsx` -- Accept data as prop
+## Technische details
 
-- Add an optional `data` prop to pass through to `getTotalValue` so it calculates actuals from the correct dataset (week vs period)
+### `src/components/dashboard/PlacementsCard.tsx`
 
-### 4. `src/pages/TVSalesFunnelPeriod.tsx` -- Full redesign
+**Data wijzigingen:**
+- `periodStats` uitbreiden: `{ totaal: 28, actief: 5, afvallers: 2 }` per periode
+- `combinedData` uitbreiden met `afvallers` veld per periode (bijv. P6: 2, P7: 1, P8: 3, etc.)
+- `generateCandidates` aanpassen: markeer kandidaten met einddatum < 30 dagen als `isEndingSoon`
 
-Replace the simple layout with the same structure as the Week page:
+**Stats sectie (regel ~208-217):**
+- Derde `AnimatedNumber` blok toevoegen met `text-destructive` styling en label "Komende afvallers"
 
-- Wrap content in a `PeriodContent` child component that uses `useTVCompact()`
-- **Top row**: KPI tiles with conversion arrows between them (using `periodFunnelMetrics` + `periodOverallConversions`)
-- **Middle section**: `UnitFunnelBreakdown` with period data (flex-[3] in compact mode)
-- **Bottom row**: 3-column grid in TV mode with `CallStats mode="period"` (updated to show chart), `CandidatesPipeline`, and `ConversionFormulasCard`; 2-column in normal mode
+**Lijstweergave (regel ~251-278):**
+- Na "Actieve gedetacheerden" een tweede sectie "Komende afvallers" met gefilterde kandidaten (isEndingSoon = true)
+- Einddatum in `text-destructive` ipv `text-teal`
 
-### 5. `src/components/tv/CallStats.tsx` -- Enhance period mode
+**Detail chart (regel ~300-340):**
+- Nieuwe `Line` component met `dataKey="afvallers"`, rode kleur (`hsl(var(--destructive))`), gestippeld
+- Toevoegen aan `LEGEND_GROUPS`, `legendItems`, en `COLORS`
 
-Currently period mode shows only summary stats (no chart). Update it to match the week mode layout:
-- Add daily chart data for the period (using new `periodCallStatsDaily` data)
-- Show the same 4 KPI summary boxes (Uitgaand, Gesprekstijd, Gesprekken, Acq. mails)
-- Show unit breakdown badges
-- Show combined bar chart with legend
-
-## Technical Details
-
-The key architectural change is making `UnitFunnelBreakdown` and `ConversionFormulasCard` data-driven via props rather than hardcoded to week data. The `getTotalValue` function will need to be parameterized to accept a `UnitFunnelRow[]` array. The `columnGroups` definition stays the same since both week and period share the same funnel structure.
+**Info area (regel ~345-395):**
+- Extra rij "Afvallers" in zowel de hover-state als de default "Jouw positie" view
+- Rode kleur codering voor het afvaller-aantal
 
