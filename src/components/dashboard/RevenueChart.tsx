@@ -167,13 +167,13 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
               <Tooltip content={<CustomTooltip onNavigate={() => navigate("/vergelijking/1")} />} />
 
               {/* Minimum Norm - gray dotted thin */}
-              <Line type="monotone" dataKey="minimumNorm" stroke={COLORS.minimumNorm} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} strokeOpacity={getLineOpacity("minimumNorm")} style={{ transition: "stroke-opacity 300ms ease" }} />
+              <Line type="monotone" dataKey="minimumNorm" stroke={COLORS.minimumNorm} strokeWidth={1.5} strokeDasharray={activeLine === "minimumNorm" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("minimumNorm")} style={{ transition: "stroke-opacity 300ms ease" }} />
 
               {/* Fast Lane - orange dotted thin */}
-              <Line type="monotone" dataKey="fastLane" stroke={COLORS.fastLane} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} strokeOpacity={getLineOpacity("fastLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
+              <Line type="monotone" dataKey="fastLane" stroke={COLORS.fastLane} strokeWidth={1.5} strokeDasharray={activeLine === "fastLane" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("fastLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
 
               {/* Executive Lane - purple dotted thin */}
-              <Line type="monotone" dataKey="executiveLane" stroke={COLORS.executiveLane} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} strokeOpacity={getLineOpacity("executiveLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
+              <Line type="monotone" dataKey="executiveLane" stroke={COLORS.executiveLane} strokeWidth={1.5} strokeDasharray={activeLine === "executiveLane" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("executiveLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
 
               {/* Best Performer actual - pink solid medium */}
               <Line
@@ -196,7 +196,7 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
                 dataKey="bestPerformerProj"
                 stroke={COLORS.bestPerformer}
                 strokeWidth={2}
-                strokeDasharray="6 4"
+                strokeDasharray={activeLine === "bestPerformer" ? "0" : "6 4"}
                 dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("bestPerformerProj") }}
                 activeDot={{ r: 5, cursor: "pointer" }}
                 connectNulls={false}
@@ -227,7 +227,7 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
                 dataKey="geprojecteerd"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2.5}
-                strokeDasharray={isVisible ? "8 4" : "2000"}
+                strokeDasharray={activeLine === "geprojecteerd" ? "0" : (isVisible ? "8 4" : "2000")}
                 dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4, fillOpacity: getLineOpacity("geprojecteerd") }}
                 activeDot={{ r: 6, className: "animate-pulse-subtle" }}
                 connectNulls={false}
