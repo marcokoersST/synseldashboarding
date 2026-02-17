@@ -3,32 +3,33 @@ import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { useState, useCallback, useRef } from "react";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { List, BarChart3, TrendingUp, TrendingDown, Lock } from "lucide-react";
 import { useMemo } from "react";
 
 // Combined data for both views
 const combinedData = [
-  { period: "P1", historical: 2, projected: null, minimumNorm: 1, fastLane: 2, bestPerformer: 3, bestPerformerProj: null },
-  { period: "P2", historical: 1, projected: null, minimumNorm: 1, fastLane: 3, bestPerformer: 3, bestPerformerProj: null },
-  { period: "P3", historical: 3, projected: null, minimumNorm: 2, fastLane: 3, bestPerformer: 4, bestPerformerProj: null },
-  { period: "P4", historical: 2, projected: null, minimumNorm: 2, fastLane: 4, bestPerformer: 4, bestPerformerProj: null },
-  { period: "P5", historical: 4, projected: null, minimumNorm: 2, fastLane: 5, bestPerformer: 5, bestPerformerProj: null },
-  { period: "P6", historical: 5, projected: 5, minimumNorm: 3, fastLane: 5, bestPerformer: 6, bestPerformerProj: 6 },
-  { period: "P7", historical: null, projected: 6, minimumNorm: 3, fastLane: 6, bestPerformer: null, bestPerformerProj: 7 },
-  { period: "P8", historical: null, projected: 5, minimumNorm: 3, fastLane: 7, bestPerformer: null, bestPerformerProj: 7 },
-  { period: "P9", historical: null, projected: 7, minimumNorm: 4, fastLane: 7, bestPerformer: null, bestPerformerProj: 8 },
-  { period: "P10", historical: null, projected: 6, minimumNorm: 4, fastLane: 8, bestPerformer: null, bestPerformerProj: 8 },
-  { period: "P11", historical: null, projected: 8, minimumNorm: 4, fastLane: 8, bestPerformer: null, bestPerformerProj: 9 },
-  { period: "P12", historical: null, projected: 7, minimumNorm: 5, fastLane: 9, bestPerformer: null, bestPerformerProj: 9 },
-  { period: "P13", historical: null, projected: 9, minimumNorm: 5, fastLane: 10, bestPerformer: null, bestPerformerProj: 10 },
+  { period: "P1", historical: 2, projected: null, minimumNorm: 1, fastLane: 2, bestPerformer: 3, bestPerformerProj: null, afvallers: 0 },
+  { period: "P2", historical: 1, projected: null, minimumNorm: 1, fastLane: 3, bestPerformer: 3, bestPerformerProj: null, afvallers: 1 },
+  { period: "P3", historical: 3, projected: null, minimumNorm: 2, fastLane: 3, bestPerformer: 4, bestPerformerProj: null, afvallers: 0 },
+  { period: "P4", historical: 2, projected: null, minimumNorm: 2, fastLane: 4, bestPerformer: 4, bestPerformerProj: null, afvallers: 1 },
+  { period: "P5", historical: 4, projected: null, minimumNorm: 2, fastLane: 5, bestPerformer: 5, bestPerformerProj: null, afvallers: 1 },
+  { period: "P6", historical: 5, projected: 5, minimumNorm: 3, fastLane: 5, bestPerformer: 6, bestPerformerProj: 6, afvallers: 2 },
+  { period: "P7", historical: null, projected: 6, minimumNorm: 3, fastLane: 6, bestPerformer: null, bestPerformerProj: 7, afvallers: 1 },
+  { period: "P8", historical: null, projected: 5, minimumNorm: 3, fastLane: 7, bestPerformer: null, bestPerformerProj: 7, afvallers: 3 },
+  { period: "P9", historical: null, projected: 7, minimumNorm: 4, fastLane: 7, bestPerformer: null, bestPerformerProj: 8, afvallers: 1 },
+  { period: "P10", historical: null, projected: 6, minimumNorm: 4, fastLane: 8, bestPerformer: null, bestPerformerProj: 8, afvallers: 2 },
+  { period: "P11", historical: null, projected: 8, minimumNorm: 4, fastLane: 8, bestPerformer: null, bestPerformerProj: 9, afvallers: 1 },
+  { period: "P12", historical: null, projected: 7, minimumNorm: 5, fastLane: 9, bestPerformer: null, bestPerformerProj: 9, afvallers: 2 },
+  { period: "P13", historical: null, projected: 9, minimumNorm: 5, fastLane: 10, bestPerformer: null, bestPerformerProj: 10, afvallers: 1 },
 ];
 
 const COLORS = {
   minimumNorm: "hsl(var(--muted-foreground))",
   fastLane: "#f59e0b",
   bestPerformer: "#ec4899",
+  afvallers: "hsl(var(--destructive))",
 };
 
 const LEGEND_GROUPS: Record<string, string[]> = {
@@ -37,15 +38,16 @@ const LEGEND_GROUPS: Record<string, string[]> = {
   minimumNorm: ["minimumNorm"],
   fastLane: ["fastLane"],
   bestPerformer: ["bestPerformer", "bestPerformerProj"],
+  afvallers: ["afvallers"],
 };
 
-const periodStats: Record<number, { totaal: number; actief: number }> = {
-  1: { totaal: 8, actief: 2 },
-  2: { totaal: 12, actief: 1 },
-  3: { totaal: 16, actief: 3 },
-  4: { totaal: 19, actief: 2 },
-  5: { totaal: 23, actief: 4 },
-  6: { totaal: 28, actief: 5 },
+const periodStats: Record<number, { totaal: number; actief: number; afvallers: number }> = {
+  1: { totaal: 8, actief: 2, afvallers: 0 },
+  2: { totaal: 12, actief: 1, afvallers: 1 },
+  3: { totaal: 16, actief: 3, afvallers: 0 },
+  4: { totaal: 19, actief: 2, afvallers: 1 },
+  5: { totaal: 23, actief: 4, afvallers: 1 },
+  6: { totaal: 28, actief: 5, afvallers: 2 },
 };
 
 // Mock candidates
@@ -62,17 +64,20 @@ const generateCandidates = (startIndex: number, count: number) => {
     "TechCorp BV", "Digital Solutions", "FinanceHub", "MarketPro",
     "DataDriven NL", "CloudFirst", "InnovateTech", "SmartBiz"
   ];
+  const now = new Date();
   return Array.from({ length: count }, (_, i) => {
     const index = startIndex + i;
     const startDate = new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
     const endDate = new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+    const daysUntilEnd = differenceInDays(endDate, now);
     return {
       id: `candidate-${index}`,
       name: names[index % names.length],
       company: companies[index % companies.length],
       startDate,
       endDate,
-      isActive: endDate > new Date(),
+      isActive: endDate > now,
+      isEndingSoon: endDate > now && daysUntilEnd <= 30 && daysUntilEnd >= 0,
     };
   });
 };
@@ -99,18 +104,15 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
 
   const filteredData = useMemo(() => {
     return combinedData.map((d, i) => {
-      const periodIndex = i; // 0-based, P1=0
-      const splitIndex = selectedPeriod - 1; // 0-based split point
+      const periodIndex = i;
+      const splitIndex = selectedPeriod - 1;
       if (periodIndex < splitIndex) {
-        // Fully historical
         const val = d.historical ?? d.projected;
         return { ...d, historical: val, projected: null, bestPerformer: d.bestPerformer ?? d.bestPerformerProj, bestPerformerProj: null };
       } else if (periodIndex === splitIndex) {
-        // Split point: keep both so solid and dotted lines connect
         const val = d.historical ?? d.projected;
         return { ...d, historical: val, projected: val, bestPerformer: d.bestPerformer ?? d.bestPerformerProj, bestPerformerProj: d.bestPerformerProj ?? d.bestPerformer };
       } else {
-        // Projected
         const val = d.projected ?? d.historical;
         return { ...d, historical: null, projected: val, bestPerformer: null, bestPerformerProj: d.bestPerformerProj ?? d.bestPerformer };
       }
@@ -150,12 +152,16 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
     { label: "Best Performer", yours: currentTotal, theirs: selectedDataPoint?.bestPerformer ?? selectedDataPoint?.bestPerformerProj ?? 0, color: COLORS.bestPerformer },
   ];
 
+  const endingSoonCandidates = candidates.filter(c => c.isEndingSoon);
+  const activeCandidates = candidates.filter(c => c.isActive && !c.isEndingSoon);
+
   const legendItems = [
     { key: "werkelijk", label: "Werkelijk", swatch: <div className="w-3.5 h-[2.5px] rounded-full" style={{ backgroundColor: 'hsl(var(--teal))' }} /> },
     { key: "prognose", label: "Prognose", swatch: <div className="w-3.5 h-[2.5px] rounded-full" style={{ background: 'repeating-linear-gradient(90deg, hsl(var(--teal)) 0 3px, transparent 3px 6px)' }} /> },
     { key: "minimumNorm", label: "Min. Norm", swatch: <div className="w-3.5 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.minimumNorm} 0 2px, transparent 2px 5px)` }} /> },
     { key: "fastLane", label: "Fast Lane", swatch: <div className="w-3.5 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.fastLane} 0 2px, transparent 2px 5px)` }} /> },
     { key: "bestPerformer", label: "Best Perf.", swatch: <div className="w-3.5 h-[2px] rounded-full" style={{ backgroundColor: COLORS.bestPerformer }} /> },
+    { key: "afvallers", label: "Afvallers", swatch: <div className="w-3.5 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.afvallers} 0 2px, transparent 2px 5px)` }} /> },
   ];
 
   return (
@@ -214,6 +220,10 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             <AnimatedNumber value={stats.actief} delay={delay + 400} className="text-xl font-semibold text-teal" />
             <p className="text-xs text-muted-foreground mt-0.5">Actief</p>
           </div>
+          <div>
+            <AnimatedNumber value={stats.afvallers} delay={delay + 500} className="text-xl font-semibold text-destructive" />
+            <p className="text-xs text-muted-foreground mt-0.5">Komende afvallers</p>
+          </div>
         </div>
 
         {!detailMode ? (
@@ -253,7 +263,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
               <h4 className="text-xs font-medium text-muted-foreground mb-2">Actieve gedetacheerden</h4>
               <div className="max-h-[200px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" onScroll={handleScroll} ref={scrollRef}>
                 <div className="space-y-2">
-                  {candidates.map((candidate) => (
+                  {activeCandidates.map((candidate) => (
                     <div key={candidate.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-foreground truncate">{candidate.name}</p>
@@ -265,6 +275,27 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                       </div>
                     </div>
                   ))}
+
+                  {/* Komende afvallers sectie */}
+                  {endingSoonCandidates.length > 0 && (
+                    <>
+                      <div className="border-t border-border my-2" />
+                      <h4 className="text-xs font-medium text-destructive mb-2">Komende afvallers</h4>
+                      {endingSoonCandidates.map((candidate) => (
+                        <div key={candidate.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-destructive/5 hover:bg-destructive/10 transition-colors">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-foreground truncate">{candidate.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{candidate.company}</p>
+                          </div>
+                          <div className="text-right ml-3 shrink-0">
+                            <p className="text-xs text-muted-foreground">{format(candidate.startDate, "d MMM yyyy", { locale: nl })}</p>
+                            <p className="text-xs text-destructive font-medium">t/m {format(candidate.endDate, "d MMM yyyy", { locale: nl })}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
                   {isLoading && (
                     <div className="flex items-center justify-center py-3">
                       <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -320,6 +351,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                   <Line type="monotone" dataKey="fastLane" stroke={COLORS.fastLane} strokeWidth={1.5} strokeDasharray="3 4" dot={false} activeDot={false} strokeOpacity={getLineOpacity("fastLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
                   <Line type="monotone" dataKey="bestPerformer" stroke={COLORS.bestPerformer} strokeWidth={2} dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 2.5, fillOpacity: getLineOpacity("bestPerformer") }} connectNulls={false} strokeOpacity={getLineOpacity("bestPerformer")} style={{ transition: "stroke-opacity 300ms ease" }} />
                   <Line type="monotone" dataKey="bestPerformerProj" stroke={COLORS.bestPerformer} strokeWidth={2} strokeDasharray="6 4" dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 2.5, fillOpacity: getLineOpacity("bestPerformerProj") }} connectNulls={false} strokeOpacity={getLineOpacity("bestPerformerProj")} style={{ transition: "stroke-opacity 300ms ease" }} />
+                  <Line type="monotone" dataKey="afvallers" stroke={COLORS.afvallers} strokeWidth={1.5} strokeDasharray="4 3" dot={false} activeDot={false} strokeOpacity={getLineOpacity("afvallers")} style={{ transition: "stroke-opacity 300ms ease" }} />
                   <Line type="monotone" dataKey="historical" stroke="hsl(var(--teal))" strokeWidth={2.5} dot={{ fill: 'hsl(var(--teal))', strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("historical") }} connectNulls={false} strokeOpacity={getLineOpacity("historical")} style={{ transition: "stroke-opacity 300ms ease" }} />
                   <Line type="monotone" dataKey="projected" stroke="hsl(var(--teal))" strokeWidth={2.5} strokeDasharray="6 4" dot={{ fill: 'hsl(var(--teal))', strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("projected") }} connectNulls={false} strokeOpacity={getLineOpacity("projected")} style={{ transition: "stroke-opacity 300ms ease" }} />
                 </LineChart>
@@ -339,9 +371,10 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                     { label: "Min. Norm", value: activeData.minimumNorm, color: COLORS.minimumNorm },
                     { label: "Fast Lane", value: activeData.fastLane, color: COLORS.fastLane },
                     { label: "Best Performer", value: activeData.bestPerformer ?? activeData.bestPerformerProj, color: COLORS.bestPerformer },
+                    { label: "Afvallers", value: activeData.afvallers, color: COLORS.afvallers },
                   ].filter(item => item.value != null).map((item) => {
                     const yours = activeData.historical ?? activeData.projected ?? 0;
-                    const delta = item.label === "Werkelijk" || item.label === "Prognose" ? null : yours - (item.value ?? 0);
+                    const delta = item.label === "Werkelijk" || item.label === "Prognose" || item.label === "Afvallers" ? null : yours - (item.value ?? 0);
                     return (
                       <div key={item.label} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/30">
                         <div className="flex items-center gap-2">
@@ -349,7 +382,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                           <span className="text-xs text-muted-foreground">{item.label}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-foreground">{item.value}</span>
+                          <span className={`text-xs font-medium ${item.label === "Afvallers" ? 'text-destructive' : 'text-foreground'}`}>{item.value}</span>
                           {delta != null && (
                             <div className={`flex items-center gap-0.5 text-xs font-medium ${delta >= 0 ? 'text-teal' : 'text-destructive'}`}>
                               {delta >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
@@ -383,9 +416,13 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                       </div>
                     );
                   })}
-                  {/* Invisible spacer row to match hover state (4 rows) */}
-                  <div className="py-1.5 px-3 rounded-lg invisible" aria-hidden="true">
-                    <div className="flex items-center gap-2"><span className="text-xs">&nbsp;</span></div>
+                  {/* Afvallers row in default view */}
+                  <div className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS.afvallers }} />
+                      <span className="text-xs text-muted-foreground">Afvallers</span>
+                    </div>
+                    <span className="text-xs font-medium text-destructive">{stats.afvallers}</span>
                   </div>
                 </>
               )}
