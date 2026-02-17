@@ -40,13 +40,20 @@ const LEGEND_GROUPS: Record<string, string[]> = {
   bestPerformer: ["bestPerformer", "bestPerformerProj"],
 };
 
-const periodStats: Record<number, { totaal: number; actief: number; afvallers: number }> = {
-  1: { totaal: 8, actief: 2, afvallers: 0 },
-  2: { totaal: 12, actief: 1, afvallers: 1 },
-  3: { totaal: 16, actief: 3, afvallers: 0 },
-  4: { totaal: 19, actief: 2, afvallers: 1 },
-  5: { totaal: 23, actief: 4, afvallers: 1 },
-  6: { totaal: 28, actief: 5, afvallers: 2 },
+const periodStats: Record<number, { totaal: number; actief: number; afvallers: number; afvallerType: 'gestopt' | 'komend' | 'verwacht' }> = {
+  1: { totaal: 8, actief: 2, afvallers: 0, afvallerType: 'gestopt' },
+  2: { totaal: 12, actief: 1, afvallers: 1, afvallerType: 'gestopt' },
+  3: { totaal: 16, actief: 3, afvallers: 0, afvallerType: 'gestopt' },
+  4: { totaal: 19, actief: 2, afvallers: 1, afvallerType: 'gestopt' },
+  5: { totaal: 23, actief: 4, afvallers: 1, afvallerType: 'gestopt' },
+  6: { totaal: 28, actief: 5, afvallers: 2, afvallerType: 'komend' },
+  7: { totaal: 31, actief: 6, afvallers: 1, afvallerType: 'verwacht' },
+  8: { totaal: 33, actief: 5, afvallers: 3, afvallerType: 'verwacht' },
+  9: { totaal: 36, actief: 7, afvallers: 1, afvallerType: 'verwacht' },
+  10: { totaal: 38, actief: 6, afvallers: 2, afvallerType: 'verwacht' },
+  11: { totaal: 41, actief: 8, afvallers: 1, afvallerType: 'verwacht' },
+  12: { totaal: 43, actief: 7, afvallers: 2, afvallerType: 'verwacht' },
+  13: { totaal: 46, actief: 9, afvallers: 1, afvallerType: 'verwacht' },
 };
 
 // Mock candidates
@@ -66,8 +73,24 @@ const generateCandidates = (startIndex: number, count: number) => {
   const now = new Date();
   return Array.from({ length: count }, (_, i) => {
     const index = startIndex + i;
-    const startDate = new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
-    const endDate = new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+    // Start dates: mid-2025 to early 2026
+    const startMonth = 5 + Math.floor(Math.random() * 9); // May 2025 - Jan 2026
+    const startYear = startMonth > 11 ? 2026 : 2025;
+    const startDate = new Date(startYear, startMonth % 12, Math.floor(Math.random() * 28) + 1);
+    // End dates: spread around current date for realistic mix
+    // ~30% ending soon (within 30 days), ~50% active (1-8 months out), ~20% already ended
+    const rand = Math.random();
+    let endDate: Date;
+    if (rand < 0.2) {
+      // Already ended (past 1-4 weeks)
+      endDate = new Date(now.getTime() - Math.floor(Math.random() * 28 + 1) * 86400000);
+    } else if (rand < 0.5) {
+      // Ending soon (within 30 days)
+      endDate = new Date(now.getTime() + Math.floor(Math.random() * 30 + 1) * 86400000);
+    } else {
+      // Active, ending 1-8 months from now
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1 + Math.floor(Math.random() * 8), Math.floor(Math.random() * 28) + 1);
+    }
     const daysUntilEnd = differenceInDays(endDate, now);
     return {
       id: `candidate-${index}`,
@@ -199,7 +222,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
               onChange={(e) => { setSelectedPeriod(Number(e.target.value)); setLockedPeriod(null); }}
               className="bg-muted/50 rounded-lg text-xs font-medium text-foreground px-2 py-1.5 border-0 outline-none cursor-pointer appearance-none pr-5 bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20fill%3D%22%239ca3af%22%20d%3D%22M0%200l5%206%205-6z%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_6px_center]"
             >
-              {[1, 2, 3, 4, 5, 6].map(p => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(p => (
                 <option key={p} value={p} className="bg-card text-foreground">
                   P{p}{p === 6 ? ' (huidig)' : ''}
                 </option>
@@ -222,6 +245,16 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             <AnimatedNumber value={stats.afvallers} delay={delay + 500} className="text-xl font-semibold text-destructive" />
             <p className="text-xs text-muted-foreground mt-0.5">Komende afvallers</p>
           </div>
+        </div>
+
+        {/* Period-specific afvallers indicator */}
+        <div className="flex items-center gap-1.5 mb-4 px-1">
+          <span className="text-xs font-semibold text-destructive">{stats.afvallers}</span>
+          <span className="text-xs text-muted-foreground">
+            {stats.afvallerType === 'gestopt' ? `gestopt in P${selectedPeriod}` : 
+             stats.afvallerType === 'komend' ? `komende afvallers P${selectedPeriod}` : 
+             `verwacht in P${selectedPeriod}`}
+          </span>
         </div>
 
         {!detailMode ? (
