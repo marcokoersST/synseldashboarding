@@ -20,33 +20,47 @@ interface StepData {
   count: number;
 }
 
+interface OptionalStepData extends StepData {
+  /** Index of the main step BEFORE this optional step */
+  afterMainIndex: number;
+}
+
+// 6 main steps (mandatory path)
 const currentData: StepData[] = [
   { label: "Toegewezen kandidaten", shortLabel: "Toegewezen", count: 120 },
   { label: "Inschrijvingen", shortLabel: "Inschrijvingen", count: 65 },
   { label: "Acquisities", shortLabel: "Acquisities", count: 51 },
   { label: "Uitnodiging", shortLabel: "Uitnodiging", count: 32 },
   { label: "Gesprekken", shortLabel: "Gesprekken", count: 23 },
-  { label: "Vervolg gesprekken", shortLabel: "Vervolg", count: 11 },
   { label: "Plaatsingen", shortLabel: "Plaatsingen", count: 5 },
+];
+
+// Optional side steps
+const optionalSteps: OptionalStepData[] = [
+  { label: "Intakes", shortLabel: "Intakes", count: 58, afterMainIndex: 1 },
+  { label: "Vervolggesprekken", shortLabel: "Vervolg", count: 11, afterMainIndex: 4 },
 ];
 
 const makeCompData = (counts: number[]): StepData[] =>
   currentData.map((s, i) => ({ ...s, count: counts[i] }));
 
-const comparisonDataByPeriod: Record<string, StepData[]> = {
-  P1: makeCompData([100, 55, 42, 27, 19, 9, 3]),
-  P2: makeCompData([115, 62, 48, 30, 21, 10, 4]),
-  P3: makeCompData([95, 50, 38, 24, 17, 8, 3]),
-  P4: makeCompData([130, 70, 55, 35, 25, 12, 6]),
-  P5: makeCompData([110, 58, 45, 28, 20, 9, 4]),
-  P6: makeCompData([125, 67, 52, 33, 24, 11, 5]),
-  P7: makeCompData([105, 56, 43, 26, 18, 8, 3]),
-  P8: makeCompData([118, 64, 50, 31, 22, 10, 5]),
-  P9: makeCompData([128, 68, 53, 34, 24, 12, 6]),
-  P10: makeCompData([98, 52, 40, 25, 18, 8, 3]),
-  P11: makeCompData([122, 66, 51, 32, 23, 11, 5]),
-  P12: makeCompData([108, 58, 44, 28, 20, 9, 4]),
-  P13: makeCompData([135, 73, 57, 36, 26, 13, 7]),
+const makeOptCompData = (counts: number[]): OptionalStepData[] =>
+  optionalSteps.map((s, i) => ({ ...s, count: counts[i] }));
+
+const comparisonDataByPeriod: Record<string, { main: StepData[]; optional: OptionalStepData[] }> = {
+  P1:  { main: makeCompData([100, 55, 42, 27, 19, 3]), optional: makeOptCompData([48, 9]) },
+  P2:  { main: makeCompData([115, 62, 48, 30, 21, 4]), optional: makeOptCompData([53, 10]) },
+  P3:  { main: makeCompData([95, 50, 38, 24, 17, 3]), optional: makeOptCompData([42, 8]) },
+  P4:  { main: makeCompData([130, 70, 55, 35, 25, 6]), optional: makeOptCompData([60, 12]) },
+  P5:  { main: makeCompData([110, 58, 45, 28, 20, 4]), optional: makeOptCompData([50, 9]) },
+  P6:  { main: makeCompData([125, 67, 52, 33, 24, 5]), optional: makeOptCompData([57, 11]) },
+  P7:  { main: makeCompData([105, 56, 43, 26, 18, 3]), optional: makeOptCompData([47, 8]) },
+  P8:  { main: makeCompData([118, 64, 50, 31, 22, 5]), optional: makeOptCompData([54, 10]) },
+  P9:  { main: makeCompData([128, 68, 53, 34, 24, 6]), optional: makeOptCompData([58, 12]) },
+  P10: { main: makeCompData([98, 52, 40, 25, 18, 3]), optional: makeOptCompData([44, 8]) },
+  P11: { main: makeCompData([122, 66, 51, 32, 23, 5]), optional: makeOptCompData([56, 11]) },
+  P12: { main: makeCompData([108, 58, 44, 28, 20, 4]), optional: makeOptCompData([49, 9]) },
+  P13: { main: makeCompData([135, 73, 57, 36, 26, 7]), optional: makeOptCompData([62, 13]) },
 };
 
 // --- Detail toggle hook ---
@@ -71,54 +85,80 @@ function useDetailToggle() {
 
 // --- Layout config ---
 
+const MAIN_STEP_COUNT = 6;
+
 function getLayoutConfig(isDetail: boolean) {
-  const ARC_CENTER_X = isDetail ? 60 : 50;
+  const ARC_CENTER_X = isDetail ? 80 : 65;
   const ARC_CENTER_Y = isDetail ? 400 : 280;
   const ARC_RADIUS = isDetail ? 260 : 180;
   const CIRCLE_R = isDetail ? 40 : 30;
-  const viewBox = isDetail ? "0 0 560 780" : "0 0 420 540";
+  const OPT_CIRCLE_R = isDetail ? 28 : 21;
+  const OPT_INSET = isDetail ? 90 : 65; // how far inside the arc optional steps sit
+  const viewBox = isDetail ? "0 0 580 780" : "0 0 440 540";
 
   const stepColors = [
     "hsl(175, 50%, 75%)", "hsl(175, 50%, 67%)", "hsl(175, 55%, 59%)",
-    "hsl(175, 55%, 51%)", "hsl(175, 60%, 43%)", "hsl(175, 60%, 35%)", "hsl(175, 65%, 27%)",
+    "hsl(175, 55%, 51%)", "hsl(175, 60%, 43%)", "hsl(175, 65%, 27%)",
   ];
 
   const stepTextColors = [
     "hsl(220, 15%, 20%)", "hsl(220, 15%, 20%)", "hsl(220, 15%, 20%)",
-    "hsl(220, 15%, 25%)", "white", "white", "white",
+    "hsl(220, 15%, 25%)", "white", "white",
   ];
 
   const stepCountColors = [
     "hsl(220, 15%, 20%)", "hsl(220, 15%, 20%)", "hsl(220, 15%, 20%)",
-    "white", "white", "white", "white",
+    "white", "white", "white",
   ];
 
-  const circlePositions = Array.from({ length: 7 }, (_, i) => {
-    const angle = Math.PI / 2 - (i / 6) * Math.PI;
+  const circlePositions = Array.from({ length: MAIN_STEP_COUNT }, (_, i) => {
+    const angle = Math.PI / 2 - (i / (MAIN_STEP_COUNT - 1)) * Math.PI;
     return {
       x: ARC_CENTER_X + ARC_RADIUS * Math.cos(angle),
       y: ARC_CENTER_Y - ARC_RADIUS * Math.sin(angle),
     };
   });
 
-  return { ARC_CENTER_X, ARC_CENTER_Y, ARC_RADIUS, CIRCLE_R, viewBox, stepColors, stepTextColors, stepCountColors, circlePositions };
+  // Optional step positions: inside the arc, between their two adjacent main steps
+  const optionalPositions = optionalSteps.map((opt) => {
+    const p1 = circlePositions[opt.afterMainIndex];
+    const p2 = circlePositions[opt.afterMainIndex + 1];
+    const midX = (p1.x + p2.x) / 2;
+    const midY = (p1.y + p2.y) / 2;
+    // Move inward (toward arc center)
+    const dx = midX - ARC_CENTER_X;
+    const dy = midY - ARC_CENTER_Y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    return {
+      x: midX - (dx / dist) * OPT_INSET,
+      y: midY - (dy / dist) * OPT_INSET,
+      fromMain: opt.afterMainIndex,
+      toMain: opt.afterMainIndex + 1,
+    };
+  });
+
+  return {
+    ARC_CENTER_X, ARC_CENTER_Y, ARC_RADIUS, CIRCLE_R, OPT_CIRCLE_R,
+    viewBox, stepColors, stepTextColors, stepCountColors,
+    circlePositions, optionalPositions,
+  };
 }
 
 // --- Sub-components ---
 
 function StepNode({
   cx, cy, count, label, color, textColor, countColor, index, delay, isVisible,
-  isComparing, compCount, isHovered, onHover, circleR, isDetail,
+  isComparing, compCount, isHovered, onHover, circleR, isDetail, totalSteps,
 }: {
   cx: number; cy: number; count: number; label: string; color: string;
   textColor: string; countColor: string;
   index: number; delay: number; isVisible: boolean;
   isComparing: boolean; compCount?: number; isHovered: boolean;
   onHover: (i: number | null) => void;
-  circleR: number; isDetail: boolean;
+  circleR: number; isDetail: boolean; totalSteps: number;
 }) {
   const isTop = index === 0;
-  const isBottom = index === 6;
+  const isBottom = index === totalSteps - 1;
   const labelX = isTop || isBottom ? cx : cx + circleR + (isDetail ? 28 : 20);
   const labelY = isTop ? cy - circleR - 14 : isBottom ? cy + circleR + 18 : cy;
   const labelAnchor = isTop || isBottom ? "middle" : "start";
@@ -188,6 +228,60 @@ function StepNode({
   );
 }
 
+function OptionalStepNode({
+  cx, cy, count, label, delay, isVisible, circleR, isDetail,
+  isComparing, compCount,
+}: {
+  cx: number; cy: number; count: number; label: string;
+  delay: number; isVisible: boolean; circleR: number; isDetail: boolean;
+  isComparing: boolean; compCount?: number;
+}) {
+  const labelX = cx - circleR - (isDetail ? 14 : 10);
+  const labelSize = isDetail ? 11 : 9;
+  const countSize = isDetail ? 16 : 12;
+  const compCountSize = isDetail ? 11 : 9;
+
+  return (
+    <g style={{
+      transform: isVisible ? "scale(1)" : "scale(0)",
+      transformOrigin: `${cx}px ${cy}px`,
+      transition: `transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
+    }}>
+      <circle cx={cx} cy={cy} r={circleR}
+        fill="hsl(175, 40%, 85%)" stroke="hsl(175, 45%, 65%)" strokeWidth={1.5}
+        strokeDasharray="3 2" opacity={0.85}
+      />
+
+      {/* Count */}
+      {isComparing && compCount !== undefined ? (
+        <>
+          <text x={cx} y={cy - 2} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(175, 50%, 35%)" fontWeight="700" fontSize={countSize - 3} fontFamily="Inter, sans-serif">
+            {count}
+          </text>
+          <text x={cx} y={cy + (isDetail ? 11 : 9)} textAnchor="middle" dominantBaseline="middle"
+            fill="hsl(45, 50%, 45%)" fontWeight="600" fontSize={compCountSize} fontFamily="Inter, sans-serif">
+            {compCount}
+          </text>
+        </>
+      ) : (
+        <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="middle"
+          fill="hsl(175, 50%, 35%)" fontWeight="700" fontSize={countSize} fontFamily="Inter, sans-serif">
+          {count}
+        </text>
+      )}
+
+      {/* Label - to the left */}
+      <text x={labelX} y={cy}
+        textAnchor="end" dominantBaseline="middle"
+        fill="hsl(220, 10%, 50%)" fontSize={labelSize} fontWeight="500" fontFamily="Inter, sans-serif"
+        fontStyle="italic">
+        {label}
+      </text>
+    </g>
+  );
+}
+
 function ConnectorLine({
   x1, y1, x2, y2, percentage, delay, isVisible, circleR,
 }: {
@@ -233,6 +327,33 @@ function ConnectorLine({
   );
 }
 
+function DottedConnectorLine({
+  x1, y1, x2, y2, delay, isVisible, circleR1, circleR2,
+}: {
+  x1: number; y1: number; x2: number; y2: number;
+  delay: number; isVisible: boolean; circleR1: number; circleR2: number;
+}) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const nx = dx / dist;
+  const ny = dy / dist;
+
+  const sx = x1 + nx * (circleR1 + 3);
+  const sy = y1 + ny * (circleR1 + 3);
+  const ex = x2 - nx * (circleR2 + 3);
+  const ey = y2 - ny * (circleR2 + 3);
+
+  return (
+    <line x1={sx} y1={sy} x2={ex} y2={ey}
+      stroke="hsl(175, 35%, 70%)" strokeWidth={1.2}
+      strokeDasharray="4 3"
+      opacity={isVisible ? 0.7 : 0}
+      style={{ transition: `opacity 0.6s ease-out ${delay}ms` }}
+    />
+  );
+}
+
 // --- Detail Content ---
 
 function ConversionTable({ comparisonData, selectedPeriod, isComparing }: {
@@ -255,11 +376,12 @@ function ConversionTable({ comparisonData, selectedPeriod, isComparing }: {
 
   const best = conversions.reduce((a, b) => (b.pct > a.pct ? b : a));
   const worst = conversions.reduce((a, b) => (b.pct < a.pct ? b : a));
-  const overall = ((currentData[6].count / currentData[0].count) * 100).toFixed(1);
+  const lastStep = currentData[currentData.length - 1];
+  const overall = ((lastStep.count / currentData[0].count) * 100).toFixed(1);
 
   return (
     <div className="space-y-3">
-      {/* Conversion rows */}
+      {/* Main conversion rows */}
       <div className="space-y-1.5">
         {conversions.map((c, i) => (
           <div key={i} className={cn(
@@ -286,10 +408,21 @@ function ConversionTable({ comparisonData, selectedPeriod, isComparing }: {
         ))}
       </div>
 
+      {/* Optional steps indicator */}
+      <div className="space-y-1">
+        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide px-3">Optionele stappen</p>
+        {optionalSteps.map((opt, i) => (
+          <div key={i} className="flex items-center justify-between text-xs px-3 py-1 rounded-md bg-muted/20 border border-dashed border-border/50">
+            <span className="text-muted-foreground italic">{opt.shortLabel}</span>
+            <span className="font-medium text-foreground">{opt.count}</span>
+          </div>
+        ))}
+      </div>
+
       {/* Summary */}
       <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
         <span className="text-xs font-medium text-foreground">
-          Totaal: {currentData[0].count} → {currentData[6].count}
+          Totaal: {currentData[0].count} → {lastStep.count}
         </span>
         <span className="text-sm font-bold text-primary">{overall}% conversie</span>
       </div>
@@ -384,6 +517,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
 
           {/* SVG Pipeline */}
           <svg viewBox={layout.viewBox} className="w-full" preserveAspectRatio="xMidYMid meet">
+            {/* Main connector lines */}
             {conversions.map((pct, i) => (
               <ConnectorLine
                 key={i}
@@ -398,6 +532,33 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
               />
             ))}
 
+            {/* Dotted connector lines to optional steps */}
+            {layout.optionalPositions.map((optPos, i) => (
+              <g key={`opt-conn-${i}`}>
+                <DottedConnectorLine
+                  x1={layout.circlePositions[optPos.fromMain].x}
+                  y1={layout.circlePositions[optPos.fromMain].y}
+                  x2={optPos.x}
+                  y2={optPos.y}
+                  delay={delay + 600 + i * 100}
+                  isVisible={isVisible}
+                  circleR1={layout.CIRCLE_R}
+                  circleR2={layout.OPT_CIRCLE_R}
+                />
+                <DottedConnectorLine
+                  x1={optPos.x}
+                  y1={optPos.y}
+                  x2={layout.circlePositions[optPos.toMain].x}
+                  y2={layout.circlePositions[optPos.toMain].y}
+                  delay={delay + 650 + i * 100}
+                  isVisible={isVisible}
+                  circleR1={layout.OPT_CIRCLE_R}
+                  circleR2={layout.CIRCLE_R}
+                />
+              </g>
+            ))}
+
+            {/* Main step nodes */}
             {currentData.map((step, i) => (
               <StepNode
                 key={i}
@@ -412,11 +573,29 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
                 delay={delay + 100 + i * 80}
                 isVisible={isVisible}
                 isComparing={displayMode && isComparing}
-                compCount={displayMode && isComparing ? comparisonData[i].count : undefined}
+                compCount={displayMode && isComparing ? comparisonData.main[i].count : undefined}
                 isHovered={hoveredIndex === i}
                 onHover={setHoveredIndex}
                 circleR={layout.CIRCLE_R}
                 isDetail={displayMode}
+                totalSteps={MAIN_STEP_COUNT}
+              />
+            ))}
+
+            {/* Optional step nodes */}
+            {optionalSteps.map((opt, i) => (
+              <OptionalStepNode
+                key={`opt-${i}`}
+                cx={layout.optionalPositions[i].x}
+                cy={layout.optionalPositions[i].y}
+                count={opt.count}
+                label={opt.shortLabel}
+                delay={delay + 500 + i * 100}
+                isVisible={isVisible}
+                circleR={layout.OPT_CIRCLE_R}
+                isDetail={displayMode}
+                isComparing={displayMode && isComparing}
+                compCount={displayMode && isComparing ? comparisonData.optional[i].count : undefined}
               />
             ))}
           </svg>
@@ -443,9 +622,9 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
                 ) : (
                   (() => {
                     const s = currentData[hoveredIndex];
-                    const c = comparisonData[hoveredIndex];
+                    const c = comparisonData.main[hoveredIndex];
                     const prev = hoveredIndex > 0 ? currentData[hoveredIndex - 1] : null;
-                    const prevC = hoveredIndex > 0 ? comparisonData[hoveredIndex - 1] : null;
+                    const prevC = hoveredIndex > 0 ? comparisonData.main[hoveredIndex - 1] : null;
                     const conv = prev ? Math.round((s.count / prev.count) * 100) : null;
                     const convC = prevC ? Math.round((c.count / prevC.count) * 100) : null;
                     return (
@@ -478,7 +657,7 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
               {/* Conversion table & highlights */}
               <div className="mt-4">
                 <ConversionTable
-                  comparisonData={comparisonData}
+                  comparisonData={comparisonData.main}
                   selectedPeriod={selectedPeriod}
                   isComparing={isComparing}
                 />
