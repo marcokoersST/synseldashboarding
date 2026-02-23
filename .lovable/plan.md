@@ -1,22 +1,60 @@
 
 
-# Opvolging Tegel Aanpassingen
+# Collapsible & Reorderable Secties - Manager Dashboard
 
-## Wijzigingen
+## Wat wordt gebouwd
 
-### 1. Tegel groter maken in layout (`src/pages/ManagerDashboard.tsx`)
-De Opvolging kaart staat nu in `col-span-1` (1/3 breedte) naast de Sales Funnel (`col-span-2`). De flowchart scorecards passen hier niet volledig in en vereisen horizontaal scrollen.
+Drie features voor de Manager Dashboard pagina:
 
-**Oplossing**: Opvolging verplaatsen naar een eigen rij onder de Sales Funnel, met `col-span-3` (volledige breedte). Hierdoor zijn alle 6 scorecards in overview-modus direct zichtbaar zonder scrollen.
+1. **Collapsible secties**: Elke sectie (Operationeel, Performance, Omzet) kan worden in- en uitgeklapt. Wanneer ingeklapt wordt een dunne, minimalistische balk getoond met alleen de sectienaam en 2-3 kerngetallen.
+2. **Aanpasbare volgorde**: De drie secties kunnen door de manager in een gewenste volgorde worden gezet.
+3. **Drag-and-drop herordening**: Volgorde wijzigen via drag-and-drop in een control panel rechtsboven.
 
-### 2. Records lijst verbeteren (`src/components/manager/OpvolgingCard.tsx`)
+## Technische aanpak
 
-**Huidige staat**: Elke record toont de deal ID inline als `{record.consultantName} · {record.id}` in klein formaat (text-[10px]).
+### Bestand: `src/pages/ManagerDashboard.tsx`
 
-**Wijzigingen**:
-- Records omzetten van een compacte lijst naar een tabel-achtig formaat met duidelijke kolommen
-- Kolommen: **Stage** | **Kandidaat** | **Consultant** | **Deal ID** | **Datum**
-- Deal ID tonen als numeriek getal (bijv. `1011`) i.p.v. `DEAL-1011`
-- Tekstformaat vergroten van `text-[10px]`/`text-xs` naar `text-xs`/`text-sm` voor betere leesbaarheid
-- Kolomheaders toevoegen boven de records lijst
+**State management**:
+- `useState` voor collapsed state per sectie: `Record<string, boolean>`
+- `useState` voor sectievolgorde: `string[]` (bijv. `["operationeel", "performance", "omzet"]`)
+- Volgorde opslaan in `localStorage` zodat het persistent is
+
+**Collapsed summary bar**:
+Wanneer een sectie is ingeklapt, wordt in plaats van de volledige content een enkele horizontale balk getoond (border, rounded, ~40px hoog) met:
+- Sectienaam (links)
+- 2-3 key metrics als kleine badges (midden), specifiek per sectie:
+  - Operationeel: "X plaatsingen", "X deals in opvolging", "X calls"
+  - Performance: "Gem. score: X", "X doelen actief"
+  - Omzet: "€X gerealiseerd", "X plaatsingen"
+- ChevronDown icoon (rechts) om uit te klappen
+
+**Expanded header**:
+De bestaande section headers krijgen een ChevronUp icoon toegevoegd om in te klappen. De klik-handler zit op de volledige header-balk.
+
+**Reorder control** (rechtsboven):
+- Een `Popover` met een `GripVertical` + `ArrowUpDown` icoon als trigger, geplaatst naast de paginatitel
+- In de popover: lijst van drie secties met drag handles (`GripVertical` icoon)
+- Drag-and-drop via native HTML5 drag events (`draggable`, `onDragStart`, `onDragOver`, `onDrop`) - geen externe library nodig voor slechts 3 items
+- Elke rij toont het GripVertical icoon + sectienaam
+- Visuele feedback: lichte achtergrond highlight op het drop target
+
+**Rendering**:
+De drie secties worden gedefinieerd als een configuratie-array met id, label, en renderfunction. De pagina mapt over de volgorde-array en rendert elke sectie conditioneel (collapsed vs expanded).
+
+### Samenvatting van key metrics per sectie
+
+De collapsed bars tonen data die al beschikbaar is uit de bestaande data imports:
+- `unitFunnelTotals.plaatsingen` voor operationeel
+- `opvolgingRecords.length` voor opvolging deals
+- `unitCallTotals` voor calls
+- Gemiddelde scores uit `consultantSkillData`
+- Revenue data uit `managerRevenueData`
+
+### Geen nieuwe bestanden
+
+Alle logica past binnen `ManagerDashboard.tsx`. Geen nieuwe componenten of dependencies nodig.
+
+### Geen externe drag-and-drop library
+
+Met slechts 3 items is native HTML5 drag-and-drop voldoende. Dit houdt de bundle klein en vermijdt onnodige dependencies.
 
