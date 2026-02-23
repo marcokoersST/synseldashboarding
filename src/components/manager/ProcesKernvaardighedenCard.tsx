@@ -1,179 +1,241 @@
 import { useState } from "react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { cn } from "@/lib/utils";
-import { consultantSkillData } from "@/data/managerPerformanceData";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { consultantSkillData, type ConsultantSkillData } from "@/data/managerPerformanceData";
+import {
+  ChevronDown,
+  ChevronRight,
+  AlertTriangle,
+  TrendingUp,
+  Target,
+  Star,
+  ArrowRight,
+  Users,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-function scoreColor(value: number, max: number): string {
-  const pct = (value / max) * 100;
-  if (pct >= 75) return "bg-success/15 text-success";
-  if (pct >= 50) return "bg-amber-500/15 text-amber-600";
-  return "bg-destructive/15 text-destructive";
+// ─── Helpers ───
+
+interface SkillMetric {
+  key: string;
+  label: string;
+  value: number;
+  max: number;
+  category: "kern" | "procedure" | "nps" | "hygiene";
 }
 
-function npsColor(value: number): string {
-  if (value >= 50) return "bg-success/15 text-success";
-  if (value >= 20) return "bg-amber-500/15 text-amber-600";
-  return "bg-destructive/15 text-destructive";
+function getSkillMetrics(c: ConsultantSkillData): SkillMetric[] {
+  return [
+    { key: "relatieKlant", label: "Relatie Klant", value: c.relatieScoreKlant, max: 10, category: "kern" },
+    { key: "relatieKand", label: "Relatie Kandidaat", value: c.relatieScoreKandidaat, max: 10, category: "kern" },
+    { key: "pitching", label: "Pitching Power", value: c.pitchingPower, max: 100, category: "kern" },
+    { key: "response", label: "Responsiveness", value: c.responsiveness, max: 100, category: "kern" },
+    { key: "networking", label: "Networking", value: c.networking, max: 100, category: "kern" },
+    { key: "inschr", label: "Proc. Inschrijving", value: c.procedureInschrijving, max: 100, category: "procedure" },
+    { key: "acq", label: "Proc. Acquisitie", value: c.procedureAcquisities, max: 100, category: "procedure" },
+    { key: "npsKlant", label: "NPS Klant", value: c.npsKlant, max: 100, category: "nps" },
+    { key: "npsKand", label: "NPS Kandidaat", value: c.npsKandidaat, max: 100, category: "nps" },
+    { key: "hygiene", label: "Systeem Hygiëne", value: c.systeemHygieneScore, max: 100, category: "hygiene" },
+  ];
 }
 
-interface CollapsibleSectionProps {
-  title: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
+function overallScore(c: ConsultantSkillData): number {
+  const metrics = getSkillMetrics(c);
+  const normalised = metrics.map((m) => (m.value / m.max) * 100);
+  return Math.round(normalised.reduce((a, b) => a + b, 0) / normalised.length);
 }
 
-function CollapsibleSection({ title, defaultOpen = true, children }: CollapsibleSectionProps) {
-  const [open, setOpen] = useState(defaultOpen);
+function scoreRing(pct: number) {
+  if (pct >= 75) return "text-success border-success/30 bg-success/8";
+  if (pct >= 55) return "text-amber-500 border-amber-500/30 bg-amber-500/8";
+  return "text-destructive border-destructive/30 bg-destructive/8";
+}
+
+function actionForWeakness(metric: SkillMetric): string {
+  const map: Record<string, string> = {
+    relatieKlant: "Plan klantgesprekken in voor relatieverdieping",
+    relatieKand: "Besteed meer tijd aan kandidaat follow-up",
+    pitching: "Oefen pitch met AI-coach sessie",
+    response: "Stel notificaties in, reageer binnen 2 uur",
+    networking: "Bezoek minimaal 1 branche-event deze maand",
+    inschr: "Review inschrijvingsprocedure met team lead",
+    acq: "Shadow een senior bij acquisitiegesprekken",
+    npsKlant: "Analyseer recente klantfeedback en acteer",
+    npsKand: "Verbeter kandidaat-communicatie na plaatsing",
+    hygiene: "Ruim CRM op: sluit inactieve vacatures",
+  };
+  return map[metric.key] || "Focus verbetering nodig";
+}
+
+// ─── Sub-components ───
+
+function OverallScoreBadge({ score }: { score: number }) {
   return (
-    <div>
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-medium text-muted-foreground hover:text-foreground transition-colors mb-2 w-full"
-      >
-        {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-        {title}
-      </button>
-      {open && children}
+    <div className={cn("flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-bold", scoreRing(score))}>
+      {score}
     </div>
   );
 }
+
+function SkillBar({ label, pct, small }: { label: string; pct: number; small?: boolean }) {
+  const color = pct >= 75 ? "bg-success" : pct >= 55 ? "bg-amber-500" : "bg-destructive";
+  return (
+    <div className={cn("flex items-center gap-2", small ? "text-[10px]" : "text-xs")}>
+      <span className="text-muted-foreground w-28 truncate shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+        <div className={cn("h-full rounded-full transition-all duration-700", color)} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="font-semibold tabular-nums w-8 text-right text-foreground">{Math.round(pct)}</span>
+    </div>
+  );
+}
+
+function ConsultantInsightRow({ data, rank }: { data: ConsultantSkillData; rank: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const score = overallScore(data);
+  const metrics = getSkillMetrics(data);
+  const sorted = [...metrics].sort((a, b) => (a.value / a.max) - (b.value / b.max));
+  const weaknesses = sorted.slice(0, 2);
+  const strengths = sorted.slice(-2).reverse();
+
+  return (
+    <div className="border border-border/50 rounded-lg overflow-hidden">
+      {/* Summary row */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-secondary/30 transition-colors text-left"
+      >
+        <span className="text-xs text-muted-foreground w-4 shrink-0 tabular-nums">{rank}</span>
+        <OverallScoreBadge score={score} />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-foreground truncate">{data.consultantName}</div>
+          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+            {strengths.map((s) => (
+              <Badge key={s.key} variant="outline" className="text-[10px] py-0 border-success/30 text-success bg-success/5">
+                <Star className="w-2.5 h-2.5 mr-0.5" />{s.label}
+              </Badge>
+            ))}
+            {weaknesses.map((w) => (
+              <Badge key={w.key} variant="outline" className="text-[10px] py-0 border-amber-500/30 text-amber-600 bg-amber-500/5">
+                <Target className="w-2.5 h-2.5 mr-0.5" />{w.label}
+              </Badge>
+            ))}
+          </div>
+        </div>
+        {expanded ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />}
+      </button>
+
+      {/* Expanded detail */}
+      {expanded && (
+        <div className="border-t border-border/50 bg-secondary/10 px-4 py-3 space-y-4">
+          {/* All skill bars */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">Alle vaardigheden</span>
+            <div className="space-y-1">
+              {metrics.map((m) => (
+                <SkillBar key={m.key} label={m.label} pct={(m.value / m.max) * 100} />
+              ))}
+            </div>
+          </div>
+
+          {/* Suggested actions */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground flex items-center gap-1">
+              <ArrowRight className="w-3 h-3" /> Aanbevolen acties
+            </span>
+            <div className="space-y-1">
+              {weaknesses.map((w) => (
+                <div key={w.key} className="flex items-start gap-2 text-xs text-foreground bg-amber-500/5 border border-amber-500/15 rounded-md px-2.5 py-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                  <div>
+                    <span className="font-medium">{w.label}</span>
+                    <span className="text-muted-foreground"> — {actionForWeakness(w)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Team Gap Analysis ───
+
+function TeamGapAnalysis() {
+  // Average each metric across all consultants
+  const allMetrics = consultantSkillData.map(getSkillMetrics);
+  const metricKeys = allMetrics[0].map((m) => m.key);
+  const avgByMetric = metricKeys.map((key) => {
+    const values = allMetrics.map((ms) => {
+      const m = ms.find((x) => x.key === key)!;
+      return (m.value / m.max) * 100;
+    });
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    const label = allMetrics[0].find((x) => x.key === key)!.label;
+    return { key, label, avg };
+  });
+  const sorted = [...avgByMetric].sort((a, b) => a.avg - b.avg);
+  const gaps = sorted.slice(0, 3);
+  const topSkills = sorted.slice(-2).reverse();
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-1.5">
+        <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3 text-amber-500" /> Team aandachtspunten
+        </span>
+        {gaps.map((g) => (
+          <div key={g.key} className="flex items-center gap-2">
+            <SkillBar label={g.label} pct={g.avg} small />
+          </div>
+        ))}
+      </div>
+      <div className="space-y-1.5">
+        <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground flex items-center gap-1">
+          <TrendingUp className="w-3 h-3 text-success" /> Team sterktes
+        </span>
+        {topSkills.map((g) => (
+          <div key={g.key} className="flex items-center gap-2">
+            <SkillBar label={g.label} pct={g.avg} small />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ───
 
 interface ProcesKernvaardighedenCardProps {
   delay?: number;
 }
 
 export function ProcesKernvaardighedenCard({ delay = 0 }: ProcesKernvaardighedenCardProps) {
+  const ranked = [...consultantSkillData].sort((a, b) => overallScore(b) - overallScore(a));
+
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
         <div className="mb-4">
-          <h3 className="text-sm font-medium text-foreground">Proces & Kernvaardigheden</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Scores per consultant</p>
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-medium text-foreground">Proces & Kernvaardigheden</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">Inzichten en aanbevolen acties per consultant</p>
         </div>
 
-        <div className="space-y-4 overflow-x-auto">
-          {/* Kernvaardigheden */}
-          <CollapsibleSection title="Kernvaardigheden">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Consultant</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Rel. Klant</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Rel. Kand.</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Pitching</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Response</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Netwerk</th>
-                </tr>
-              </thead>
-              <tbody>
-                {consultantSkillData.map(c => (
-                  <tr key={c.consultantId} className="border-b border-border/50 hover:bg-secondary/20">
-                    <td className="py-1.5 px-2 font-medium text-foreground whitespace-nowrap">{c.consultantName}</td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", scoreColor(c.relatieScoreKlant, 10))}>
-                        {c.relatieScoreKlant.toFixed(1)}
-                      </span>
-                    </td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", scoreColor(c.relatieScoreKandidaat, 10))}>
-                        {c.relatieScoreKandidaat.toFixed(1)}
-                      </span>
-                    </td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", scoreColor(c.pitchingPower, 100))}>
-                        {c.pitchingPower}
-                      </span>
-                    </td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", scoreColor(c.responsiveness, 100))}>
-                        {c.responsiveness}
-                      </span>
-                    </td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", scoreColor(c.networking, 100))}>
-                        {c.networking}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CollapsibleSection>
+        {/* Team-level gap analysis */}
+        <div className="mb-4 p-3 rounded-lg border border-border/50 bg-secondary/20">
+          <TeamGapAnalysis />
+        </div>
 
-          {/* Procedure & NPS */}
-          <CollapsibleSection title="Procedure & NPS">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Consultant</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Inschr.</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Acq.</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">NPS Klant</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">NPS Kand.</th>
-                </tr>
-              </thead>
-              <tbody>
-                {consultantSkillData.map(c => (
-                  <tr key={c.consultantId} className="border-b border-border/50 hover:bg-secondary/20">
-                    <td className="py-1.5 px-2 font-medium text-foreground whitespace-nowrap">{c.consultantName}</td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", scoreColor(c.procedureInschrijving, 100))}>
-                        {c.procedureInschrijving}
-                      </span>
-                    </td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", scoreColor(c.procedureAcquisities, 100))}>
-                        {c.procedureAcquisities}
-                      </span>
-                    </td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", npsColor(c.npsKlant))}>
-                        {c.npsKlant}
-                      </span>
-                    </td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", npsColor(c.npsKandidaat))}>
-                        {c.npsKandidaat}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CollapsibleSection>
-
-          {/* Systeem Hygiëne */}
-          <CollapsibleSection title="Systeem Hygiëne" defaultOpen={false}>
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Consultant</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Score</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Vac. +</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Kl. nieuw</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Ct. +</th>
-                  <th className="text-center py-1.5 px-1 font-medium text-muted-foreground">Ct. lost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {consultantSkillData.map(c => (
-                  <tr key={c.consultantId} className="border-b border-border/50 hover:bg-secondary/20">
-                    <td className="py-1.5 px-2 font-medium text-foreground whitespace-nowrap">{c.consultantName}</td>
-                    <td className="text-center py-1.5 px-1">
-                      <span className={cn("inline-block px-2 py-0.5 rounded-md text-xs font-semibold", scoreColor(c.systeemHygieneScore, 100))}>
-                        {c.systeemHygieneScore}
-                      </span>
-                    </td>
-                    <td className="text-center py-1.5 px-1 tabular-nums">{c.systeemHygiene.vacaturesAdded}</td>
-                    <td className="text-center py-1.5 px-1 tabular-nums">{c.systeemHygiene.klantenNew}</td>
-                    <td className="text-center py-1.5 px-1 tabular-nums">{c.systeemHygiene.contactenAdded}</td>
-                    <td className="text-center py-1.5 px-1 tabular-nums text-destructive">{c.systeemHygiene.contactenLost}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CollapsibleSection>
+        {/* Ranked consultant list */}
+        <div className="space-y-2 flex-1">
+          {ranked.map((c, i) => (
+            <ConsultantInsightRow key={c.consultantId} data={c} rank={i + 1} />
+          ))}
         </div>
       </div>
     </AnimatedCard>
