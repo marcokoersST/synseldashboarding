@@ -120,24 +120,34 @@ function OpvolgingDetail({ delay }: { delay: number }) {
         </select>
       </div>
 
-      {/* Records list */}
-      <div className="max-h-[280px] overflow-y-auto scrollbar-thin space-y-1.5">
-        {filtered.map(record => (
-          <div key={record.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0", stageColors[record.dealStage])}>
-                {record.dealStage}
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-foreground truncate">{record.candidateName}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{record.consultantName} · {record.id}</p>
-              </div>
-            </div>
-            <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
-              {format(record.lastModified, "d MMM", { locale: nl })}
-            </span>
-          </div>
-        ))}
+      {/* Records table */}
+      <div className="max-h-[320px] overflow-y-auto scrollbar-thin">
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 bg-card z-10">
+            <tr className="border-b border-border">
+              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Stage</th>
+              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Kandidaat</th>
+              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Consultant</th>
+              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Deal ID</th>
+              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Datum</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(record => (
+              <tr key={record.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                <td className="py-2 px-3">
+                  <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full border", stageColors[record.dealStage])}>
+                    {record.dealStage}
+                  </span>
+                </td>
+                <td className="py-2 px-3 text-sm font-medium text-foreground">{record.candidateName}</td>
+                <td className="py-2 px-3 text-sm text-muted-foreground">{record.consultantName}</td>
+                <td className="py-2 px-3 text-sm tabular-nums text-muted-foreground">{record.id.replace("DEAL-", "")}</td>
+                <td className="py-2 px-3 text-sm text-muted-foreground">{format(record.lastModified, "d MMM yyyy", { locale: nl })}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Consultant x Stage matrix */}

@@ -24,13 +24,9 @@ export default function ManagerDashboard() {
           <h2 className="text-lg font-semibold text-foreground">Operationeel</h2>
           <div className="flex-1 h-px bg-border" />
         </div>
-        <div className="grid grid-cols-3 gap-5">
-          <div className="col-span-2">
-            <ManagerSalesFunnel delay={100} />
-          </div>
-          <div className="col-span-1">
-            <OpvolgingCard delay={150} />
-          </div>
+        <ManagerSalesFunnel delay={100} />
+        <div className="mt-5">
+          <OpvolgingCard delay={150} />
         </div>
         <div className="mt-5">
           <ManagerCallsCard delay={200} />
