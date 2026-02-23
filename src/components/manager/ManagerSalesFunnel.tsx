@@ -26,7 +26,7 @@ function useDetailToggle() {
 
 // ─── Overview: simplified funnel bars ───
 
-const funnelSteps = [
+const funnelSteps: { key: string; label: string; optional?: boolean }[] = [
   { key: "toegewezen", label: "Toegewezen" },
   { key: "inschrijvingen", label: "Inschrijvingen" },
   { key: "intakes", label: "Intakes", optional: true },
@@ -35,7 +35,7 @@ const funnelSteps = [
   { key: "gesprekken", label: "Gesprekken" },
   { key: "vervolg", label: "Vervolg", optional: true },
   { key: "plaatsingen", label: "Plaatsingen" },
-] as const;
+];
 
 const mainSteps = funnelSteps.filter(s => !s.optional);
 const stepColors = [

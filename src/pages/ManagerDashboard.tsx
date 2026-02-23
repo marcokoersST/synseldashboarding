@@ -1,8 +1,11 @@
+import { ManagerSalesFunnel } from "@/components/manager/ManagerSalesFunnel";
+import { OpvolgingCard } from "@/components/manager/OpvolgingCard";
+import { ManagerCallsCard } from "@/components/manager/ManagerCallsCard";
+import { ProcesKernvaardighedenCard } from "@/components/manager/ProcesKernvaardighedenCard";
+import { ManagerGoalsCard } from "@/components/manager/ManagerGoalsCard";
+import { ManagerRevenueChart } from "@/components/manager/ManagerRevenueChart";
+import { ManagerPlacementsCard } from "@/components/manager/ManagerPlacementsCard";
 import { ManagerRevenueLeaderboard } from "@/components/manager/ManagerRevenueLeaderboard";
-import { TeamPlacementsCard } from "@/components/manager/TeamPlacementsCard";
-import { CompanyPlacementsCard } from "@/components/manager/CompanyPlacementsCard";
-import { ProjectionCard } from "@/components/dashboard/ProjectionCard";
-import { teamProjections } from "@/data/projectionData";
 
 export default function ManagerDashboard() {
   return (
@@ -15,36 +18,59 @@ export default function ManagerDashboard() {
         </p>
       </div>
 
-      {/* Dashboard Grid */}
-      <div className="grid grid-cols-3 gap-5">
-        <div className="col-span-2">
-          <ManagerRevenueLeaderboard delay={100} />
+      {/* ═══ SECTIE 1: OPERATIONEEL ═══ */}
+      <section className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-lg font-semibold text-foreground">Operationeel</h2>
+          <div className="flex-1 h-px bg-border" />
         </div>
-        <div className="col-span-1">
-          <TeamPlacementsCard delay={200} />
+        <div className="grid grid-cols-3 gap-5">
+          <div className="col-span-2">
+            <ManagerSalesFunnel delay={100} />
+          </div>
+          <div className="col-span-1">
+            <OpvolgingCard delay={150} />
+          </div>
         </div>
-        <div className="col-span-1">
-          <CompanyPlacementsCard delay={300} />
+        <div className="mt-5">
+          <ManagerCallsCard delay={200} />
         </div>
-      </div>
+      </section>
 
-      {/* Projection Cards */}
-      <div className="grid grid-cols-2 gap-5 mt-5">
-        <ProjectionCard
-          title="Projectie Plaatsingen"
-          description="Gebaseerd op het aantal gesprekken"
-          data={teamProjections.plaatsingen}
-          inputMetrics={teamProjections.plaatsingenMetrics}
-          delay={400}
-        />
-        <ProjectionCard
-          title="Projectie Gesprekken"
-          description="Gebaseerd op acquisities, telefoonduur en e-mails"
-          data={teamProjections.gesprekken}
-          inputMetrics={teamProjections.gesprekkenMetrics}
-          delay={450}
-        />
-      </div>
+      {/* ═══ SECTIE 2: PERFORMANCE ═══ */}
+      <section className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-lg font-semibold text-foreground">Performance</h2>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+        <div className="grid grid-cols-3 gap-5">
+          <div className="col-span-2">
+            <ProcesKernvaardighedenCard delay={250} />
+          </div>
+          <div className="col-span-1">
+            <ManagerGoalsCard delay={300} />
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SECTIE 3: OMZET ═══ */}
+      <section className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-lg font-semibold text-foreground">Omzet</h2>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+        <div className="mb-5">
+          <ManagerRevenueChart delay={350} />
+        </div>
+        <div className="grid grid-cols-3 gap-5">
+          <div className="col-span-1">
+            <ManagerPlacementsCard delay={400} />
+          </div>
+          <div className="col-span-2">
+            <ManagerRevenueLeaderboard delay={450} />
+          </div>
+        </div>
+      </section>
     </>
   );
 }
