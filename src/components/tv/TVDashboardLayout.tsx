@@ -10,7 +10,10 @@ interface TVDashboardLayoutProps {
 }
 
 export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("fullscreen") === "true";
+  });
 
   const toggleFullscreen = async () => {
     if (!isFullscreen) {
