@@ -76,6 +76,7 @@ const candidateNames = [
 ];
 
 const consultantNames = myTeamConsultants.map(c => c.name);
+const consultantUnits = Object.fromEntries(myTeamConsultants.map(c => [c.name, c.unit]));
 
 export const dealRecords: DealRecord[] = Array.from({ length: 36 }, (_, i) => {
   const stage = dealStages[i % dealStages.length];
