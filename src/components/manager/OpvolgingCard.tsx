@@ -287,6 +287,7 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
 
 interface OpvolgingCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
 export function OpvolgingCard({ delay = 0 }: OpvolgingCardProps) {
