@@ -122,12 +122,12 @@ export default function ManagerDashboard() {
       ),
       content: () => (
         <>
-          <ManagerSalesFunnel delay={100} />
+          <ManagerSalesFunnel delay={100} selectedUnit={selectedUnit} />
           <div className="mt-5">
-            <OpvolgingCard delay={150} />
+            <OpvolgingCard delay={150} selectedUnit={selectedUnit} />
           </div>
           <div className="mt-5">
-            <ManagerCallsCard delay={200} />
+            <ManagerCallsCard delay={200} selectedUnit={selectedUnit} />
           </div>
         </>
       ),
