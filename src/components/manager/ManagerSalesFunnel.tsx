@@ -44,7 +44,7 @@ const stepColors = [
   "hsl(175, 55%, 51%)", "hsl(175, 60%, 43%)", "hsl(175, 65%, 27%)",
 ];
 
-function FunnelOverview({ delay }: { delay: number }) {
+function FunnelOverview({ delay, compact = false }: { delay: number; compact?: boolean }) {
   const max = unitFunnelTotals.toegewezen;
   const mainData = mainSteps.map(s => ({
     ...s,
