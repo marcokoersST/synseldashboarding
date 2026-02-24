@@ -15,7 +15,7 @@ import { unitFunnelTotals, dealRecords, unitCallTotals } from "@/data/managerOpe
 import { consultantSkillData, managerGoalsData, managerRevenueChartData } from "@/data/managerPerformanceData";
 import { unitFunnelTotals as funnelTotals } from "@/data/managerOperationalData";
 
-const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "New Performers", "Early Performers", "Instroom", "Suriname"];
+const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
 
 // ── Section config ──
 
