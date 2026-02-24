@@ -81,9 +81,11 @@ const consultantUnits = Object.fromEntries(myTeamConsultants.map(c => [c.name, c
 export const dealRecords: DealRecord[] = Array.from({ length: 36 }, (_, i) => {
   const stage = dealStages[i % dealStages.length];
   const daysAgo = Math.floor(Math.random() * 14) + 1;
+  const consultantName = consultantNames[i % consultantNames.length];
   return {
     id: `DEAL-${1000 + i}`,
-    consultantName: consultantNames[i % consultantNames.length],
+    consultantName,
+    unit: consultantUnits[consultantName] || "Engineering",
     candidateName: candidateNames[i % candidateNames.length],
     dealStage: stage.code,
     dealStageLabel: stage.label,
