@@ -3,17 +3,11 @@ import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Pencil, Shield, Check, X } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Plus, Trash2, Pencil, Shield, Check, X, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { managerGoalsData, type ManagerGoal } from "@/data/managerPerformanceData";
 import { myTeamConsultants } from "@/data/managerData";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
@@ -27,7 +21,7 @@ interface ManagerGoalsCardProps {
 
 export function ManagerGoalsCard({ delay = 0 }: ManagerGoalsCardProps) {
   const [goals, setGoals] = useState<ManagerGoal[]>(managerGoalsData);
-  const [selectedConsultant, setSelectedConsultant] = useState<string>("all");
+  const [expandedConsultant, setExpandedConsultant] = useState<number | null>(null);
   const [newGoalText, setNewGoalText] = useState("");
   const [newGoalIsManager, setNewGoalIsManager] = useState(true);
   const [editingGoalId, setEditingGoalId] = useState<number | null>(null);
@@ -35,24 +29,25 @@ export function ManagerGoalsCard({ delay = 0 }: ManagerGoalsCardProps) {
 
   const consultants = myTeamConsultants;
 
-  const filteredGoals = useMemo(() => {
-    let data = goals;
-    if (selectedConsultant !== "all") {
-      data = data.filter(g => g.consultantId === Number(selectedConsultant));
-    }
-    return data.sort((a, b) => Number(a.completed) - Number(b.completed));
-  }, [goals, selectedConsultant]);
-
-  const managerGoals = filteredGoals.filter(g => g.isManagerGoal);
-  const personalGoals = filteredGoals.filter(g => !g.isManagerGoal);
+  // Summary per consultant
+  const summaryData = useMemo(() => {
+    return consultants.map(c => {
+      const cGoals = goals.filter(g => g.consultantId === c.id);
+      const total = cGoals.length;
+      const completed = cGoals.filter(g => g.completed).length;
+      const managerCount = cGoals.filter(g => g.isManagerGoal).length;
+      const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+      return { consultant: c, total, completed, managerCount, pct };
+    });
+  }, [goals, consultants]);
 
   const handleToggle = (id: number) => {
     setGoals(goals.map(g => g.id === id ? { ...g, completed: !g.completed } : g));
   };
 
   const handleAdd = () => {
-    if (!newGoalText.trim() || selectedConsultant === "all") return;
-    const consultant = consultants.find(c => c.id === Number(selectedConsultant));
+    if (!newGoalText.trim() || expandedConsultant === null) return;
+    const consultant = consultants.find(c => c.id === expandedConsultant);
     if (!consultant) return;
     setGoals([...goals, {
       id: Date.now(),
@@ -65,9 +60,7 @@ export function ManagerGoalsCard({ delay = 0 }: ManagerGoalsCardProps) {
     setNewGoalText("");
   };
 
-  const handleDelete = (id: number) => {
-    setGoals(goals.filter(g => g.id !== id));
-  };
+  const handleDelete = (id: number) => setGoals(goals.filter(g => g.id !== id));
 
   const startEdit = (goal: ManagerGoal) => {
     setEditingGoalId(goal.id);
@@ -85,111 +78,107 @@ export function ManagerGoalsCard({ delay = 0 }: ManagerGoalsCardProps) {
   return (
     <AnimatedCard delay={delay}>
       <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-sm font-medium text-foreground">Doelen & Ontwikkeling</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Per consultant</p>
-          </div>
-          <Select value={selectedConsultant} onValueChange={setSelectedConsultant}>
-            <SelectTrigger className="w-[160px] h-8 text-xs">
-              <SelectValue placeholder="Alle consultants" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle consultants</SelectItem>
-              {consultants.map(c => (
-                <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="mb-4">
+          <h3 className="text-sm font-medium text-foreground">Doelen & Ontwikkeling</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Per consultant</p>
         </div>
 
-        {/* Add goal (only when a specific consultant is selected) */}
-        {selectedConsultant !== "all" && (
-          <div className="mb-4 space-y-2 border-b border-border/50 pb-4">
-            <Textarea
-              placeholder="Nieuw doel toevoegen..."
-              value={newGoalText}
-              onChange={e => setNewGoalText(e.target.value)}
-              className="min-h-[44px] max-h-[100px] resize-none text-xs"
-              rows={2}
-            />
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <Checkbox
-                  checked={newGoalIsManager}
-                  onCheckedChange={(v) => setNewGoalIsManager(!!v)}
-                  className="w-4 h-4"
-                />
-                <span className="text-xs text-muted-foreground">Manager doel</span>
-              </label>
-              <Button size="sm" onClick={handleAdd} disabled={!newGoalText.trim()} className="h-7 text-xs">
-                <Plus className="w-3.5 h-3.5 mr-1" />
-                Toevoegen
-              </Button>
-            </div>
-          </div>
-        )}
+        <div className="flex-1 overflow-y-auto scrollbar-thin space-y-1.5">
+          {summaryData.map(({ consultant, total, completed, managerCount, pct }) => {
+            const isExpanded = expandedConsultant === consultant.id;
+            const consultantGoals = goals.filter(g => g.consultantId === consultant.id);
+            const mGoals = consultantGoals.filter(g => g.isManagerGoal).sort((a, b) => Number(a.completed) - Number(b.completed));
+            const pGoals = consultantGoals.filter(g => !g.isManagerGoal).sort((a, b) => Number(a.completed) - Number(b.completed));
 
-        {/* Goals list */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin space-y-4">
-          {/* Manager goals */}
-          {managerGoals.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Shield className="w-3.5 h-3.5 text-gold" />
-                <span className="text-xs font-medium text-muted-foreground">Manager doelen</span>
-                <span className="text-[10px] text-muted-foreground/60">({managerGoals.length})</span>
-              </div>
-              <div className="space-y-1.5">
-                {managerGoals.map(goal => (
-                  <GoalItem
-                    key={goal.id}
-                    goal={goal}
-                    isEditing={editingGoalId === goal.id}
-                    editingText={editingText}
-                    onToggle={handleToggle}
-                    onDelete={handleDelete}
-                    onStartEdit={startEdit}
-                    onSaveEdit={saveEdit}
-                    onCancelEdit={() => { setEditingGoalId(null); setEditingText(""); }}
-                    onEditTextChange={setEditingText}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+            return (
+              <div key={consultant.id} className="border border-border/50 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setExpandedConsultant(isExpanded ? null : consultant.id)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-secondary/30 transition-colors text-left"
+                >
+                  {/* Progress ring */}
+                  <div className={cn(
+                    "flex items-center justify-center w-9 h-9 rounded-full border-2 text-[11px] font-bold shrink-0",
+                    pct >= 75 ? "text-success border-success/30 bg-success/8" :
+                    pct >= 50 ? "text-amber-500 border-amber-500/30 bg-amber-500/8" :
+                    "text-destructive border-destructive/30 bg-destructive/8"
+                  )}>
+                    {pct}%
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate">{consultant.name}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <Progress value={pct} className="h-1 flex-1" />
+                      <span className="text-[10px] text-muted-foreground shrink-0">{completed}/{total}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {managerCount > 0 && (
+                      <span className="flex items-center gap-0.5 text-[10px] text-gold">
+                        <Shield className="w-3 h-3" />{managerCount}
+                      </span>
+                    )}
+                    {isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                  </div>
+                </button>
 
-          {/* Personal goals */}
-          {personalGoals.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-medium text-muted-foreground">Persoonlijke doelen</span>
-                <span className="text-[10px] text-muted-foreground/60">({personalGoals.length})</span>
-              </div>
-              <div className="space-y-1.5">
-                {personalGoals.map(goal => (
-                  <GoalItem
-                    key={goal.id}
-                    goal={goal}
-                    isEditing={editingGoalId === goal.id}
-                    editingText={editingText}
-                    onToggle={handleToggle}
-                    onDelete={handleDelete}
-                    onStartEdit={startEdit}
-                    onSaveEdit={saveEdit}
-                    onCancelEdit={() => { setEditingGoalId(null); setEditingText(""); }}
-                    onEditTextChange={setEditingText}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+                {isExpanded && (
+                  <div className="border-t border-border/50 bg-secondary/10 px-3 py-3 space-y-3">
+                    {/* Add goal */}
+                    <div className="space-y-2 border-b border-border/30 pb-3">
+                      <Textarea
+                        placeholder="Nieuw doel toevoegen..."
+                        value={newGoalText}
+                        onChange={e => setNewGoalText(e.target.value)}
+                        className="min-h-[36px] max-h-[80px] resize-none text-xs"
+                        rows={1}
+                      />
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox checked={newGoalIsManager} onCheckedChange={(v) => setNewGoalIsManager(!!v)} className="w-3.5 h-3.5" />
+                          <span className="text-[10px] text-muted-foreground">Manager doel</span>
+                        </label>
+                        <Button size="sm" onClick={handleAdd} disabled={!newGoalText.trim()} className="h-6 text-[10px] px-2">
+                          <Plus className="w-3 h-3 mr-0.5" />Toevoegen
+                        </Button>
+                      </div>
+                    </div>
 
-          {filteredGoals.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-6">
-              {selectedConsultant === "all" ? "Selecteer een consultant om doelen te bekijken" : "Geen doelen gevonden"}
-            </p>
-          )}
+                    {/* Manager goals */}
+                    {mGoals.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Shield className="w-3 h-3 text-gold" />
+                          <span className="text-[10px] font-medium text-muted-foreground">Manager doelen</span>
+                        </div>
+                        <div className="space-y-1">
+                          {mGoals.map(goal => (
+                            <GoalItem key={goal.id} goal={goal} isEditing={editingGoalId === goal.id} editingText={editingText}
+                              onToggle={handleToggle} onDelete={handleDelete} onStartEdit={startEdit} onSaveEdit={saveEdit}
+                              onCancelEdit={() => { setEditingGoalId(null); setEditingText(""); }} onEditTextChange={setEditingText} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Personal goals */}
+                    {pGoals.length > 0 && (
+                      <div>
+                        <span className="text-[10px] font-medium text-muted-foreground mb-1.5 block">Persoonlijke doelen</span>
+                        <div className="space-y-1">
+                          {pGoals.map(goal => (
+                            <GoalItem key={goal.id} goal={goal} isEditing={editingGoalId === goal.id} editingText={editingText}
+                              onToggle={handleToggle} onDelete={handleDelete} onStartEdit={startEdit} onSaveEdit={saveEdit}
+                              onCancelEdit={() => { setEditingGoalId(null); setEditingText(""); }} onEditTextChange={setEditingText} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </AnimatedCard>
@@ -215,49 +204,32 @@ function GoalItem({
 }: GoalItemProps) {
   return (
     <div className={cn(
-      "flex items-start gap-2.5 group p-2 rounded-lg border transition-all",
-      goal.isManagerGoal ? "bg-gold/5 border-gold/30" : "bg-card border-border/50"
+      "flex items-start gap-2 group p-1.5 rounded-md transition-all",
+      goal.completed ? "opacity-60" : ""
     )}>
       <Checkbox
         checked={goal.completed}
         onCheckedChange={() => onToggle(goal.id)}
-        className={cn(
-          "w-4 h-4 rounded-md border-2 mt-0.5 flex-shrink-0 cursor-pointer",
-          goal.completed ? "bg-success border-success" : goal.isManagerGoal ? "border-gold/50" : "border-border"
+        className={cn("w-3.5 h-3.5 rounded mt-0.5 shrink-0 cursor-pointer",
+          goal.completed ? "bg-success border-success" : "border-border"
         )}
       />
-
       {isEditing ? (
-        <div className="flex-1 flex gap-1.5">
-          <Textarea value={editingText} onChange={e => onEditTextChange(e.target.value)} className="flex-1 min-h-[36px] text-xs resize-none" autoFocus />
+        <div className="flex-1 flex gap-1">
+          <Textarea value={editingText} onChange={e => onEditTextChange(e.target.value)} className="flex-1 min-h-[28px] text-[11px] resize-none" autoFocus />
           <div className="flex flex-col gap-0.5">
-            <Button size="icon" variant="ghost" onClick={onSaveEdit} className="h-6 w-6 text-success hover:text-success"><Check className="w-3 h-3" /></Button>
-            <Button size="icon" variant="ghost" onClick={onCancelEdit} className="h-6 w-6 text-destructive hover:text-destructive"><X className="w-3 h-3" /></Button>
+            <Button size="icon" variant="ghost" onClick={onSaveEdit} className="h-5 w-5 text-success"><Check className="w-2.5 h-2.5" /></Button>
+            <Button size="icon" variant="ghost" onClick={onCancelEdit} className="h-5 w-5 text-destructive"><X className="w-2.5 h-2.5" /></Button>
           </div>
         </div>
       ) : (
         <>
-          <div className="flex-1 min-w-0">
-            <span className={cn("text-xs leading-relaxed", goal.completed ? "text-muted-foreground line-through" : "text-foreground")}>
-              {goal.text}
-            </span>
-            <p className="text-[10px] text-muted-foreground/60 mt-0.5">{goal.consultantName}</p>
-          </div>
-
-          {goal.isManagerGoal && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Shield className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-                </TooltipTrigger>
-                <TooltipContent><p>Manager doel</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-            <Button size="icon" variant="ghost" onClick={() => onStartEdit(goal)} className="h-6 w-6"><Pencil className="w-3 h-3" /></Button>
-            <Button size="icon" variant="ghost" onClick={() => onDelete(goal.id)} className="h-6 w-6 text-destructive"><Trash2 className="w-3 h-3" /></Button>
+          <span className={cn("flex-1 text-[11px] leading-relaxed", goal.completed ? "text-muted-foreground line-through" : "text-foreground")}>
+            {goal.text}
+          </span>
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <Button size="icon" variant="ghost" onClick={() => onStartEdit(goal)} className="h-5 w-5"><Pencil className="w-2.5 h-2.5" /></Button>
+            <Button size="icon" variant="ghost" onClick={() => onDelete(goal.id)} className="h-5 w-5 text-destructive"><Trash2 className="w-2.5 h-2.5" /></Button>
           </div>
         </>
       )}

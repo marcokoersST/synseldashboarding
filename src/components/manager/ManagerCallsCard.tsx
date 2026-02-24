@@ -23,10 +23,10 @@ function useDetailToggle() {
   return { isDetailMode, isTransitioning, displayMode, toggle };
 }
 
-function formatMinutes(m: number) {
-  const h = Math.floor(m / 60);
-  const min = m % 60;
-  return `${h}:${String(min).padStart(2, "0")}`;
+function formatTime(totalMinutes: number) {
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return `${h}:${String(m).padStart(2, "0")}:00`;
 }
 
 // ─── Overview ───
@@ -46,7 +46,7 @@ function CallsOverview({ delay }: { delay: number }) {
       </div>
       <div className="flex flex-col items-center justify-center rounded-xl bg-teal/5 border border-teal/10 p-4">
         <Clock className="h-5 w-5 text-teal mb-2" />
-        <span className="text-2xl font-bold text-foreground">{formatMinutes(unitCallTotals.totalMinutes)}</span>
+        <span className="text-2xl font-bold text-foreground">{formatTime(unitCallTotals.totalMinutes)}</span>
         <span className="text-xs text-muted-foreground mt-1">Totale beltijd</span>
       </div>
       <div className="flex flex-col items-center justify-center rounded-xl bg-success/5 border border-success/10 p-4">
@@ -91,7 +91,6 @@ function CallsDetail({ delay }: { delay: number }) {
     { key: "missed", label: "Gemist" },
   ];
 
-  // Total contact status
   const totalContactStatus = consultantCallData.reduce(
     (acc, c) => ({
       warmRelation: acc.warmRelation + c.contactStatus.warmRelation,
@@ -103,7 +102,6 @@ function CallsDetail({ delay }: { delay: number }) {
 
   return (
     <div className="space-y-4">
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
@@ -127,7 +125,7 @@ function CallsDetail({ delay }: { delay: number }) {
                 <td className="py-2 px-2 font-medium text-foreground">{row.consultantName}</td>
                 <td className="py-2 px-2 tabular-nums">{row.inbound}</td>
                 <td className="py-2 px-2 tabular-nums">{row.outbound}</td>
-                <td className="py-2 px-2 tabular-nums">{formatMinutes(row.totalMinutes)}</td>
+                <td className="py-2 px-2 tabular-nums">{formatTime(row.totalMinutes)}</td>
                 <td className="py-2 px-2 tabular-nums">
                   <span className={cn(
                     "font-semibold",
@@ -143,7 +141,6 @@ function CallsDetail({ delay }: { delay: number }) {
         </table>
       </div>
 
-      {/* Contact status panel */}
       <div className="border-t border-border pt-3">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium mb-2 block">Contact status (unit totaal)</span>
         <div className="grid grid-cols-3 gap-3">

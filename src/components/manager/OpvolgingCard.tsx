@@ -3,10 +3,11 @@ import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Maximize2, Minimize2, Search, ArrowUpDown, ArrowRight } from "lucide-react";
+import { Maximize2, Minimize2, Search, ArrowUpDown, ArrowRight, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dealRecords, dealStageCounts, dealStages, type DealRecord } from "@/data/managerOperationalData";
-import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format, differenceInCalendarDays, isWeekend } from "date-fns";
 import { nl } from "date-fns/locale";
 
 function useDetailToggle() {
@@ -24,6 +25,24 @@ function useDetailToggle() {
     }, 300);
   };
   return { isDetailMode, isTransitioning, displayMode, toggle };
+}
+
+function getWorkdaysSince(date: Date): number {
+  const now = new Date();
+  let count = 0;
+  const d = new Date(date);
+  while (d < now) {
+    d.setDate(d.getDate() + 1);
+    if (!isWeekend(d)) count++;
+  }
+  return count;
+}
+
+function getRowAgeClass(lastModified: Date): string {
+  const workdays = getWorkdaysSince(lastModified);
+  if (workdays > 10) return "bg-destructive/10";
+  if (workdays > 5) return "bg-amber-500/10";
+  return "";
 }
 
 const stageColors: Record<string, string> = {
@@ -59,13 +78,18 @@ function OpvolgingOverview({ delay }: { delay: number }) {
   );
 }
 
-// ─── Detail: records list + consultant stage matrix ───
+// ─── Detail ───
+
+type SortKey = "dealStage" | "candidateName" | "consultantName" | "id" | "lastModified";
 
 function OpvolgingDetail({ delay }: { delay: number }) {
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
-  const [sortKey, setSortKey] = useState<"dealStage" | "lastModified">("dealStage");
+  const [consultantFilter, setConsultantFilter] = useState<string>("all");
+  const [sortKey, setSortKey] = useState<SortKey>("dealStage");
   const [sortAsc, setSortAsc] = useState(true);
+
+  const consultantNames = useMemo(() => [...new Set(dealRecords.map(r => r.consultantName))].sort(), []);
 
   const filtered = useMemo(() => {
     let data = [...dealRecords];
@@ -77,18 +101,42 @@ function OpvolgingDetail({ delay }: { delay: number }) {
         d.id.toLowerCase().includes(q)
       );
     }
-    if (stageFilter !== "all") {
-      data = data.filter(d => d.dealStage === stageFilter);
-    }
+    if (stageFilter !== "all") data = data.filter(d => d.dealStage === stageFilter);
+    if (consultantFilter !== "all") data = data.filter(d => d.consultantName === consultantFilter);
+
     data.sort((a, b) => {
-      if (sortKey === "dealStage") return sortAsc ? a.dealStage.localeCompare(b.dealStage) : b.dealStage.localeCompare(a.dealStage);
-      return sortAsc ? a.lastModified.getTime() - b.lastModified.getTime() : b.lastModified.getTime() - a.lastModified.getTime();
+      let cmp = 0;
+      switch (sortKey) {
+        case "dealStage": cmp = a.dealStage.localeCompare(b.dealStage); break;
+        case "candidateName": cmp = a.candidateName.localeCompare(b.candidateName); break;
+        case "consultantName": cmp = a.consultantName.localeCompare(b.consultantName); break;
+        case "id": cmp = a.id.localeCompare(b.id); break;
+        case "lastModified": cmp = a.lastModified.getTime() - b.lastModified.getTime(); break;
+      }
+      return sortAsc ? cmp : -cmp;
     });
     return data;
-  }, [search, stageFilter, sortKey, sortAsc]);
+  }, [search, stageFilter, consultantFilter, sortKey, sortAsc]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) setSortAsc(!sortAsc);
+    else { setSortKey(key); setSortAsc(key === "dealStage"); }
+  };
+
+  const getSortIcon = (key: SortKey) => {
+    if (sortKey !== key) return <ArrowUpDown className="w-3 h-3 inline ml-0.5 opacity-30" />;
+    return sortAsc ? <ArrowUp className="w-3 h-3 inline ml-0.5" /> : <ArrowDown className="w-3 h-3 inline ml-0.5" />;
+  };
+
+  const columns: { key: SortKey; label: string }[] = [
+    { key: "dealStage", label: "Stage" },
+    { key: "candidateName", label: "Kandidaat" },
+    { key: "consultantName", label: "Consultant" },
+    { key: "id", label: "Deal ID" },
+    { key: "lastModified", label: "Laatste aanpassing" },
+  ];
 
   // Consultant x stage matrix
-  const consultantNames = [...new Set(dealRecords.map(r => r.consultantName))];
   const matrix = useMemo(() => {
     return consultantNames.map(name => {
       const row: Record<string, number> = {};
@@ -97,16 +145,15 @@ function OpvolgingDetail({ delay }: { delay: number }) {
       });
       return { name, ...row };
     });
-  }, []);
+  }, [consultantNames]);
 
   return (
     <div className="space-y-4">
-      {/* Scorecards (same as overview) */}
       <OpvolgingOverview delay={delay} />
 
       {/* Filters */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
+      <div className="flex gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input placeholder="Zoek consultant, kandidaat of deal..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-8 text-xs" />
         </div>
@@ -118,6 +165,17 @@ function OpvolgingDetail({ delay }: { delay: number }) {
           <option value="all">Alle stages</option>
           {dealStages.map(s => <option key={s.code} value={s.code}>{s.code} - {s.label}</option>)}
         </select>
+        <Select value={consultantFilter} onValueChange={setConsultantFilter}>
+          <SelectTrigger className="w-[160px] h-8 text-xs">
+            <SelectValue placeholder="Alle consultants" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle consultants</SelectItem>
+            {consultantNames.map(name => (
+              <SelectItem key={name} value={name}>{name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Records table */}
@@ -125,27 +183,49 @@ function OpvolgingDetail({ delay }: { delay: number }) {
         <table className="w-full text-sm">
           <thead className="sticky top-0 bg-card z-10">
             <tr className="border-b border-border">
-              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Stage</th>
-              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Kandidaat</th>
-              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Consultant</th>
-              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Deal ID</th>
-              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Datum</th>
+              {columns.map(col => (
+                <th
+                  key={col.key}
+                  className="text-left py-2 px-3 font-medium text-muted-foreground text-xs cursor-pointer hover:text-foreground transition-colors select-none"
+                  onClick={() => toggleSort(col.key)}
+                >
+                  <div className="flex items-center gap-0.5">
+                    {col.label}
+                    {getSortIcon(col.key)}
+                  </div>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {filtered.map(record => (
-              <tr key={record.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                <td className="py-2 px-3">
-                  <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full border", stageColors[record.dealStage])}>
-                    {record.dealStage}
-                  </span>
-                </td>
-                <td className="py-2 px-3 text-sm font-medium text-foreground">{record.candidateName}</td>
-                <td className="py-2 px-3 text-sm text-muted-foreground">{record.consultantName}</td>
-                <td className="py-2 px-3 text-sm tabular-nums text-muted-foreground">{record.id.replace("DEAL-", "")}</td>
-                <td className="py-2 px-3 text-sm text-muted-foreground">{format(record.lastModified, "d MMM yyyy", { locale: nl })}</td>
-              </tr>
-            ))}
+            {filtered.map(record => {
+              const ageClass = getRowAgeClass(record.lastModified);
+              const isHighlighted = consultantFilter !== "all" && record.consultantName === consultantFilter;
+              const isFaded = consultantFilter !== "all" && record.consultantName !== consultantFilter;
+
+              return (
+                <tr
+                  key={record.id}
+                  className={cn(
+                    "border-b border-border/50 transition-all",
+                    ageClass,
+                    isHighlighted && "ring-1 ring-primary/20",
+                    isFaded && "opacity-30",
+                    !isFaded && "hover:bg-muted/30"
+                  )}
+                >
+                  <td className="py-2 px-3">
+                    <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full border", stageColors[record.dealStage])}>
+                      {record.dealStage}
+                    </span>
+                  </td>
+                  <td className="py-2 px-3 text-sm font-medium text-foreground">{record.candidateName}</td>
+                  <td className="py-2 px-3 text-sm text-muted-foreground">{record.consultantName}</td>
+                  <td className="py-2 px-3 text-sm tabular-nums text-muted-foreground">{record.id.replace("DEAL-", "")}</td>
+                  <td className="py-2 px-3 text-sm text-muted-foreground">{format(record.lastModified, "d MMM yyyy", { locale: nl })}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -165,7 +245,10 @@ function OpvolgingDetail({ delay }: { delay: number }) {
             </thead>
             <tbody>
               {matrix.map(row => (
-                <tr key={row.name} className="border-b border-border/50 hover:bg-secondary/20">
+                <tr key={row.name} className={cn(
+                  "border-b border-border/50 hover:bg-secondary/20",
+                  consultantFilter !== "all" && row.name !== consultantFilter && "opacity-30"
+                )}>
                   <td className="py-1.5 px-2 font-medium text-foreground">{row.name}</td>
                   {dealStages.map(s => (
                     <td key={s.code} className="text-center py-1.5 px-2 tabular-nums">

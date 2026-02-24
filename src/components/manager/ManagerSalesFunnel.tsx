@@ -1,12 +1,19 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Maximize2, Minimize2, ArrowUpDown, Search } from "lucide-react";
+import { Maximize2, Minimize2, ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronDown, ChevronRight, Filter, Eye, EyeOff, Phone, Mail, Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { consultantFunnelData, unitFunnelTotals, type ConsultantFunnelData } from "@/data/managerOperationalData";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+} from "@/components/ui/table";
+import { columnGroups, rateColor, getCellValue, getTotalValue, type SubCol, type ColumnGroup } from "@/components/tv/UnitFunnelBreakdown";
+import { weekUnitBreakdown, consultantFunnelData, type UnitFunnelRow, type ConsultantFunnelRow } from "@/data/tvData";
+import { unitFunnelTotals, consultantCallData } from "@/data/managerOperationalData";
+import { Badge } from "@/components/ui/badge";
 
 function useDetailToggle() {
   const [isDetailMode, setIsDetailMode] = useState(false);
@@ -25,173 +32,388 @@ function useDetailToggle() {
   return { isDetailMode, isTransitioning, displayMode, toggle };
 }
 
-// ─── Overview: simplified funnel bars ───
+// ─── Funnel Visualization (trapezoid) ───
 
-const funnelSteps: { key: string; label: string; optional?: boolean }[] = [
+const funnelSteps = [
   { key: "toegewezen", label: "Toegewezen" },
   { key: "inschrijvingen", label: "Inschrijvingen" },
-  { key: "intakes", label: "Intakes", optional: true },
   { key: "acquisities", label: "Acquisities" },
   { key: "uitnodiging", label: "Uitnodiging" },
   { key: "gesprekken", label: "Gesprekken" },
-  { key: "vervolg", label: "Vervolg", optional: true },
   { key: "plaatsingen", label: "Plaatsingen" },
 ];
 
-const mainSteps = funnelSteps.filter(s => !s.optional);
-const stepColors = [
+const funnelColors = [
   "hsl(175, 50%, 75%)", "hsl(175, 50%, 67%)", "hsl(175, 55%, 59%)",
   "hsl(175, 55%, 51%)", "hsl(175, 60%, 43%)", "hsl(175, 65%, 27%)",
 ];
 
-function FunnelOverview({ delay, compact = false }: { delay: number; compact?: boolean }) {
-  const max = unitFunnelTotals.toegewezen;
-  const mainData = mainSteps.map(s => ({
+function FunnelVisualization({ delay, compact = false }: { delay: number; compact?: boolean }) {
+  const data = funnelSteps.map(s => ({
     ...s,
     value: unitFunnelTotals[s.key as keyof typeof unitFunnelTotals],
   }));
+  const max = data[0].value;
 
   return (
-    <div className={compact ? "space-y-1.5" : "space-y-3"}>
-      {mainData.map((step, i) => {
-        const pct = Math.round((step.value / max) * 100);
-        const convPct = i > 0 ? Math.round((step.value / mainData[i - 1].value) * 100) : null;
+    <div className={cn("flex flex-col items-center", compact ? "gap-0" : "gap-0")}>
+      {data.map((step, i) => {
+        const widthPct = Math.max(((step.value / max) * 100), 12);
+        const convPct = i > 0 ? Math.round((step.value / data[i - 1].value) * 100) : null;
         return (
-          <div key={step.key} className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{step.label}</span>
-            <div className={cn("flex-1 bg-secondary/30 rounded-full overflow-hidden relative", compact ? "h-4" : "h-6")}>
-              <div
-                className="h-full rounded-full transition-all duration-700 ease-out"
-                style={{ width: `${pct}%`, backgroundColor: stepColors[i] }}
-              />
-              <span className={cn("absolute inset-0 flex items-center justify-center font-semibold text-foreground", compact ? "text-[10px]" : "text-xs")}>
-                <AnimatedNumber value={step.value} delay={delay + i * 80} />
-              </span>
-            </div>
+          <div key={step.key} className="w-full flex flex-col items-center">
+            {/* Conversion arrow */}
             {convPct !== null && (
-              <span className="text-xs text-muted-foreground w-12 shrink-0">{convPct}%</span>
+              <div className={cn("flex items-center justify-center text-muted-foreground", compact ? "h-3" : "h-5")}>
+                <span className={cn("font-medium", compact ? "text-[9px]" : "text-[10px]")}>{convPct}% ↓</span>
+              </div>
             )}
+            {/* Trapezoid step */}
+            <div
+              className={cn(
+                "relative flex items-center justify-center rounded-md transition-all duration-700 ease-out",
+                compact ? "h-7" : "h-9"
+              )}
+              style={{
+                width: `${widthPct}%`,
+                backgroundColor: funnelColors[i],
+                clipPath: i < data.length - 1
+                  ? `polygon(2% 0%, 98% 0%, 100% 100%, 0% 100%)`
+                  : undefined,
+              }}
+            >
+              <div className={cn("flex items-center gap-2 text-white", compact ? "text-[10px]" : "text-xs")}>
+                <span className="font-medium opacity-90">{step.label}</span>
+                <span className="font-bold">
+                  <AnimatedNumber value={step.value} delay={delay + i * 60} />
+                </span>
+              </div>
+            </div>
           </div>
         );
       })}
       {!compact && (
-        <>
-          {/* Optional steps */}
-          <div className="flex gap-4 mt-2 px-28">
-            {funnelSteps.filter(s => s.optional).map(s => (
-              <div key={s.key} className="flex items-center gap-2 border border-dashed border-border/50 rounded-lg px-3 py-1.5">
-                <span className="text-xs text-muted-foreground italic">{s.label}</span>
-                <span className="text-xs font-semibold text-foreground">
-                  {unitFunnelTotals[s.key as keyof typeof unitFunnelTotals]}
-                </span>
-              </div>
-            ))}
-          </div>
-          {/* Total conversion */}
-          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 mt-2">
-            <span className="text-xs font-medium text-foreground">
-              Totaal: {unitFunnelTotals.toegewezen} → {unitFunnelTotals.plaatsingen}
-            </span>
-            <span className="text-sm font-bold text-primary">
-              {((unitFunnelTotals.plaatsingen / unitFunnelTotals.toegewezen) * 100).toFixed(1)}% conversie
-            </span>
-          </div>
-        </>
+        <div className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 mt-3">
+          <span className="text-xs font-medium text-foreground">
+            Totaal: {unitFunnelTotals.toegewezen} → {unitFunnelTotals.plaatsingen}
+          </span>
+          <span className="text-sm font-bold text-primary">
+            {((unitFunnelTotals.plaatsingen / unitFunnelTotals.toegewezen) * 100).toFixed(1)}% conversie
+          </span>
+        </div>
       )}
     </div>
   );
 }
 
-// ─── Detail: sortable table ───
+// ─── Sortable value helper ───
 
-type SortKey = keyof ConsultantFunnelData;
+function getSortableValue(row: UnitFunnelRow | ConsultantFunnelRow, sub: SubCol): number {
+  if (sub.type === "value") return row[sub.key] as number;
+  const from = row[sub.from] as number;
+  const to = row[sub.to] as number;
+  if (to === 0) return 0;
+  return (from / to) * 100;
+}
+
+function getConsultantCellValue(row: ConsultantFunnelRow, sub: SubCol): string {
+  if (sub.type === "value") {
+    const v = row[sub.key as keyof ConsultantFunnelRow] as number;
+    return sub.decimals !== undefined ? v.toFixed(sub.decimals) : String(v);
+  }
+  const from = row[sub.from as keyof ConsultantFunnelRow] as number;
+  const to = row[sub.to as keyof ConsultantFunnelRow] as number;
+  if (to === 0) return "0%";
+  return `${((from / to) * 100).toFixed(0)}%`;
+}
+
+// ─── Detail Table (AcquisitieConversie style) ───
+
+type SortDirection = "asc" | "desc" | null;
+interface SortConfig {
+  groupIdx: number;
+  subIdx: number;
+  direction: SortDirection;
+}
+
+function formatTime(totalMinutes: number) {
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return `${h}:${String(m).padStart(2, "0")}:00`;
+}
 
 function FunnelDetailTable({ delay }: { delay: number }) {
-  const [sortKey, setSortKey] = useState<SortKey>("consultantName");
-  const [sortAsc, setSortAsc] = useState(true);
-  const [search, setSearch] = useState("");
+  const [expandedUnits, setExpandedUnits] = useState<string[]>([]);
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<string>("all");
+  const [showConversion, setShowConversion] = useState(true);
+  const [selectedConsultant, setSelectedConsultant] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"week" | "periode">("week");
+  const [selectedNumber, setSelectedNumber] = useState("7");
 
-  const sorted = useMemo(() => {
-    let data = [...consultantFunnelData];
-    if (search) {
-      data = data.filter(d => d.consultantName.toLowerCase().includes(search.toLowerCase()));
+  const filteredData = useMemo(() => {
+    let data = selectedUnit === "all" ? weekUnitBreakdown : weekUnitBreakdown.filter(r => r.unit === selectedUnit);
+    if (sortConfig?.direction) {
+      const sub = columnGroups[sortConfig.groupIdx].subs[sortConfig.subIdx];
+      data = [...data].sort((a, b) => {
+        const va = getSortableValue(a, sub);
+        const vb = getSortableValue(b, sub);
+        return sortConfig.direction === "asc" ? va - vb : vb - va;
+      });
     }
-    data.sort((a, b) => {
-      const av = a[sortKey];
-      const bv = b[sortKey];
-      if (typeof av === "string") return sortAsc ? av.localeCompare(bv as string) : (bv as string).localeCompare(av);
-      return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number);
-    });
     return data;
-  }, [sortKey, sortAsc, search]);
+  }, [selectedUnit, sortConfig]);
 
-  const toggleSort = (key: SortKey) => {
-    if (sortKey === key) setSortAsc(!sortAsc);
-    else { setSortKey(key); setSortAsc(false); }
+  const visibleGroups = useMemo(() => {
+    if (showConversion) return columnGroups;
+    return columnGroups.map(g => ({
+      ...g,
+      subs: g.subs.filter(s => s.type !== "conv"),
+    }));
+  }, [showConversion]);
+
+  const toggleExpand = (unit: string) => {
+    setExpandedUnits(prev => prev.includes(unit) ? prev.filter(u => u !== unit) : [...prev, unit]);
   };
 
-  const columns: { key: SortKey; label: string }[] = [
-    { key: "consultantName", label: "Consultant" },
-    { key: "toegewezen", label: "Toegew." },
-    { key: "inschrijvingen", label: "Inschr." },
-    { key: "intakes", label: "Intakes" },
-    { key: "acquisities", label: "Acq." },
-    { key: "uitnodiging", label: "Uitnod." },
-    { key: "gesprekken", label: "Gespr." },
-    { key: "vervolg", label: "Vervolg" },
-    { key: "plaatsingen", label: "Plaats." },
-  ];
+  const handleSort = (groupIdx: number, subIdx: number) => {
+    setSortConfig(prev => {
+      if (prev?.groupIdx === groupIdx && prev?.subIdx === subIdx) {
+        if (prev.direction === "desc") return { groupIdx, subIdx, direction: "asc" };
+        if (prev.direction === "asc") return null;
+      }
+      return { groupIdx, subIdx, direction: "desc" };
+    });
+  };
+
+  const getSortIcon = (groupIdx: number, subIdx: number) => {
+    if (sortConfig?.groupIdx === groupIdx && sortConfig?.subIdx === subIdx) {
+      if (sortConfig.direction === "desc") return <ArrowDown className="w-3 h-3 inline ml-0.5" />;
+      if (sortConfig.direction === "asc") return <ArrowUp className="w-3 h-3 inline ml-0.5" />;
+    }
+    return <ArrowUpDown className="w-3 h-3 inline ml-0.5 opacity-30" />;
+  };
+
+  const numbers = viewMode === "week"
+    ? Array.from({ length: 53 }, (_, i) => String(i + 1))
+    : Array.from({ length: 13 }, (_, i) => String(i + 1));
+
+  // Get call data for selected consultant
+  const selectedConsultantCallData = selectedConsultant
+    ? consultantCallData.find(c => c.consultantName === selectedConsultant)
+    : null;
 
   return (
     <div className="space-y-3">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
-          placeholder="Zoek consultant..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="pl-9 h-8 text-xs"
-        />
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <div className="flex rounded-lg border border-border overflow-hidden">
+          <button
+            onClick={() => { setViewMode("week"); setSelectedNumber("7"); }}
+            className={cn("px-2.5 py-1 text-[11px] font-medium transition-colors", viewMode === "week" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted")}
+          >Week</button>
+          <button
+            onClick={() => { setViewMode("periode"); setSelectedNumber("1"); }}
+            className={cn("px-2.5 py-1 text-[11px] font-medium transition-colors", viewMode === "periode" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted")}
+          >Periode</button>
+        </div>
+        <Select value={selectedNumber} onValueChange={setSelectedNumber}>
+          <SelectTrigger className="w-[80px] h-7 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {numbers.map(n => <SelectItem key={n} value={n}>{viewMode === "week" ? `W${n}` : `P${n}`}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+          <SelectTrigger className="w-[140px] h-7 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle units</SelectItem>
+            {weekUnitBreakdown.map(u => <SelectItem key={u.unit} value={u.unit}>{u.unit}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Button
+          variant={showConversion ? "secondary" : "outline"}
+          size="sm"
+          className="h-7 text-[11px] gap-1"
+          onClick={() => setShowConversion(!showConversion)}
+        >
+          {showConversion ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+          Conversie %
+        </Button>
       </div>
+
+      {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-border">
-              {columns.map(col => (
-                <th key={col.key}
-                  className="text-left py-2 px-2 font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                  onClick={() => toggleSort(col.key)}
-                >
-                  <div className="flex items-center gap-1">
-                    {col.label}
-                    <ArrowUpDown className="h-3 w-3" />
-                  </div>
-                </th>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead rowSpan={2} className="w-[160px] align-bottom text-xs">Unit / Consultant</TableHead>
+              {visibleGroups.map((g) => (
+                <TableHead key={g.group} colSpan={g.subs.length} className="text-center border-l border-border/50 text-muted-foreground text-[10px]">
+                  {g.group}
+                </TableHead>
               ))}
-              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Conv.%</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((row, i) => {
-              const conv = ((row.plaatsingen / row.toegewezen) * 100).toFixed(1);
+            </TableRow>
+            <TableRow>
+              {visibleGroups.flatMap((g, gi) =>
+                g.subs.map((sub, si) => (
+                  <TableHead
+                    key={`${gi}-${si}`}
+                    className={cn(
+                      "text-center whitespace-nowrap cursor-pointer hover:bg-muted/50 select-none",
+                      si === 0 && "border-l border-border/50",
+                      sub.type === "conv" ? "text-muted-foreground bg-muted/30" : "",
+                      "text-[10px] px-1.5"
+                    )}
+                    onClick={() => handleSort(gi, si)}
+                  >
+                    {sub.label}{getSortIcon(gi, si)}
+                  </TableHead>
+                ))
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredData.map((row) => {
+              const isExpanded = expandedUnits.includes(row.unit);
+              const consultants = consultantFunnelData[row.unit] || [];
+              const sortedConsultants = sortConfig?.direction && consultants.length > 0
+                ? [...consultants].sort((a, b) => {
+                    const sub = visibleGroups[sortConfig.groupIdx]?.subs[sortConfig.subIdx];
+                    if (!sub) return 0;
+                    const va = getSortableValue(a as unknown as UnitFunnelRow, sub);
+                    const vb = getSortableValue(b as unknown as UnitFunnelRow, sub);
+                    return sortConfig.direction === "asc" ? va - vb : vb - va;
+                  })
+                : consultants;
+
               return (
-                <tr key={row.consultantId} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
-                  <td className="py-2 px-2 font-medium text-foreground">{row.consultantName}</td>
-                  <td className="py-2 px-2 tabular-nums">{row.toegewezen}</td>
-                  <td className="py-2 px-2 tabular-nums">{row.inschrijvingen}</td>
-                  <td className="py-2 px-2 tabular-nums text-muted-foreground italic">{row.intakes}</td>
-                  <td className="py-2 px-2 tabular-nums">{row.acquisities}</td>
-                  <td className="py-2 px-2 tabular-nums">{row.uitnodiging}</td>
-                  <td className="py-2 px-2 tabular-nums">{row.gesprekken}</td>
-                  <td className="py-2 px-2 tabular-nums text-muted-foreground italic">{row.vervolg}</td>
-                  <td className="py-2 px-2 tabular-nums font-semibold">{row.plaatsingen}</td>
-                  <td className="py-2 px-2 tabular-nums font-semibold text-primary">{conv}%</td>
-                </tr>
+                <React.Fragment key={row.unit}>
+                  <TableRow className="cursor-pointer hover:bg-muted/30" onClick={() => toggleExpand(row.unit)}>
+                    <TableCell className="font-medium text-xs">
+                      <span className="flex items-center gap-2">
+                        {consultants.length > 0 && (
+                          isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                        )}
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: row.color }} />
+                        {row.unit}
+                      </span>
+                    </TableCell>
+                    {visibleGroups.flatMap((g, gi) =>
+                      g.subs.map((sub, si) => {
+                        const isConv = sub.type === "conv";
+                        const val = getCellValue(row, sub);
+                        const convRate = isConv ? parseFloat(val) : null;
+                        return (
+                          <TableCell key={`${gi}-${si}`} className={cn(
+                            "text-center tabular-nums text-xs",
+                            si === 0 && "border-l border-border/50",
+                            isConv ? cn("bg-muted/30 font-bold", convRate !== null && rateColor(convRate)) : "font-semibold",
+                            "px-1.5"
+                          )}>
+                            {val}
+                          </TableCell>
+                        );
+                      })
+                    )}
+                  </TableRow>
+                  {isExpanded && sortedConsultants.map((c) => (
+                    <TableRow
+                      key={c.name}
+                      className={cn(
+                        "bg-muted/10 cursor-pointer hover:bg-muted/20",
+                        selectedConsultant === c.name && "bg-primary/5 border-l-2 border-l-primary"
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedConsultant(selectedConsultant === c.name ? null : c.name);
+                      }}
+                    >
+                      <TableCell className="pl-10 text-xs text-muted-foreground">{c.name}</TableCell>
+                      {visibleGroups.flatMap((g, gi) =>
+                        g.subs.map((sub, si) => {
+                          const isConv = sub.type === "conv";
+                          const val = getConsultantCellValue(c, sub);
+                          const convRate = isConv ? parseFloat(val) : null;
+                          return (
+                            <TableCell key={`${gi}-${si}`} className={cn(
+                              "text-center tabular-nums text-xs",
+                              si === 0 && "border-l border-border/50",
+                              isConv ? cn("bg-muted/20 font-semibold", convRate !== null && rateColor(convRate)) : "",
+                            )}>
+                              {val}
+                            </TableCell>
+                          );
+                        })
+                      )}
+                    </TableRow>
+                  ))}
+                </React.Fragment>
               );
             })}
-          </tbody>
-        </table>
+            {/* Totals */}
+            <TableRow className="border-t-2 border-border">
+              <TableCell className="font-bold text-xs">Totaal</TableCell>
+              {visibleGroups.flatMap((g, gi) =>
+                g.subs.map((sub, si) => {
+                  const isConv = sub.type === "conv";
+                  const val = getTotalValue(sub);
+                  const convRate = isConv ? parseFloat(val) : null;
+                  return (
+                    <TableCell key={`${gi}-${si}`} className={cn(
+                      "text-center tabular-nums font-bold text-xs",
+                      si === 0 && "border-l border-border/50",
+                      isConv ? cn("bg-muted/30", convRate !== null && rateColor(convRate)) : "",
+                      "px-1.5"
+                    )}>
+                      {val}
+                    </TableCell>
+                  );
+                })
+              )}
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
+
+      {/* Consultant drill-down panel */}
+      {selectedConsultant && selectedConsultantCallData && (
+        <div className="border border-border rounded-lg p-4 bg-secondary/10 space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-foreground">{selectedConsultant} — Operationeel</h4>
+            <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => setSelectedConsultant(null)}>Sluiten</Button>
+          </div>
+          <div className="grid grid-cols-4 gap-3">
+            <div className="flex items-center gap-2 bg-card rounded-lg px-3 py-2 border border-border/50">
+              <Phone className="h-4 w-4 text-primary" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">{selectedConsultantCallData.inbound + selectedConsultantCallData.outbound}</p>
+                <p className="text-[10px] text-muted-foreground">Gesprekken</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-card rounded-lg px-3 py-2 border border-border/50">
+              <Mail className="h-4 w-4 text-primary" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">{selectedConsultantCallData.outbound}</p>
+                <p className="text-[10px] text-muted-foreground">Uitgaand</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-card rounded-lg px-3 py-2 border border-border/50">
+              <Clock className="h-4 w-4 text-teal" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">{formatTime(selectedConsultantCallData.totalMinutes)}</p>
+                <p className="text-[10px] text-muted-foreground">Beltijd</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-card rounded-lg px-3 py-2 border border-border/50">
+              <Zap className="h-4 w-4 text-success" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">{selectedConsultantCallData.qualityScore.toFixed(1)}</p>
+                <p className="text-[10px] text-muted-foreground">Kwaliteit</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -212,7 +434,7 @@ export function ManagerSalesFunnel({ delay = 0 }: ManagerSalesFunnelProps) {
           <div>
             <h3 className="text-sm font-medium text-foreground">Sales Funnel</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {displayMode ? "Conversies per consultant" : "Unit-niveau overzicht"}
+              {displayMode ? "Conversies per unit & consultant" : "Unit-niveau overzicht"}
             </p>
           </div>
           <Button variant="ghost" size="icon" onClick={toggle}
@@ -226,12 +448,12 @@ export function ManagerSalesFunnel({ delay = 0 }: ManagerSalesFunnelProps) {
         )}>
           {displayMode ? (
             <>
-              <FunnelOverview delay={delay} compact />
+              <FunnelVisualization delay={delay} compact />
               <Separator className="my-4" />
               <FunnelDetailTable delay={delay} />
             </>
           ) : (
-            <FunnelOverview delay={delay} />
+            <FunnelVisualization delay={delay} />
           )}
         </div>
       </div>
