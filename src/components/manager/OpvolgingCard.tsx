@@ -154,11 +154,11 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
     return consultantNames.map(name => {
       const row: Record<string, number> = {};
       dealStages.forEach(s => {
-        row[s.code] = dealRecords.filter(r => r.consultantName === name && r.dealStage === s.code).length;
+        row[s.code] = baseRecords.filter(r => r.consultantName === name && r.dealStage === s.code).length;
       });
       return { name, ...row };
     });
-  }, [consultantNames]);
+  }, [consultantNames, baseRecords]);
 
   return (
     <div className="space-y-4">
