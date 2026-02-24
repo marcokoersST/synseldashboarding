@@ -99,7 +99,10 @@ function RevenueDetail({ delay }: { delay: number }) {
   const [activeLine, setActiveLine] = useState<string | null>(null);
   const [hoveredPeriod, setHoveredPeriod] = useState<string | null>(null);
 
-  const consultants = myTeamConsultants;
+  const consultants = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return myTeamConsultants;
+    return myTeamConsultants.filter(c => c.unit === selectedUnit);
+  }, [selectedUnit]);
   const periods = Array.from({ length: 13 }, (_, i) => `P${i + 1}`);
 
   const getOpacity = (name: string) => {
