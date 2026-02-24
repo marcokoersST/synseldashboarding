@@ -162,7 +162,7 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
 
   return (
     <div className="space-y-4">
-      <OpvolgingOverview delay={delay} />
+      <OpvolgingOverview delay={delay} selectedUnit={selectedUnit} />
 
       {/* Filters */}
       <div className="flex gap-2 flex-wrap">
