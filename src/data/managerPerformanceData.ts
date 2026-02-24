@@ -5,6 +5,7 @@ import { myTeamConsultants } from "./managerData";
 export interface ConsultantSkillData {
   consultantId: number;
   consultantName: string;
+  unit: string;
   relatieScoreKlant: number;      // 0-10
   relatieScoreKandidaat: number;   // 0-10
   pitchingPower: number;           // 0-100
