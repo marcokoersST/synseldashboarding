@@ -32,6 +32,7 @@ export const teamMembers: TeamMember[] = [
     id: 1,
     name: "Delano Nikkels",
     role: "Senior Recruiter",
+    unit: "Engineering",
     revenue: 1850000,
     avatar: "https://i.pravatar.cc/150?img=1",
     isLeader: true,
