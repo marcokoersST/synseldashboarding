@@ -97,10 +97,15 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
   const [sortKey, setSortKey] = useState<SortKey>("dealStage");
   const [sortAsc, setSortAsc] = useState(true);
 
-  const consultantNames = useMemo(() => [...new Set(dealRecords.map(r => r.consultantName))].sort(), []);
+  const baseRecords = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return dealRecords;
+    return dealRecords.filter(r => r.unit === selectedUnit);
+  }, [selectedUnit]);
+
+  const consultantNames = useMemo(() => [...new Set(baseRecords.map(r => r.consultantName))].sort(), [baseRecords]);
 
   const filtered = useMemo(() => {
-    let data = [...dealRecords];
+    let data = [...baseRecords];
     if (search) {
       const q = search.toLowerCase();
       data = data.filter(d =>
