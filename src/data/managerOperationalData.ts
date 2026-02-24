@@ -51,6 +51,7 @@ export const unitFunnelTotals = consultantFunnelData.reduce(
 export interface DealRecord {
   id: string;
   consultantName: string;
+  unit: string;
   candidateName: string;
   dealStage: string;
   dealStageLabel: string;
