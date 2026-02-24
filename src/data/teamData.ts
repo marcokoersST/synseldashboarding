@@ -17,6 +17,7 @@ export interface TeamMember {
   id: number;
   name: string;
   role: string;
+  unit: string;
   revenue: number;
   avatar: string;
   isLeader: boolean;
