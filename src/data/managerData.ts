@@ -14,12 +14,15 @@ export interface ConsultantWithTrends extends TeamMember {
 
 export interface PlacementRecord {
   id: string;
+  candidateId: string;
   candidateName: string;
   company: string;
   startDate: Date;
   endDate: Date;
   consultantId: number;
   isActive: boolean;
+  dealId: string;
+  revenueAmount: number;
 }
 
 // Generate revenue trend data for a consultant based on their current revenue
