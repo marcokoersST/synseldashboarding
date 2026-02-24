@@ -44,7 +44,7 @@ const monteursConsultants: ConsultantWithTrends[] = [
     revenueTrend: generateRevenueTrend(1180000),
   },
   {
-    id: 13, name: "Elmar Koopman", role: "Junior Recruiter", revenue: 890000,
+    id: 13, name: "Elmar Koopman", role: "Junior Recruiter", unit: "Monteurs", revenue: 890000,
     avatar: "https://i.pravatar.cc/150?img=13", isLeader: false, teamId: "dept-monteurs",
     metrics: { emailsSent: 175, emailsTrend: [20, 24, 28, 30, 34, 39], calls: 64, callsTrend: [7, 9, 11, 10, 13, 14], acquisitions: 8, acquisitionsTrend: [1, 1, 1, 2, 1, 2], placements: 2, placementsTrend: [0, 0, 1, 0, 0, 1], candidates: 19, conversionRate: 2.1, salaryProgress: 48, performanceScore: 64 },
     revenueTrend: generateRevenueTrend(890000),
