@@ -20,7 +20,7 @@ interface ManagerGoalsCardProps {
   selectedUnit?: string;
 }
 
-export function ManagerGoalsCard({ delay = 0 }: ManagerGoalsCardProps) {
+export function ManagerGoalsCard({ delay = 0, selectedUnit }: ManagerGoalsCardProps) {
   const [goals, setGoals] = useState<ManagerGoal[]>(managerGoalsData);
   const [expandedConsultant, setExpandedConsultant] = useState<number | null>(null);
   const [newGoalText, setNewGoalText] = useState("");
