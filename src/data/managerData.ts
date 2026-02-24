@@ -117,6 +117,7 @@ const additionalConsultants: ConsultantWithTrends[] = [
     id: 9,
     name: "Miguel Kraaijeveld",
     role: "Senior Recruiter",
+    unit: "Operators",
     revenue: 1950000,
     avatar: "https://i.pravatar.cc/150?img=9",
     isLeader: true,
