@@ -129,7 +129,7 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
       return sortAsc ? cmp : -cmp;
     });
     return data;
-  }, [search, stageFilter, consultantFilter, sortKey, sortAsc]);
+  }, [search, stageFilter, consultantFilter, sortKey, sortAsc, baseRecords]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
