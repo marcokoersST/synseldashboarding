@@ -290,7 +290,7 @@ interface OpvolgingCardProps {
   selectedUnit?: string;
 }
 
-export function OpvolgingCard({ delay = 0 }: OpvolgingCardProps) {
+export function OpvolgingCard({ delay = 0, selectedUnit }: OpvolgingCardProps) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
   return (
