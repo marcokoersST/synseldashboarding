@@ -14,6 +14,7 @@ import {
 
 interface ManagerRevenueLeaderboardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
 function formatRevenue(value: number): string {
