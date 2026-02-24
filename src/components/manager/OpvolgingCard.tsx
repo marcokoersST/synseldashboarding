@@ -67,7 +67,7 @@ function OpvolgingOverview({ delay, selectedUnit }: { delay: number; selectedUni
   }, [selectedUnit]);
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-2">
-      {dealStageCounts.map((stage, i) => (
+      {filteredCounts.map((stage, i) => (
         <div key={stage.code} className="flex items-center gap-2 shrink-0">
           <div className={cn(
             "flex flex-col items-center justify-center rounded-xl border px-4 py-3 min-w-[100px]",
