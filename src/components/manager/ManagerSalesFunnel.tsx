@@ -224,7 +224,15 @@ export function ManagerSalesFunnel({ delay = 0 }: ManagerSalesFunnelProps) {
           "flex-1 transition-all duration-400 ease-in-out",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
-          {displayMode ? <FunnelDetailTable delay={delay} /> : <FunnelOverview delay={delay} />}
+          {displayMode ? (
+            <>
+              <FunnelOverview delay={delay} compact />
+              <Separator className="my-4" />
+              <FunnelDetailTable delay={delay} />
+            </>
+          ) : (
+            <FunnelOverview delay={delay} />
+          )}
         </div>
       </div>
     </AnimatedCard>
