@@ -5,6 +5,7 @@ import { myTeamConsultants } from "./managerData";
 export interface ConsultantFunnelData {
   consultantId: number;
   consultantName: string;
+  unit: string;
   toegewezen: number;
   inschrijvingen: number;
   intakes: number;
@@ -27,6 +28,7 @@ const funnelBase = [
 export const consultantFunnelData: ConsultantFunnelData[] = myTeamConsultants.map((c, i) => ({
   consultantId: c.id,
   consultantName: c.name,
+  unit: c.unit,
   ...funnelBase[i % funnelBase.length],
 }));
 
@@ -49,6 +51,7 @@ export const unitFunnelTotals = consultantFunnelData.reduce(
 export interface DealRecord {
   id: string;
   consultantName: string;
+  unit: string;
   candidateName: string;
   dealStage: string;
   dealStageLabel: string;
@@ -74,13 +77,16 @@ const candidateNames = [
 ];
 
 const consultantNames = myTeamConsultants.map(c => c.name);
+const consultantUnits = Object.fromEntries(myTeamConsultants.map(c => [c.name, c.unit]));
 
 export const dealRecords: DealRecord[] = Array.from({ length: 36 }, (_, i) => {
   const stage = dealStages[i % dealStages.length];
   const daysAgo = Math.floor(Math.random() * 14) + 1;
+  const consultantName = consultantNames[i % consultantNames.length];
   return {
     id: `DEAL-${1000 + i}`,
-    consultantName: consultantNames[i % consultantNames.length],
+    consultantName,
+    unit: consultantUnits[consultantName] || "Engineering",
     candidateName: candidateNames[i % candidateNames.length],
     dealStage: stage.code,
     dealStageLabel: stage.label,
@@ -98,6 +104,7 @@ export const dealStageCounts = dealStages.map(stage => ({
 export interface ConsultantCallData {
   consultantId: number;
   consultantName: string;
+  unit: string;
   inbound: number;
   outbound: number;
   totalMinutes: number;
@@ -113,6 +120,7 @@ export interface ConsultantCallData {
 export const consultantCallData: ConsultantCallData[] = myTeamConsultants.map((c, i) => ({
   consultantId: c.id,
   consultantName: c.name,
+  unit: c.unit,
   inbound: 35 + Math.floor(Math.random() * 30),
   outbound: 60 + Math.floor(Math.random() * 50),
   totalMinutes: 180 + Math.floor(Math.random() * 200),

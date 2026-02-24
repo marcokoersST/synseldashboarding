@@ -5,6 +5,7 @@ import { myTeamConsultants } from "./managerData";
 export interface ConsultantSkillData {
   consultantId: number;
   consultantName: string;
+  unit: string;
   relatieScoreKlant: number;      // 0-10
   relatieScoreKandidaat: number;   // 0-10
   pitchingPower: number;           // 0-100
@@ -29,7 +30,7 @@ export interface ConsultantSkillData {
   systeemHygieneScore: number;     // 0-100
 }
 
-const skillsBase: Omit<ConsultantSkillData, "consultantId" | "consultantName">[] = [
+const skillsBase: Omit<ConsultantSkillData, "consultantId" | "consultantName" | "unit">[] = [
   {
     relatieScoreKlant: 8.2, relatieScoreKandidaat: 7.8, pitchingPower: 85, responsiveness: 92, networking: 78, bezwaarverlegging: 80,
     procedureInschrijving: 88, procedureAcquisities: 82, npsKlant: 62, npsKandidaat: 55,
@@ -71,6 +72,7 @@ const skillsBase: Omit<ConsultantSkillData, "consultantId" | "consultantName">[]
 export const consultantSkillData: ConsultantSkillData[] = myTeamConsultants.map((c, i) => ({
   consultantId: c.id,
   consultantName: c.name,
+  unit: c.unit,
   ...skillsBase[i % skillsBase.length],
 }));
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { LineChart, Line, ResponsiveContainer, Tooltip } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
@@ -14,6 +14,7 @@ import {
 
 interface ManagerRevenueLeaderboardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
 function formatRevenue(value: number): string {
@@ -131,10 +132,14 @@ function ConsultantRow({
   );
 }
 
-export function ManagerRevenueLeaderboard({ delay = 0 }: ManagerRevenueLeaderboardProps) {
+export function ManagerRevenueLeaderboard({ delay = 0, selectedUnit }: ManagerRevenueLeaderboardProps) {
   const [view, setView] = useState<"team" | "company">("team");
 
-  const consultants = view === "team" ? myTeamConsultants : allConsultants;
+  const consultants = useMemo(() => {
+    const base = view === "team" ? myTeamConsultants : allConsultants;
+    if (!selectedUnit || selectedUnit === "all") return base;
+    return base.filter(c => c.unit === selectedUnit);
+  }, [view, selectedUnit]);
 
   return (
     <AnimatedCard delay={delay}>

@@ -56,10 +56,18 @@ const stageColors: Record<string, string> = {
 
 // ─── Overview: flowchart scorecards ───
 
-function OpvolgingOverview({ delay }: { delay: number }) {
+function OpvolgingOverview({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
+  const filteredCounts = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return dealStageCounts;
+    const filtered = dealRecords.filter(r => r.unit === selectedUnit);
+    return dealStages.map(stage => ({
+      ...stage,
+      count: filtered.filter(r => r.dealStage === stage.code).length,
+    }));
+  }, [selectedUnit]);
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-2">
-      {dealStageCounts.map((stage, i) => (
+      {filteredCounts.map((stage, i) => (
         <div key={stage.code} className="flex items-center gap-2 shrink-0">
           <div className={cn(
             "flex flex-col items-center justify-center rounded-xl border px-4 py-3 min-w-[100px]",
@@ -69,7 +77,7 @@ function OpvolgingOverview({ delay }: { delay: number }) {
             <span className="text-[10px] font-medium mt-1 text-center leading-tight">{stage.code}</span>
             <span className="text-[9px] text-center leading-tight opacity-70 mt-0.5">{stage.label}</span>
           </div>
-          {i < dealStageCounts.length - 1 && (
+          {i < filteredCounts.length - 1 && (
             <ArrowRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
           )}
         </div>
@@ -82,17 +90,22 @@ function OpvolgingOverview({ delay }: { delay: number }) {
 
 type SortKey = "dealStage" | "candidateName" | "consultantName" | "id" | "lastModified";
 
-function OpvolgingDetail({ delay }: { delay: number }) {
+function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
   const [consultantFilter, setConsultantFilter] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("dealStage");
   const [sortAsc, setSortAsc] = useState(true);
 
-  const consultantNames = useMemo(() => [...new Set(dealRecords.map(r => r.consultantName))].sort(), []);
+  const baseRecords = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return dealRecords;
+    return dealRecords.filter(r => r.unit === selectedUnit);
+  }, [selectedUnit]);
+
+  const consultantNames = useMemo(() => [...new Set(baseRecords.map(r => r.consultantName))].sort(), [baseRecords]);
 
   const filtered = useMemo(() => {
-    let data = [...dealRecords];
+    let data = [...baseRecords];
     if (search) {
       const q = search.toLowerCase();
       data = data.filter(d =>
@@ -116,7 +129,7 @@ function OpvolgingDetail({ delay }: { delay: number }) {
       return sortAsc ? cmp : -cmp;
     });
     return data;
-  }, [search, stageFilter, consultantFilter, sortKey, sortAsc]);
+  }, [search, stageFilter, consultantFilter, sortKey, sortAsc, baseRecords]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
@@ -141,15 +154,15 @@ function OpvolgingDetail({ delay }: { delay: number }) {
     return consultantNames.map(name => {
       const row: Record<string, number> = {};
       dealStages.forEach(s => {
-        row[s.code] = dealRecords.filter(r => r.consultantName === name && r.dealStage === s.code).length;
+        row[s.code] = baseRecords.filter(r => r.consultantName === name && r.dealStage === s.code).length;
       });
       return { name, ...row };
     });
-  }, [consultantNames]);
+  }, [consultantNames, baseRecords]);
 
   return (
     <div className="space-y-4">
-      <OpvolgingOverview delay={delay} />
+      <OpvolgingOverview delay={delay} selectedUnit={selectedUnit} />
 
       {/* Filters */}
       <div className="flex gap-2 flex-wrap">
@@ -274,9 +287,10 @@ function OpvolgingDetail({ delay }: { delay: number }) {
 
 interface OpvolgingCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
-export function OpvolgingCard({ delay = 0 }: OpvolgingCardProps) {
+export function OpvolgingCard({ delay = 0, selectedUnit }: OpvolgingCardProps) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
   return (
@@ -298,7 +312,7 @@ export function OpvolgingCard({ delay = 0 }: OpvolgingCardProps) {
           "flex-1 transition-all duration-400 ease-in-out",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
-          {displayMode ? <OpvolgingDetail delay={delay} /> : <OpvolgingOverview delay={delay} />}
+          {displayMode ? <OpvolgingDetail delay={delay} selectedUnit={selectedUnit} /> : <OpvolgingOverview delay={delay} selectedUnit={selectedUnit} />}
         </div>
       </div>
     </AnimatedCard>

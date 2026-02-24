@@ -30,22 +30,30 @@ function useDetailToggle() {
 
 interface ManagerPlacementsCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
-export function ManagerPlacementsCard({ delay = 0 }: ManagerPlacementsCardProps) {
+export function ManagerPlacementsCard({ delay = 0, selectedUnit }: ManagerPlacementsCardProps) {
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 400 });
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
   const [selectedConsultant, setSelectedConsultant] = useState<number | null>(null);
 
   const activePlacements = useMemo(() => {
     return teamPlacements
-      .filter(p => p.isActive)
+      .filter(p => {
+        if (!p.isActive) return false;
+        if (selectedUnit && selectedUnit !== "all") {
+          const consultant = myTeamConsultants.find(c => c.id === p.consultantId);
+          if (consultant && consultant.unit !== selectedUnit) return false;
+        }
+        return true;
+      })
       .map(p => {
         const consultant = myTeamConsultants.find(c => c.id === p.consultantId);
         return { ...p, consultantName: consultant?.name ?? "Onbekend" };
       })
       .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
-  }, []);
+  }, [selectedUnit]);
 
   // Group placements by consultant for drill-down
   const placementsByConsultant = useMemo(() => {

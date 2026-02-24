@@ -17,6 +17,7 @@ export interface TeamMember {
   id: number;
   name: string;
   role: string;
+  unit: string;
   revenue: number;
   avatar: string;
   isLeader: boolean;
@@ -31,6 +32,7 @@ export const teamMembers: TeamMember[] = [
     id: 1,
     name: "Delano Nikkels",
     role: "Senior Recruiter",
+    unit: "Engineering",
     revenue: 1850000,
     avatar: "https://i.pravatar.cc/150?img=1",
     isLeader: true,
@@ -53,6 +55,7 @@ export const teamMembers: TeamMember[] = [
     id: 2,
     name: "Falco Zegveld",
     role: "Recruiter",
+    unit: "Engineering",
     revenue: 1620000,
     avatar: "https://i.pravatar.cc/150?img=2",
     isLeader: false,
@@ -75,6 +78,7 @@ export const teamMembers: TeamMember[] = [
     id: 3,
     name: "Eric Hutchison",
     role: "Senior Recruiter",
+    unit: "Monteurs",
     revenue: 1450000,
     avatar: "https://i.pravatar.cc/150?img=3",
     isLeader: false,
@@ -97,6 +101,7 @@ export const teamMembers: TeamMember[] = [
     id: 4,
     name: "Jij",
     role: "Recruiter",
+    unit: "Operators",
     revenue: 1280000,
     avatar: "https://i.pravatar.cc/150?img=4",
     isLeader: false,
@@ -120,6 +125,7 @@ export const teamMembers: TeamMember[] = [
     id: 5,
     name: "Jonah Waterborg",
     role: "Junior Recruiter",
+    unit: "Trainingsunit",
     revenue: 980000,
     avatar: "https://i.pravatar.cc/150?img=5",
     isLeader: false,
@@ -142,6 +148,7 @@ export const teamMembers: TeamMember[] = [
     id: 6,
     name: "Niels Eggens",
     role: "Junior Recruiter",
+    unit: "Early Performers",
     revenue: 720000,
     avatar: "https://i.pravatar.cc/150?img=6",
     isLeader: false,

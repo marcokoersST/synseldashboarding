@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { Button } from "@/components/ui/button";
@@ -94,12 +94,15 @@ function RevenueOverview({ delay }: { delay: number }) {
 
 // ─── Detail: per consultant lines + enhanced table ───
 
-function RevenueDetail({ delay }: { delay: number }) {
+function RevenueDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
   const [activeLine, setActiveLine] = useState<string | null>(null);
   const [hoveredPeriod, setHoveredPeriod] = useState<string | null>(null);
 
-  const consultants = myTeamConsultants;
+  const consultants = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return myTeamConsultants;
+    return myTeamConsultants.filter(c => c.unit === selectedUnit);
+  }, [selectedUnit]);
   const periods = Array.from({ length: 13 }, (_, i) => `P${i + 1}`);
 
   const getOpacity = (name: string) => {
@@ -217,9 +220,10 @@ function RevenueDetail({ delay }: { delay: number }) {
 
 interface ManagerRevenueChartProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
-export function ManagerRevenueChart({ delay = 0 }: ManagerRevenueChartProps) {
+export function ManagerRevenueChart({ delay = 0, selectedUnit }: ManagerRevenueChartProps) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
   return (
@@ -241,7 +245,7 @@ export function ManagerRevenueChart({ delay = 0 }: ManagerRevenueChartProps) {
           "transition-all duration-400 ease-in-out",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
-          {displayMode ? <RevenueDetail delay={delay} /> : <RevenueOverview delay={delay} />}
+          {displayMode ? <RevenueDetail delay={delay} selectedUnit={selectedUnit} /> : <RevenueOverview delay={delay} />}
         </div>
       </div>
     </AnimatedCard>

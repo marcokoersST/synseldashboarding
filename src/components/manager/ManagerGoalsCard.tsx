@@ -17,9 +17,10 @@ import {
 
 interface ManagerGoalsCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
-export function ManagerGoalsCard({ delay = 0 }: ManagerGoalsCardProps) {
+export function ManagerGoalsCard({ delay = 0, selectedUnit }: ManagerGoalsCardProps) {
   const [goals, setGoals] = useState<ManagerGoal[]>(managerGoalsData);
   const [expandedConsultant, setExpandedConsultant] = useState<number | null>(null);
   const [newGoalText, setNewGoalText] = useState("");
@@ -27,7 +28,10 @@ export function ManagerGoalsCard({ delay = 0 }: ManagerGoalsCardProps) {
   const [editingGoalId, setEditingGoalId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
 
-  const consultants = myTeamConsultants;
+  const consultants = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return myTeamConsultants;
+    return myTeamConsultants.filter(c => c.unit === selectedUnit);
+  }, [selectedUnit]);
 
   // Summary per consultant
   const summaryData = useMemo(() => {

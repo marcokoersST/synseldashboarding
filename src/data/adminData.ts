@@ -32,25 +32,25 @@ export interface Department {
 // Monteurs consultants
 const monteursConsultants: ConsultantWithTrends[] = [
   {
-    id: 11, name: "Bart van Vliet", role: "Senior Recruiter", revenue: 1540000,
+    id: 11, name: "Bart van Vliet", role: "Senior Recruiter", unit: "Monteurs", revenue: 1540000,
     avatar: "https://i.pravatar.cc/150?img=11", isLeader: true, teamId: "dept-monteurs",
     metrics: { emailsSent: 290, emailsTrend: [36, 42, 48, 46, 54, 64], calls: 105, callsTrend: [13, 15, 18, 16, 20, 23], acquisitions: 15, acquisitionsTrend: [2, 2, 3, 3, 2, 3], placements: 4, placementsTrend: [0, 1, 1, 0, 1, 1], candidates: 36, conversionRate: 3.0, salaryProgress: 80, performanceScore: 85 },
     revenueTrend: generateRevenueTrend(1540000),
   },
   {
-    id: 12, name: "Daan Jacobs", role: "Recruiter", revenue: 1180000,
+    id: 12, name: "Daan Jacobs", role: "Recruiter", unit: "Monteurs", revenue: 1180000,
     avatar: "https://i.pravatar.cc/150?img=12", isLeader: false, teamId: "dept-monteurs",
     metrics: { emailsSent: 220, emailsTrend: [28, 32, 36, 38, 42, 44], calls: 82, callsTrend: [10, 12, 14, 13, 16, 17], acquisitions: 11, acquisitionsTrend: [1, 2, 2, 2, 2, 2], placements: 3, placementsTrend: [0, 1, 0, 1, 0, 1], candidates: 26, conversionRate: 2.6, salaryProgress: 62, performanceScore: 73 },
     revenueTrend: generateRevenueTrend(1180000),
   },
   {
-    id: 13, name: "Elmar Koopman", role: "Junior Recruiter", revenue: 890000,
+    id: 13, name: "Elmar Koopman", role: "Junior Recruiter", unit: "Monteurs", revenue: 890000,
     avatar: "https://i.pravatar.cc/150?img=13", isLeader: false, teamId: "dept-monteurs",
     metrics: { emailsSent: 175, emailsTrend: [20, 24, 28, 30, 34, 39], calls: 64, callsTrend: [7, 9, 11, 10, 13, 14], acquisitions: 8, acquisitionsTrend: [1, 1, 1, 2, 1, 2], placements: 2, placementsTrend: [0, 0, 1, 0, 0, 1], candidates: 19, conversionRate: 2.1, salaryProgress: 48, performanceScore: 64 },
     revenueTrend: generateRevenueTrend(890000),
   },
   {
-    id: 14, name: "Joey Pol", role: "Recruiter", revenue: 1320000,
+    id: 14, name: "Joey Pol", role: "Recruiter", unit: "Monteurs", revenue: 1320000,
     avatar: "https://i.pravatar.cc/150?img=14", isLeader: false, teamId: "dept-monteurs",
     metrics: { emailsSent: 252, emailsTrend: [30, 36, 42, 40, 48, 56], calls: 92, callsTrend: [11, 13, 16, 14, 18, 20], acquisitions: 13, acquisitionsTrend: [2, 2, 2, 2, 2, 3], placements: 3, placementsTrend: [0, 1, 0, 1, 0, 1], candidates: 30, conversionRate: 2.8, salaryProgress: 68, performanceScore: 77 },
     revenueTrend: generateRevenueTrend(1320000),

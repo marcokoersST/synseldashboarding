@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { cn } from "@/lib/utils";
 import { consultantSkillData, type ConsultantSkillData } from "@/data/managerPerformanceData";
@@ -285,10 +285,15 @@ function TeamGapAnalysis() {
 
 interface ProcesKernvaardighedenCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
-export function ProcesKernvaardighedenCard({ delay = 0 }: ProcesKernvaardighedenCardProps) {
-  const ranked = [...consultantSkillData].sort((a, b) => overallScore(b) - overallScore(a));
+export function ProcesKernvaardighedenCard({ delay = 0, selectedUnit }: ProcesKernvaardighedenCardProps) {
+  const filteredSkillData = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return consultantSkillData;
+    return consultantSkillData.filter(c => c.unit === selectedUnit);
+  }, [selectedUnit]);
+  const ranked = [...filteredSkillData].sort((a, b) => overallScore(b) - overallScore(a));
   const [compareMode, setCompareMode] = useState(false);
   const [compareIds, setCompareIds] = useState<number[]>([]);
 

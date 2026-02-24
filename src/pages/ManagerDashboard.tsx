@@ -122,12 +122,12 @@ export default function ManagerDashboard() {
       ),
       content: () => (
         <>
-          <ManagerSalesFunnel delay={100} />
+          <ManagerSalesFunnel delay={100} selectedUnit={selectedUnit} />
           <div className="mt-5">
-            <OpvolgingCard delay={150} />
+            <OpvolgingCard delay={150} selectedUnit={selectedUnit} />
           </div>
           <div className="mt-5">
-            <ManagerCallsCard delay={200} />
+            <ManagerCallsCard delay={200} selectedUnit={selectedUnit} />
           </div>
         </>
       ),
@@ -144,10 +144,10 @@ export default function ManagerDashboard() {
       content: () => (
         <div className="grid grid-cols-3 gap-5">
           <div className="col-span-2">
-            <ProcesKernvaardighedenCard delay={250} />
+            <ProcesKernvaardighedenCard delay={250} selectedUnit={selectedUnit} />
           </div>
           <div className="col-span-1">
-            <ManagerGoalsCard delay={300} />
+            <ManagerGoalsCard delay={300} selectedUnit={selectedUnit} />
           </div>
         </div>
       ),
@@ -164,14 +164,14 @@ export default function ManagerDashboard() {
       content: () => (
         <>
           <div className="mb-5">
-            <ManagerRevenueChart delay={350} />
+            <ManagerRevenueChart delay={350} selectedUnit={selectedUnit} />
           </div>
           <div className="grid grid-cols-3 gap-5">
             <div className="col-span-1">
-              <ManagerPlacementsCard delay={400} />
+              <ManagerPlacementsCard delay={400} selectedUnit={selectedUnit} />
             </div>
             <div className="col-span-2">
-              <ManagerRevenueLeaderboard delay={450} />
+              <ManagerRevenueLeaderboard delay={450} selectedUnit={selectedUnit} />
             </div>
           </div>
         </>

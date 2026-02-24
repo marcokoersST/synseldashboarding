@@ -31,27 +31,39 @@ function formatTime(totalMinutes: number) {
 
 // ─── Overview ───
 
-function CallsOverview({ delay }: { delay: number }) {
+function CallsOverview({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
+  const totals = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return unitCallTotals;
+    const filtered = consultantCallData.filter(c => c.unit === selectedUnit);
+    if (filtered.length === 0) return unitCallTotals;
+    return {
+      inbound: filtered.reduce((s, c) => s + c.inbound, 0),
+      outbound: filtered.reduce((s, c) => s + c.outbound, 0),
+      totalMinutes: filtered.reduce((s, c) => s + c.totalMinutes, 0),
+      qualityScore: +(filtered.reduce((s, c) => s + c.qualityScore, 0) / filtered.length).toFixed(1),
+    };
+  }, [selectedUnit]);
+
   return (
     <div className="grid grid-cols-2 gap-3">
       <div className="flex flex-col items-center justify-center rounded-xl bg-primary/5 border border-primary/10 p-4">
         <PhoneIncoming className="h-5 w-5 text-primary mb-2" />
-        <AnimatedNumber value={unitCallTotals.inbound} delay={delay + 100} className="text-2xl font-bold text-foreground" />
+        <AnimatedNumber value={totals.inbound} delay={delay + 100} className="text-2xl font-bold text-foreground" />
         <span className="text-xs text-muted-foreground mt-1">Inkomend</span>
       </div>
       <div className="flex flex-col items-center justify-center rounded-xl bg-primary/5 border border-primary/10 p-4">
         <PhoneOutgoing className="h-5 w-5 text-primary mb-2" />
-        <AnimatedNumber value={unitCallTotals.outbound} delay={delay + 150} className="text-2xl font-bold text-foreground" />
+        <AnimatedNumber value={totals.outbound} delay={delay + 150} className="text-2xl font-bold text-foreground" />
         <span className="text-xs text-muted-foreground mt-1">Uitgaand</span>
       </div>
       <div className="flex flex-col items-center justify-center rounded-xl bg-teal/5 border border-teal/10 p-4">
         <Clock className="h-5 w-5 text-teal mb-2" />
-        <span className="text-2xl font-bold text-foreground">{formatTime(unitCallTotals.totalMinutes)}</span>
+        <span className="text-2xl font-bold text-foreground">{formatTime(totals.totalMinutes)}</span>
         <span className="text-xs text-muted-foreground mt-1">Totale beltijd</span>
       </div>
       <div className="flex flex-col items-center justify-center rounded-xl bg-success/5 border border-success/10 p-4">
         <Zap className="h-5 w-5 text-success mb-2" />
-        <span className="text-2xl font-bold text-foreground">{unitCallTotals.qualityScore}</span>
+        <span className="text-2xl font-bold text-foreground">{totals.qualityScore}</span>
         <span className="text-xs text-muted-foreground mt-1">Kwaliteitsscore</span>
       </div>
     </div>
@@ -62,12 +74,15 @@ function CallsOverview({ delay }: { delay: number }) {
 
 type SortKey = "consultantName" | "inbound" | "outbound" | "totalMinutes" | "qualityScore" | "missed";
 
-function CallsDetail({ delay }: { delay: number }) {
+function CallsDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const [sortKey, setSortKey] = useState<SortKey>("consultantName");
   const [sortAsc, setSortAsc] = useState(true);
 
   const sorted = useMemo(() => {
-    const data = [...consultantCallData];
+    let data = [...consultantCallData];
+    if (selectedUnit && selectedUnit !== "all") {
+      data = data.filter(c => c.unit === selectedUnit);
+    }
     data.sort((a, b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
@@ -75,7 +90,7 @@ function CallsDetail({ delay }: { delay: number }) {
       return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number);
     });
     return data;
-  }, [sortKey, sortAsc]);
+  }, [sortKey, sortAsc, selectedUnit]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
@@ -91,7 +106,7 @@ function CallsDetail({ delay }: { delay: number }) {
     { key: "missed", label: "Gemist" },
   ];
 
-  const totalContactStatus = consultantCallData.reduce(
+  const totalContactStatus = sorted.reduce(
     (acc, c) => ({
       warmRelation: acc.warmRelation + c.contactStatus.warmRelation,
       preferredCP: acc.preferredCP + c.contactStatus.preferredCP,
@@ -175,9 +190,10 @@ function CallsDetail({ delay }: { delay: number }) {
 
 interface ManagerCallsCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
-export function ManagerCallsCard({ delay = 0 }: ManagerCallsCardProps) {
+export function ManagerCallsCard({ delay = 0, selectedUnit }: ManagerCallsCardProps) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
   return (
@@ -202,7 +218,7 @@ export function ManagerCallsCard({ delay = 0 }: ManagerCallsCardProps) {
           "flex-1 transition-all duration-400 ease-in-out",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
-          {displayMode ? <CallsDetail delay={delay} /> : <CallsOverview delay={delay} />}
+          {displayMode ? <CallsDetail delay={delay} selectedUnit={selectedUnit} /> : <CallsOverview delay={delay} selectedUnit={selectedUnit} />}
         </div>
       </div>
     </AnimatedCard>
