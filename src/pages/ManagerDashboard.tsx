@@ -10,9 +10,12 @@ import { ManagerPlacementsCard } from "@/components/manager/ManagerPlacementsCar
 import { ManagerRevenueLeaderboard } from "@/components/manager/ManagerRevenueLeaderboard";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { unitFunnelTotals, dealRecords, unitCallTotals } from "@/data/managerOperationalData";
 import { consultantSkillData, managerGoalsData, managerRevenueChartData } from "@/data/managerPerformanceData";
 import { unitFunnelTotals as funnelTotals } from "@/data/managerOperationalData";
+
+const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "New Performers", "Early Performers", "Instroom", "Suriname"];
 
 // ── Section config ──
 
@@ -50,6 +53,7 @@ export default function ManagerDashboard() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(loadCollapsed);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<string>("all");
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(sectionOrder));
@@ -89,6 +93,9 @@ export default function ManagerDashboard() {
   };
   const handleDragEnd = () => {
     setDragIdx(null);
+    setDragOverIdx(null);
+  };
+  const handleDragLeave = () => {
     setDragOverIdx(null);
   };
 
@@ -185,34 +192,49 @@ export default function ManagerDashboard() {
           </p>
         </div>
 
-        {/* Reorder popover */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <button className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-              <ArrowUpDown size={14} />
-              Volgorde
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-56 p-2">
-            <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Sleep om te herordenen</p>
-            {sectionOrder.map((id, idx) => (
-              <div
-                key={id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, idx)}
-                onDragOver={(e) => handleDragOver(e, idx)}
-                onDrop={(e) => handleDrop(e, idx)}
-                onDragEnd={handleDragEnd}
-                className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm cursor-grab active:cursor-grabbing select-none transition-colors ${
-                  dragOverIdx === idx ? "bg-accent" : "hover:bg-muted/50"
-                }`}
-              >
-                <GripVertical size={14} className="text-muted-foreground/60 flex-shrink-0" />
-                <span>{sectionMap[id]?.label}</span>
-              </div>
-            ))}
-          </PopoverContent>
-        </Popover>
+        <div className="flex items-center gap-2">
+          {/* Unit selector */}
+          <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+            <SelectTrigger className="w-[160px] h-8 text-xs">
+              <SelectValue placeholder="Alle units" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle units</SelectItem>
+              {UNITS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          {/* Reorder popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                <ArrowUpDown size={14} />
+                Volgorde
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56 p-2">
+              <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Sleep om te herordenen</p>
+              {sectionOrder.map((id, idx) => (
+                <div
+                  key={id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDrop={(e) => handleDrop(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  onDragLeave={handleDragLeave}
+                  className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm cursor-grab active:cursor-grabbing select-none transition-all duration-200 ease-out ${
+                    dragIdx === idx ? "opacity-50 scale-[1.02] shadow-md" :
+                    dragOverIdx === idx ? "bg-accent translate-y-0.5" : "hover:bg-muted/50"
+                  }`}
+                >
+                  <GripVertical size={14} className="text-muted-foreground/60 flex-shrink-0" />
+                  <span>{sectionMap[id]?.label}</span>
+                </div>
+              ))}
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Sections */}
