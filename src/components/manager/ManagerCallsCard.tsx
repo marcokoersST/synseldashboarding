@@ -193,7 +193,7 @@ interface ManagerCallsCardProps {
   selectedUnit?: string;
 }
 
-export function ManagerCallsCard({ delay = 0 }: ManagerCallsCardProps) {
+export function ManagerCallsCard({ delay = 0, selectedUnit }: ManagerCallsCardProps) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
   return (
