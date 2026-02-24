@@ -1,54 +1,27 @@
 
 
-# Fixes for Manager Dashboard
+# Fix: Sales Funnel Clipping in Detail Mode
 
-## 1. Unit Selector Not Working
+## Problem
+When the Sales Funnel enters detail mode, the funnel visualization + table + drill-down panel expand beyond the card's visible area. The card has `h-full` and sits within the dashboard grid, but the content grows unbounded and clips outside the frame because the parent grid/scroll container doesn't accommodate the expanded height.
 
-**Problem**: The `selectedUnit` state in `ManagerDashboard.tsx` (line 56) is set but never passed to any child component. It's completely disconnected from the data.
+## Root Cause
+The outer card div (line 491) has `h-full flex flex-col` which ties its height to the grid cell. In detail mode, the content (compact funnel ~200px + separator + filters + full table + drill-down panel) exceeds this height. The funnel visualization uses percentage-based widths that don't scale down, and the entire card is constrained by the grid layout.
 
-**Fix**: Pass `selectedUnit` as a prop to all child components (`ManagerSalesFunnel`, `OpvolgingCard`, `ManagerCallsCard`, `ProcesKernvaardighedenCard`, `ManagerGoalsCard`, `ManagerRevenueChart`, `ManagerPlacementsCard`, `ManagerRevenueLeaderboard`). Each component will filter its data by unit when a unit is selected. Components that already have their own unit filter (like the Sales Funnel table) will sync with this global filter.
+## Fix
 
-### Files changed:
-- `src/pages/ManagerDashboard.tsx` — pass `selectedUnit` prop to all section content components
-- All manager card components — accept `selectedUnit` prop and filter data accordingly
+### 1. Remove fixed height constraint on the card
+Change the outer card wrapper from `h-full` to `h-auto` so it grows naturally with content in detail mode. The `AnimatedCard` wrapper and grid should allow this since the dashboard uses `items-start` alignment (per memory).
 
----
+### 2. Make the funnel visualization responsive in compact mode
+In compact mode, reduce the funnel bar heights further and remove conversion percentage arrows between steps to save vertical space. Use `h-5` instead of `h-7` for compact bars and `h-2` for conversion indicators.
 
-## 2. Sales Funnel Table Horizontal Scroll
+### 3. Constrain the table area with max-height + scroll
+Add `max-h-[400px] overflow-y-auto` to the table wrapper so that when there are many expanded units, the table scrolls vertically within a bounded area rather than pushing the card infinitely tall.
 
-**Problem**: The `overflow-x-auto` on line 245 of `ManagerSalesFunnel.tsx` doesn't work because the parent card container constrains it. The table with conversion columns is wider than the viewport.
-
-**Fix**: Ensure the table wrapper has `overflow-x-auto` with `max-width: 100%` on a parent that has a defined width. Add `min-w-0` to the flex parent and ensure the card doesn't prevent horizontal scrolling. The outer `<div className="bg-card rounded-xl p-5 ...">` needs `overflow-hidden` removed if present, and the table wrapper needs to be a block-level element with constrained width.
-
-### File changed:
-- `src/components/manager/ManagerSalesFunnel.tsx` — fix overflow container hierarchy
-
----
-
-## 3. Unit Dropdown → Consultant Selector
-
-**Problem**: The dropdown in the Sales Funnel detail table (line 226-232) filters by unit. User wants it to filter by individual consultant instead.
-
-**Fix**: Replace the unit `<Select>` with a consultant multi-select or single-select dropdown. Populate from all consultant names across all units in `consultantFunnelData`. When a consultant is selected, auto-expand the relevant unit and highlight/filter to show only that consultant's row. Keep the unit grouping in the table but visually emphasize the selected consultant.
-
-### File changed:
-- `src/components/manager/ManagerSalesFunnel.tsx` — replace unit dropdown with consultant dropdown in `FunnelDetailTable`
-
----
-
-## 4. Week/Period + Number Selector Visual Connection
-
-**Problem**: The Week/Periode toggle (lines 211-219) and the number selector (lines 220-225) are separate elements with a gap between them. They should look like one connected filter.
-
-**Fix**: Wrap both in a single `div` with shared border styling. The toggle buttons and the number select will be inside one `flex` container with `rounded-lg border border-border overflow-hidden` — no gap between them. The toggle buttons form the left part, a subtle separator, then the number dropdown on the right. This makes it visually clear they're one combined "time period" filter.
-
-### Layout:
-```text
-┌─────────────────────────────────┐
-│ [Week] [Periode] │ W7 ▾        │
-└─────────────────────────────────┘
-```
-
-### File changed:
-- `src/components/manager/ManagerSalesFunnel.tsx` — merge the time toggle + number selector into one connected element
+### File changed
+- `src/components/manager/ManagerSalesFunnel.tsx`
+  - Line 491: `h-full` → `h-auto`
+  - Line 70: compact funnel gap/sizing adjustments (smaller bars)
+  - Line 295: add `max-h-[400px] overflow-y-auto` to table wrapper
 
