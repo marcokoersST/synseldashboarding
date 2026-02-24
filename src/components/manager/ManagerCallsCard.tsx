@@ -74,7 +74,7 @@ function CallsOverview({ delay, selectedUnit }: { delay: number; selectedUnit?: 
 
 type SortKey = "consultantName" | "inbound" | "outbound" | "totalMinutes" | "qualityScore" | "missed";
 
-function CallsDetail({ delay }: { delay: number }) {
+function CallsDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const [sortKey, setSortKey] = useState<SortKey>("consultantName");
   const [sortAsc, setSortAsc] = useState(true);
 
