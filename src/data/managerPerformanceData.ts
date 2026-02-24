@@ -10,6 +10,7 @@ export interface ConsultantSkillData {
   pitchingPower: number;           // 0-100
   responsiveness: number;          // 0-100
   networking: number;              // 0-100
+  bezwaarverlegging: number;       // 0-100
   procedureInschrijving: number;   // 0-100
   procedureAcquisities: number;    // 0-100
   npsKlant: number;                // -100 to 100
