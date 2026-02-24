@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Maximize2, Minimize2, ArrowUpDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 import { consultantFunnelData, unitFunnelTotals, type ConsultantFunnelData } from "@/data/managerOperationalData";
 
 function useDetailToggle() {
