@@ -5,6 +5,7 @@ import { myTeamConsultants } from "./managerData";
 export interface ConsultantFunnelData {
   consultantId: number;
   consultantName: string;
+  unit: string;
   toegewezen: number;
   inschrijvingen: number;
   intakes: number;
