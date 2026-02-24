@@ -430,15 +430,24 @@ function MailDetailView({ delay }: { delay: number }) {
         <MetricCell icon={<Inbox className="h-3.5 w-3.5 text-teal" />} label="Ontvangen" delay={delay + 120}>
           <AnimatedNumber value={d.received} delay={delay + 120} className="text-lg font-bold text-foreground tabular-nums" />
         </MetricCell>
-        <MetricCell icon={<Zap className="h-3.5 w-3.5 text-teal" />} label="TTFR Score" delay={delay + 140}>
-          <span className="text-lg font-bold text-foreground tabular-nums">
-            <AnimatedNumber value={d.ttfrScore} decimals={1} delay={delay + 140} />
-            <span className="text-xs text-muted-foreground ml-1">uur</span>
-          </span>
-        </MetricCell>
-        <MetricCell icon={<Clock className="h-3.5 w-3.5 text-teal" />} label="Volgende actie" delay={delay + 160}>
-          <span className="text-lg font-bold text-foreground tabular-nums">{formatDuration(d.timeToNextAction)}</span>
-        </MetricCell>
+      </div>
+
+      {/* Emails per dealstage */}
+      <div className="border-b border-border/50 mx-1 mb-2" />
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium px-1 mb-2">Emails per dealstage</span>
+
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        {d.emailsPerDealStage.map((stage, i) => (
+          <div key={stage.code} className="bg-secondary/30 rounded-lg px-3 py-2 hover:bg-secondary/40 transition-colors flex items-center justify-between">
+            <div className="min-w-0">
+              <span className="text-[11px] font-semibold text-primary tabular-nums">{stage.code}</span>
+              <span className="text-[10px] text-muted-foreground ml-1.5 truncate">{stage.label}</span>
+            </div>
+            <span className="text-sm font-bold text-foreground tabular-nums ml-2">
+              <AnimatedNumber value={stage.count} delay={delay + 140 + i * 20} />
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* Divider */}
