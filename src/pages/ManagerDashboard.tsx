@@ -164,14 +164,14 @@ export default function ManagerDashboard() {
       content: () => (
         <>
           <div className="mb-5">
-            <ManagerRevenueChart delay={350} />
+            <ManagerRevenueChart delay={350} selectedUnit={selectedUnit} />
           </div>
           <div className="grid grid-cols-3 gap-5">
             <div className="col-span-1">
-              <ManagerPlacementsCard delay={400} />
+              <ManagerPlacementsCard delay={400} selectedUnit={selectedUnit} />
             </div>
             <div className="col-span-2">
-              <ManagerRevenueLeaderboard delay={450} />
+              <ManagerRevenueLeaderboard delay={450} selectedUnit={selectedUnit} />
             </div>
           </div>
         </>

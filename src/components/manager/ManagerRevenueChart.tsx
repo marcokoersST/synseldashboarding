@@ -245,7 +245,7 @@ export function ManagerRevenueChart({ delay = 0, selectedUnit }: ManagerRevenueC
           "transition-all duration-400 ease-in-out",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
-          {displayMode ? <RevenueDetail delay={delay} /> : <RevenueOverview delay={delay} />}
+          {displayMode ? <RevenueDetail delay={delay} selectedUnit={selectedUnit} /> : <RevenueOverview delay={delay} />}
         </div>
       </div>
     </AnimatedCard>

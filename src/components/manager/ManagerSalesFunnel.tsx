@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Maximize2, Minimize2, ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronDown, ChevronRight, Filter, Eye, EyeOff, Phone, Mail, Clock, Zap } from "lucide-react";
+import { Maximize2, Minimize2, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, Phone, Mail, Clock, Zap, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { columnGroups, rateColor, getCellValue, getTotalValue, type SubCol, type ColumnGroup } from "@/components/tv/UnitFunnelBreakdown";
 import { weekUnitBreakdown, consultantFunnelData, type UnitFunnelRow, type ConsultantFunnelRow } from "@/data/tvData";
-import { unitFunnelTotals, consultantCallData } from "@/data/managerOperationalData";
+import { unitFunnelTotals, consultantCallData, consultantFunnelData as mgrConsultantFunnel } from "@/data/managerOperationalData";
 import { Badge } from "@/components/ui/badge";
 
 function useDetailToggle() {
@@ -48,27 +47,37 @@ const funnelColors = [
   "hsl(175, 55%, 51%)", "hsl(175, 60%, 43%)", "hsl(175, 65%, 27%)",
 ];
 
-function FunnelVisualization({ delay, compact = false }: { delay: number; compact?: boolean }) {
+function FunnelVisualization({ delay, compact = false, selectedUnit }: { delay: number; compact?: boolean; selectedUnit?: string }) {
+  const totals = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return unitFunnelTotals;
+    const filtered = mgrConsultantFunnel.filter(c => c.unit === selectedUnit);
+    if (filtered.length === 0) return unitFunnelTotals;
+    const keys = Object.keys(unitFunnelTotals) as (keyof typeof unitFunnelTotals)[];
+    const result = {} as Record<keyof typeof unitFunnelTotals, number>;
+    keys.forEach(key => {
+      result[key] = filtered.reduce((s, c) => s + ((c as any)[key] as number || 0), 0);
+    });
+    return result;
+  }, [selectedUnit]);
+
   const data = funnelSteps.map(s => ({
     ...s,
-    value: unitFunnelTotals[s.key as keyof typeof unitFunnelTotals],
+    value: totals[s.key as keyof typeof totals] || 0,
   }));
-  const max = data[0].value;
+  const max = Math.max(data[0].value, 1);
 
   return (
     <div className={cn("flex flex-col items-center", compact ? "gap-0" : "gap-0")}>
       {data.map((step, i) => {
         const widthPct = Math.max(((step.value / max) * 100), 12);
-        const convPct = i > 0 ? Math.round((step.value / data[i - 1].value) * 100) : null;
+        const convPct = i > 0 && data[i - 1].value > 0 ? Math.round((step.value / data[i - 1].value) * 100) : null;
         return (
           <div key={step.key} className="w-full flex flex-col items-center">
-            {/* Conversion arrow */}
             {convPct !== null && (
               <div className={cn("flex items-center justify-center text-muted-foreground", compact ? "h-3" : "h-5")}>
                 <span className={cn("font-medium", compact ? "text-[9px]" : "text-[10px]")}>{convPct}% ↓</span>
               </div>
             )}
-            {/* Trapezoid step */}
             <div
               className={cn(
                 "relative flex items-center justify-center rounded-md transition-all duration-700 ease-out",
@@ -92,13 +101,13 @@ function FunnelVisualization({ delay, compact = false }: { delay: number; compac
           </div>
         );
       })}
-      {!compact && (
+      {!compact && totals.toegewezen > 0 && (
         <div className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 mt-3">
           <span className="text-xs font-medium text-foreground">
-            Totaal: {unitFunnelTotals.toegewezen} → {unitFunnelTotals.plaatsingen}
+            Totaal: {totals.toegewezen} → {totals.plaatsingen}
           </span>
           <span className="text-sm font-bold text-primary">
-            {((unitFunnelTotals.plaatsingen / unitFunnelTotals.toegewezen) * 100).toFixed(1)}% conversie
+            {((totals.plaatsingen / totals.toegewezen) * 100).toFixed(1)}% conversie
           </span>
         </div>
       )}
@@ -127,7 +136,7 @@ function getConsultantCellValue(row: ConsultantFunnelRow, sub: SubCol): string {
   return `${((from / to) * 100).toFixed(0)}%`;
 }
 
-// ─── Detail Table (AcquisitieConversie style) ───
+// ─── Detail Table ───
 
 type SortDirection = "asc" | "desc" | null;
 interface SortConfig {
@@ -142,17 +151,49 @@ function formatTime(totalMinutes: number) {
   return `${h}:${String(m).padStart(2, "0")}:00`;
 }
 
-function FunnelDetailTable({ delay }: { delay: number }) {
+function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const [expandedUnits, setExpandedUnits] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
-  const [selectedUnit, setSelectedUnit] = useState<string>("all");
   const [showConversion, setShowConversion] = useState(true);
   const [selectedConsultant, setSelectedConsultant] = useState<string | null>(null);
+  const [consultantFilter, setConsultantFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"week" | "periode">("week");
   const [selectedNumber, setSelectedNumber] = useState("7");
 
+  // All consultant names for the dropdown
+  const allConsultantNames = useMemo(() => {
+    const names: string[] = [];
+    Object.values(consultantFunnelData).forEach(list => list.forEach(c => names.push(c.name)));
+    return names.sort();
+  }, []);
+
+  // Auto-expand unit when consultant is selected from dropdown
+  useEffect(() => {
+    if (consultantFilter !== "all") {
+      const unitName = Object.entries(consultantFunnelData).find(([_, list]) =>
+        list.some(c => c.name === consultantFilter)
+      )?.[0];
+      if (unitName && !expandedUnits.includes(unitName)) {
+        setExpandedUnits(prev => [...prev, unitName]);
+      }
+    }
+  }, [consultantFilter]);
+
   const filteredData = useMemo(() => {
-    let data = selectedUnit === "all" ? weekUnitBreakdown : weekUnitBreakdown.filter(r => r.unit === selectedUnit);
+    let data = selectedUnit && selectedUnit !== "all"
+      ? weekUnitBreakdown.filter(r => r.unit === selectedUnit)
+      : weekUnitBreakdown;
+
+    if (consultantFilter !== "all") {
+      // Find which unit the consultant belongs to and only show that unit
+      const unitName = Object.entries(consultantFunnelData).find(([_, list]) =>
+        list.some(c => c.name === consultantFilter)
+      )?.[0];
+      if (unitName) {
+        data = data.filter(r => r.unit === unitName);
+      }
+    }
+
     if (sortConfig?.direction) {
       const sub = columnGroups[sortConfig.groupIdx].subs[sortConfig.subIdx];
       data = [...data].sort((a, b) => {
@@ -162,7 +203,7 @@ function FunnelDetailTable({ delay }: { delay: number }) {
       });
     }
     return data;
-  }, [selectedUnit, sortConfig]);
+  }, [selectedUnit, consultantFilter, sortConfig]);
 
   const visibleGroups = useMemo(() => {
     if (showConversion) return columnGroups;
@@ -198,7 +239,6 @@ function FunnelDetailTable({ delay }: { delay: number }) {
     ? Array.from({ length: 53 }, (_, i) => String(i + 1))
     : Array.from({ length: 13 }, (_, i) => String(i + 1));
 
-  // Get call data for selected consultant
   const selectedConsultantCallData = selectedConsultant
     ? consultantCallData.find(c => c.consultantName === selectedConsultant)
     : null;
@@ -207,7 +247,8 @@ function FunnelDetailTable({ delay }: { delay: number }) {
     <div className="space-y-3">
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
-        <div className="flex rounded-lg border border-border overflow-hidden">
+        {/* Connected time filter: Week/Periode + number */}
+        <div className="flex rounded-lg border border-border overflow-hidden h-7">
           <button
             onClick={() => { setViewMode("week"); setSelectedNumber("7"); }}
             className={cn("px-2.5 py-1 text-[11px] font-medium transition-colors", viewMode === "week" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted")}
@@ -216,20 +257,29 @@ function FunnelDetailTable({ delay }: { delay: number }) {
             onClick={() => { setViewMode("periode"); setSelectedNumber("1"); }}
             className={cn("px-2.5 py-1 text-[11px] font-medium transition-colors", viewMode === "periode" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted")}
           >Periode</button>
+          <div className="w-px bg-border" />
+          <select
+            value={selectedNumber}
+            onChange={e => setSelectedNumber(e.target.value)}
+            className="bg-card text-xs px-2 outline-none cursor-pointer text-foreground min-w-[52px]"
+          >
+            {numbers.map(n => (
+              <option key={n} value={n}>{viewMode === "week" ? `W${n}` : `P${n}`}</option>
+            ))}
+          </select>
         </div>
-        <Select value={selectedNumber} onValueChange={setSelectedNumber}>
-          <SelectTrigger className="w-[80px] h-7 text-xs"><SelectValue /></SelectTrigger>
+
+        {/* Consultant selector */}
+        <Select value={consultantFilter} onValueChange={setConsultantFilter}>
+          <SelectTrigger className="w-[180px] h-7 text-xs"><SelectValue /></SelectTrigger>
           <SelectContent>
-            {numbers.map(n => <SelectItem key={n} value={n}>{viewMode === "week" ? `W${n}` : `P${n}`}</SelectItem>)}
+            <SelectItem value="all">Alle consultants</SelectItem>
+            {allConsultantNames.map(name => (
+              <SelectItem key={name} value={name}>{name}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
-        <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-          <SelectTrigger className="w-[140px] h-7 text-xs"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alle units</SelectItem>
-            {weekUnitBreakdown.map(u => <SelectItem key={u.unit} value={u.unit}>{u.unit}</SelectItem>)}
-          </SelectContent>
-        </Select>
+
         <Button
           variant={showConversion ? "secondary" : "outline"}
           size="sm"
@@ -242,103 +292,74 @@ function FunnelDetailTable({ delay }: { delay: number }) {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead rowSpan={2} className="w-[160px] align-bottom text-xs">Unit / Consultant</TableHead>
-              {visibleGroups.map((g) => (
-                <TableHead key={g.group} colSpan={g.subs.length} className="text-center border-l border-border/50 text-muted-foreground text-[10px]">
-                  {g.group}
-                </TableHead>
-              ))}
-            </TableRow>
-            <TableRow>
-              {visibleGroups.flatMap((g, gi) =>
-                g.subs.map((sub, si) => (
-                  <TableHead
-                    key={`${gi}-${si}`}
-                    className={cn(
-                      "text-center whitespace-nowrap cursor-pointer hover:bg-muted/50 select-none",
-                      si === 0 && "border-l border-border/50",
-                      sub.type === "conv" ? "text-muted-foreground bg-muted/30" : "",
-                      "text-[10px] px-1.5"
-                    )}
-                    onClick={() => handleSort(gi, si)}
-                  >
-                    {sub.label}{getSortIcon(gi, si)}
+      <div className="overflow-x-auto -mx-5 px-5">
+        <div className="min-w-max">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead rowSpan={2} className="w-[160px] align-bottom text-xs sticky left-0 bg-card z-20">Unit / Consultant</TableHead>
+                {visibleGroups.map((g) => (
+                  <TableHead key={g.group} colSpan={g.subs.length} className="text-center border-l border-border/50 text-muted-foreground text-[10px]">
+                    {g.group}
                   </TableHead>
-                ))
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredData.map((row) => {
-              const isExpanded = expandedUnits.includes(row.unit);
-              const consultants = consultantFunnelData[row.unit] || [];
-              const sortedConsultants = sortConfig?.direction && consultants.length > 0
-                ? [...consultants].sort((a, b) => {
-                    const sub = visibleGroups[sortConfig.groupIdx]?.subs[sortConfig.subIdx];
-                    if (!sub) return 0;
-                    const va = getSortableValue(a as unknown as UnitFunnelRow, sub);
-                    const vb = getSortableValue(b as unknown as UnitFunnelRow, sub);
-                    return sortConfig.direction === "asc" ? va - vb : vb - va;
-                  })
-                : consultants;
-
-              return (
-                <React.Fragment key={row.unit}>
-                  <TableRow className="cursor-pointer hover:bg-muted/30" onClick={() => toggleExpand(row.unit)}>
-                    <TableCell className="font-medium text-xs">
-                      <span className="flex items-center gap-2">
-                        {consultants.length > 0 && (
-                          isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                        )}
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: row.color }} />
-                        {row.unit}
-                      </span>
-                    </TableCell>
-                    {visibleGroups.flatMap((g, gi) =>
-                      g.subs.map((sub, si) => {
-                        const isConv = sub.type === "conv";
-                        const val = getCellValue(row, sub);
-                        const convRate = isConv ? parseFloat(val) : null;
-                        return (
-                          <TableCell key={`${gi}-${si}`} className={cn(
-                            "text-center tabular-nums text-xs",
-                            si === 0 && "border-l border-border/50",
-                            isConv ? cn("bg-muted/30 font-bold", convRate !== null && rateColor(convRate)) : "font-semibold",
-                            "px-1.5"
-                          )}>
-                            {val}
-                          </TableCell>
-                        );
-                      })
-                    )}
-                  </TableRow>
-                  {isExpanded && sortedConsultants.map((c) => (
-                    <TableRow
-                      key={c.name}
+                ))}
+              </TableRow>
+              <TableRow>
+                {visibleGroups.flatMap((g, gi) =>
+                  g.subs.map((sub, si) => (
+                    <TableHead
+                      key={`${gi}-${si}`}
                       className={cn(
-                        "bg-muted/10 cursor-pointer hover:bg-muted/20",
-                        selectedConsultant === c.name && "bg-primary/5 border-l-2 border-l-primary"
+                        "text-center whitespace-nowrap cursor-pointer hover:bg-muted/50 select-none",
+                        si === 0 && "border-l border-border/50",
+                        sub.type === "conv" ? "text-muted-foreground bg-muted/30" : "",
+                        "text-[10px] px-1.5"
                       )}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedConsultant(selectedConsultant === c.name ? null : c.name);
-                      }}
+                      onClick={() => handleSort(gi, si)}
                     >
-                      <TableCell className="pl-10 text-xs text-muted-foreground">{c.name}</TableCell>
+                      {sub.label}{getSortIcon(gi, si)}
+                    </TableHead>
+                  ))
+                )}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredData.map((row) => {
+                const isExpanded = expandedUnits.includes(row.unit);
+                const consultants = consultantFunnelData[row.unit] || [];
+                const sortedConsultants = sortConfig?.direction && consultants.length > 0
+                  ? [...consultants].sort((a, b) => {
+                      const sub = visibleGroups[sortConfig.groupIdx]?.subs[sortConfig.subIdx];
+                      if (!sub) return 0;
+                      const va = getSortableValue(a as unknown as UnitFunnelRow, sub);
+                      const vb = getSortableValue(b as unknown as UnitFunnelRow, sub);
+                      return sortConfig.direction === "asc" ? va - vb : vb - va;
+                    })
+                  : consultants;
+
+                return (
+                  <React.Fragment key={row.unit}>
+                    <TableRow className="cursor-pointer hover:bg-muted/30" onClick={() => toggleExpand(row.unit)}>
+                      <TableCell className="font-medium text-xs sticky left-0 bg-card z-10">
+                        <span className="flex items-center gap-2">
+                          {consultants.length > 0 && (
+                            isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                          )}
+                          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: row.color }} />
+                          {row.unit}
+                        </span>
+                      </TableCell>
                       {visibleGroups.flatMap((g, gi) =>
                         g.subs.map((sub, si) => {
                           const isConv = sub.type === "conv";
-                          const val = getConsultantCellValue(c, sub);
+                          const val = getCellValue(row, sub);
                           const convRate = isConv ? parseFloat(val) : null;
                           return (
                             <TableCell key={`${gi}-${si}`} className={cn(
                               "text-center tabular-nums text-xs",
                               si === 0 && "border-l border-border/50",
-                              isConv ? cn("bg-muted/20 font-semibold", convRate !== null && rateColor(convRate)) : "",
+                              isConv ? cn("bg-muted/30 font-bold", convRate !== null && rateColor(convRate)) : "font-semibold",
+                              "px-1.5"
                             )}>
                               {val}
                             </TableCell>
@@ -346,33 +367,70 @@ function FunnelDetailTable({ delay }: { delay: number }) {
                         })
                       )}
                     </TableRow>
-                  ))}
-                </React.Fragment>
-              );
-            })}
-            {/* Totals */}
-            <TableRow className="border-t-2 border-border">
-              <TableCell className="font-bold text-xs">Totaal</TableCell>
-              {visibleGroups.flatMap((g, gi) =>
-                g.subs.map((sub, si) => {
-                  const isConv = sub.type === "conv";
-                  const val = getTotalValue(sub);
-                  const convRate = isConv ? parseFloat(val) : null;
-                  return (
-                    <TableCell key={`${gi}-${si}`} className={cn(
-                      "text-center tabular-nums font-bold text-xs",
-                      si === 0 && "border-l border-border/50",
-                      isConv ? cn("bg-muted/30", convRate !== null && rateColor(convRate)) : "",
-                      "px-1.5"
-                    )}>
-                      {val}
-                    </TableCell>
-                  );
-                })
-              )}
-            </TableRow>
-          </TableBody>
-        </Table>
+                    {isExpanded && sortedConsultants.map((c) => {
+                      const isHighlighted = consultantFilter !== "all" && c.name === consultantFilter;
+                      const isFaded = consultantFilter !== "all" && c.name !== consultantFilter;
+                      return (
+                        <TableRow
+                          key={c.name}
+                          className={cn(
+                            "bg-muted/10 cursor-pointer hover:bg-muted/20 transition-opacity",
+                            selectedConsultant === c.name && "bg-primary/5 border-l-2 border-l-primary",
+                            isHighlighted && "bg-primary/10 ring-1 ring-primary/20",
+                            isFaded && "opacity-30"
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedConsultant(selectedConsultant === c.name ? null : c.name);
+                          }}
+                        >
+                          <TableCell className="pl-10 text-xs text-muted-foreground sticky left-0 bg-card z-10">{c.name}</TableCell>
+                          {visibleGroups.flatMap((g, gi) =>
+                            g.subs.map((sub, si) => {
+                              const isConv = sub.type === "conv";
+                              const val = getConsultantCellValue(c, sub);
+                              const convRate = isConv ? parseFloat(val) : null;
+                              return (
+                                <TableCell key={`${gi}-${si}`} className={cn(
+                                  "text-center tabular-nums text-xs",
+                                  si === 0 && "border-l border-border/50",
+                                  isConv ? cn("bg-muted/20 font-semibold", convRate !== null && rateColor(convRate)) : "",
+                                )}>
+                                  {val}
+                                </TableCell>
+                              );
+                            })
+                          )}
+                        </TableRow>
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              })}
+              {/* Totals */}
+              <TableRow className="border-t-2 border-border">
+                <TableCell className="font-bold text-xs sticky left-0 bg-card z-10">Totaal</TableCell>
+                {visibleGroups.flatMap((g, gi) =>
+                  g.subs.map((sub, si) => {
+                    const isConv = sub.type === "conv";
+                    const val = getTotalValue(sub);
+                    const convRate = isConv ? parseFloat(val) : null;
+                    return (
+                      <TableCell key={`${gi}-${si}`} className={cn(
+                        "text-center tabular-nums font-bold text-xs",
+                        si === 0 && "border-l border-border/50",
+                        isConv ? cn("bg-muted/30", convRate !== null && rateColor(convRate)) : "",
+                        "px-1.5"
+                      )}>
+                        {val}
+                      </TableCell>
+                    );
+                  })
+                )}
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Consultant drill-down panel */}
@@ -422,14 +480,15 @@ function FunnelDetailTable({ delay }: { delay: number }) {
 
 interface ManagerSalesFunnelProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
-export function ManagerSalesFunnel({ delay = 0 }: ManagerSalesFunnelProps) {
+export function ManagerSalesFunnel({ delay = 0, selectedUnit }: ManagerSalesFunnelProps) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
+      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col min-w-0">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-medium text-foreground">Sales Funnel</h3>
@@ -443,17 +502,17 @@ export function ManagerSalesFunnel({ delay = 0 }: ManagerSalesFunnelProps) {
           </Button>
         </div>
         <div className={cn(
-          "flex-1 transition-all duration-400 ease-in-out",
+          "flex-1 transition-all duration-400 ease-in-out min-w-0",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
           {displayMode ? (
             <>
-              <FunnelVisualization delay={delay} compact />
+              <FunnelVisualization delay={delay} compact selectedUnit={selectedUnit} />
               <Separator className="my-4" />
-              <FunnelDetailTable delay={delay} />
+              <FunnelDetailTable delay={delay} selectedUnit={selectedUnit} />
             </>
           ) : (
-            <FunnelVisualization delay={delay} />
+            <FunnelVisualization delay={delay} selectedUnit={selectedUnit} />
           )}
         </div>
       </div>

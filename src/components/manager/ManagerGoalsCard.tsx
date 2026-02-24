@@ -28,7 +28,10 @@ export function ManagerGoalsCard({ delay = 0, selectedUnit }: ManagerGoalsCardPr
   const [editingGoalId, setEditingGoalId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
 
-  const consultants = myTeamConsultants;
+  const consultants = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return myTeamConsultants;
+    return myTeamConsultants.filter(c => c.unit === selectedUnit);
+  }, [selectedUnit]);
 
   // Summary per consultant
   const summaryData = useMemo(() => {
