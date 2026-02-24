@@ -1,60 +1,42 @@
 
 
-# Collapsible & Reorderable Secties - Manager Dashboard
+# Sales Funnel Detail Mode - Graph + Table
 
-## Wat wordt gebouwd
+## Current Behavior
+In detail mode, the funnel bar graph is **replaced** by the consultant table. The user wants **both** visible simultaneously.
 
-Drie features voor de Manager Dashboard pagina:
+## Change
 
-1. **Collapsible secties**: Elke sectie (Operationeel, Performance, Omzet) kan worden in- en uitgeklapt. Wanneer ingeklapt wordt een dunne, minimalistische balk getoond met alleen de sectienaam en 2-3 kerngetallen.
-2. **Aanpasbare volgorde**: De drie secties kunnen door de manager in een gewenste volgorde worden gezet.
-3. **Drag-and-drop herordening**: Volgorde wijzigen via drag-and-drop in een control panel rechtsboven.
+### File: `src/components/manager/ManagerSalesFunnel.tsx`
 
-## Technische aanpak
+**Line 222** — Replace the conditional render (`displayMode ? table : graph`) with:
+- **Overview mode**: Show only the funnel graph (unchanged)
+- **Detail mode**: Show the funnel graph in a **compact version** (smaller bars, reduced spacing) at the top, followed by a separator, then the consultant table below
 
-### Bestand: `src/pages/ManagerDashboard.tsx`
+The compact funnel in detail mode will use `h-4` bars instead of `h-6`, `space-y-1.5` instead of `space-y-3`, and hide the optional steps + total conversion footer to keep it concise. This gives context while the table provides the drill-down.
 
-**State management**:
-- `useState` voor collapsed state per sectie: `Record<string, boolean>`
-- `useState` voor sectievolgorde: `string[]` (bijv. `["operationeel", "performance", "omzet"]`)
-- Volgorde opslaan in `localStorage` zodat het persistent is
+### Layout in detail mode:
+```text
+┌─────────────────────────────────────┐
+│ Sales Funnel          [minimize]    │
+│ Conversies per consultant           │
+│                                     │
+│  Toegewezen    ████████████████ 540  │
+│  Inschrijvingen ██████████ 291  54% │
+│  Acquisities   ████████ 226    78% │
+│  ...           (compact bars)       │
+│                                     │
+│  ─────────────────────────────────  │
+│                                     │
+│  🔍 Zoek consultant...              │
+│  Consultant | Toegew. | Inschr. ... │
+│  Anna Visser | 55 | 28 | ...       │
+│  ...                                │
+└─────────────────────────────────────┘
+```
 
-**Collapsed summary bar**:
-Wanneer een sectie is ingeklapt, wordt in plaats van de volledige content een enkele horizontale balk getoond (border, rounded, ~40px hoog) met:
-- Sectienaam (links)
-- 2-3 key metrics als kleine badges (midden), specifiek per sectie:
-  - Operationeel: "X plaatsingen", "X deals in opvolging", "X calls"
-  - Performance: "Gem. score: X", "X doelen actief"
-  - Omzet: "€X gerealiseerd", "X plaatsingen"
-- ChevronDown icoon (rechts) om uit te klappen
-
-**Expanded header**:
-De bestaande section headers krijgen een ChevronUp icoon toegevoegd om in te klappen. De klik-handler zit op de volledige header-balk.
-
-**Reorder control** (rechtsboven):
-- Een `Popover` met een `GripVertical` + `ArrowUpDown` icoon als trigger, geplaatst naast de paginatitel
-- In de popover: lijst van drie secties met drag handles (`GripVertical` icoon)
-- Drag-and-drop via native HTML5 drag events (`draggable`, `onDragStart`, `onDragOver`, `onDrop`) - geen externe library nodig voor slechts 3 items
-- Elke rij toont het GripVertical icoon + sectienaam
-- Visuele feedback: lichte achtergrond highlight op het drop target
-
-**Rendering**:
-De drie secties worden gedefinieerd als een configuratie-array met id, label, en renderfunction. De pagina mapt over de volgorde-array en rendert elke sectie conditioneel (collapsed vs expanded).
-
-### Samenvatting van key metrics per sectie
-
-De collapsed bars tonen data die al beschikbaar is uit de bestaande data imports:
-- `unitFunnelTotals.plaatsingen` voor operationeel
-- `opvolgingRecords.length` voor opvolging deals
-- `unitCallTotals` voor calls
-- Gemiddelde scores uit `consultantSkillData`
-- Revenue data uit `managerRevenueData`
-
-### Geen nieuwe bestanden
-
-Alle logica past binnen `ManagerDashboard.tsx`. Geen nieuwe componenten of dependencies nodig.
-
-### Geen externe drag-and-drop library
-
-Met slechts 3 items is native HTML5 drag-and-drop voldoende. Dit houdt de bundle klein en vermijdt onnodige dependencies.
+### Implementation details:
+- Add an optional `compact` prop to `FunnelOverview` that reduces bar height, spacing, and hides optional steps + footer
+- In the main render: when `displayMode` is true, render `<FunnelOverview compact />` + `<Separator />` + `<FunnelDetailTable />`
+- When `displayMode` is false, render `<FunnelOverview />` only (unchanged)
 
