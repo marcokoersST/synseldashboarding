@@ -17,6 +17,7 @@ import {
 
 interface ManagerGoalsCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
 export function ManagerGoalsCard({ delay = 0 }: ManagerGoalsCardProps) {
