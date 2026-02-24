@@ -1,72 +1,54 @@
 
 
-# Changes: Personal Dashboard URL + Email Detail Metrics
+# Fixes for Manager Dashboard
 
-## 1. Personal Dashboard — Dedicated URL with user code
+## 1. Unit Selector Not Working
 
-### Current state
-The consultant dashboard is at `/` (Index page). No user identification in the URL.
+**Problem**: The `selectedUnit` state in `ManagerDashboard.tsx` (line 56) is set but never passed to any child component. It's completely disconnected from the data.
 
-### Change
-- Add a new route: `/personal-dashboard/:userCode` that renders the same `Index` component
-- Keep `/` as a redirect or default (redirects to `/personal-dashboard/user=default` or renders Index directly for backward compatibility)
-- The `Index` component reads `userCode` from `useParams()` — for now it's cosmetic (no backend), but the URL structure is in place
+**Fix**: Pass `selectedUnit` as a prop to all child components (`ManagerSalesFunnel`, `OpvolgingCard`, `ManagerCallsCard`, `ProcesKernvaardighedenCard`, `ManagerGoalsCard`, `ManagerRevenueChart`, `ManagerPlacementsCard`, `ManagerRevenueLeaderboard`). Each component will filter its data by unit when a unit is selected. Components that already have their own unit filter (like the Sales Funnel table) will sync with this global filter.
 
-### Files changed
-- `src/App.tsx` — add route `/personal-dashboard/:userCode` pointing to `Index`
-- `src/pages/Index.tsx` — optionally read `useParams().userCode` for future use
+### Files changed:
+- `src/pages/ManagerDashboard.tsx` — pass `selectedUnit` prop to all section content components
+- All manager card components — accept `selectedUnit` prop and filter data accordingly
 
 ---
 
-## 2. Email Detail Card — Replace TTFR + Volgende actie with Deal Stage Counters
+## 2. Sales Funnel Table Horizontal Scroll
 
-### Current state (screenshot matches code)
-The detail view shows a 2×2 grid at the top:
-- Verstuurd | Ontvangen
-- **TTFR Score** | **Volgende actie**
+**Problem**: The `overflow-x-auto` on line 245 of `ManagerSalesFunnel.tsx` doesn't work because the parent card container constrains it. The table with conversion columns is wider than the viewport.
 
-### Change
-Replace the TTFR Score and Volgende actie cells with a new section showing email counts per deal stage. The 8 deal stages to display:
+**Fix**: Ensure the table wrapper has `overflow-x-auto` with `max-width: 100%` on a parent that has a defined width. Add `min-w-0` to the flex parent and ensure the card doesn't prevent horizontal scrolling. The outer `<div className="bg-card rounded-xl p-5 ...">` needs `overflow-hidden` removed if present, and the table wrapper needs to be a block-level element with constrained width.
 
-| Code | Label |
-|------|-------|
-| 2.0 | Kandidaat voorgesteld |
-| 2.1 | Reminder verstuurd |
-| 2.3 | Lopende zaak |
-| 3.0 | 1e gesprek nog inplannen |
-| 3.1 | 1e sollicitatiegesprek |
-| 3.2 | Inplannen vervolggesprek |
-| 3.3 | Vervolggesprek |
-| 3.4 | Deal sluiter |
+### File changed:
+- `src/components/manager/ManagerSalesFunnel.tsx` — fix overflow container hierarchy
 
-### Implementation
-- In `mailData.active`, remove `ttfrScore` and `timeToNextAction`, add `emailsPerDealStage` array with `{ code, label, count }` entries (dummy counts)
-- In `MailDetailView`, replace the TTFR/Volgende actie grid cells with a compact list or 2×4 grid showing each deal stage code + count
-- Each cell: stage code as label (e.g. "2.0"), short name below, count as the big number
-- Keep the rest of the detail view unchanged (Verstuurd, Ontvangen, Verdieping section, Reply rate, Gem. reactietijd)
+---
 
-### Layout in detail mode
+## 3. Unit Dropdown → Consultant Selector
+
+**Problem**: The dropdown in the Sales Funnel detail table (line 226-232) filters by unit. User wants it to filter by individual consultant instead.
+
+**Fix**: Replace the unit `<Select>` with a consultant multi-select or single-select dropdown. Populate from all consultant names across all units in `consultantFunnelData`. When a consultant is selected, auto-expand the relevant unit and highlight/filter to show only that consultant's row. Keep the unit grouping in the table but visually emphasize the selected consultant.
+
+### File changed:
+- `src/components/manager/ManagerSalesFunnel.tsx` — replace unit dropdown with consultant dropdown in `FunnelDetailTable`
+
+---
+
+## 4. Week/Period + Number Selector Visual Connection
+
+**Problem**: The Week/Periode toggle (lines 211-219) and the number selector (lines 220-225) are separate elements with a gap between them. They should look like one connected filter.
+
+**Fix**: Wrap both in a single `div` with shared border styling. The toggle buttons and the number select will be inside one `flex` container with `rounded-lg border border-border overflow-hidden` — no gap between them. The toggle buttons form the left part, a subtle separator, then the number dropdown on the right. This makes it visually clear they're one combined "time period" filter.
+
+### Layout:
 ```text
-┌──────────────────────────────────────┐
-│  Verstuurd        Ontvangen          │
-│  156              243                │
-├──────────────────────────────────────┤
-│  EMAILS PER DEALSTAGE                │
-│  2.0 Kand. voorgesteld    24         │
-│  2.1 Reminder verstuurd   18         │
-│  2.3 Lopende zaak          9         │
-│  3.0 1e gesprek inplannen 15         │
-│  3.1 1e sollicitatie      12         │
-│  3.2 Inplan. vervolg       8         │
-│  3.3 Vervolggesprek        6         │
-│  3.4 Deal sluiter          4         │
-├──────────────────────────────────────┤
-│  VERDIEPING                          │
-│  Per procedure | Per acquisitie | .. │
-│  Reply rate    | Gem. reactietijd    │
-└──────────────────────────────────────┘
+┌─────────────────────────────────┐
+│ [Week] [Periode] │ W7 ▾        │
+└─────────────────────────────────┘
 ```
 
-### Files changed
-- `src/components/dashboard/CommunicationStatsCard.tsx` — update `mailData.active`, rewrite top section of `MailDetailView`
+### File changed:
+- `src/components/manager/ManagerSalesFunnel.tsx` — merge the time toggle + number selector into one connected element
 
