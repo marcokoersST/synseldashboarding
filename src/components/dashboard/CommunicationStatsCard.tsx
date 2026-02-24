@@ -87,8 +87,16 @@ const mailData = {
   active: {
     sent: 156,
     received: 243,
-    ttfrScore: 2.4,
-    timeToNextAction: { hours: 0, minutes: 45, seconds: 0 },
+    emailsPerDealStage: [
+      { code: "2.0", label: "Kandidaat voorgesteld", count: 24 },
+      { code: "2.1", label: "Reminder verstuurd", count: 18 },
+      { code: "2.3", label: "Lopende zaak", count: 9 },
+      { code: "3.0", label: "1e gesprek nog inplannen", count: 15 },
+      { code: "3.1", label: "1e sollicitatiegesprek", count: 12 },
+      { code: "3.2", label: "Inplannen vervolggesprek", count: 8 },
+      { code: "3.3", label: "Vervolggesprek", count: 6 },
+      { code: "3.4", label: "Deal sluiter", count: 4 },
+    ],
     emailsPerProcedure: 12.4,
     emailsPerAcquisitie: 8.7,
     benchmarkGeplaatst: 18.2,
