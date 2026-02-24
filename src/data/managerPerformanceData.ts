@@ -72,6 +72,7 @@ const skillsBase: Omit<ConsultantSkillData, "consultantId" | "consultantName">[]
 export const consultantSkillData: ConsultantSkillData[] = myTeamConsultants.map((c, i) => ({
   consultantId: c.id,
   consultantName: c.name,
+  unit: c.unit,
   ...skillsBase[i % skillsBase.length],
 }));
 

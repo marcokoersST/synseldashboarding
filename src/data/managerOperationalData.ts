@@ -120,6 +120,7 @@ export interface ConsultantCallData {
 export const consultantCallData: ConsultantCallData[] = myTeamConsultants.map((c, i) => ({
   consultantId: c.id,
   consultantName: c.name,
+  unit: c.unit,
   inbound: 35 + Math.floor(Math.random() * 30),
   outbound: 60 + Math.floor(Math.random() * 50),
   totalMinutes: 180 + Math.floor(Math.random() * 200),
