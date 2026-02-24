@@ -32,7 +32,7 @@ export interface Department {
 // Monteurs consultants
 const monteursConsultants: ConsultantWithTrends[] = [
   {
-    id: 11, name: "Bart van Vliet", role: "Senior Recruiter", revenue: 1540000,
+    id: 11, name: "Bart van Vliet", role: "Senior Recruiter", unit: "Monteurs", revenue: 1540000,
     avatar: "https://i.pravatar.cc/150?img=11", isLeader: true, teamId: "dept-monteurs",
     metrics: { emailsSent: 290, emailsTrend: [36, 42, 48, 46, 54, 64], calls: 105, callsTrend: [13, 15, 18, 16, 20, 23], acquisitions: 15, acquisitionsTrend: [2, 2, 3, 3, 2, 3], placements: 4, placementsTrend: [0, 1, 1, 0, 1, 1], candidates: 36, conversionRate: 3.0, salaryProgress: 80, performanceScore: 85 },
     revenueTrend: generateRevenueTrend(1540000),
