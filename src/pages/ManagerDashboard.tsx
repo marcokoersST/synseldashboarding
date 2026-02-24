@@ -144,10 +144,10 @@ export default function ManagerDashboard() {
       content: () => (
         <div className="grid grid-cols-3 gap-5">
           <div className="col-span-2">
-            <ProcesKernvaardighedenCard delay={250} />
+            <ProcesKernvaardighedenCard delay={250} selectedUnit={selectedUnit} />
           </div>
           <div className="col-span-1">
-            <ManagerGoalsCard delay={300} />
+            <ManagerGoalsCard delay={300} selectedUnit={selectedUnit} />
           </div>
         </div>
       ),
