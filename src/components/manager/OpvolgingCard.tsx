@@ -77,7 +77,7 @@ function OpvolgingOverview({ delay, selectedUnit }: { delay: number; selectedUni
             <span className="text-[10px] font-medium mt-1 text-center leading-tight">{stage.code}</span>
             <span className="text-[9px] text-center leading-tight opacity-70 mt-0.5">{stage.label}</span>
           </div>
-          {i < dealStageCounts.length - 1 && (
+          {i < filteredCounts.length - 1 && (
             <ArrowRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
           )}
         </div>
