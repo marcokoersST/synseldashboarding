@@ -190,6 +190,7 @@ function CallsDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: st
 
 interface ManagerCallsCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
 export function ManagerCallsCard({ delay = 0 }: ManagerCallsCardProps) {
