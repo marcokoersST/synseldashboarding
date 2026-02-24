@@ -101,6 +101,7 @@ export const teamMembers: TeamMember[] = [
     id: 4,
     name: "Jij",
     role: "Recruiter",
+    unit: "Operators",
     revenue: 1280000,
     avatar: "https://i.pravatar.cc/150?img=4",
     isLeader: false,
