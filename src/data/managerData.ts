@@ -14,12 +14,15 @@ export interface ConsultantWithTrends extends TeamMember {
 
 export interface PlacementRecord {
   id: string;
+  candidateId: string;
   candidateName: string;
   company: string;
   startDate: Date;
   endDate: Date;
   consultantId: number;
   isActive: boolean;
+  dealId: string;
+  revenueAmount: number;
 }
 
 // Generate revenue trend data for a consultant based on their current revenue
@@ -186,15 +189,19 @@ function generatePlacements(consultantIds: number[], count: number): PlacementRe
   return Array.from({ length: count }, (_, i) => {
     const startDate = new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
     const endDate = new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+    const revenueBase = [3500, 4200, 5000, 3800, 4500, 5500, 3200, 4800];
     
     return {
       id: `placement-${i}`,
+      candidateId: `CAND-${2000 + i}`,
       candidateName: candidateNames[i % candidateNames.length],
       company: companies[i % companies.length],
       startDate,
       endDate,
       consultantId: consultantIds[i % consultantIds.length],
       isActive: endDate > new Date(),
+      dealId: `DEAL-${5000 + i}`,
+      revenueAmount: revenueBase[i % revenueBase.length],
     };
   });
 }

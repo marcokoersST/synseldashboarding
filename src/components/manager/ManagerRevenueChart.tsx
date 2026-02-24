@@ -92,13 +92,15 @@ function RevenueOverview({ delay }: { delay: number }) {
   );
 }
 
-// ─── Detail: per consultant lines ───
+// ─── Detail: per consultant lines + enhanced table ───
 
 function RevenueDetail({ delay }: { delay: number }) {
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
   const [activeLine, setActiveLine] = useState<string | null>(null);
+  const [hoveredPeriod, setHoveredPeriod] = useState<string | null>(null);
 
   const consultants = myTeamConsultants;
+  const periods = Array.from({ length: 13 }, (_, i) => `P${i + 1}`);
 
   const getOpacity = (name: string) => {
     if (!activeLine) return 1;
@@ -140,27 +142,70 @@ function RevenueDetail({ delay }: { delay: number }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Summary table */}
+      {/* Enhanced table with periods */}
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Consultant</th>
-              <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">Omzet</th>
+              <th className="text-left py-1.5 px-2 font-medium text-muted-foreground sticky left-0 bg-card z-10">Consultant</th>
+              {periods.map(p => (
+                <th
+                  key={p}
+                  className={cn(
+                    "text-center py-1.5 px-2 font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-all whitespace-nowrap",
+                    hoveredPeriod && hoveredPeriod !== p && "opacity-30"
+                  )}
+                  onMouseEnter={() => setHoveredPeriod(p)}
+                  onMouseLeave={() => setHoveredPeriod(null)}
+                >
+                  {p}
+                </th>
+              ))}
+              <th className={cn(
+                "text-right py-1.5 px-2 font-medium text-foreground whitespace-nowrap",
+                hoveredPeriod && "opacity-30"
+              )}>Cumulatief</th>
             </tr>
           </thead>
           <tbody>
-            {consultants.map((c, i) => (
-              <tr key={c.id} className="border-b border-border/50 hover:bg-secondary/20">
-                <td className="py-1.5 px-2 font-medium text-foreground">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: consultantColors[i % consultantColors.length] }} />
-                    {c.name}
-                  </div>
-                </td>
-                <td className="text-right py-1.5 px-2 tabular-nums font-semibold">€{(c.revenue / 1000).toFixed(0)}k</td>
-              </tr>
-            ))}
+            {consultants.map((c, ci) => {
+              let cumulative = 0;
+              return (
+                <tr key={c.id} className="border-b border-border/50 hover:bg-secondary/20">
+                  <td className="py-1.5 px-2 font-medium text-foreground sticky left-0 bg-card z-10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: consultantColors[ci % consultantColors.length] }} />
+                      {c.name}
+                    </div>
+                  </td>
+                  {periods.map(p => {
+                    const dataPoint = consultantRevenueData.find(d => d.period === p);
+                    const val = dataPoint ? (dataPoint[c.name] as number) : 0;
+                    cumulative += val;
+                    return (
+                      <td
+                        key={p}
+                        className={cn(
+                          "text-center py-1.5 px-2 tabular-nums transition-all",
+                          hoveredPeriod === p ? "font-semibold text-foreground bg-primary/5" : "",
+                          hoveredPeriod && hoveredPeriod !== p && "opacity-30"
+                        )}
+                        onMouseEnter={() => setHoveredPeriod(p)}
+                        onMouseLeave={() => setHoveredPeriod(null)}
+                      >
+                        €{val}k
+                      </td>
+                    );
+                  })}
+                  <td className={cn(
+                    "text-right py-1.5 px-2 tabular-nums font-semibold text-foreground",
+                    hoveredPeriod && "opacity-30"
+                  )}>
+                    €{cumulative}k
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -184,7 +229,7 @@ export function ManagerRevenueChart({ delay = 0 }: ManagerRevenueChartProps) {
           <div>
             <h3 className="text-sm font-medium text-foreground">Omzet Overzicht</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {displayMode ? "Per consultant" : "Gerealiseerd, potentieel & target"}
+              {displayMode ? "Per consultant met perioden" : "Gerealiseerd, potentieel & target"}
             </p>
           </div>
           <Button variant="ghost" size="icon" onClick={toggle}
