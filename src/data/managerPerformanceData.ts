@@ -30,7 +30,7 @@ export interface ConsultantSkillData {
   systeemHygieneScore: number;     // 0-100
 }
 
-const skillsBase: Omit<ConsultantSkillData, "consultantId" | "consultantName">[] = [
+const skillsBase: Omit<ConsultantSkillData, "consultantId" | "consultantName" | "unit">[] = [
   {
     relatieScoreKlant: 8.2, relatieScoreKandidaat: 7.8, pitchingPower: 85, responsiveness: 92, networking: 78, bezwaarverlegging: 80,
     procedureInschrijving: 88, procedureAcquisities: 82, npsKlant: 62, npsKandidaat: 55,
