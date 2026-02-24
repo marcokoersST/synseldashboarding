@@ -94,7 +94,7 @@ function RevenueOverview({ delay }: { delay: number }) {
 
 // ─── Detail: per consultant lines + enhanced table ───
 
-function RevenueDetail({ delay }: { delay: number }) {
+function RevenueDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
   const [activeLine, setActiveLine] = useState<string | null>(null);
   const [hoveredPeriod, setHoveredPeriod] = useState<string | null>(null);
