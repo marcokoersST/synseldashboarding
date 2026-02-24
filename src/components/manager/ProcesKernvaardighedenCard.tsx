@@ -285,6 +285,7 @@ function TeamGapAnalysis() {
 
 interface ProcesKernvaardighedenCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
 export function ProcesKernvaardighedenCard({ delay = 0 }: ProcesKernvaardighedenCardProps) {
