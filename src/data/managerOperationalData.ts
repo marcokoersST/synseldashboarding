@@ -104,6 +104,7 @@ export const dealStageCounts = dealStages.map(stage => ({
 export interface ConsultantCallData {
   consultantId: number;
   consultantName: string;
+  unit: string;
   inbound: number;
   outbound: number;
   totalMinutes: number;
