@@ -106,7 +106,7 @@ function CallsDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: st
     { key: "missed", label: "Gemist" },
   ];
 
-  const totalContactStatus = consultantCallData.reduce(
+  const totalContactStatus = sorted.reduce(
     (acc, c) => ({
       warmRelation: acc.warmRelation + c.contactStatus.warmRelation,
       preferredCP: acc.preferredCP + c.contactStatus.preferredCP,
