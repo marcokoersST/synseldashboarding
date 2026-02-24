@@ -90,7 +90,7 @@ function OpvolgingOverview({ delay, selectedUnit }: { delay: number; selectedUni
 
 type SortKey = "dealStage" | "candidateName" | "consultantName" | "id" | "lastModified";
 
-function OpvolgingDetail({ delay }: { delay: number }) {
+function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
   const [consultantFilter, setConsultantFilter] = useState<string>("all");
