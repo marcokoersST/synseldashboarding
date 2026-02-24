@@ -3,7 +3,7 @@
 export interface FunnelMetric {
   label: string;
   value: number;
-  change: number; // percentage
+  change: number;
   icon: string;
 }
 
@@ -16,7 +16,7 @@ export interface PipelinePhase {
 export interface DayCallStat {
   day: string;
   outbound: number;
-  duration: number; // minutes
+  duration: number;
 }
 
 export interface CompetitionEntry {
@@ -84,41 +84,41 @@ export const periodCallStats = {
 // Dashboard 3: Beker / Competition
 export const omzetKoning: { stijgers: CompetitionEntry[]; dalers: CompetitionEntry[] } = {
   stijgers: [
-    { rank: 1, name: "Sophie de Vries", value: 180000, change: 32, department: "Engineering" },
-    { rank: 2, name: "Thomas Bakker", value: 120000, change: 24, department: "Engineering" },
-    { rank: 3, name: "Kevin Hendriks", value: 95000, change: 18, department: "Operators" },
-    { rank: 4, name: "Emma Visser", value: 82000, change: 15, department: "Engineering" },
-    { rank: 5, name: "Mark de Groot", value: 68000, change: 12, department: "Operators" },
+    { rank: 1, name: "Delano Nikkels", value: 180000, change: 32, department: "Engineering" },
+    { rank: 2, name: "Falco Zegveld", value: 120000, change: 24, department: "Engineering" },
+    { rank: 3, name: "Christiaan van Krieken", value: 95000, change: 18, department: "Operators" },
+    { rank: 4, name: "Niels Florijn", value: 82000, change: 15, department: "Engineering" },
+    { rank: 5, name: "Mahesh Behari", value: 68000, change: 12, department: "Operators" },
   ],
   dalers: [
-    { rank: 1, name: "Rianne Willems", value: -45000, change: -18, department: "Operators" },
-    { rank: 2, name: "Jan Smit", value: -32000, change: -12, department: "Monteurs" },
-    { rank: 3, name: "Lisa de Boer", value: -18000, change: -8, department: "Monteurs" },
+    { rank: 1, name: "Elianne van Lohuizen", value: -45000, change: -18, department: "Operators" },
+    { rank: 2, name: "Bart van Vliet", value: -32000, change: -12, department: "Monteurs" },
+    { rank: 3, name: "Kaylee van den Berg", value: -18000, change: -8, department: "Monteurs" },
   ],
 };
 
 export const plaatsingsKoning: CompetitionEntry[] = [
-  { rank: 1, name: "Kevin Hendriks", value: 5, department: "Operators" },
-  { rank: 2, name: "Sophie de Vries", value: 4, department: "Engineering" },
-  { rank: 3, name: "Mark de Groot", value: 4, department: "Operators" },
-  { rank: 4, name: "Thomas Bakker", value: 3, department: "Engineering" },
-  { rank: 5, name: "Emma Visser", value: 3, department: "Engineering" },
+  { rank: 1, name: "Christiaan van Krieken", value: 5, department: "Operators" },
+  { rank: 2, name: "Delano Nikkels", value: 4, department: "Engineering" },
+  { rank: 3, name: "Mahesh Behari", value: 4, department: "Operators" },
+  { rank: 4, name: "Falco Zegveld", value: 3, department: "Engineering" },
+  { rank: 5, name: "Niels Florijn", value: 3, department: "Engineering" },
 ];
 
 export const margeBaas: CompetitionEntry[] = [
-  { rank: 1, name: "Sophie de Vries", value: 420000, department: "Engineering" },
-  { rank: 2, name: "Kevin Hendriks", value: 380000, department: "Operators" },
-  { rank: 3, name: "Thomas Bakker", value: 310000, department: "Engineering" },
-  { rank: 4, name: "Mark de Groot", value: 275000, department: "Operators" },
-  { rank: 5, name: "Emma Visser", value: 240000, department: "Engineering" },
+  { rank: 1, name: "Delano Nikkels", value: 420000, department: "Engineering" },
+  { rank: 2, name: "Christiaan van Krieken", value: 380000, department: "Operators" },
+  { rank: 3, name: "Falco Zegveld", value: 310000, department: "Engineering" },
+  { rank: 4, name: "Mahesh Behari", value: 275000, department: "Operators" },
+  { rank: 5, name: "Niels Florijn", value: 240000, department: "Engineering" },
 ];
 
 export const gesprekkenGuru: CompetitionEntry[] = [
-  { rank: 1, name: "Sophie de Vries", value: 128, department: "Engineering" },
-  { rank: 2, name: "Kevin Hendriks", value: 115, department: "Operators" },
-  { rank: 3, name: "Mark de Groot", value: 105, department: "Operators" },
-  { rank: 4, name: "Thomas Bakker", value: 98, department: "Engineering" },
-  { rank: 5, name: "Jan Smit", value: 92, department: "Monteurs" },
+  { rank: 1, name: "Delano Nikkels", value: 128, department: "Engineering" },
+  { rank: 2, name: "Christiaan van Krieken", value: 115, department: "Operators" },
+  { rank: 3, name: "Mahesh Behari", value: 105, department: "Operators" },
+  { rank: 4, name: "Falco Zegveld", value: 98, department: "Engineering" },
+  { rank: 5, name: "Bart van Vliet", value: 92, department: "Monteurs" },
 ];
 
 export const totalPotentialMargin = 2400000;
@@ -131,18 +131,18 @@ export const deployedStats = {
 };
 
 export const deployedPersons: DeployedPerson[] = [
-  { id: "d1", name: "Pieter Jansen", company: "ASML", startDate: "2025-03-15", endDate: null, consultant: "Sophie de Vries", status: "active" },
-  { id: "d2", name: "Eva de Wit", company: "Philips", startDate: "2025-06-01", endDate: null, consultant: "Thomas Bakker", status: "active" },
-  { id: "d3", name: "Lars Mulder", company: "Shell", startDate: "2025-01-10", endDate: "2026-03-31", consultant: "Kevin Hendriks", status: "ending" },
-  { id: "d4", name: "Nina Smeets", company: "ING", startDate: "2026-03-01", endDate: null, consultant: "Sophie de Vries", status: "starting" },
-  { id: "d5", name: "Daan Bos", company: "Rabobank", startDate: "2025-09-01", endDate: null, consultant: "Mark de Groot", status: "active" },
-  { id: "d6", name: "Sanne Vos", company: "KLM", startDate: "2025-04-20", endDate: "2026-04-20", consultant: "Emma Visser", status: "ending" },
-  { id: "d7", name: "Rick van Dijk", company: "Booking.com", startDate: "2026-02-15", endDate: null, consultant: "Thomas Bakker", status: "starting" },
-  { id: "d8", name: "Mila Bakker", company: "ABN AMRO", startDate: "2025-07-01", endDate: null, consultant: "Kevin Hendriks", status: "active" },
-  { id: "d9", name: "Tom Hendriks", company: "Heineken", startDate: "2025-11-01", endDate: "2026-02-28", consultant: "Sophie de Vries", status: "ending" },
-  { id: "d10", name: "Fleur de Jong", company: "Unilever", startDate: "2026-03-10", endDate: null, consultant: "Mark de Groot", status: "starting" },
-  { id: "d11", name: "Bas Vermeer", company: "ASML", startDate: "2025-05-15", endDate: null, consultant: "Sophie de Vries", status: "active" },
-  { id: "d12", name: "Julia Koning", company: "Philips", startDate: "2025-08-01", endDate: null, consultant: "Thomas Bakker", status: "active" },
+  { id: "d1", name: "Pieter Jansen", company: "ASML", startDate: "2025-03-15", endDate: null, consultant: "Delano Nikkels", status: "active" },
+  { id: "d2", name: "Eva de Wit", company: "Philips", startDate: "2025-06-01", endDate: null, consultant: "Falco Zegveld", status: "active" },
+  { id: "d3", name: "Lars Mulder", company: "Shell", startDate: "2025-01-10", endDate: "2026-03-31", consultant: "Christiaan van Krieken", status: "ending" },
+  { id: "d4", name: "Nina Smeets", company: "ING", startDate: "2026-03-01", endDate: null, consultant: "Delano Nikkels", status: "starting" },
+  { id: "d5", name: "Daan Bos", company: "Rabobank", startDate: "2025-09-01", endDate: null, consultant: "Mahesh Behari", status: "active" },
+  { id: "d6", name: "Sanne Vos", company: "KLM", startDate: "2025-04-20", endDate: "2026-04-20", consultant: "Niels Florijn", status: "ending" },
+  { id: "d7", name: "Rick van Dijk", company: "Booking.com", startDate: "2026-02-15", endDate: null, consultant: "Falco Zegveld", status: "starting" },
+  { id: "d8", name: "Mila Bakker", company: "ABN AMRO", startDate: "2025-07-01", endDate: null, consultant: "Christiaan van Krieken", status: "active" },
+  { id: "d9", name: "Tom Hendriks", company: "Heineken", startDate: "2025-11-01", endDate: "2026-02-28", consultant: "Delano Nikkels", status: "ending" },
+  { id: "d10", name: "Fleur de Jong", company: "Unilever", startDate: "2026-03-10", endDate: null, consultant: "Mahesh Behari", status: "starting" },
+  { id: "d11", name: "Bas Vermeer", company: "ASML", startDate: "2025-05-15", endDate: null, consultant: "Delano Nikkels", status: "active" },
+  { id: "d12", name: "Julia Koning", company: "Philips", startDate: "2025-08-01", endDate: null, consultant: "Falco Zegveld", status: "active" },
 ];
 
 export const revenueByPeriod: PeriodRevenue[] = [
@@ -183,29 +183,29 @@ export const weekUnitBreakdown: UnitFunnelRow[] = [
   { unit: "Monteurs", color: "hsl(var(--chart-primary))", toegewezen: 10, ingeschreven: 8, intakes: 6, acquisities: 3, voorstellenPerKandidaat: 1.8, voorstellenViaEmail: 3, uitnodigingenTotaal: 6, nietUitgenodigd: 2, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 35 },
   { unit: "Operators", color: "hsl(var(--accent))", toegewezen: 15, ingeschreven: 12, intakes: 8, acquisities: 4, voorstellenPerKandidaat: 2.3, voorstellenViaEmail: 5, uitnodigingenTotaal: 9, nietUitgenodigd: 3, welUitgenodigd: 6, eersteGesprek: 5, geenEersteGesprek: 2, welEersteGesprek: 3, vervolgGesprek: 3, dealsluiter: 2, geplaatst: 2, gemDagenTotPlaatsing: 22 },
   { unit: "Trainingsunit", color: "hsl(var(--gold))", toegewezen: 7, ingeschreven: 5, intakes: 3, acquisities: 2, voorstellenPerKandidaat: 1.5, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 1, welUitgenodigd: 3, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 42 },
-  { unit: "New Performers", color: "hsl(var(--teal))", toegewezen: 4, ingeschreven: 3, intakes: 1, acquisities: 1, voorstellenPerKandidaat: 1.0, voorstellenViaEmail: 1, uitnodigingenTotaal: 2, nietUitgenodigd: 1, welUitgenodigd: 1, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
+  { unit: "Early Performers", color: "hsl(var(--teal))", toegewezen: 4, ingeschreven: 3, intakes: 1, acquisities: 1, voorstellenPerKandidaat: 1.0, voorstellenViaEmail: 1, uitnodigingenTotaal: 2, nietUitgenodigd: 1, welUitgenodigd: 1, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
 ];
 
 // Consultant-level breakdown per unit for Manager Acquisitie Conversie
 export const consultantFunnelData: Record<string, ConsultantFunnelRow[]> = {
   Engineering: [
-    { unit: "Engineering", name: "Sophie de Vries", toegewezen: 7, ingeschreven: 6, intakes: 4, acquisities: 2, voorstellenPerKandidaat: 2.5, voorstellenViaEmail: 3, uitnodigingenTotaal: 5, nietUitgenodigd: 1, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 25 },
-    { unit: "Engineering", name: "Thomas Bakker", toegewezen: 6, ingeschreven: 5, intakes: 4, acquisities: 2, voorstellenPerKandidaat: 1.8, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 2, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 30 },
-    { unit: "Engineering", name: "Emma Visser", toegewezen: 5, ingeschreven: 3, intakes: 2, acquisities: 1, voorstellenPerKandidaat: 2.0, voorstellenViaEmail: 1, uitnodigingenTotaal: 3, nietUitgenodigd: 1, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
+    { unit: "Engineering", name: "Delano Nikkels", toegewezen: 7, ingeschreven: 6, intakes: 4, acquisities: 2, voorstellenPerKandidaat: 2.5, voorstellenViaEmail: 3, uitnodigingenTotaal: 5, nietUitgenodigd: 1, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 25 },
+    { unit: "Engineering", name: "Falco Zegveld", toegewezen: 6, ingeschreven: 5, intakes: 4, acquisities: 2, voorstellenPerKandidaat: 1.8, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 2, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 30 },
+    { unit: "Engineering", name: "Niels Florijn", toegewezen: 5, ingeschreven: 3, intakes: 2, acquisities: 1, voorstellenPerKandidaat: 2.0, voorstellenViaEmail: 1, uitnodigingenTotaal: 3, nietUitgenodigd: 1, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
   ],
   Monteurs: [
-    { unit: "Monteurs", name: "Jan Smit", toegewezen: 5, ingeschreven: 4, intakes: 3, acquisities: 2, voorstellenPerKandidaat: 2.0, voorstellenViaEmail: 2, uitnodigingenTotaal: 3, nietUitgenodigd: 1, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 33 },
-    { unit: "Monteurs", name: "Lisa de Boer", toegewezen: 5, ingeschreven: 4, intakes: 3, acquisities: 1, voorstellenPerKandidaat: 1.5, voorstellenViaEmail: 1, uitnodigingenTotaal: 3, nietUitgenodigd: 1, welUitgenodigd: 2, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
+    { unit: "Monteurs", name: "Bart van Vliet", toegewezen: 5, ingeschreven: 4, intakes: 3, acquisities: 2, voorstellenPerKandidaat: 2.0, voorstellenViaEmail: 2, uitnodigingenTotaal: 3, nietUitgenodigd: 1, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 33 },
+    { unit: "Monteurs", name: "Kaylee van den Berg", toegewezen: 5, ingeschreven: 4, intakes: 3, acquisities: 1, voorstellenPerKandidaat: 1.5, voorstellenViaEmail: 1, uitnodigingenTotaal: 3, nietUitgenodigd: 1, welUitgenodigd: 2, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
   ],
   Operators: [
-    { unit: "Operators", name: "Kevin Hendriks", toegewezen: 8, ingeschreven: 7, intakes: 5, acquisities: 2, voorstellenPerKandidaat: 2.5, voorstellenViaEmail: 3, uitnodigingenTotaal: 5, nietUitgenodigd: 1, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 20 },
-    { unit: "Operators", name: "Mark de Groot", toegewezen: 7, ingeschreven: 5, intakes: 3, acquisities: 2, voorstellenPerKandidaat: 2.0, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 2, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 24 },
+    { unit: "Operators", name: "Christiaan van Krieken", toegewezen: 8, ingeschreven: 7, intakes: 5, acquisities: 2, voorstellenPerKandidaat: 2.5, voorstellenViaEmail: 3, uitnodigingenTotaal: 5, nietUitgenodigd: 1, welUitgenodigd: 4, eersteGesprek: 3, geenEersteGesprek: 1, welEersteGesprek: 2, vervolgGesprek: 2, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 20 },
+    { unit: "Operators", name: "Mahesh Behari", toegewezen: 7, ingeschreven: 5, intakes: 3, acquisities: 2, voorstellenPerKandidaat: 2.0, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 2, welUitgenodigd: 2, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 24 },
   ],
   Trainingsunit: [
-    { unit: "Trainingsunit", name: "Rianne Willems", toegewezen: 7, ingeschreven: 5, intakes: 3, acquisities: 2, voorstellenPerKandidaat: 1.5, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 1, welUitgenodigd: 3, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 40 },
+    { unit: "Trainingsunit", name: "Dees Beeking", toegewezen: 7, ingeschreven: 5, intakes: 3, acquisities: 2, voorstellenPerKandidaat: 1.5, voorstellenViaEmail: 2, uitnodigingenTotaal: 4, nietUitgenodigd: 1, welUitgenodigd: 3, eersteGesprek: 2, geenEersteGesprek: 1, welEersteGesprek: 1, vervolgGesprek: 1, dealsluiter: 1, geplaatst: 1, gemDagenTotPlaatsing: 40 },
   ],
-  "New Performers": [
-    { unit: "New Performers", name: "Daan Bos", toegewezen: 4, ingeschreven: 3, intakes: 1, acquisities: 1, voorstellenPerKandidaat: 1.0, voorstellenViaEmail: 1, uitnodigingenTotaal: 2, nietUitgenodigd: 1, welUitgenodigd: 1, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
+  "Early Performers": [
+    { unit: "Early Performers", name: "Ted Bronkhorst", toegewezen: 4, ingeschreven: 3, intakes: 1, acquisities: 1, voorstellenPerKandidaat: 1.0, voorstellenViaEmail: 1, uitnodigingenTotaal: 2, nietUitgenodigd: 1, welUitgenodigd: 1, eersteGesprek: 1, geenEersteGesprek: 0, welEersteGesprek: 1, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
   ],
 };
 
@@ -238,7 +238,7 @@ export const periodUnitBreakdown: UnitFunnelRow[] = [
   { unit: "Monteurs", color: "hsl(var(--chart-primary))", toegewezen: 40, ingeschreven: 32, intakes: 24, acquisities: 12, voorstellenPerKandidaat: 1.9, voorstellenViaEmail: 12, uitnodigingenTotaal: 24, nietUitgenodigd: 8, welUitgenodigd: 16, eersteGesprek: 12, geenEersteGesprek: 4, welEersteGesprek: 8, vervolgGesprek: 8, dealsluiter: 4, geplaatst: 4, gemDagenTotPlaatsing: 34 },
   { unit: "Operators", color: "hsl(var(--accent))", toegewezen: 60, ingeschreven: 48, intakes: 32, acquisities: 16, voorstellenPerKandidaat: 2.4, voorstellenViaEmail: 20, uitnodigingenTotaal: 36, nietUitgenodigd: 12, welUitgenodigd: 24, eersteGesprek: 20, geenEersteGesprek: 8, welEersteGesprek: 12, vervolgGesprek: 12, dealsluiter: 8, geplaatst: 8, gemDagenTotPlaatsing: 21 },
   { unit: "Trainingsunit", color: "hsl(var(--gold))", toegewezen: 28, ingeschreven: 20, intakes: 12, acquisities: 8, voorstellenPerKandidaat: 1.6, voorstellenViaEmail: 8, uitnodigingenTotaal: 16, nietUitgenodigd: 4, welUitgenodigd: 12, eersteGesprek: 8, geenEersteGesprek: 4, welEersteGesprek: 4, vervolgGesprek: 4, dealsluiter: 4, geplaatst: 4, gemDagenTotPlaatsing: 40 },
-  { unit: "New Performers", color: "hsl(var(--teal))", toegewezen: 16, ingeschreven: 12, intakes: 4, acquisities: 4, voorstellenPerKandidaat: 1.1, voorstellenViaEmail: 4, uitnodigingenTotaal: 8, nietUitgenodigd: 4, welUitgenodigd: 4, eersteGesprek: 4, geenEersteGesprek: 0, welEersteGesprek: 4, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
+  { unit: "Early Performers", color: "hsl(var(--teal))", toegewezen: 16, ingeschreven: 12, intakes: 4, acquisities: 4, voorstellenPerKandidaat: 1.1, voorstellenViaEmail: 4, uitnodigingenTotaal: 8, nietUitgenodigd: 4, welUitgenodigd: 4, eersteGesprek: 4, geenEersteGesprek: 0, welEersteGesprek: 4, vervolgGesprek: 0, dealsluiter: 0, geplaatst: 0, gemDagenTotPlaatsing: 0 },
 ];
 
 export const periodCallStatsDaily: DayCallStat[] = [
@@ -253,7 +253,7 @@ export const periodGesprekkenPerUnit = [
   { unit: "Monteurs", gesprekken: 12 },
   { unit: "Operators", gesprekken: 20 },
   { unit: "Trainingsunit", gesprekken: 8 },
-  { unit: "New Performers", gesprekken: 4 },
+  { unit: "Early Performers", gesprekken: 4 },
 ];
 
 export const periodMailStats = {
@@ -269,7 +269,7 @@ export const periodMailStats = {
     { unit: "Monteurs", mails: 96 },
     { unit: "Operators", mails: 152 },
     { unit: "Trainingsunit", mails: 72 },
-    { unit: "New Performers", mails: 48 },
+    { unit: "Early Performers", mails: 48 },
   ],
 };
 
@@ -302,7 +302,7 @@ export const weekUnitConversions: UnitConversion[] = [
     { from: "Voorstellen", to: "Gesprekken", rate: 66.7 },
     { from: "Gesprekken", to: "Plaatsingen", rate: 50.0 },
   ]},
-  { unit: "New Performers", conversions: [
+  { unit: "Early Performers", conversions: [
     { from: "Inschrijvingen", to: "Intakes", rate: 66.7 },
     { from: "Intakes", to: "Acquisities", rate: 50.0 },
     { from: "Acquisities", to: "Voorstellen", rate: 100.0 },
@@ -316,7 +316,7 @@ export const weekGesprekkenPerUnit = [
   { unit: "Monteurs", gesprekken: 3 },
   { unit: "Operators", gesprekken: 5 },
   { unit: "Trainingsunit", gesprekken: 2 },
-  { unit: "New Performers", gesprekken: 1 },
+  { unit: "Early Performers", gesprekken: 1 },
 ];
 
 export const weekMailStats = {
@@ -333,7 +333,7 @@ export const weekMailStats = {
     { unit: "Monteurs", mails: 24 },
     { unit: "Operators", mails: 38 },
     { unit: "Trainingsunit", mails: 18 },
-    { unit: "New Performers", mails: 12 },
+    { unit: "Early Performers", mails: 12 },
   ],
 };
 

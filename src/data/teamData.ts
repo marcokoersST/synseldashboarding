@@ -29,7 +29,7 @@ export const REVENUE_GOAL = 2000000; // €2M
 export const teamMembers: TeamMember[] = [
   {
     id: 1,
-    name: "Sophie de Vries",
+    name: "Delano Nikkels",
     role: "Senior Recruiter",
     revenue: 1850000,
     avatar: "https://i.pravatar.cc/150?img=1",
@@ -51,7 +51,7 @@ export const teamMembers: TeamMember[] = [
   },
   {
     id: 2,
-    name: "Thomas Bakker",
+    name: "Falco Zegveld",
     role: "Recruiter",
     revenue: 1620000,
     avatar: "https://i.pravatar.cc/150?img=2",
@@ -73,7 +73,7 @@ export const teamMembers: TeamMember[] = [
   },
   {
     id: 3,
-    name: "Emma Jansen",
+    name: "Eric Hutchison",
     role: "Senior Recruiter",
     revenue: 1450000,
     avatar: "https://i.pravatar.cc/150?img=3",
@@ -118,7 +118,7 @@ export const teamMembers: TeamMember[] = [
   },
   {
     id: 5,
-    name: "Lucas van Dijk",
+    name: "Jonah Waterborg",
     role: "Junior Recruiter",
     revenue: 980000,
     avatar: "https://i.pravatar.cc/150?img=5",
@@ -140,7 +140,7 @@ export const teamMembers: TeamMember[] = [
   },
   {
     id: 6,
-    name: "Anna Visser",
+    name: "Niels Eggens",
     role: "Junior Recruiter",
     revenue: 720000,
     avatar: "https://i.pravatar.cc/150?img=6",

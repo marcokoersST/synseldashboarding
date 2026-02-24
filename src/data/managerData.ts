@@ -28,20 +28,18 @@ export interface PlacementRecord {
 // Generate revenue trend data for a consultant based on their current revenue
 function generateRevenueTrend(currentRevenue: number, growthRate: number = 0.08): RevenuePeriodData[] {
   const periods: RevenuePeriodData[] = [];
-  const baseRevenue = currentRevenue * 0.7; // Start at 70% of current
+  const baseRevenue = currentRevenue * 0.7;
   
-  // Historical data (P1-P6)
   for (let i = 1; i <= 6; i++) {
     const progress = i / 6;
     const value = baseRevenue + (currentRevenue - baseRevenue) * progress;
     periods.push({
       period: `P${i}`,
-      historical: Math.round(value / 1000), // Convert to thousands
+      historical: Math.round(value / 1000),
       projected: i === 6 ? Math.round(value / 1000) : null,
     });
   }
   
-  // Projected data (P7-P13)
   const lastHistorical = currentRevenue;
   for (let i = 7; i <= 13; i++) {
     const periodsAhead = i - 6;
@@ -67,7 +65,7 @@ export const consultantsWithTrends: ConsultantWithTrends[] = teamMembers.map((me
 const additionalConsultants: ConsultantWithTrends[] = [
   {
     id: 7,
-    name: "Mark de Groot",
+    name: "Jort Koggel",
     role: "Senior Recruiter",
     revenue: 1720000,
     avatar: "https://i.pravatar.cc/150?img=7",
@@ -91,7 +89,7 @@ const additionalConsultants: ConsultantWithTrends[] = [
   },
   {
     id: 8,
-    name: "Linda Smeets",
+    name: "Stijn Koldenhoven",
     role: "Recruiter",
     revenue: 1380000,
     avatar: "https://i.pravatar.cc/150?img=8",
@@ -115,7 +113,7 @@ const additionalConsultants: ConsultantWithTrends[] = [
   },
   {
     id: 9,
-    name: "Kevin Hoekstra",
+    name: "Miguel Kraaijeveld",
     role: "Senior Recruiter",
     revenue: 1950000,
     avatar: "https://i.pravatar.cc/150?img=9",
@@ -139,7 +137,7 @@ const additionalConsultants: ConsultantWithTrends[] = [
   },
   {
     id: 10,
-    name: "Rianne Willems",
+    name: "Sander Beckker",
     role: "Junior Recruiter",
     revenue: 850000,
     avatar: "https://i.pravatar.cc/150?img=10",
