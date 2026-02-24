@@ -79,7 +79,10 @@ function CallsDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: st
   const [sortAsc, setSortAsc] = useState(true);
 
   const sorted = useMemo(() => {
-    const data = [...consultantCallData];
+    let data = [...consultantCallData];
+    if (selectedUnit && selectedUnit !== "all") {
+      data = data.filter(c => c.unit === selectedUnit);
+    }
     data.sort((a, b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
@@ -87,7 +90,7 @@ function CallsDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: st
       return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number);
     });
     return data;
-  }, [sortKey, sortAsc]);
+  }, [sortKey, sortAsc, selectedUnit]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
