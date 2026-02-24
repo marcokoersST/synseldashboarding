@@ -52,19 +52,19 @@ function FunnelOverview({ delay, compact = false }: { delay: number; compact?: b
   }));
 
   return (
-    <div className="space-y-3">
+    <div className={compact ? "space-y-1.5" : "space-y-3"}>
       {mainData.map((step, i) => {
         const pct = Math.round((step.value / max) * 100);
         const convPct = i > 0 ? Math.round((step.value / mainData[i - 1].value) * 100) : null;
         return (
           <div key={step.key} className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{step.label}</span>
-            <div className="flex-1 h-6 bg-secondary/30 rounded-full overflow-hidden relative">
+            <div className={cn("flex-1 bg-secondary/30 rounded-full overflow-hidden relative", compact ? "h-4" : "h-6")}>
               <div
                 className="h-full rounded-full transition-all duration-700 ease-out"
                 style={{ width: `${pct}%`, backgroundColor: stepColors[i] }}
               />
-              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-foreground">
+              <span className={cn("absolute inset-0 flex items-center justify-center font-semibold text-foreground", compact ? "text-[10px]" : "text-xs")}>
                 <AnimatedNumber value={step.value} delay={delay + i * 80} />
               </span>
             </div>
@@ -74,26 +74,30 @@ function FunnelOverview({ delay, compact = false }: { delay: number; compact?: b
           </div>
         );
       })}
-      {/* Optional steps */}
-      <div className="flex gap-4 mt-2 px-28">
-        {funnelSteps.filter(s => s.optional).map(s => (
-          <div key={s.key} className="flex items-center gap-2 border border-dashed border-border/50 rounded-lg px-3 py-1.5">
-            <span className="text-xs text-muted-foreground italic">{s.label}</span>
-            <span className="text-xs font-semibold text-foreground">
-              {unitFunnelTotals[s.key as keyof typeof unitFunnelTotals]}
+      {!compact && (
+        <>
+          {/* Optional steps */}
+          <div className="flex gap-4 mt-2 px-28">
+            {funnelSteps.filter(s => s.optional).map(s => (
+              <div key={s.key} className="flex items-center gap-2 border border-dashed border-border/50 rounded-lg px-3 py-1.5">
+                <span className="text-xs text-muted-foreground italic">{s.label}</span>
+                <span className="text-xs font-semibold text-foreground">
+                  {unitFunnelTotals[s.key as keyof typeof unitFunnelTotals]}
+                </span>
+              </div>
+            ))}
+          </div>
+          {/* Total conversion */}
+          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 mt-2">
+            <span className="text-xs font-medium text-foreground">
+              Totaal: {unitFunnelTotals.toegewezen} → {unitFunnelTotals.plaatsingen}
+            </span>
+            <span className="text-sm font-bold text-primary">
+              {((unitFunnelTotals.plaatsingen / unitFunnelTotals.toegewezen) * 100).toFixed(1)}% conversie
             </span>
           </div>
-        ))}
-      </div>
-      {/* Total conversion */}
-      <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 mt-2">
-        <span className="text-xs font-medium text-foreground">
-          Totaal: {unitFunnelTotals.toegewezen} → {unitFunnelTotals.plaatsingen}
-        </span>
-        <span className="text-sm font-bold text-primary">
-          {((unitFunnelTotals.plaatsingen / unitFunnelTotals.toegewezen) * 100).toFixed(1)}% conversie
-        </span>
-      </div>
+        </>
+      )}
     </div>
   );
 }
