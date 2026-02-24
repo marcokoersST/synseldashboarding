@@ -73,15 +73,15 @@ function FunnelVisualization({ delay, compact = false, selectedUnit }: { delay: 
         const convPct = i > 0 && data[i - 1].value > 0 ? Math.round((step.value / data[i - 1].value) * 100) : null;
         return (
           <div key={step.key} className="w-full flex flex-col items-center">
-            {convPct !== null && (
-              <div className={cn("flex items-center justify-center text-muted-foreground", compact ? "h-3" : "h-5")}>
-                <span className={cn("font-medium", compact ? "text-[9px]" : "text-[10px]")}>{convPct}% ↓</span>
+            {convPct !== null && !compact && (
+              <div className="flex items-center justify-center text-muted-foreground h-5">
+                <span className="font-medium text-[10px]">{convPct}% ↓</span>
               </div>
             )}
             <div
               className={cn(
                 "relative flex items-center justify-center rounded-md transition-all duration-700 ease-out",
-                compact ? "h-7" : "h-9"
+                compact ? "h-5" : "h-9"
               )}
               style={{
                 width: `${widthPct}%`,
