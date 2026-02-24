@@ -71,6 +71,7 @@ const App = () => (
             {/* All pages sharing persistent Sidebar + TopBar */}
             <Route element={<AppLayout />}>
               <Route path="/" element={<Index />} />
+              <Route path="/personal-dashboard/:userCode" element={<Index />} />
               <Route path="/vergelijking" element={<VergelijkingOverview />} />
               <Route path="/vergelijking/:memberId" element={<Vergelijking />} />
               <Route path="/manager-dashboard" element={<ManagerDashboard />} />

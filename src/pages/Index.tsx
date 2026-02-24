@@ -17,8 +17,10 @@ import { AINpsCard } from "@/components/dashboard/AINpsCard";
 import { ForecastGoalsProvider } from "@/contexts/ForecastGoalsContext";
 import { ProjectionCard } from "@/components/dashboard/ProjectionCard";
 import { consultantProjections } from "@/data/projectionData";
+import { useParams } from "react-router-dom";
 
 const Index = () => {
+  const { userCode } = useParams<{ userCode?: string }>();
   return (
     <ForecastGoalsProvider>
       {/* Welcome Header + Forecast Goals */}
