@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Maximize2, Minimize2, ArrowUpDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 import { consultantFunnelData, unitFunnelTotals, type ConsultantFunnelData } from "@/data/managerOperationalData";
 
 function useDetailToggle() {
@@ -43,7 +44,7 @@ const stepColors = [
   "hsl(175, 55%, 51%)", "hsl(175, 60%, 43%)", "hsl(175, 65%, 27%)",
 ];
 
-function FunnelOverview({ delay }: { delay: number }) {
+function FunnelOverview({ delay, compact = false }: { delay: number; compact?: boolean }) {
   const max = unitFunnelTotals.toegewezen;
   const mainData = mainSteps.map(s => ({
     ...s,
@@ -51,19 +52,19 @@ function FunnelOverview({ delay }: { delay: number }) {
   }));
 
   return (
-    <div className="space-y-3">
+    <div className={compact ? "space-y-1.5" : "space-y-3"}>
       {mainData.map((step, i) => {
         const pct = Math.round((step.value / max) * 100);
         const convPct = i > 0 ? Math.round((step.value / mainData[i - 1].value) * 100) : null;
         return (
           <div key={step.key} className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{step.label}</span>
-            <div className="flex-1 h-6 bg-secondary/30 rounded-full overflow-hidden relative">
+            <div className={cn("flex-1 bg-secondary/30 rounded-full overflow-hidden relative", compact ? "h-4" : "h-6")}>
               <div
                 className="h-full rounded-full transition-all duration-700 ease-out"
                 style={{ width: `${pct}%`, backgroundColor: stepColors[i] }}
               />
-              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-foreground">
+              <span className={cn("absolute inset-0 flex items-center justify-center font-semibold text-foreground", compact ? "text-[10px]" : "text-xs")}>
                 <AnimatedNumber value={step.value} delay={delay + i * 80} />
               </span>
             </div>
@@ -73,26 +74,30 @@ function FunnelOverview({ delay }: { delay: number }) {
           </div>
         );
       })}
-      {/* Optional steps */}
-      <div className="flex gap-4 mt-2 px-28">
-        {funnelSteps.filter(s => s.optional).map(s => (
-          <div key={s.key} className="flex items-center gap-2 border border-dashed border-border/50 rounded-lg px-3 py-1.5">
-            <span className="text-xs text-muted-foreground italic">{s.label}</span>
-            <span className="text-xs font-semibold text-foreground">
-              {unitFunnelTotals[s.key as keyof typeof unitFunnelTotals]}
+      {!compact && (
+        <>
+          {/* Optional steps */}
+          <div className="flex gap-4 mt-2 px-28">
+            {funnelSteps.filter(s => s.optional).map(s => (
+              <div key={s.key} className="flex items-center gap-2 border border-dashed border-border/50 rounded-lg px-3 py-1.5">
+                <span className="text-xs text-muted-foreground italic">{s.label}</span>
+                <span className="text-xs font-semibold text-foreground">
+                  {unitFunnelTotals[s.key as keyof typeof unitFunnelTotals]}
+                </span>
+              </div>
+            ))}
+          </div>
+          {/* Total conversion */}
+          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 mt-2">
+            <span className="text-xs font-medium text-foreground">
+              Totaal: {unitFunnelTotals.toegewezen} → {unitFunnelTotals.plaatsingen}
+            </span>
+            <span className="text-sm font-bold text-primary">
+              {((unitFunnelTotals.plaatsingen / unitFunnelTotals.toegewezen) * 100).toFixed(1)}% conversie
             </span>
           </div>
-        ))}
-      </div>
-      {/* Total conversion */}
-      <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 mt-2">
-        <span className="text-xs font-medium text-foreground">
-          Totaal: {unitFunnelTotals.toegewezen} → {unitFunnelTotals.plaatsingen}
-        </span>
-        <span className="text-sm font-bold text-primary">
-          {((unitFunnelTotals.plaatsingen / unitFunnelTotals.toegewezen) * 100).toFixed(1)}% conversie
-        </span>
-      </div>
+        </>
+      )}
     </div>
   );
 }
@@ -219,7 +224,15 @@ export function ManagerSalesFunnel({ delay = 0 }: ManagerSalesFunnelProps) {
           "flex-1 transition-all duration-400 ease-in-out",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
-          {displayMode ? <FunnelDetailTable delay={delay} /> : <FunnelOverview delay={delay} />}
+          {displayMode ? (
+            <>
+              <FunnelOverview delay={delay} compact />
+              <Separator className="my-4" />
+              <FunnelDetailTable delay={delay} />
+            </>
+          ) : (
+            <FunnelOverview delay={delay} />
+          )}
         </div>
       </div>
     </AnimatedCard>
