@@ -73,15 +73,15 @@ function FunnelVisualization({ delay, compact = false, selectedUnit }: { delay: 
         const convPct = i > 0 && data[i - 1].value > 0 ? Math.round((step.value / data[i - 1].value) * 100) : null;
         return (
           <div key={step.key} className="w-full flex flex-col items-center">
-            {convPct !== null && (
-              <div className={cn("flex items-center justify-center text-muted-foreground", compact ? "h-3" : "h-5")}>
-                <span className={cn("font-medium", compact ? "text-[9px]" : "text-[10px]")}>{convPct}% ↓</span>
+            {convPct !== null && !compact && (
+              <div className="flex items-center justify-center text-muted-foreground h-5">
+                <span className="font-medium text-[10px]">{convPct}% ↓</span>
               </div>
             )}
             <div
               className={cn(
                 "relative flex items-center justify-center rounded-md transition-all duration-700 ease-out",
-                compact ? "h-7" : "h-9"
+                compact ? "h-5" : "h-9"
               )}
               style={{
                 width: `${widthPct}%`,
@@ -292,7 +292,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto -mx-5 px-5">
+      <div className="overflow-x-auto overflow-y-auto max-h-[400px] -mx-5 px-5">
         <div className="min-w-max">
           <Table>
             <TableHeader>
@@ -488,7 +488,7 @@ export function ManagerSalesFunnel({ delay = 0, selectedUnit }: ManagerSalesFunn
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col min-w-0">
+      <div className="bg-card rounded-xl p-5 border border-border h-auto flex flex-col min-w-0">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-medium text-foreground">Sales Funnel</h3>
