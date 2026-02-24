@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { cn } from "@/lib/utils";
 import { consultantSkillData, type ConsultantSkillData } from "@/data/managerPerformanceData";
