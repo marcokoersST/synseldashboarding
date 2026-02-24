@@ -217,6 +217,7 @@ function RevenueDetail({ delay }: { delay: number }) {
 
 interface ManagerRevenueChartProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
 export function ManagerRevenueChart({ delay = 0 }: ManagerRevenueChartProps) {
