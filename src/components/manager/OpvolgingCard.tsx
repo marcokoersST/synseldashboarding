@@ -56,7 +56,15 @@ const stageColors: Record<string, string> = {
 
 // ─── Overview: flowchart scorecards ───
 
-function OpvolgingOverview({ delay }: { delay: number }) {
+function OpvolgingOverview({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
+  const filteredCounts = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return dealStageCounts;
+    const filtered = dealRecords.filter(r => r.unit === selectedUnit);
+    return dealStages.map(stage => ({
+      ...stage,
+      count: filtered.filter(r => r.dealStage === stage.code).length,
+    }));
+  }, [selectedUnit]);
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-2">
       {dealStageCounts.map((stage, i) => (
