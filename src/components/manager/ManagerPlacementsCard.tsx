@@ -33,7 +33,7 @@ interface ManagerPlacementsCardProps {
   selectedUnit?: string;
 }
 
-export function ManagerPlacementsCard({ delay = 0 }: ManagerPlacementsCardProps) {
+export function ManagerPlacementsCard({ delay = 0, selectedUnit }: ManagerPlacementsCardProps) {
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 400 });
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
   const [selectedConsultant, setSelectedConsultant] = useState<number | null>(null);
