@@ -220,7 +220,7 @@ interface ManagerRevenueChartProps {
   selectedUnit?: string;
 }
 
-export function ManagerRevenueChart({ delay = 0 }: ManagerRevenueChartProps) {
+export function ManagerRevenueChart({ delay = 0, selectedUnit }: ManagerRevenueChartProps) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
   return (
