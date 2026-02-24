@@ -31,27 +31,39 @@ function formatTime(totalMinutes: number) {
 
 // ─── Overview ───
 
-function CallsOverview({ delay }: { delay: number }) {
+function CallsOverview({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
+  const totals = useMemo(() => {
+    if (!selectedUnit || selectedUnit === "all") return unitCallTotals;
+    const filtered = consultantCallData.filter(c => c.unit === selectedUnit);
+    if (filtered.length === 0) return unitCallTotals;
+    return {
+      inbound: filtered.reduce((s, c) => s + c.inbound, 0),
+      outbound: filtered.reduce((s, c) => s + c.outbound, 0),
+      totalMinutes: filtered.reduce((s, c) => s + c.totalMinutes, 0),
+      qualityScore: +(filtered.reduce((s, c) => s + c.qualityScore, 0) / filtered.length).toFixed(1),
+    };
+  }, [selectedUnit]);
+
   return (
     <div className="grid grid-cols-2 gap-3">
       <div className="flex flex-col items-center justify-center rounded-xl bg-primary/5 border border-primary/10 p-4">
         <PhoneIncoming className="h-5 w-5 text-primary mb-2" />
-        <AnimatedNumber value={unitCallTotals.inbound} delay={delay + 100} className="text-2xl font-bold text-foreground" />
+        <AnimatedNumber value={totals.inbound} delay={delay + 100} className="text-2xl font-bold text-foreground" />
         <span className="text-xs text-muted-foreground mt-1">Inkomend</span>
       </div>
       <div className="flex flex-col items-center justify-center rounded-xl bg-primary/5 border border-primary/10 p-4">
         <PhoneOutgoing className="h-5 w-5 text-primary mb-2" />
-        <AnimatedNumber value={unitCallTotals.outbound} delay={delay + 150} className="text-2xl font-bold text-foreground" />
+        <AnimatedNumber value={totals.outbound} delay={delay + 150} className="text-2xl font-bold text-foreground" />
         <span className="text-xs text-muted-foreground mt-1">Uitgaand</span>
       </div>
       <div className="flex flex-col items-center justify-center rounded-xl bg-teal/5 border border-teal/10 p-4">
         <Clock className="h-5 w-5 text-teal mb-2" />
-        <span className="text-2xl font-bold text-foreground">{formatTime(unitCallTotals.totalMinutes)}</span>
+        <span className="text-2xl font-bold text-foreground">{formatTime(totals.totalMinutes)}</span>
         <span className="text-xs text-muted-foreground mt-1">Totale beltijd</span>
       </div>
       <div className="flex flex-col items-center justify-center rounded-xl bg-success/5 border border-success/10 p-4">
         <Zap className="h-5 w-5 text-success mb-2" />
-        <span className="text-2xl font-bold text-foreground">{unitCallTotals.qualityScore}</span>
+        <span className="text-2xl font-bold text-foreground">{totals.qualityScore}</span>
         <span className="text-xs text-muted-foreground mt-1">Kwaliteitsscore</span>
       </div>
     </div>
