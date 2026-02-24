@@ -28,6 +28,7 @@ const funnelBase = [
 export const consultantFunnelData: ConsultantFunnelData[] = myTeamConsultants.map((c, i) => ({
   consultantId: c.id,
   consultantName: c.name,
+  unit: c.unit,
   ...funnelBase[i % funnelBase.length],
 }));
 
