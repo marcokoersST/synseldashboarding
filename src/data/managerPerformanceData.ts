@@ -31,37 +31,37 @@ export interface ConsultantSkillData {
 
 const skillsBase: Omit<ConsultantSkillData, "consultantId" | "consultantName">[] = [
   {
-    relatieScoreKlant: 8.2, relatieScoreKandidaat: 7.8, pitchingPower: 85, responsiveness: 92, networking: 78,
+    relatieScoreKlant: 8.2, relatieScoreKandidaat: 7.8, pitchingPower: 85, responsiveness: 92, networking: 78, bezwaarverlegging: 80,
     procedureInschrijving: 88, procedureAcquisities: 82, npsKlant: 62, npsKandidaat: 55,
     systeemHygiene: { vacaturesAdded: 12, vacaturesClosed: 8, vacaturesEdited: 15, klantenReopened: 2, klantenNew: 5, klantenLost: 1, contactenAdded: 18, contactenEdited: 22, contactenLost: 3 },
     systeemHygieneScore: 84,
   },
   {
-    relatieScoreKlant: 7.5, relatieScoreKandidaat: 8.1, pitchingPower: 72, responsiveness: 85, networking: 68,
+    relatieScoreKlant: 7.5, relatieScoreKandidaat: 8.1, pitchingPower: 72, responsiveness: 85, networking: 68, bezwaarverlegging: 65,
     procedureInschrijving: 75, procedureAcquisities: 78, npsKlant: 48, npsKandidaat: 60,
     systeemHygiene: { vacaturesAdded: 10, vacaturesClosed: 6, vacaturesEdited: 12, klantenReopened: 1, klantenNew: 4, klantenLost: 2, contactenAdded: 14, contactenEdited: 18, contactenLost: 4 },
     systeemHygieneScore: 72,
   },
   {
-    relatieScoreKlant: 8.8, relatieScoreKandidaat: 8.5, pitchingPower: 90, responsiveness: 88, networking: 85,
+    relatieScoreKlant: 8.8, relatieScoreKandidaat: 8.5, pitchingPower: 90, responsiveness: 88, networking: 85, bezwaarverlegging: 88,
     procedureInschrijving: 92, procedureAcquisities: 88, npsKlant: 70, npsKandidaat: 68,
     systeemHygiene: { vacaturesAdded: 15, vacaturesClosed: 11, vacaturesEdited: 20, klantenReopened: 3, klantenNew: 7, klantenLost: 0, contactenAdded: 24, contactenEdited: 28, contactenLost: 1 },
     systeemHygieneScore: 92,
   },
   {
-    relatieScoreKlant: 6.8, relatieScoreKandidaat: 7.2, pitchingPower: 65, responsiveness: 78, networking: 60,
+    relatieScoreKlant: 6.8, relatieScoreKandidaat: 7.2, pitchingPower: 65, responsiveness: 78, networking: 60, bezwaarverlegging: 55,
     procedureInschrijving: 70, procedureAcquisities: 68, npsKlant: 35, npsKandidaat: 42,
     systeemHygiene: { vacaturesAdded: 8, vacaturesClosed: 4, vacaturesEdited: 9, klantenReopened: 1, klantenNew: 3, klantenLost: 3, contactenAdded: 10, contactenEdited: 12, contactenLost: 5 },
     systeemHygieneScore: 58,
   },
   {
-    relatieScoreKlant: 5.5, relatieScoreKandidaat: 6.0, pitchingPower: 48, responsiveness: 62, networking: 45,
+    relatieScoreKlant: 5.5, relatieScoreKandidaat: 6.0, pitchingPower: 48, responsiveness: 62, networking: 45, bezwaarverlegging: 38,
     procedureInschrijving: 55, procedureAcquisities: 50, npsKlant: 20, npsKandidaat: 28,
     systeemHygiene: { vacaturesAdded: 5, vacaturesClosed: 2, vacaturesEdited: 6, klantenReopened: 0, klantenNew: 2, klantenLost: 2, contactenAdded: 7, contactenEdited: 8, contactenLost: 6 },
     systeemHygieneScore: 42,
   },
   {
-    relatieScoreKlant: 7.0, relatieScoreKandidaat: 6.5, pitchingPower: 58, responsiveness: 70, networking: 52,
+    relatieScoreKlant: 7.0, relatieScoreKandidaat: 6.5, pitchingPower: 58, responsiveness: 70, networking: 52, bezwaarverlegging: 48,
     procedureInschrijving: 62, procedureAcquisities: 60, npsKlant: 30, npsKandidaat: 35,
     systeemHygiene: { vacaturesAdded: 6, vacaturesClosed: 3, vacaturesEdited: 8, klantenReopened: 1, klantenNew: 2, klantenLost: 2, contactenAdded: 9, contactenEdited: 10, contactenLost: 4 },
     systeemHygieneScore: 52,
