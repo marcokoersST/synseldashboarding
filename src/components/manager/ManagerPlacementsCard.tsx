@@ -30,6 +30,7 @@ function useDetailToggle() {
 
 interface ManagerPlacementsCardProps {
   delay?: number;
+  selectedUnit?: string;
 }
 
 export function ManagerPlacementsCard({ delay = 0 }: ManagerPlacementsCardProps) {
