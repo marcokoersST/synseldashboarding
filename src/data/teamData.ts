@@ -55,6 +55,7 @@ export const teamMembers: TeamMember[] = [
     id: 2,
     name: "Falco Zegveld",
     role: "Recruiter",
+    unit: "Engineering",
     revenue: 1620000,
     avatar: "https://i.pravatar.cc/150?img=2",
     isLeader: false,
