@@ -1,40 +1,33 @@
 
 
-# TV Mode Animations for Ranglijsten
+# Fix: Detail Mode Content Overflowing Screen
 
-## Changes
+## Problem
+When entering detailed mode on the Manager Dashboard, the Sales Funnel detail table overflows horizontally beyond the visible screen. The root cause is in `ManagerSalesFunnel.tsx` line 295:
 
-### 1. Top 3 wave animation (TV mode only)
-Add a CSS keyframe `tv-wave` that gently translates the rank icon (Trophy/Medal) up and down by ~2px. Each of the 3 top rows gets a staggered `animation-delay` (0s, 0.3s, 0.6s) to create a wave effect. The animation uses `ease-in-out` with a long duration (~3s) and plays intermittently using a keyframe that holds still for most of the cycle:
-
-```
-@keyframes tv-wave {
-  0%, 20%, 100% { transform: translateY(0); }
-  10% { transform: translateY(-2px); }
-}
+```tsx
+<div className="overflow-x-auto overflow-y-auto max-h-[400px] -mx-5 px-5">
+  <div className="min-w-max">
 ```
 
-Duration: ~4s, so the icon bobs gently once then rests for ~3s before repeating. Applied only to `.tv-mode .tv-wave-1`, `.tv-wave-2`, `.tv-wave-3` classes on the RankIcon wrapper.
+The `-mx-5` negative margin pulls the scrollable container outside its parent card boundaries, and `min-w-max` forces the table to its natural (very wide) width. Combined with the main layout's `overflow-x-hidden`, this causes content to visually disappear off-screen rather than being scrollable within the card.
 
-### 2. Fire icon smolder animation (TV mode only)
-Add a CSS keyframe `tv-fire` that subtly scales and adjusts opacity of the Flame icon to simulate a smoldering effect. Runs continuously but smoothly:
+## Fix
 
+**File: `src/components/manager/ManagerSalesFunnel.tsx`** (line 295)
+
+Remove the `-mx-5 px-5` negative margin hack from the scrollable container. The table already has its own `overflow-x-auto` — it just needs to stay within the card bounds:
+
+```tsx
+// Before:
+<div className="overflow-x-auto overflow-y-auto max-h-[400px] -mx-5 px-5">
+
+// After:
+<div className="overflow-x-auto overflow-y-auto max-h-[400px]">
 ```
-@keyframes tv-fire {
-  0%, 100% { transform: scale(1); opacity: 0.9; }
-  33% { transform: scale(1.1) rotate(-3deg); opacity: 1; }
-  66% { transform: scale(0.95) rotate(2deg); opacity: 0.8; }
-}
-```
 
-Duration: ~2s, infinite, `ease-in-out`. Applied via `.tv-mode .tv-fire` class on the Flame icon. The icon stays within row bounds since scale is small (0.95-1.1).
+This keeps the horizontally scrollable table contained within the card's padding, allowing users to scroll the wide table within its bounds rather than it pushing outside the viewport.
 
 ### Files changed
-
-**`src/index.css`** — Add `@keyframes tv-wave` and `@keyframes tv-fire` plus `.tv-mode .tv-wave-*` and `.tv-mode .tv-fire` classes in the components layer.
-
-**`src/pages/TVRanglijsten.tsx`** — 
-- In `RankIcon`: wrap the icon in a span with class `tv-wave-{rank}` 
-- In `EntryRow`: add class `tv-fire` to the Flame icon
-- Both classes are inert outside `.tv-mode` (no CSS rules match), so non-TV mode is unaffected
+- `src/components/manager/ManagerSalesFunnel.tsx` — remove negative margin on detail table container
 
