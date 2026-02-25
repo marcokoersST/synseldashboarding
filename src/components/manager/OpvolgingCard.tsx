@@ -192,7 +192,6 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
       </div>
 
       {/* Records table */}
-      <div className="max-h-[320px] overflow-y-auto scrollbar-thin">
         <table className="w-full text-sm">
           <thead className="sticky top-0 bg-card z-10">
             <tr className="border-b border-border">
@@ -241,7 +240,6 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
             })}
           </tbody>
         </table>
-      </div>
 
       {/* Consultant x Stage matrix */}
       <div className="border-t border-border pt-3">
@@ -295,7 +293,7 @@ export function OpvolgingCard({ delay = 0, selectedUnit }: OpvolgingCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
+      <div className="bg-card rounded-xl p-5 border border-border h-[480px] flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-medium text-foreground">Opvolging</h3>
@@ -309,7 +307,7 @@ export function OpvolgingCard({ delay = 0, selectedUnit }: OpvolgingCardProps) {
           </Button>
         </div>
         <div className={cn(
-          "flex-1 transition-all duration-400 ease-in-out",
+          "flex-1 transition-all duration-400 ease-in-out overflow-y-auto min-h-0",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
           {displayMode ? <OpvolgingDetail delay={delay} selectedUnit={selectedUnit} /> : <OpvolgingOverview delay={delay} selectedUnit={selectedUnit} />}
