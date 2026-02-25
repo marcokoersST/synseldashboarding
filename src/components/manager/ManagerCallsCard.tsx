@@ -198,7 +198,7 @@ export function ManagerCallsCard({ delay = 0, selectedUnit }: ManagerCallsCardPr
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
+      <div className="bg-card rounded-xl p-5 border border-border h-[480px] flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Phone className="h-5 w-5 text-primary" />
@@ -215,7 +215,7 @@ export function ManagerCallsCard({ delay = 0, selectedUnit }: ManagerCallsCardPr
           </Button>
         </div>
         <div className={cn(
-          "flex-1 transition-all duration-400 ease-in-out",
+          "flex-1 transition-all duration-400 ease-in-out overflow-y-auto min-h-0",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
           {displayMode ? <CallsDetail delay={delay} selectedUnit={selectedUnit} /> : <CallsOverview delay={delay} selectedUnit={selectedUnit} />}
