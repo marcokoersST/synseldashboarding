@@ -3,6 +3,8 @@
 export interface RankingEntry {
   rank: number;
   name: string;
+  firstName: string;
+  lastName: string;
   value: number;
   unit: string;
   isHot: boolean;
@@ -16,72 +18,75 @@ export interface RankingColumn {
 }
 
 interface ConsultantInfo {
-  name: string;
+  firstName: string;
+  infix: string;
+  lastName: string;
   unit: string;
+  fullName: string;
+}
+
+function buildConsultant(first: string, infix: string, last: string, unit: string): ConsultantInfo {
+  const fullName = infix ? `${first} ${infix} ${last}` : `${first} ${last}`;
+  return { firstName: first, infix, lastName: last, unit, fullName };
 }
 
 const consultants: ConsultantInfo[] = [
-  // Early Performers
-  { name: "Amer Faraman", unit: "Early Performers" },
-  { name: "Dyon Mäkel", unit: "Early Performers" },
-  { name: "Jelle van Enck", unit: "Early Performers" },
-  { name: "Rick Karssen", unit: "Early Performers" },
-  { name: "Senna Ekkers", unit: "Early Performers" },
-  { name: "Ted Bronkhorst", unit: "Early Performers" },
-  // Engineering
-  { name: "Delano Nikkels", unit: "Engineering" },
-  { name: "Eric Hutchison", unit: "Engineering" },
-  { name: "Falco Zegveld", unit: "Engineering" },
-  { name: "Jonah Waterborg", unit: "Engineering" },
-  { name: "Jort Koggel", unit: "Engineering" },
-  { name: "Mathijs Oskamp", unit: "Engineering" },
-  { name: "Miguel Kraaijeveld", unit: "Engineering" },
-  { name: "Niels Eggens", unit: "Engineering" },
-  { name: "Niels Florijn", unit: "Engineering" },
-  { name: "Sander Beckker", unit: "Engineering" },
-  { name: "Stijn Koldenhoven", unit: "Engineering" },
-  { name: "Thijs Dirksen", unit: "Engineering" },
-  { name: "Tom Tulen", unit: "Engineering" },
-  { name: "Tomas Jansen", unit: "Engineering" },
-  { name: "Xander Blok", unit: "Engineering" },
-  // Monteurs
-  { name: "Bart van Vliet", unit: "Monteurs" },
-  { name: "Daan Jacobs", unit: "Monteurs" },
-  { name: "Elmar Koopman", unit: "Monteurs" },
-  { name: "Joey Pol", unit: "Monteurs" },
-  { name: "Joey de Vries", unit: "Monteurs" },
-  { name: "Joost Kloppers", unit: "Monteurs" },
-  { name: "Kaylee van den Berg", unit: "Monteurs" },
-  { name: "Marco Schaap", unit: "Monteurs" },
-  { name: "Niek Roufs", unit: "Monteurs" },
-  { name: "Nino Boot", unit: "Monteurs" },
-  { name: "Robin Jansen", unit: "Monteurs" },
-  { name: "Robin van Bruggen", unit: "Monteurs" },
-  { name: "Sijmen Bossenbroek", unit: "Monteurs" },
-  { name: "Toby Bruinier", unit: "Monteurs" },
-  // Operators
-  { name: "Bas de Ruiter", unit: "Operators" },
-  { name: "Christiaan van Krieken", unit: "Operators" },
-  { name: "Elianne van Lohuizen", unit: "Operators" },
-  { name: "Ian Schaufeli", unit: "Operators" },
-  { name: "Lars van Suntenmaartensdijk", unit: "Operators" },
-  { name: "Mahesh Behari", unit: "Operators" },
-  { name: "Robert van Zielhuis", unit: "Operators" },
-  { name: "Ruben Zoet", unit: "Operators" },
-  { name: "Thijs Udink", unit: "Operators" },
-  { name: "Thom auf der Masch", unit: "Operators" },
-  // Trainingsunit
-  { name: "Dees Beeking", unit: "Trainingsunit" },
-  { name: "Emily Huigens", unit: "Trainingsunit" },
-  { name: "Marnix Miltenburg", unit: "Trainingsunit" },
-  { name: "Noa Treep", unit: "Trainingsunit" },
-  { name: "Paul Geers", unit: "Trainingsunit" },
-  { name: "Robbert Dalhuisen", unit: "Trainingsunit" },
-  { name: "Roel Linthorst", unit: "Trainingsunit" },
-  { name: "Saleh Akhras", unit: "Trainingsunit" },
-  { name: "Thijs Pisa", unit: "Trainingsunit" },
-  { name: "Ties Ganzevles", unit: "Trainingsunit" },
-  { name: "Tim Kuik", unit: "Trainingsunit" },
+  buildConsultant("Amer", "", "Faraman", "Early Performers"),
+  buildConsultant("Bart", "van", "Vliet", "Monteurs"),
+  buildConsultant("Bas", "de", "Ruiter", "Operators"),
+  buildConsultant("Christiaan", "van", "Krieken", "Operators"),
+  buildConsultant("Daan", "", "Jacobs", "Monteurs"),
+  buildConsultant("Dees", "", "Beeking", "Trainingsunit"),
+  buildConsultant("Delano", "", "Nikkels", "Engineering"),
+  buildConsultant("Dyon", "", "Mäkel", "Early Performers"),
+  buildConsultant("Elianne", "van", "Lohuizen", "Operators"),
+  buildConsultant("Elmar", "", "Koopman", "Monteurs"),
+  buildConsultant("Emily", "", "Huigens", "Trainingsunit"),
+  buildConsultant("Eric", "", "Hutchison", "Engineering"),
+  buildConsultant("Falco", "", "Zegveld", "Engineering"),
+  buildConsultant("Ian", "", "Schaufeli", "Operators"),
+  buildConsultant("Jelle", "van", "Enck", "Early Performers"),
+  buildConsultant("Joey", "", "Pol", "Monteurs"),
+  buildConsultant("Joey", "de", "Vries", "Monteurs"),
+  buildConsultant("Jonah", "", "Waterborg", "Engineering"),
+  buildConsultant("Joost", "", "Kloppers", "Monteurs"),
+  buildConsultant("Jort", "", "Koggel", "Engineering"),
+  buildConsultant("Kaylee", "van den", "Berg", "Monteurs"),
+  buildConsultant("Lars", "van", "Suntenmaartensdijk", "Operators"),
+  buildConsultant("Mahesh", "", "Behari", "Operators"),
+  buildConsultant("Marco", "", "Schaap", "Monteurs"),
+  buildConsultant("Marnix", "", "Miltenburg", "Trainingsunit"),
+  buildConsultant("Mathijs", "", "Oskamp", "Engineering"),
+  buildConsultant("Miguel", "", "Kraaijeveld", "Engineering"),
+  buildConsultant("Niek", "", "Roufs", "Monteurs"),
+  buildConsultant("Niels", "", "Eggens", "Engineering"),
+  buildConsultant("Niels", "", "Florijn", "Engineering"),
+  buildConsultant("Nino", "", "Boot", "Monteurs"),
+  buildConsultant("Noa", "", "Treep", "Trainingsunit"),
+  buildConsultant("Paul", "", "Geers", "Trainingsunit"),
+  buildConsultant("Rick", "", "Karssen", "Early Performers"),
+  buildConsultant("Robbert", "", "Dalhuisen", "Trainingsunit"),
+  buildConsultant("Robert", "van", "Zielhuis", "Operators"),
+  buildConsultant("Robin", "", "Jansen", "Monteurs"),
+  buildConsultant("Robin", "van", "Bruggen", "Monteurs"),
+  buildConsultant("Roel", "", "Linthorst", "Trainingsunit"),
+  buildConsultant("Ruben", "", "Zoet", "Operators"),
+  buildConsultant("Saleh", "", "Akhras", "Trainingsunit"),
+  buildConsultant("Sander", "", "Beckker", "Engineering"),
+  buildConsultant("Senna", "", "Ekkers", "Early Performers"),
+  buildConsultant("Sijmen", "", "Bossenbroek", "Monteurs"),
+  buildConsultant("Stijn", "", "Koldenhoven", "Engineering"),
+  buildConsultant("Ted", "", "Bronkhorst", "Early Performers"),
+  buildConsultant("Thijs", "", "Dirksen", "Engineering"),
+  buildConsultant("Thijs", "", "Pisa", "Trainingsunit"),
+  buildConsultant("Thijs", "", "Udink", "Operators"),
+  buildConsultant("Thom", "auf der", "Masch", "Operators"),
+  buildConsultant("Ties", "", "Ganzevles", "Trainingsunit"),
+  buildConsultant("Tim", "", "Kuik", "Trainingsunit"),
+  buildConsultant("Toby", "", "Bruinier", "Monteurs"),
+  buildConsultant("Tom", "", "Tulen", "Engineering"),
+  buildConsultant("Tomas", "", "Jansen", "Engineering"),
+  buildConsultant("Xander", "", "Blok", "Engineering"),
 ];
 
 // Names of "hot" consultants (high growth / momentum)
@@ -97,10 +102,12 @@ function generateRanking(topValues: number[]): RankingEntry[] {
   }
   return allValues.map((value, i) => ({
     rank: i + 1,
-    name: consultants[i].name,
+    name: consultants[i].fullName,
+    firstName: consultants[i].firstName,
+    lastName: consultants[i].lastName,
     unit: consultants[i].unit,
     value,
-    isHot: hotNames.has(consultants[i].name),
+    isHot: hotNames.has(consultants[i].fullName),
   }));
 }
 

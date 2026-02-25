@@ -59,23 +59,27 @@ function RankIcon({ rank, isTop3 }: { rank: number; isTop3?: boolean }) {
 }
 
 interface EntryRowProps {
-  entry: { rank: number; name: string; value: number; isHot?: boolean };
+  entry: { rank: number; name: string; firstName: string; lastName: string; value: number; isHot?: boolean };
+  displayName?: string;
+  compact?: boolean;
 }
 
-function EntryRow({ entry }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact }: EntryRowProps) {
   const isTop3 = entry.rank <= 3;
+  const shownName = displayName ?? entry.name;
   return (
     <div
       className={cn(
         "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20",
-        isTop3 ? "py-2" : "py-1 text-sm",
+        isTop3 ? "py-2" : "py-1",
+        compact ? "text-xs" : "text-sm",
         getRankStyle(entry.rank),
         entry.isHot && entry.value > 0 && "bg-orange-50/60",
-        entry.value === 0 && "opacity-50"
+        entry.value === 0 && "opacity-30"
       )}
     >
       <span className={cn(
-        "w-5 text-right shrink-0 flex items-center justify-end gap-0.5",
+        "w-5 text-left shrink-0 flex items-center justify-start gap-0.5",
         isTop3 ? "text-sm font-bold" : "text-xs text-muted-foreground"
       )}>
         <RankIcon rank={entry.rank} isTop3={isTop3} />
@@ -86,7 +90,7 @@ function EntryRow({ entry }: EntryRowProps) {
         isTop3 ? "text-base font-bold" : "",
         entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
       )}>
-        {entry.name}
+        {shownName}
       </span>
       <span className={cn(
         "tabular-nums shrink-0 ml-auto flex items-center gap-1",
@@ -242,29 +246,37 @@ function RanglijstenContent() {
       {/* Ranking Columns */}
       <div className="grid gap-5" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
         {columns.map((col) => {
-          const half = Math.ceil(col.entries.length / 2);
-          const leftEntries = col.entries.slice(0, half);
-          const rightEntries = col.entries.slice(half);
+          const top3 = col.entries.slice(0, 3);
+          const rest = col.entries.slice(3);
+          const half = Math.ceil(rest.length / 2);
+          const leftEntries = rest.slice(0, half);
+          const rightEntries = rest.slice(half);
 
           return (
             <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
-              {/* Header spanning full width */}
               <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">{col.title}</h2>
               <p className="text-3xl font-bold text-foreground tabular-nums">
                 {col.total.toLocaleString("nl-NL")}
               </p>
               <ComparisonBar current={col.total} previous={col.previousTotal} />
 
-              {/* Two-column entries */}
-              <div className="mt-3 grid grid-cols-2 gap-x-3">
+              {/* Top 3 full-width */}
+              <div className="mt-3 space-y-0">
+                {top3.map((entry) => (
+                  <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} />
+                ))}
+              </div>
+
+              {/* Rest in two columns, abbreviated names */}
+              <div className="mt-1 grid grid-cols-2 gap-x-3">
                 <div className="space-y-0">
                   {leftEntries.map((entry) => (
-                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} />
+                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={`${entry.firstName} ${entry.lastName[0]}.`} compact />
                   ))}
                 </div>
                 <div className="space-y-0">
                   {rightEntries.map((entry) => (
-                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} />
+                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={`${entry.firstName} ${entry.lastName[0]}.`} compact />
                   ))}
                 </div>
               </div>
