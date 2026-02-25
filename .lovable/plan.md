@@ -1,37 +1,40 @@
 
 
-# Fix: Sales Funnel Card Width Overflow in Detail Mode
+# Fix: Card Width Expanding Beyond Viewport in Detail Mode
 
 ## Problem
-When expanding the Sales Funnel to detail mode, the inner table uses `min-w-max` (line 296) which forces its natural width. Because the card has no explicit width constraint and the main layout uses `overflow-x-hidden`, the card itself grows wider than the viewport, pushing sibling controls off-screen horizontally. The table's `overflow-x-auto` wrapper cannot activate because the card stretches to accommodate the table's full width.
+The `overflow-hidden` on the card div alone doesn't work because the parent chain lacks width constraints:
 
-## Root Cause
-The card container (line 491) has `min-w-0` but no `max-w-full` or `overflow-hidden`. The `min-w-max` on the inner table div propagates upward, expanding the card beyond viewport bounds.
+```text
+<main overflow-x-hidden>        ← clips but content still pushes layout
+  <>                             ← fragment, no constraints
+    <section>                    ← no width constraint
+      <AnimatedCard>             ← no overflow/width constraint
+        <div overflow-hidden>    ← inner card, but already too late
+```
+
+The `min-w-max` on the table propagates upward through `AnimatedCard` and the `section`, expanding the entire page layout before `main`'s `overflow-x-hidden` clips it — pushing the header controls (Volgorde, unit selector, period tabs) off-screen.
 
 ## Fix
 
-**File: `src/components/manager/ManagerSalesFunnel.tsx`**
+**Two changes needed:**
 
-1. **Card container (line 491)**: Add `overflow-hidden` to the card div so its children cannot expand it beyond its allocated width:
-   ```tsx
-   // Before:
-   <div className="bg-card rounded-xl p-5 border border-border h-auto flex flex-col min-w-0">
-   
-   // After:
-   <div className="bg-card rounded-xl p-5 border border-border h-auto flex flex-col min-w-0 overflow-hidden">
-   ```
+### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 491
+Remove the redundant `overflow-hidden` from the inner card div (it's not the right level to constrain). Keep it on the content wrapper (line 505) which is fine.
 
-2. **Content wrapper (line 504)**: Also ensure `overflow-hidden` so the transition wrapper doesn't expand:
-   ```tsx
-   // Before:
-   "flex-1 transition-all duration-400 ease-in-out min-w-0",
-   
-   // After:
-   "flex-1 transition-all duration-400 ease-in-out min-w-0 overflow-hidden",
-   ```
+### 2. `src/components/animations/AnimatedCard.tsx` — line 18
+Add `min-w-0 overflow-hidden` to the `AnimatedCard` wrapper. This is the correct level to stop width propagation — it wraps every card and sits directly inside the section layout. This ensures no card can ever expand beyond its allocated grid/flex space.
 
-This ensures the card width stays fixed to its parent's allocated space. The table's `overflow-x-auto` wrapper (line 295) then correctly activates horizontal scrolling within the card, while the card itself never exceeds the viewport width.
+```tsx
+// Before:
+"opacity-0 translate-y-4 transition-all duration-500 ease-out hover-lift group h-full",
+
+// After:
+"opacity-0 translate-y-4 transition-all duration-500 ease-out hover-lift group h-full min-w-0 overflow-hidden",
+```
+
+This is a global fix that prevents any card from expanding the layout, which is the correct behavior for all dashboard cards.
 
 ### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — add `overflow-hidden` to card container and content wrapper
+- `src/components/animations/AnimatedCard.tsx` — add `min-w-0 overflow-hidden` to wrapper div
 
