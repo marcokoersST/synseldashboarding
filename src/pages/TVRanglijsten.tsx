@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3 } from "lucide-react";
+import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown } from "lucide-react";
 
 function ComparisonBar({ current, previous }: { current: number; previous: number }) {
   const delta = previous > 0 ? ((current - previous) / previous) * 100 : 0;
@@ -108,7 +108,7 @@ function RanglijstenContent() {
   const [jaar, setJaar] = useState("2026");
   const [selectedPeriode, setSelectedPeriode] = useState("P1");
   const [selectedWeek, setSelectedWeek] = useState("W1");
-  const [unit, setUnit] = useState("Alle units");
+  const [selectedUnits, setSelectedUnits] = useState<string[]>(["Alle units"]);
   const [selectedColumns, setSelectedColumns] = useState<string[]>(() => {
     try {
       const saved = sessionStorage.getItem("ranglijsten-columns");
@@ -207,16 +207,42 @@ function RanglijstenContent() {
 
             <div className="flex-1" />
 
-            <Select value={unit} onValueChange={setUnit}>
-              <SelectTrigger className="w-[160px] bg-card border-border">
-                <SelectValue placeholder="Unit" />
-              </SelectTrigger>
-              <SelectContent>
-                {ranglijstenFilters.units.map((u) => (
-                  <SelectItem key={u} value={u}>{u}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 min-w-[160px] justify-between bg-card border-border">
+                  {selectedUnits.includes("Alle units") ? "Alle units" : `${selectedUnits.length} unit${selectedUnits.length > 1 ? "s" : ""}`}
+                  <ChevronDown className="w-4 h-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56">
+                <p className="text-sm font-medium mb-3">Units</p>
+                <div className="space-y-2">
+                  {ranglijstenFilters.units.filter(u => u !== "Alle units").map((u) => (
+                    <label key={u} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={selectedUnits.includes("Alle units") || selectedUnits.includes(u)}
+                        onCheckedChange={() => {
+                          setSelectedUnits(prev => {
+                            if (prev.includes("Alle units")) {
+                              // Was "all" → select only this one
+                              return [u];
+                            }
+                            if (prev.includes(u)) {
+                              const next = prev.filter(x => x !== u);
+                              return next.length === 0 ? ["Alle units"] : next;
+                            }
+                            const next = [...prev, u];
+                            const allNonAlle = ranglijstenFilters.units.filter(x => x !== "Alle units");
+                            return next.length === allNonAlle.length ? ["Alle units"] : next;
+                          });
+                        }}
+                      />
+                      {u}
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           </>
         )}
 
