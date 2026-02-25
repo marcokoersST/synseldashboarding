@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { ranglijstenWeekColumns, ranglijstenPeriodeColumns, ranglijstenFilters, allColumnTitles } from "@/data/ranglijstenData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,73 +50,58 @@ function getRankStyle(rank: number) {
   return "";
 }
 
-function RankIcon({ rank }: { rank: number }) {
-  if (rank === 1) return <Trophy className="w-3.5 h-3.5 text-amber-500" />;
-  if (rank === 2) return <Medal className="w-3.5 h-3.5 text-slate-400" />;
-  if (rank === 3) return <Medal className="w-3.5 h-3.5 text-orange-400" />;
+function RankIcon({ rank, isTop3 }: { rank: number; isTop3?: boolean }) {
+  const size = isTop3 ? "w-4 h-4" : "w-3.5 h-3.5";
+  if (rank === 1) return <Trophy className={cn(size, "text-amber-500")} />;
+  if (rank === 2) return <Medal className={cn(size, "text-slate-400")} />;
+  if (rank === 3) return <Medal className={cn(size, "text-orange-400")} />;
   return null;
 }
 
-function AutoScrollArea({ children, isCompact, onCycleComplete }: { children: React.ReactNode; isCompact: boolean; onCycleComplete?: () => void }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const directionRef = useRef<"down" | "up">("down");
-  const pauseRef = useRef(false);
-  const onCycleCompleteRef = useRef(onCycleComplete);
-  onCycleCompleteRef.current = onCycleComplete;
+interface EntryRowProps {
+  entry: { rank: number; name: string; value: number; isHot?: boolean };
+}
 
-  useEffect(() => {
-    if (!isCompact) return;
-    const el = containerRef.current;
-    if (!el) return;
-
-    // Reset scroll position on mount/re-mount
-    el.scrollTop = 0;
-    directionRef.current = "down";
-
-    const interval = setInterval(() => {
-      if (pauseRef.current) return;
-      const maxScroll = el.scrollHeight - el.clientHeight;
-      if (maxScroll <= 0) {
-        // Nothing to scroll — signal cycle complete immediately
-        onCycleCompleteRef.current?.();
-        return;
-      }
-
-      if (directionRef.current === "down") {
-        el.scrollTop += 1;
-        if (el.scrollTop >= maxScroll) {
-          directionRef.current = "up";
-          pauseRef.current = true;
-          setTimeout(() => { pauseRef.current = false; }, 2000);
-        }
-      } else {
-        el.scrollTop -= 1;
-        if (el.scrollTop <= 0) {
-          directionRef.current = "down";
-          pauseRef.current = true;
-          // Full cycle complete (down then back up) — signal swap
-          onCycleCompleteRef.current?.();
-          setTimeout(() => { pauseRef.current = false; }, 2000);
-        }
-      }
-    }, 80);
-
-    return () => clearInterval(interval);
-  }, [isCompact]);
-
+function EntryRow({ entry }: EntryRowProps) {
+  const isTop3 = entry.rank <= 3;
   return (
     <div
-      ref={containerRef}
-      className={cn("overflow-hidden", isCompact ? "h-[calc(100vh-240px)]" : "h-[calc(100vh-320px)] overflow-y-auto")}
+      className={cn(
+        "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20",
+        isTop3 ? "py-2" : "py-1 text-sm",
+        getRankStyle(entry.rank),
+        entry.isHot && entry.value > 0 && "bg-orange-50/60",
+        entry.value === 0 && "opacity-50"
+      )}
     >
-      {children}
+      <span className={cn(
+        "w-5 text-right shrink-0 flex items-center justify-end gap-0.5",
+        isTop3 ? "text-sm font-bold" : "text-xs text-muted-foreground"
+      )}>
+        <RankIcon rank={entry.rank} isTop3={isTop3} />
+        {entry.rank > 3 && `${entry.rank}.`}
+      </span>
+      <span className={cn(
+        "min-w-0 truncate text-foreground",
+        isTop3 ? "text-base font-bold" : "",
+        entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
+      )}>
+        {entry.name}
+      </span>
+      <span className={cn(
+        "tabular-nums shrink-0 ml-auto flex items-center gap-1",
+        isTop3 ? "text-base font-bold" : "font-semibold",
+        "text-foreground"
+      )}>
+        {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
+        {entry.value}
+      </span>
     </div>
   );
 }
 
 function RanglijstenContent() {
   const [jaar, setJaar] = useState("2026");
-  
   const [selectedPeriode, setSelectedPeriode] = useState("P1");
   const [selectedWeek, setSelectedWeek] = useState("W1");
   const [unit, setUnit] = useState("Alle units");
@@ -129,39 +114,7 @@ function RanglijstenContent() {
   });
   const isCompact = useTVCompact();
 
-  // Persist column selection across mode switches
-  useEffect(() => {
-    sessionStorage.setItem("ranglijsten-columns", JSON.stringify(selectedColumns));
-  }, [selectedColumns]);
-
-  // Auto-swap between week and periode in TV mode
-  const [autoView, setAutoView] = useState<"week" | "periode">("week");
-  const [tvViewMode, setTvViewMode] = useState<"auto" | "week" | "periode">("auto");
-
-  const scrollCycleCountRef = useRef(0);
-
-  const handleScrollCycleComplete = useCallback(() => {
-    if (!isCompact || tvViewMode !== "auto") return;
-    scrollCycleCountRef.current += 1;
-    // We get one callback per column — swap after first column signals
-    if (scrollCycleCountRef.current === 1) {
-      setAutoView((v) => (v === "week" ? "periode" : "week"));
-    }
-  }, [isCompact, tvViewMode]);
-
-  // Reset cycle counter whenever the view actually changes
-  useEffect(() => {
-    scrollCycleCountRef.current = 0;
-  }, [autoView]);
-
-  useEffect(() => {
-    if (!isCompact) {
-      setAutoView("week");
-      return;
-    }
-    if (tvViewMode === "week") { setAutoView("week"); return; }
-    if (tvViewMode === "periode") { setAutoView("periode"); return; }
-  }, [isCompact, tvViewMode]);
+  const [tvViewMode, setTvViewMode] = useState<"week" | "periode">("week");
 
   const toggleColumn = useCallback((title: string) => {
     setSelectedColumns((prev) => {
@@ -173,13 +126,13 @@ function RanglijstenContent() {
     });
   }, []);
 
-  const activeView = isCompact ? autoView : (tvViewMode === "periode" ? "periode" : "week");
+  const activeView = tvViewMode;
   const allColumns = activeView === "periode" ? ranglijstenPeriodeColumns : ranglijstenWeekColumns;
   const columns = allColumns.filter((col) => selectedColumns.includes(col.title));
 
   return (
     <>
-      {/* Filters + TV indicator */}
+      {/* Filters */}
       <div className="flex items-center gap-4 mb-4">
         {!isCompact && (
           <>
@@ -268,13 +221,6 @@ function RanglijstenContent() {
             <div className="flex-1" />
             <div className="flex items-center gap-2">
               <Badge
-                variant={tvViewMode === "auto" ? "default" : "secondary"}
-                className="transition-all duration-300 cursor-pointer"
-                onClick={() => setTvViewMode("auto")}
-              >
-                Auto {tvViewMode === "auto" && <span className="ml-1 text-[10px] opacity-70">({autoView === "week" ? "W" : "P"})</span>}
-              </Badge>
-              <Badge
                 variant={tvViewMode === "week" ? "default" : "secondary"}
                 className="transition-all duration-300 cursor-pointer"
                 onClick={() => setTvViewMode("week")}
@@ -295,120 +241,36 @@ function RanglijstenContent() {
 
       {/* Ranking Columns */}
       <div className="grid gap-5" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
-        {columns.map((col) => (
-          <div key={col.title} className="min-w-0">
-            <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">{col.title}</h2>
-            <p className="text-3xl font-bold text-foreground tabular-nums">
-              {col.total.toLocaleString("nl-NL")}
-            </p>
-            <ComparisonBar current={col.total} previous={col.previousTotal} />
+        {columns.map((col) => {
+          const half = Math.ceil(col.entries.length / 2);
+          const leftEntries = col.entries.slice(0, half);
+          const rightEntries = col.entries.slice(half);
 
-            {isCompact ? (
-              <>
-                <div className="mt-3 space-y-0">
-                  {col.entries.filter(e => e.rank <= 10).map((entry) => (
-                    <div
-                      key={`${entry.rank}-${entry.name}`}
-                      className={cn(
-                        "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/20",
-                        getRankStyle(entry.rank),
-                        entry.isHot && entry.value > 0 && "bg-orange-50/60",
-                        entry.value === 0 && "opacity-50"
-                      )}
-                    >
-                      <span className={cn(
-                        "w-5 text-right shrink-0 text-xs flex items-center justify-end gap-0.5",
-                        entry.rank <= 3 ? "font-bold" : "text-muted-foreground"
-                      )}>
-                        <RankIcon rank={entry.rank} />
-                        {entry.rank > 3 && `${entry.rank}.`}
-                      </span>
-                      <span className={cn(
-                        "truncate flex-1 text-foreground",
-                        entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
-                      )}>
-                        {entry.name}
-                      </span>
-                      <span className={cn(
-                        "tabular-nums shrink-0 flex items-center gap-1",
-                        entry.rank <= 3 ? "font-bold" : "font-semibold",
-                        "text-foreground"
-                      )}>
-                        {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
-                        {entry.value}
-                      </span>
-                    </div>
+          return (
+            <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
+              {/* Header spanning full width */}
+              <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">{col.title}</h2>
+              <p className="text-3xl font-bold text-foreground tabular-nums">
+                {col.total.toLocaleString("nl-NL")}
+              </p>
+              <ComparisonBar current={col.total} previous={col.previousTotal} />
+
+              {/* Two-column entries */}
+              <div className="mt-3 grid grid-cols-2 gap-x-3">
+                <div className="space-y-0">
+                  {leftEntries.map((entry) => (
+                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} />
                   ))}
                 </div>
-                <AutoScrollArea isCompact={isCompact} onCycleComplete={handleScrollCycleComplete}>
-                  <div className="space-y-0">
-                    {col.entries.filter(e => e.rank > 10).map((entry) => (
-                      <div
-                        key={`${entry.rank}-${entry.name}`}
-                        className={cn(
-                          "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/10",
-                          entry.value === 0 && "opacity-50"
-                        )}
-                      >
-                        <span className="w-5 text-right shrink-0 text-xs text-muted-foreground">
-                          {entry.rank}.
-                        </span>
-                        <span className={cn(
-                          "truncate flex-1 text-foreground",
-                          entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
-                        )}>
-                          {entry.name}
-                        </span>
-                        <span className={cn(
-                          "tabular-nums shrink-0 flex items-center gap-1 font-semibold text-foreground"
-                        )}>
-                          {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
-                          {entry.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </AutoScrollArea>
-              </>
-            ) : (
-              <div className="mt-3 space-y-0 h-[calc(100vh-320px)] overflow-y-auto">
-                {col.entries.map((entry) => (
-                  <div
-                    key={`${entry.rank}-${entry.name}`}
-                    className={cn(
-                      "flex items-center gap-2 py-1.5 text-sm rounded-sm px-1.5 border-b border-border/20",
-                      getRankStyle(entry.rank),
-                      entry.isHot && entry.value > 0 && "bg-orange-50/60",
-                      entry.value === 0 && "opacity-50"
-                    )}
-                  >
-                    <span className={cn(
-                      "w-5 text-right shrink-0 text-xs flex items-center justify-end gap-0.5",
-                      entry.rank <= 3 ? "font-bold" : "text-muted-foreground"
-                    )}>
-                      <RankIcon rank={entry.rank} />
-                      {entry.rank > 3 && `${entry.rank}.`}
-                    </span>
-                    <span className={cn(
-                      "truncate flex-1 text-foreground",
-                      entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
-                    )}>
-                      {entry.name}
-                    </span>
-                    <span className={cn(
-                      "tabular-nums shrink-0 flex items-center gap-1",
-                      entry.rank <= 3 ? "font-bold" : "font-semibold",
-                      "text-foreground"
-                    )}>
-                      {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
-                      {entry.value}
-                    </span>
-                  </div>
-                ))}
+                <div className="space-y-0">
+                  {rightEntries.map((entry) => (
+                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} />
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
     </>
   );
