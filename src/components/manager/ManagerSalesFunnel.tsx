@@ -488,7 +488,7 @@ export function ManagerSalesFunnel({ delay = 0, selectedUnit }: ManagerSalesFunn
 
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border h-auto flex flex-col min-w-0">
+      <div className="bg-card rounded-xl p-5 border border-border h-auto flex flex-col min-w-0 overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-medium text-foreground">Sales Funnel</h3>
@@ -502,7 +502,7 @@ export function ManagerSalesFunnel({ delay = 0, selectedUnit }: ManagerSalesFunn
           </Button>
         </div>
         <div className={cn(
-          "flex-1 transition-all duration-400 ease-in-out min-w-0",
+          "flex-1 transition-all duration-400 ease-in-out min-w-0 overflow-hidden",
           isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
         )}>
           {displayMode ? (
