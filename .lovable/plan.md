@@ -1,60 +1,40 @@
 
 
-# Ranglijsten Layout Refinements
+# TV Mode Animations for Ranglijsten
 
 ## Changes
 
-### 1. Increase transparency for value = 0
-Currently `opacity-50`. Change to `opacity-30` for entries where `value === 0` to make them more visually faded.
+### 1. Top 3 wave animation (TV mode only)
+Add a CSS keyframe `tv-wave` that gently translates the rank icon (Trophy/Medal) up and down by ~2px. Each of the 3 top rows gets a staggered `animation-delay` (0s, 0.3s, 0.6s) to create a wave effect. The animation uses `ease-in-out` with a long duration (~3s) and plays intermittently using a keyframe that holds still for most of the cycle:
 
-**File**: `src/pages/TVRanglijsten.tsx` line 74
-
-### 2. Left-align ranking numbers
-Currently rank numbers use `text-right justify-end`. Change to `text-left justify-start` so numbers align to the left of their column.
-
-**File**: `src/pages/TVRanglijsten.tsx` lines 77-83
-
-### 3. Top 3 rows span both columns with full name; column entries use abbreviated format
-
-The top 3 entries should be pulled out of the two-column grid and rendered as full-width rows above it, showing the complete name. The remaining entries (rank 4+) stay in the two-column grid and use the format `[first name] [first letter last name].` (e.g. "Rick K.").
-
-This requires the data to carry `firstName` and `lastName` separately. Update:
-
-**File**: `src/data/ranglijstenData.ts`
-- Add `firstName` and `lastName` fields to `RankingEntry` interface
-- Parse the existing `name` field in `generateRanking` to extract first name and last name (split on last space, or better: store them in the consultants array and pass through)
-- Update `ConsultantInfo` to include `firstName` and `lastName` derived from the existing `name` string
-
-**File**: `src/pages/TVRanglijsten.tsx`
-- In the ranking column render: split entries into `top3` (rank 1-3) and `rest` (rank 4+)
-- Render `top3` as full-width rows above the `grid grid-cols-2`, using `entry.name` (full name)
-- Render `rest` in the two-column grid, displaying `entry.firstName + " " + entry.lastName[0] + "."`
-- `EntryRow` gets a new prop `displayName` to control what name text is shown
-
-### 4. Smaller font in column entries
-Entries in the two-column grid (rank 4+) use a smaller font: `text-xs` instead of `text-sm`. Top 3 (full-width) keep `text-base font-bold`.
-
-**File**: `src/pages/TVRanglijsten.tsx` — `EntryRow` component
-
----
-
-### Layout diagram
-
-```text
-┌─────────────────────────────────────────┐
-│  INSCHRIJVINGEN          312    +8%     │
-│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
-│ 🏆 1. Amer Faraman                  28 │
-│ 🥈 2. Dyon Mäkel                    24 │
-│ 🥉 3. Jelle van Enck                22 │
-├────────────────────┬────────────────────┤
-│ 4.  Rick K.    19  │ 32. Robin J.    1  │
-│ 5.  Senna E.   17  │ 33. Robin v.    1  │
-│ ...                 │ ...               │
-└────────────────────┴────────────────────┘
+```
+@keyframes tv-wave {
+  0%, 20%, 100% { transform: translateY(0); }
+  10% { transform: translateY(-2px); }
+}
 ```
 
+Duration: ~4s, so the icon bobs gently once then rests for ~3s before repeating. Applied only to `.tv-mode .tv-wave-1`, `.tv-wave-2`, `.tv-wave-3` classes on the RankIcon wrapper.
+
+### 2. Fire icon smolder animation (TV mode only)
+Add a CSS keyframe `tv-fire` that subtly scales and adjusts opacity of the Flame icon to simulate a smoldering effect. Runs continuously but smoothly:
+
+```
+@keyframes tv-fire {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  33% { transform: scale(1.1) rotate(-3deg); opacity: 1; }
+  66% { transform: scale(0.95) rotate(2deg); opacity: 0.8; }
+}
+```
+
+Duration: ~2s, infinite, `ease-in-out`. Applied via `.tv-mode .tv-fire` class on the Flame icon. The icon stays within row bounds since scale is small (0.95-1.1).
+
 ### Files changed
-- `src/data/ranglijstenData.ts` — add `firstName` / `lastName` to `RankingEntry`, derive from consultant name
-- `src/pages/TVRanglijsten.tsx` — top 3 full-width rows, abbreviated names in columns, left-align ranks, increased transparency for 0-value, smaller column font
+
+**`src/index.css`** — Add `@keyframes tv-wave` and `@keyframes tv-fire` plus `.tv-mode .tv-wave-*` and `.tv-mode .tv-fire` classes in the components layer.
+
+**`src/pages/TVRanglijsten.tsx`** — 
+- In `RankIcon`: wrap the icon in a span with class `tv-wave-{rank}` 
+- In `EntryRow`: add class `tv-fire` to the Flame icon
+- Both classes are inert outside `.tv-mode` (no CSS rules match), so non-TV mode is unaffected
 
