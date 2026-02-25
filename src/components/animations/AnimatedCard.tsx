@@ -15,7 +15,7 @@ export function AnimatedCard({ children, delay = 0, className }: AnimatedCardPro
     <div
       ref={ref}
       className={cn(
-        "opacity-0 translate-y-4 transition-all duration-500 ease-out hover-lift group h-full",
+        "opacity-0 translate-y-4 transition-all duration-500 ease-out hover-lift group h-full min-w-0 overflow-hidden",
         isVisible && "opacity-100 translate-y-0",
         className
       )}
