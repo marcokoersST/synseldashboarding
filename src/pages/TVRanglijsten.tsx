@@ -52,9 +52,9 @@ function getRankStyle(rank: number) {
 
 function RankIcon({ rank, isTop3 }: { rank: number; isTop3?: boolean }) {
   const size = isTop3 ? "w-4 h-4" : "w-3.5 h-3.5";
-  if (rank === 1) return <Trophy className={cn(size, "text-amber-500")} />;
-  if (rank === 2) return <Medal className={cn(size, "text-slate-400")} />;
-  if (rank === 3) return <Medal className={cn(size, "text-orange-400")} />;
+  if (rank === 1) return <span className="tv-wave-1"><Trophy className={cn(size, "text-amber-500")} /></span>;
+  if (rank === 2) return <span className="tv-wave-2"><Medal className={cn(size, "text-slate-400")} /></span>;
+  if (rank === 3) return <span className="tv-wave-3"><Medal className={cn(size, "text-orange-400")} /></span>;
   return null;
 }
 
@@ -97,7 +97,7 @@ function EntryRow({ entry, displayName, compact }: EntryRowProps) {
         isTop3 ? "text-base font-bold" : "font-semibold",
         "text-foreground"
       )}>
-        {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500" />}
+        {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
         {entry.value}
       </span>
     </div>

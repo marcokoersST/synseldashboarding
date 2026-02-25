@@ -226,4 +226,26 @@
   .tv-mode .hover-lift:hover {
     box-shadow: none;
   }
+
+  /* TV mode: top-3 wave animation on rank icons */
+  @keyframes tv-wave {
+    0%, 20%, 100% { transform: translateY(0); }
+    10% { transform: translateY(-2px); }
+  }
+
+  .tv-mode .tv-wave-1 { animation: tv-wave 4s ease-in-out infinite; }
+  .tv-mode .tv-wave-2 { animation: tv-wave 4s ease-in-out 0.3s infinite; }
+  .tv-mode .tv-wave-3 { animation: tv-wave 4s ease-in-out 0.6s infinite; }
+
+  /* TV mode: fire smolder animation */
+  @keyframes tv-fire {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    33% { transform: scale(1.1) rotate(-3deg); opacity: 1; }
+    66% { transform: scale(0.95) rotate(2deg); opacity: 0.8; }
+  }
+
+  .tv-mode .tv-fire {
+    animation: tv-fire 2s ease-in-out infinite;
+    display: inline-block;
+  }
 }
