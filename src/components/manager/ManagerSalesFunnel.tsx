@@ -332,7 +332,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
 
       {/* Table */}
       <div className="relative overflow-auto max-h-[400px] rounded-md border border-border/40 w-full max-w-full">
-        <div className="min-w-max w-max">
+        <div className="min-w-max">
           <Table>
             <TableHeader>
               <TableRow className="sticky top-0 z-30 bg-card">

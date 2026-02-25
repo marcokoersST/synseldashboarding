@@ -182,7 +182,7 @@ export default function ManagerDashboard() {
   const sectionMap = Object.fromEntries(sections.map((s) => [s.id, s]));
 
   return (
-    <>
+    <div className="w-full min-w-0">
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-3 flex-wrap min-w-0 max-w-full">
         <div className="min-w-0">
@@ -273,6 +273,6 @@ export default function ManagerDashboard() {
           </section>
         );
       })}
-    </>
+    </div>
   );
 }
