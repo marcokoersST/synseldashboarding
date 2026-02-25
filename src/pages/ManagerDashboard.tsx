@@ -184,15 +184,15 @@ export default function ManagerDashboard() {
   return (
     <>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
+      <div className="mb-6 flex items-start justify-between gap-3 flex-wrap min-w-0 max-w-full">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-foreground">Manager Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Overzicht van team en bedrijfsprestaties
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end min-w-0 max-w-full">
           {/* Unit selector */}
           <Select value={selectedUnit} onValueChange={setSelectedUnit}>
             <SelectTrigger className="w-[160px] h-8 text-xs">
@@ -260,7 +260,7 @@ export default function ManagerDashboard() {
         }
 
         return (
-          <section key={id} className="mb-8">
+          <section key={id} className="mb-8 min-w-0 max-w-full overflow-x-hidden">
             <button
               onClick={() => toggle(id)}
               className="flex items-center gap-3 mb-4 w-full text-left group cursor-pointer"
