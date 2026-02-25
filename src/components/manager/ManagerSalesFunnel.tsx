@@ -6,13 +6,14 @@ import { Maximize2, Minimize2, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, Pho
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
 import { columnGroups, rateColor, getCellValue, getTotalValue, type SubCol, type ColumnGroup } from "@/components/tv/UnitFunnelBreakdown";
 import { weekUnitBreakdown, consultantFunnelData, type UnitFunnelRow, type ConsultantFunnelRow } from "@/data/tvData";
 import { unitFunnelTotals, consultantCallData, consultantFunnelData as mgrConsultantFunnel } from "@/data/managerOperationalData";
-import { Badge } from "@/components/ui/badge";
 
 function useDetailToggle() {
   const [isDetailMode, setIsDetailMode] = useState(false);
@@ -67,7 +68,7 @@ function FunnelVisualization({ delay, compact = false, selectedUnit }: { delay: 
   const max = Math.max(data[0].value, 1);
 
   return (
-    <div className={cn("flex flex-col items-center", compact ? "gap-0" : "gap-0")}>
+    <div className={cn("flex flex-col items-center w-full", compact ? "max-w-[1100px] mx-auto gap-0" : "gap-0")}>
       {data.map((step, i) => {
         const widthPct = Math.max(((step.value / max) * 100), 12);
         const convPct = i > 0 && data[i - 1].value > 0 ? Math.round((step.value / data[i - 1].value) * 100) : null;
@@ -159,6 +160,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
   const [consultantFilter, setConsultantFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"week" | "periode">("week");
   const [selectedNumber, setSelectedNumber] = useState("7");
+  const [selectedStepGroups, setSelectedStepGroups] = useState<string[]>(() => columnGroups.map(g => g.group));
 
   // All consultant names for the dropdown
   const allConsultantNames = useMemo(() => {
@@ -166,6 +168,14 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
     Object.values(consultantFunnelData).forEach(list => list.forEach(c => names.push(c.name)));
     return names.sort();
   }, []);
+
+  const visibleGroups = useMemo(() => {
+    const selected = columnGroups.filter(g => selectedStepGroups.includes(g.group));
+    if (showConversion) return selected;
+    return selected
+      .map(g => ({ ...g, subs: g.subs.filter(s => s.type !== "conv") }))
+      .filter(g => g.subs.length > 0);
+  }, [selectedStepGroups, showConversion]);
 
   // Auto-expand unit when consultant is selected from dropdown
   useEffect(() => {
@@ -178,6 +188,13 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
       }
     }
   }, [consultantFilter]);
+
+  useEffect(() => {
+    if (!sortConfig?.direction) return;
+    const group = visibleGroups[sortConfig.groupIdx];
+    const sub = group?.subs[sortConfig.subIdx];
+    if (!group || !sub) setSortConfig(null);
+  }, [visibleGroups, sortConfig]);
 
   const filteredData = useMemo(() => {
     let data = selectedUnit && selectedUnit !== "all"
@@ -195,7 +212,8 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
     }
 
     if (sortConfig?.direction) {
-      const sub = columnGroups[sortConfig.groupIdx].subs[sortConfig.subIdx];
+      const sub = visibleGroups[sortConfig.groupIdx]?.subs[sortConfig.subIdx];
+      if (!sub) return data;
       data = [...data].sort((a, b) => {
         const va = getSortableValue(a, sub);
         const vb = getSortableValue(b, sub);
@@ -203,15 +221,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
       });
     }
     return data;
-  }, [selectedUnit, consultantFilter, sortConfig]);
-
-  const visibleGroups = useMemo(() => {
-    if (showConversion) return columnGroups;
-    return columnGroups.map(g => ({
-      ...g,
-      subs: g.subs.filter(s => s.type !== "conv"),
-    }));
-  }, [showConversion]);
+  }, [selectedUnit, consultantFilter, sortConfig, visibleGroups]);
 
   const toggleExpand = (unit: string) => {
     setExpandedUnits(prev => prev.includes(unit) ? prev.filter(u => u !== unit) : [...prev, unit]);
@@ -280,6 +290,35 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
           </SelectContent>
         </Select>
 
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5">
+              Stappen ({selectedStepGroups.length}/{columnGroups.length})
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-3" align="start">
+            <div className="space-y-2">
+              {columnGroups.map((group) => (
+                <label key={group.group} className="flex items-center gap-2 text-xs cursor-pointer">
+                  <Checkbox
+                    checked={selectedStepGroups.includes(group.group)}
+                    onCheckedChange={() => {
+                      setSelectedStepGroups(prev => {
+                        if (prev.includes(group.group)) {
+                          return prev.length === 1 ? prev : prev.filter(g => g !== group.group);
+                        }
+                        return [...prev, group.group];
+                      });
+                    }}
+                  />
+                  <span>{group.group}</span>
+                </label>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+
         <Button
           variant={showConversion ? "secondary" : "outline"}
           size="sm"
@@ -292,25 +331,25 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto overflow-y-auto max-h-[400px]">
-        <div className="min-w-max">
+      <div className="relative overflow-auto max-h-[400px] rounded-md border border-border/40 w-full max-w-full">
+        <div className="min-w-max w-max">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead rowSpan={2} className="w-[160px] align-bottom text-xs sticky left-0 bg-card z-20">Unit / Consultant</TableHead>
+              <TableRow className="sticky top-0 z-30 bg-card">
+                <TableHead rowSpan={2} className="w-[160px] align-bottom text-xs sticky left-0 top-0 bg-card z-40">Unit / Consultant</TableHead>
                 {visibleGroups.map((g) => (
-                  <TableHead key={g.group} colSpan={g.subs.length} className="text-center border-l border-border/50 text-muted-foreground text-[10px]">
+                  <TableHead key={g.group} colSpan={g.subs.length} className="text-center border-l border-border/50 text-muted-foreground text-[10px] bg-card">
                     {g.group}
                   </TableHead>
                 ))}
               </TableRow>
-              <TableRow>
+              <TableRow className="sticky top-8 z-30 bg-card">
                 {visibleGroups.flatMap((g, gi) =>
                   g.subs.map((sub, si) => (
                     <TableHead
                       key={`${gi}-${si}`}
                       className={cn(
-                        "text-center whitespace-nowrap cursor-pointer hover:bg-muted/50 select-none",
+                        "text-center whitespace-nowrap cursor-pointer hover:bg-muted/50 select-none bg-card",
                         si === 0 && "border-l border-border/50",
                         sub.type === "conv" ? "text-muted-foreground bg-muted/30" : "",
                         "text-[10px] px-1.5"
@@ -487,8 +526,8 @@ export function ManagerSalesFunnel({ delay = 0, selectedUnit }: ManagerSalesFunn
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
   return (
-    <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border h-auto flex flex-col min-w-0">
+    <AnimatedCard delay={delay} className="w-full max-w-full min-w-0">
+      <div className="bg-card rounded-xl p-5 border border-border h-auto flex flex-col min-w-0 w-full max-w-full overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-medium text-foreground">Sales Funnel</h3>
