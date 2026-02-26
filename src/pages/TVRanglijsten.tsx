@@ -85,7 +85,7 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20",
+        "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20 break-inside-avoid",
         isTop3 ? "py-2" : "py-1",
         compact ? "text-xs" : "text-sm",
         getRankStyle(entry.rank, isNegative),
@@ -93,9 +93,11 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
         entry.value === 0 && "opacity-25 text-orange-600"
       )}
     >
-    <div
-      className={cn(
-        "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20 break-inside-avoid",
+      <span className={cn(
+        "w-5 text-left shrink-0 flex items-center justify-start gap-0.5",
+        isTop3 ? "text-sm font-bold" : "text-xs",
+        entry.value !== 0 && !isTop3 && "text-muted-foreground"
+      )}>
         <RankIcon rank={entry.rank} isTop3={isTop3} isNegative={isNegative} />
         {entry.rank > 3 && `${entry.rank}.`}
       </span>
