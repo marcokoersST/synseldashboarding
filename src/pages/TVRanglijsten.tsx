@@ -94,7 +94,8 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
     >
       <span className={cn(
         "w-5 text-left shrink-0 flex items-center justify-start gap-0.5",
-        isTop3 ? "text-sm font-bold" : "text-xs text-muted-foreground"
+        isTop3 ? "text-sm font-bold" : "text-xs",
+        entry.value !== 0 && !isTop3 && "text-muted-foreground"
       )}>
         <RankIcon rank={entry.rank} isTop3={isTop3} isNegative={isNegative} />
         {entry.rank > 3 && `${entry.rank}.`}
