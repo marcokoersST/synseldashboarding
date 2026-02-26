@@ -85,7 +85,7 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20",
+        "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20 break-inside-avoid",
         isTop3 ? "py-2" : "py-1",
         compact ? "text-xs" : "text-sm",
         getRankStyle(entry.rank, isNegative),
@@ -315,9 +315,7 @@ function RanglijstenContent() {
           const isNegative = col.title === "Niet begonnen";
           const top3 = col.entries.slice(0, 3);
           const rest = col.entries.slice(3);
-          const half = Math.ceil(rest.length / 2);
-          const leftEntries = rest.slice(0, half);
-          const rightEntries = rest.slice(half);
+          const needsTwoColumns = rest.length > 20;
 
           return (
             <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col")}>
@@ -334,18 +332,21 @@ function RanglijstenContent() {
                 ))}
               </div>
 
-              {/* Rest in two columns, abbreviated names */}
-              <div className={cn("mt-1 grid grid-cols-2 gap-x-3", isCompact && "flex-1")}>
-                <div className="space-y-0">
-                  {leftEntries.map((entry) => (
-                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={`${entry.firstName} ${entry.lastName[0]}.`} compact isNegative={isNegative} />
-                  ))}
-                </div>
-                <div className="space-y-0">
-                  {rightEntries.map((entry) => (
-                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={`${entry.firstName} ${entry.lastName[0]}.`} compact isNegative={isNegative} />
-                  ))}
-                </div>
+              {/* Rest: flow into columns dynamically */}
+              <div className={cn(
+                "mt-1",
+                isCompact && "flex-1",
+                needsTwoColumns ? "columns-2 gap-x-3" : "columns-1"
+              )}>
+                {rest.map((entry) => (
+                  <EntryRow
+                    key={`${entry.rank}-${entry.name}`}
+                    entry={entry}
+                    displayName={`${entry.firstName} ${entry.lastName[0]}.`}
+                    compact
+                    isNegative={isNegative}
+                  />
+                ))}
               </div>
             </div>
           );
