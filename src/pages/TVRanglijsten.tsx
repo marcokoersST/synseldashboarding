@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { ranglijstenWeekColumns, ranglijstenPeriodeColumns, ranglijstenFilters, allColumnTitles } from "@/data/ranglijstenData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -130,6 +130,10 @@ function RanglijstenContent() {
     });
   }, []);
 
+  useEffect(() => {
+    sessionStorage.setItem("ranglijsten-columns", JSON.stringify(selectedColumns));
+  }, [selectedColumns]);
+
   const activeView = tvViewMode;
   const allColumns = activeView === "periode" ? ranglijstenPeriodeColumns : ranglijstenWeekColumns;
   const columns = allColumns.filter((col) => selectedColumns.includes(col.title));
@@ -246,27 +250,6 @@ function RanglijstenContent() {
           </>
         )}
 
-        {isCompact && (
-          <>
-            <div className="flex-1" />
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={tvViewMode === "week" ? "default" : "secondary"}
-                className="transition-all duration-300 cursor-pointer"
-                onClick={() => setTvViewMode("week")}
-              >
-                Week
-              </Badge>
-              <Badge
-                variant={tvViewMode === "periode" ? "default" : "secondary"}
-                className="transition-all duration-300 cursor-pointer"
-                onClick={() => setTvViewMode("periode")}
-              >
-                Periode
-              </Badge>
-            </div>
-          </>
-        )}
       </div>
 
       {/* Ranking Columns */}
