@@ -15,9 +15,9 @@ export function AppLayout() {
   return (
     <div className="h-screen bg-background flex">
       <Sidebar isCollapsed={isCollapsed} onToggleCollapse={() => setIsCollapsed(prev => !prev)} />
-      <div className={`${isCollapsed ? 'ml-16' : 'ml-64'} flex-1 flex flex-col h-screen transition-[margin-left] duration-300 ease-in-out`}>
+      <div className={`${isCollapsed ? 'ml-16' : 'ml-64'} flex-1 flex flex-col h-screen min-w-0 transition-[margin-left] duration-300 ease-in-out`}>
         <TopBar />
-        <main ref={mainRef} className="flex-1 p-6 overflow-y-auto overflow-x-hidden scrollbar-thin overscroll-contain">
+        <main ref={mainRef} className="flex-1 p-6 overflow-y-auto overflow-x-hidden scrollbar-thin overscroll-contain min-w-0">
           <Outlet />
         </main>
       </div>
