@@ -1,62 +1,50 @@
 
 
-# Fix: Card Width Still Expanding Beyond Viewport
+# TV Ranglijsten: Four Changes
 
-## Problem Analysis
+## 1. "Niet begonnen" column — negative icons
 
-The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
+**Current**: `RankIcon` always shows Trophy (rank 1) and Medal (rank 2/3) regardless of column. For "Niet begonnen" (cancelled placements), this is inappropriate.
 
-```text
-<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
-  <>                                             ← Fragment = NO DOM element, no constraints
-    <div flex justify-between>                   ← header with unit selector + Volgorde
-    <section min-w-0 max-w-full overflow-x-hidden>
-      <AnimatedCard overflow-hidden min-w-0>
-        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
-          <div overflow-auto>                             ← scroll container
-            <div min-w-max w-max>                         ← THIS forces intrinsic width
-              <Table>                                     ← wide table
+**Change**: Add a `columnTitle` prop to `RankIcon` and `EntryRow`. When `columnTitle === "Niet begonnen"`:
+- Rank 1: `CircleAlert` in muted rose (`text-rose-400/70`) — subtly negative, not aggressive
+- Rank 2: `CircleMinus` in slate
+- Rank 3: `CircleMinus` in orange
+
+Also swap the rank style borders for "Niet begonnen" from amber/gold to rose/red tones (`border-l-rose-400`, `bg-rose-50/40`).
+
+Import `CircleAlert` and `CircleMinus` from lucide-react.
+
+## 2. Zero-value consultants — orange at 25% opacity
+
+**Current** (line 78): `entry.value === 0 && "opacity-30"` — fades them out with default colors.
+
+**Change**: Replace with `entry.value === 0 && "opacity-25 text-orange-600"` to flag non-performers in orange.
+
+## 3. "On Fire" legend
+
+Add a small inline legend strip below the filter bar (visible in both desktop and TV mode). Contains:
+
+```
+🔥 On Fire — Consultant met hoge groei en momentum deze periode
 ```
 
-**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+Rendered as a flex row with the `Flame` icon, bold "On Fire" label, and muted description in `text-xs text-muted-foreground`. Placed between the filter bar and the grid.
 
-## Fix — Two changes
+## 4. TV mode — fill full screen vertically
 
-### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
-Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
+**Current**: The grid has whitespace below in TV mode.
 
-```tsx
-// Before (line 335):
-<div className="min-w-max w-max">
+**Change**:
+- Wrap the return in a div with `className={cn(isCompact && "flex flex-col h-full")}`
+- Filter bar: `mb-2` in compact mode instead of `mb-4`
+- Grid: add `flex-1 min-h-0` in compact mode, reduce gap from `gap-5` to `gap-2`
+- Each column card: add `flex flex-col` so inner content distributes vertically
+- The two-column entries section: add `flex-1` to absorb remaining height
 
-// After:
-<div className="min-w-max">
-```
+## Files changed
 
-### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
-Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
-
-```tsx
-// Before:
-return (
-  <>
-    {/* ... */}
-  </>
-);
-
-// After:
-return (
-  <div className="w-full min-w-0">
-    {/* ... */}
-  </div>
-);
-```
-
-### Why this works
-- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
-- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
-
-### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
-- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+| File | Change |
+|------|--------|
+| `src/pages/TVRanglijsten.tsx` | All four changes above |
 
