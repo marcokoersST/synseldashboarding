@@ -335,7 +335,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
           <Table className="w-max">
             <TableHeader>
               <TableRow className="sticky top-0 z-30 bg-card">
-                <TableHead rowSpan={2} className="w-[160px] align-bottom text-xs sticky left-0 top-0 bg-card z-40">Unit / Consultant</TableHead>
+                <TableHead rowSpan={2} className="w-[160px] align-bottom text-xs sticky left-0 top-0 bg-card z-50 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Unit / Consultant</TableHead>
                 {visibleGroups.map((g) => (
                   <TableHead key={g.group} colSpan={g.subs.length} className="text-center border-l border-border/50 text-muted-foreground text-[10px] bg-card">
                     {g.group}
