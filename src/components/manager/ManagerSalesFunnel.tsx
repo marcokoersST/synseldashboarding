@@ -467,8 +467,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                 )}
               </TableRow>
             </TableBody>
-          </Table>
-        </div>
+            </Table>
       </div>
 
       {/* Consultant drill-down panel */}
