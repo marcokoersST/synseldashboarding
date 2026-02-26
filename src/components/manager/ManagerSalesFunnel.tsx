@@ -422,7 +422,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                             setSelectedConsultant(selectedConsultant === c.name ? null : c.name);
                           }}
                         >
-                          <TableCell className="pl-10 text-xs text-muted-foreground sticky left-0 bg-card z-10">{c.name}</TableCell>
+                          <TableCell className="pl-10 text-xs text-muted-foreground sticky left-0 bg-card z-20 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">{c.name}</TableCell>
                           {visibleGroups.flatMap((g, gi) =>
                             g.subs.map((sub, si) => {
                               const isConv = sub.type === "conv";
