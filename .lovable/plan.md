@@ -1,81 +1,62 @@
 
-Goal
-- Keep the Sales Funnel tile width identical between overview and detail mode.
-- Prevent the table from ever pushing the dashboard layout horizontally.
-- Preserve current behavior: visual compacts, height changes, conversion filters, sticky headers/left column, horizontal scroll.
 
-What I found
-1) `ManagerSalesFunnel` still has a width-propagation pattern in detail mode:
-   - Outer detail scroller (`overflow-auto`) contains `<div className="min-w-max">`.
-   - Inside that, the shared `Table` component adds another wrapper (`div.w-full.overflow-auto`) around `<table>`.
-   - This nested combination (`min-w-max` + wrapped table) can still create intrinsic-width growth pressure.
-2) The app shell (`AppLayout`) has a flex child (`flex-1`) without `min-w-0`.
-   - In flex layouts, missing `min-w-0` allows content min-width to force the pane wider than viewport.
-   - That is consistent with controls appearing “gone”/off-screen when detail table is active.
+# Fix: Card Width Still Expanding Beyond Viewport
 
-Implementation plan
+## Problem Analysis
 
-1) Harden app-shell width constraints (global, safest foundation)
-- File: `src/components/layout/AppLayout.tsx`
-- Changes:
-  - Add `min-w-0` to the right content pane (`div` that has `flex-1 flex flex-col ...`).
-  - Add `min-w-0 w-full` to `<main>` container.
-- Why:
-  - Prevent any page content from expanding the flex column beyond viewport width.
-  - This protects header controls (unit selector, volgorde, toggle area) from being pushed out.
+The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
 
-2) Remove intrinsic-width propagation source in detail table
-- File: `src/components/manager/ManagerSalesFunnel.tsx` (inside `FunnelDetailTable`)
-- Changes:
-  - Replace current table structure:
-    - remove intermediate `<div className="min-w-max">`.
-  - Use a single scroll owner:
-    - keep one outer container with explicit `overflow-x-auto overflow-y-auto max-h-[400px] min-w-0 w-full max-w-full`.
-  - Render table with explicit width behavior:
-    - switch to native `<table>` OR use `Table` with a class override approach that avoids inner width pressure.
-    - preferred in this case: native `<table className="w-max min-w-full text-sm">` to avoid the extra wrapper from `ui/table.tsx`.
-- Why:
-  - A single scroll container + `w-max min-w-full` gives predictable horizontal scrolling.
-  - No nested overflow wrappers means less chance of parent width expansion.
+```text
+<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
+  <>                                             ← Fragment = NO DOM element, no constraints
+    <div flex justify-between>                   ← header with unit selector + Volgorde
+    <section min-w-0 max-w-full overflow-x-hidden>
+      <AnimatedCard overflow-hidden min-w-0>
+        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
+          <div overflow-auto>                             ← scroll container
+            <div min-w-max w-max>                         ← THIS forces intrinsic width
+              <Table>                                     ← wide table
+```
 
-3) Keep sticky behavior while constraining width
-- File: `src/components/manager/ManagerSalesFunnel.tsx`
-- Changes:
-  - Preserve sticky left column and sticky header rows.
-  - Ensure sticky cells have solid background + z-index layering (already mostly present).
-  - Add subtle right border/shadow on sticky first column so separation remains clear during horizontal scroll.
-- Why:
-  - Maintains current UX while ensuring containment.
-  - Avoids regressions in readability when scrolling wide datasets.
+**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
 
-4) Keep visual section stable in detail mode
-- File: `src/components/manager/ManagerSalesFunnel.tsx`
-- Changes:
-  - Keep compact funnel visual constraints (`w-full`, bounded max width) as-is since user says visual is good.
-  - Ensure detail block wrapper remains `min-w-0 w-full max-w-full overflow-hidden`.
-- Why:
-  - Prevents reintroducing tile-width growth while preserving accepted visual behavior.
+## Fix — Two changes
 
-Validation checklist (must pass before done)
-1) On `/manager-dashboard`, open Sales Funnel detail mode:
-   - Tile width does not change compared to overview mode.
-2) Top controls remain visible:
-   - Unit selector, Volgorde button, and detail toggle stay on-screen.
-3) Table behavior:
-   - Horizontal scroll works inside tile only.
-   - Left “Unit / Consultant” column stays frozen while scrolling right.
-   - Header and subheader remain sticky vertically.
-4) Stress test:
-   - Select many step groups (maximum columns) and verify no page-level horizontal drift.
-5) Regression check:
-   - Collapse/expand detail repeatedly; no layout shift outside tile.
+### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
+Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
 
-Technical details
-- Root cause is a combination of:
-  - flex min-width default (`min-width:auto`) in app shell, and
-  - intrinsic-width propagation from `min-w-max` around a wrapped table component.
-- Key CSS principles being applied:
-  - `min-w-0` on flex children to allow shrinking.
-  - one dedicated horizontal scroll container.
-  - `table` width strategy `w-max min-w-full` to allow wide columns without expanding parents.
-- This approach is robust and reusable for other detail tables with sticky columns.
+```tsx
+// Before (line 335):
+<div className="min-w-max w-max">
+
+// After:
+<div className="min-w-max">
+```
+
+### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
+Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
+
+```tsx
+// Before:
+return (
+  <>
+    {/* ... */}
+  </>
+);
+
+// After:
+return (
+  <div className="w-full min-w-0">
+    {/* ... */}
+  </div>
+);
+```
+
+### Why this works
+- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
+- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
+
+### Files changed
+- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
+- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+
