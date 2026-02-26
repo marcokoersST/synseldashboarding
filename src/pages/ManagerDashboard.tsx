@@ -238,6 +238,9 @@ export default function ManagerDashboard() {
         </div>
       </div>
 
+      {/* Insights */}
+      <InsightsPanel />
+
       {/* Sections */}
       {sectionOrder.map((id) => {
         const section = sectionMap[id];
