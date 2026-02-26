@@ -130,6 +130,10 @@ function RanglijstenContent() {
     });
   }, []);
 
+  useEffect(() => {
+    sessionStorage.setItem("ranglijsten-columns", JSON.stringify(selectedColumns));
+  }, [selectedColumns]);
+
   const activeView = tvViewMode;
   const allColumns = activeView === "periode" ? ranglijstenPeriodeColumns : ranglijstenWeekColumns;
   const columns = allColumns.filter((col) => selectedColumns.includes(col.title));
