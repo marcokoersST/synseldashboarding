@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode, createContext, useContext } from "react";
+import { useState, ReactNode, createContext, useContext } from "react";
 import { Monitor, X } from "lucide-react";
 
 const TVCompactContext = createContext(false);
@@ -35,9 +35,10 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
     }
   };
 
-  if (isFullscreen) {
-    return (
-      <TVCompactContext.Provider value={true}>
+  return (
+    <TVCompactContext.Provider value={isFullscreen}>
+      {/* Fullscreen overlay — renders children in-place to preserve state */}
+      {isFullscreen && (
         <div className="fixed inset-0 bg-white text-foreground overflow-hidden z-[9999] tv-mode">
           <div className="p-4 h-screen flex flex-col">
             <div className="flex items-center justify-between mb-2">
@@ -55,13 +56,10 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
             </div>
           </div>
         </div>
-      </TVCompactContext.Provider>
-    );
-  }
+      )}
 
-  return (
-    <TVCompactContext.Provider value={false}>
-      <div className="p-2">
+      {/* Normal view — hidden when fullscreen but still mounted to preserve state */}
+      <div className={isFullscreen ? "hidden" : "p-2"}>
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
           <button
@@ -72,7 +70,7 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
             TV Modus
           </button>
         </div>
-        {children}
+        {!isFullscreen && children}
       </div>
     </TVCompactContext.Provider>
   );
