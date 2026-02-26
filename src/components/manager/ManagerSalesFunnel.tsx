@@ -335,7 +335,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
           <Table className="w-max">
             <TableHeader>
               <TableRow className="sticky top-0 z-30 bg-card">
-                <TableHead rowSpan={2} className="w-[160px] align-bottom text-xs sticky left-0 top-0 bg-card z-40">Unit / Consultant</TableHead>
+                <TableHead rowSpan={2} className="w-[160px] align-bottom text-xs sticky left-0 top-0 bg-card z-50 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Unit / Consultant</TableHead>
                 {visibleGroups.map((g) => (
                   <TableHead key={g.group} colSpan={g.subs.length} className="text-center border-l border-border/50 text-muted-foreground text-[10px] bg-card">
                     {g.group}
@@ -378,7 +378,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                 return (
                   <React.Fragment key={row.unit}>
                     <TableRow className="cursor-pointer hover:bg-muted/30" onClick={() => toggleExpand(row.unit)}>
-                      <TableCell className="font-medium text-xs sticky left-0 bg-card z-10">
+                      <TableCell className="font-medium text-xs sticky left-0 bg-card z-20 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                         <span className="flex items-center gap-2">
                           {consultants.length > 0 && (
                             isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
@@ -422,7 +422,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                             setSelectedConsultant(selectedConsultant === c.name ? null : c.name);
                           }}
                         >
-                          <TableCell className="pl-10 text-xs text-muted-foreground sticky left-0 bg-card z-10">{c.name}</TableCell>
+                          <TableCell className="pl-10 text-xs text-muted-foreground sticky left-0 bg-card z-20 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">{c.name}</TableCell>
                           {visibleGroups.flatMap((g, gi) =>
                             g.subs.map((sub, si) => {
                               const isConv = sub.type === "conv";
@@ -447,7 +447,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
               })}
               {/* Totals */}
               <TableRow className="border-t-2 border-border">
-                <TableCell className="font-bold text-xs sticky left-0 bg-card z-10">Totaal</TableCell>
+                <TableCell className="font-bold text-xs sticky left-0 bg-card z-20 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Totaal</TableCell>
                 {visibleGroups.flatMap((g, gi) =>
                   g.subs.map((sub, si) => {
                     const isConv = sub.type === "conv";
