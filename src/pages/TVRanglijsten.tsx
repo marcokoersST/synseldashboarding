@@ -100,7 +100,7 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
         {entry.rank > 3 && `${entry.rank}.`}
       </span>
       <span className={cn(
-        "min-w-0 truncate text-foreground",
+        "min-w-0 truncate", entry.value !== 0 && "text-foreground",
         isTop3 ? "text-base font-bold" : "",
         entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
       )}>
