@@ -274,7 +274,7 @@ function RanglijstenContent() {
       {/* Ranking Columns */}
       <div
         className={cn("grid", isCompact ? "gap-2 flex-1 min-h-0" : "gap-5")}
-        style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, ...(isCompact ? { gridTemplateRows: '1fr' } : {}) }}
       >
         {columns.map((col) => {
           const isNegative = col.title === "Niet begonnen";
