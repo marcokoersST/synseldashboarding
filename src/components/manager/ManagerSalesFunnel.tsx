@@ -447,7 +447,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
               })}
               {/* Totals */}
               <TableRow className="border-t-2 border-border">
-                <TableCell className="font-bold text-xs sticky left-0 bg-card z-10">Totaal</TableCell>
+                <TableCell className="font-bold text-xs sticky left-0 bg-card z-20 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Totaal</TableCell>
                 {visibleGroups.flatMap((g, gi) =>
                   g.subs.map((sub, si) => {
                     const isConv = sub.type === "conv";
