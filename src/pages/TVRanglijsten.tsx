@@ -100,7 +100,7 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
         {entry.rank > 3 && `${entry.rank}.`}
       </span>
       <span className={cn(
-        "min-w-0 truncate text-foreground",
+        "min-w-0 truncate", entry.value !== 0 && "text-foreground",
         isTop3 ? "text-base font-bold" : "",
         entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
       )}>
@@ -109,7 +109,7 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
       <span className={cn(
         "tabular-nums shrink-0 ml-auto flex items-center gap-1",
         isTop3 ? "text-base font-bold" : "font-semibold",
-        "text-foreground"
+        entry.value !== 0 && "text-foreground"
       )}>
         {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
         {entry.value}
@@ -274,7 +274,7 @@ function RanglijstenContent() {
       {/* Ranking Columns */}
       <div
         className={cn("grid", isCompact ? "gap-2 flex-1 min-h-0" : "gap-5")}
-        style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, ...(isCompact ? { gridTemplateRows: '1fr' } : {}) }}
       >
         {columns.map((col) => {
           const isNegative = col.title === "Niet begonnen";
