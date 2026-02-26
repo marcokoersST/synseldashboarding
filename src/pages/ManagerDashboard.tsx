@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { unitFunnelTotals, dealRecords, unitCallTotals } from "@/data/managerOperationalData";
 import { consultantSkillData, managerGoalsData, managerRevenueChartData } from "@/data/managerPerformanceData";
 import { unitFunnelTotals as funnelTotals } from "@/data/managerOperationalData";
+import { InsightsPanel } from "@/components/manager/InsightsPanel";
 
 const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
 
