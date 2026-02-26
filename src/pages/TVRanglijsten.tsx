@@ -315,7 +315,7 @@ function RanglijstenContent() {
           const isNegative = col.title === "Niet begonnen";
           const top3 = col.entries.slice(0, 3);
           const rest = col.entries.slice(3);
-          const needsTwoColumns = rest.length > 35;
+          const needsTwoColumns = rest.length > 37;
 
           return (
             <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col")}>
