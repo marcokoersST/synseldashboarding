@@ -1,5 +1,6 @@
-import { useState, useEffect, ReactNode, createContext, useContext } from "react";
+import { useState, ReactNode, createContext, useContext } from "react";
 import { Monitor, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const TVCompactContext = createContext(false);
 export const useTVCompact = () => useContext(TVCompactContext);
@@ -35,44 +36,35 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
     }
   };
 
-  if (isFullscreen) {
-    return (
-      <TVCompactContext.Provider value={true}>
-        <div className="fixed inset-0 bg-white text-foreground overflow-hidden z-[9999] tv-mode">
-          <div className="p-4 h-screen flex flex-col">
-            <div className="flex items-center justify-between mb-2">
-              <h1 className="text-xl font-bold">{title}</h1>
-              <button
-                onClick={toggleFullscreen}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-xs text-foreground border border-border"
-              >
-                <X className="w-3 h-3" />
-                Sluiten
-              </button>
-            </div>
-            <div className="flex-1 min-h-0 overflow-hidden">
-              {children}
-            </div>
+  return (
+    <TVCompactContext.Provider value={isFullscreen}>
+      <div
+        className={cn(
+          isFullscreen
+            ? "fixed inset-0 bg-white text-foreground overflow-hidden z-[9999] tv-mode"
+            : "p-2"
+        )}
+      >
+        <div className={cn(isFullscreen && "p-4 h-screen flex flex-col")}>
+          <div className={cn("flex items-center justify-between", isFullscreen ? "mb-2" : "mb-8")}>
+            <h1 className={cn("font-bold text-foreground", isFullscreen ? "text-xl" : "text-2xl")}>{title}</h1>
+            <button
+              onClick={toggleFullscreen}
+              className={cn(
+                "flex items-center gap-2 rounded-lg transition-colors border border-border",
+                isFullscreen
+                  ? "px-3 py-1.5 bg-secondary hover:bg-secondary/80 text-xs text-foreground"
+                  : "px-4 py-2 bg-card hover:bg-secondary text-sm text-foreground"
+              )}
+            >
+              {isFullscreen ? <X className="w-3 h-3" /> : <Monitor className="w-4 h-4" />}
+              {isFullscreen ? "Sluiten" : "TV Modus"}
+            </button>
+          </div>
+          <div className={cn(isFullscreen && "flex-1 min-h-0 overflow-hidden")}>
+            {children}
           </div>
         </div>
-      </TVCompactContext.Provider>
-    );
-  }
-
-  return (
-    <TVCompactContext.Provider value={false}>
-      <div className="p-2">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          <button
-            onClick={toggleFullscreen}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border hover:bg-secondary transition-colors text-sm text-foreground"
-          >
-            <Monitor className="w-4 h-4" />
-            TV Modus
-          </button>
-        </div>
-        {children}
       </div>
     </TVCompactContext.Provider>
   );
