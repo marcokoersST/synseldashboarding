@@ -250,27 +250,6 @@ function RanglijstenContent() {
           </>
         )}
 
-        {isCompact && (
-          <>
-            <div className="flex-1" />
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={tvViewMode === "week" ? "default" : "secondary"}
-                className="transition-all duration-300 cursor-pointer"
-                onClick={() => setTvViewMode("week")}
-              >
-                Week
-              </Badge>
-              <Badge
-                variant={tvViewMode === "periode" ? "default" : "secondary"}
-                className="transition-all duration-300 cursor-pointer"
-                onClick={() => setTvViewMode("periode")}
-              >
-                Periode
-              </Badge>
-            </div>
-          </>
-        )}
       </div>
 
       {/* Ranking Columns */}
