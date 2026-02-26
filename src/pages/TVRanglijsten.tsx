@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown } from "lucide-react";
+import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus } from "lucide-react";
 
 function ComparisonBar({ current, previous }: { current: number; previous: number }) {
   const delta = previous > 0 ? ((current - previous) / previous) * 100 : 0;
@@ -42,7 +42,14 @@ function ComparisonBar({ current, previous }: { current: number; previous: numbe
   );
 }
 
-function getRankStyle(rank: number) {
+function getRankStyle(rank: number, isNegative?: boolean) {
+  if (isNegative) {
+    if (rank === 1) return "border-l-[3px] border-l-rose-400 bg-rose-50/40 font-semibold";
+    if (rank === 2) return "border-l-[3px] border-l-rose-300 bg-rose-50/30 font-semibold";
+    if (rank === 3) return "border-l-[3px] border-l-rose-200 bg-rose-50/20 font-semibold";
+    if (rank <= 10) return "border-l-[2px] border-l-rose-200 bg-rose-50/10";
+    return "";
+  }
   if (rank === 1) return "border-l-[3px] border-l-amber-400 bg-amber-50/50 font-semibold";
   if (rank === 2) return "border-l-[3px] border-l-slate-400 bg-amber-50/40 font-semibold";
   if (rank === 3) return "border-l-[3px] border-l-orange-400 bg-amber-50/30 font-semibold";
@@ -50,8 +57,14 @@ function getRankStyle(rank: number) {
   return "";
 }
 
-function RankIcon({ rank, isTop3 }: { rank: number; isTop3?: boolean }) {
+function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean; isNegative?: boolean }) {
   const size = isTop3 ? "w-4 h-4" : "w-3.5 h-3.5";
+  if (isNegative) {
+    if (rank === 1) return <CircleAlert className={cn(size, "text-rose-400/70")} />;
+    if (rank === 2) return <CircleMinus className={cn(size, "text-slate-400")} />;
+    if (rank === 3) return <CircleMinus className={cn(size, "text-orange-400/70")} />;
+    return null;
+  }
   if (rank === 1) return <span className="tv-wave-1"><Trophy className={cn(size, "text-amber-500")} /></span>;
   if (rank === 2) return <span className="tv-wave-2"><Medal className={cn(size, "text-slate-400")} /></span>;
   if (rank === 3) return <span className="tv-wave-3"><Medal className={cn(size, "text-orange-400")} /></span>;
@@ -62,9 +75,10 @@ interface EntryRowProps {
   entry: { rank: number; name: string; firstName: string; lastName: string; value: number; isHot?: boolean };
   displayName?: string;
   compact?: boolean;
+  isNegative?: boolean;
 }
 
-function EntryRow({ entry, displayName, compact }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
   const isTop3 = entry.rank <= 3;
   const shownName = displayName ?? entry.name;
   return (
@@ -73,16 +87,16 @@ function EntryRow({ entry, displayName, compact }: EntryRowProps) {
         "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20",
         isTop3 ? "py-2" : "py-1",
         compact ? "text-xs" : "text-sm",
-        getRankStyle(entry.rank),
+        getRankStyle(entry.rank, isNegative),
         entry.isHot && entry.value > 0 && "bg-orange-50/60",
-        entry.value === 0 && "opacity-30"
+        entry.value === 0 && "opacity-25 text-orange-600"
       )}
     >
       <span className={cn(
         "w-5 text-left shrink-0 flex items-center justify-start gap-0.5",
         isTop3 ? "text-sm font-bold" : "text-xs text-muted-foreground"
       )}>
-        <RankIcon rank={entry.rank} isTop3={isTop3} />
+        <RankIcon rank={entry.rank} isTop3={isTop3} isNegative={isNegative} />
         {entry.rank > 3 && `${entry.rank}.`}
       </span>
       <span className={cn(
@@ -139,9 +153,9 @@ function RanglijstenContent() {
   const columns = allColumns.filter((col) => selectedColumns.includes(col.title));
 
   return (
-    <>
+    <div className={cn(isCompact && "flex flex-col h-full")}>
       {/* Filters */}
-      <div className="flex items-center gap-4 mb-4">
+      <div className={cn("flex items-center gap-4", isCompact ? "mb-2" : "mb-4")}>
         {!isCompact && (
           <>
             <Select value={jaar} onValueChange={setJaar}>
@@ -228,7 +242,6 @@ function RanglijstenContent() {
                         onCheckedChange={() => {
                           setSelectedUnits(prev => {
                             if (prev.includes("Alle units")) {
-                              // Was "all" → select only this one
                               return [u];
                             }
                             if (prev.includes(u)) {
@@ -249,12 +262,22 @@ function RanglijstenContent() {
             </Popover>
           </>
         )}
+      </div>
 
+      {/* On Fire Legend */}
+      <div className={cn("flex items-center gap-2 mb-3", isCompact ? "text-xs" : "text-sm")}>
+        <Flame className="w-4 h-4 text-orange-500" />
+        <span className="font-semibold text-orange-700">On Fire</span>
+        <span className="text-muted-foreground">— Consultant met hoge groei en momentum deze periode</span>
       </div>
 
       {/* Ranking Columns */}
-      <div className="grid gap-5" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
+      <div
+        className={cn("grid", isCompact ? "gap-2 flex-1 min-h-0" : "gap-5")}
+        style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
+      >
         {columns.map((col) => {
+          const isNegative = col.title === "Niet begonnen";
           const top3 = col.entries.slice(0, 3);
           const rest = col.entries.slice(3);
           const half = Math.ceil(rest.length / 2);
@@ -262,7 +285,7 @@ function RanglijstenContent() {
           const rightEntries = rest.slice(half);
 
           return (
-            <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
+            <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col")}>
               <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">{col.title}</h2>
               <p className="text-3xl font-bold text-foreground tabular-nums">
                 {col.total.toLocaleString("nl-NL")}
@@ -272,20 +295,20 @@ function RanglijstenContent() {
               {/* Top 3 full-width */}
               <div className="mt-3 space-y-0">
                 {top3.map((entry) => (
-                  <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} />
+                  <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} />
                 ))}
               </div>
 
               {/* Rest in two columns, abbreviated names */}
-              <div className="mt-1 grid grid-cols-2 gap-x-3">
+              <div className={cn("mt-1 grid grid-cols-2 gap-x-3", isCompact && "flex-1")}>
                 <div className="space-y-0">
                   {leftEntries.map((entry) => (
-                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={`${entry.firstName} ${entry.lastName[0]}.`} compact />
+                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={`${entry.firstName} ${entry.lastName[0]}.`} compact isNegative={isNegative} />
                   ))}
                 </div>
                 <div className="space-y-0">
                   {rightEntries.map((entry) => (
-                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={`${entry.firstName} ${entry.lastName[0]}.`} compact />
+                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={`${entry.firstName} ${entry.lastName[0]}.`} compact isNegative={isNegative} />
                   ))}
                 </div>
               </div>
@@ -293,7 +316,7 @@ function RanglijstenContent() {
           );
         })}
       </div>
-    </>
+    </div>
   );
 }
 
