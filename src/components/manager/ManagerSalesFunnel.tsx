@@ -378,7 +378,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                 return (
                   <React.Fragment key={row.unit}>
                     <TableRow className="cursor-pointer hover:bg-muted/30" onClick={() => toggleExpand(row.unit)}>
-                      <TableCell className="font-medium text-xs sticky left-0 bg-card z-10">
+                      <TableCell className="font-medium text-xs sticky left-0 bg-card z-20 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                         <span className="flex items-center gap-2">
                           {consultants.length > 0 && (
                             isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
