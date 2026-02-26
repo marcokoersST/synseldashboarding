@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
-import { ranglijstenWeekColumns, ranglijstenPeriodeColumns, ranglijstenFilters, allColumnTitles } from "@/data/ranglijstenData";
+import { getRanglijstenData, ranglijstenFilters, allColumnTitles, getCurrentWeekNumber, getCurrentPeriodNumber } from "@/data/ranglijstenData";
+import type { RankingColumn } from "@/data/ranglijstenData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -119,18 +120,32 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
   );
 }
 
-function RanglijstenContent() {
-  const [jaar, setJaar] = useState("2026");
-  const [selectedPeriode, setSelectedPeriode] = useState("P1");
-  const [selectedWeek, setSelectedWeek] = useState("W1");
-  const [selectedUnits, setSelectedUnits] = useState<string[]>(["Alle units"]);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(() => {
-    try {
-      const saved = sessionStorage.getItem("ranglijsten-columns");
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [...allColumnTitles];
+function applyUnitFilter(columns: RankingColumn[], selectedUnits: string[]): RankingColumn[] {
+  if (selectedUnits.includes("Alle units")) return columns;
+  return columns.map(col => {
+    const filtered = col.entries
+      .filter(e => selectedUnits.includes((e as any).unit))
+      .map((e, i) => ({ ...e, rank: i + 1 }));
+    const total = filtered.reduce((s, e) => s + e.value, 0);
+    // Recalculate previousTotal proportionally
+    const ratio = col.total > 0 ? total / col.total : 0;
+    const previousTotal = Math.round(col.previousTotal * ratio);
+    return { ...col, entries: filtered, total, previousTotal };
   });
+}
+
+function RanglijstenContent() {
+  const currentYear = new Date().getFullYear();
+  const currentWeek = getCurrentWeekNumber();
+  const currentPeriod = getCurrentPeriodNumber();
+
+  const [jaar, setJaar] = useState(String(currentYear));
+  const [selectedPeriode, setSelectedPeriode] = useState(`P${currentPeriod}`);
+  const [selectedWeek, setSelectedWeek] = useState(`W${currentWeek}`);
+  const [selectedUnits, setSelectedUnits] = useState<string[]>(["Alle units"]);
+  const [pendingUnits, setPendingUnits] = useState<string[]>(["Alle units"]);
+  const [unitPopoverOpen, setUnitPopoverOpen] = useState(false);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const isCompact = useTVCompact();
 
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode">("week");
@@ -145,13 +160,19 @@ function RanglijstenContent() {
     });
   }, []);
 
-  useEffect(() => {
-    sessionStorage.setItem("ranglijsten-columns", JSON.stringify(selectedColumns));
-  }, [selectedColumns]);
+  // Get data based on current filter state
+  const rawColumns = useMemo(() => {
+    const num = tvViewMode === "week"
+      ? parseInt(selectedWeek.replace("W", ""), 10)
+      : parseInt(selectedPeriode.replace("P", ""), 10);
+    return getRanglijstenData(parseInt(jaar, 10), tvViewMode, num);
+  }, [jaar, tvViewMode, selectedWeek, selectedPeriode]);
 
-  const activeView = tvViewMode;
-  const allColumns = activeView === "periode" ? ranglijstenPeriodeColumns : ranglijstenWeekColumns;
-  const columns = allColumns.filter((col) => selectedColumns.includes(col.title));
+  // Apply unit filter + column filter
+  const columns = useMemo(() => {
+    const unitFiltered = applyUnitFilter(rawColumns, selectedUnits);
+    return unitFiltered.filter((col) => selectedColumns.includes(col.title));
+  }, [rawColumns, selectedUnits, selectedColumns]);
 
   return (
     <div className={cn(isCompact && "flex flex-col h-full")}>
@@ -226,7 +247,10 @@ function RanglijstenContent() {
 
             <div className="flex-1" />
 
-            <Popover>
+            <Popover open={unitPopoverOpen} onOpenChange={(open) => {
+              setUnitPopoverOpen(open);
+              if (open) setPendingUnits([...selectedUnits]);
+            }}>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2 min-w-[160px] justify-between bg-card border-border">
                   {selectedUnits.includes("Alle units") ? "Alle units" : `${selectedUnits.length} unit${selectedUnits.length > 1 ? "s" : ""}`}
@@ -239,9 +263,9 @@ function RanglijstenContent() {
                   {ranglijstenFilters.units.filter(u => u !== "Alle units").map((u) => (
                     <label key={u} className="flex items-center gap-2 text-sm cursor-pointer">
                       <Checkbox
-                        checked={selectedUnits.includes("Alle units") || selectedUnits.includes(u)}
+                        checked={pendingUnits.includes("Alle units") || pendingUnits.includes(u)}
                         onCheckedChange={() => {
-                          setSelectedUnits(prev => {
+                          setPendingUnits(prev => {
                             if (prev.includes("Alle units")) {
                               return [u];
                             }
@@ -259,6 +283,16 @@ function RanglijstenContent() {
                     </label>
                   ))}
                 </div>
+                <Button
+                  size="sm"
+                  className="w-full mt-3"
+                  onClick={() => {
+                    setSelectedUnits([...pendingUnits]);
+                    setUnitPopoverOpen(false);
+                  }}
+                >
+                  Toepassen
+                </Button>
               </PopoverContent>
             </Popover>
           </>
