@@ -248,4 +248,15 @@
     animation: tv-fire 2s ease-in-out infinite;
     display: inline-block;
   }
+
+  /* TV mode: rocket boost animation */
+  @keyframes tv-rocket {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px) scale(1.05); }
+  }
+
+  .tv-mode .tv-rocket {
+    animation: tv-rocket 1.5s ease-in-out infinite;
+    display: inline-block;
+  }
 }
