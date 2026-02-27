@@ -83,17 +83,17 @@ interface EntryRowProps {
   isPlain?: boolean;
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons }: EntryRowProps) {
-  const isTop3 = entry.rank <= 3;
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain }: EntryRowProps) {
+  const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? entry.name;
   return (
     <div
       className={cn(
         "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20 break-inside-avoid",
         isTop3 ? "py-2" : "py-1",
-        compact ? "text-xs" : "text-sm",
-        getRankStyle(entry.rank, isNegative),
-        entry.isHot && entry.value > 0 && "bg-orange-50/60",
+        compact || isPlain ? "text-xs" : "text-sm",
+        !isPlain && getRankStyle(entry.rank, isNegative),
+        !isPlain && entry.isHot && entry.value > 0 && "bg-orange-50/60",
         entry.value === 0 && "text-orange-600"
       )}
     >
@@ -102,14 +102,14 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons }: 
         isTop3 ? "text-sm font-bold" : "text-xs",
         entry.value !== 0 && !isTop3 && "text-muted-foreground"
       )}>
-        <RankIcon rank={entry.rank} isTop3={isTop3} isNegative={isNegative} />
-        {entry.rank > 3 && `${entry.rank}.`}
+        {!isPlain && <RankIcon rank={entry.rank} isTop3={isTop3} isNegative={isNegative} />}
+        {(isPlain || entry.rank > 3) && `${entry.rank}.`}
       </span>
       <span
         className={cn(
           "min-w-0 text-foreground",
           isTop3 ? "text-base font-bold" : "text-[11px]",
-          entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
+          !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600"
         )}
         style={{ 
@@ -126,8 +126,8 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons }: 
         isTop3 ? "text-base font-bold" : "font-semibold",
         entry.value !== 0 && "text-foreground"
       )}>
-        {showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
-        {showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket" />}
+        {!isPlain && showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
+        {!isPlain && showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket" />}
         {entry.value}
       </span>
     </div>
