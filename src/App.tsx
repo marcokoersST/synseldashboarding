@@ -56,6 +56,7 @@ const HendrikWerkgeluk = lazy(() => import("./pages/hendrik/Werkgeluk"));
 
 // Peter-Jan dashboards
 const PeterJanSalesFlow = lazy(() => import("./pages/peter-jan/SalesFlowDashboards"));
+const PeterJanAcquisitieFunnel = lazy(() => import("./pages/peter-jan/AcquisitieFunnel"));
 // AcquisitieConversie merged into ManagerSalesFunnel
 
 const queryClient = new QueryClient();
