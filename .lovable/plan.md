@@ -1,62 +1,70 @@
 
 
-# Fix: Card Width Still Expanding Beyond Viewport
+# Dynamic viewport-based two-column layout for TV Ranglijsten
 
-## Problem Analysis
+## Problem
+The current threshold (`rest.length > 15`) is a fixed number that doesn't adapt to the actual available viewport height. The list overflows when entries don't fit in a single column.
 
-The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
+## Approach
+Use a `ref` on each column's "rest" container to measure its `scrollHeight` vs `clientHeight` after render. If content overflows, switch to two columns automatically.
 
-```text
-<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
-  <>                                             ← Fragment = NO DOM element, no constraints
-    <div flex justify-between>                   ← header with unit selector + Volgorde
-    <section min-w-0 max-w-full overflow-x-hidden>
-      <AnimatedCard overflow-hidden min-w-0>
-        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
-          <div overflow-auto>                             ← scroll container
-            <div min-w-max w-max>                         ← THIS forces intrinsic width
-              <Table>                                     ← wide table
-```
+## Changes in `src/pages/TVRanglijsten.tsx`
 
-**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+### 1. Create a new `AutoColumnsWrapper` component
 
-## Fix — Two changes
-
-### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
-Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
+A small wrapper that:
+- Renders children in a single column first
+- Uses `useEffect` + `useRef` to compare `scrollHeight > clientHeight`
+- If overflow detected, sets state to `columns-2`
+- Re-checks on entry count or window resize changes
 
 ```tsx
-// Before (line 335):
-<div className="min-w-max w-max">
+function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCompact: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [useTwoCols, setUseTwoCols] = useState(false);
 
-// After:
-<div className="min-w-max">
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || !isCompact) { setUseTwoCols(false); return; }
+    // Reset to 1 col to measure true single-column height
+    el.style.columnCount = '1';
+    const overflows = el.scrollHeight > el.clientHeight + 4;
+    setUseTwoCols(overflows);
+    el.style.columnCount = '';
+  }, [children, isCompact]);
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "mt-1",
+        isCompact && "flex-1 overflow-hidden",
+        useTwoCols ? "columns-2 gap-x-3" : "columns-1"
+      )}
+    >
+      {children}
+    </div>
+  );
+}
 ```
 
-### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
-Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
+### 2. Replace the static `needsTwoColumns` logic (line 348, 368-372)
+
+Remove the `needsTwoColumns` variable entirely. Replace the rest container `<div>` with `<AutoColumnsWrapper>`:
 
 ```tsx
-// Before:
-return (
-  <>
-    {/* ... */}
-  </>
-);
-
-// After:
-return (
-  <div className="w-full min-w-0">
-    {/* ... */}
-  </div>
-);
+{/* Rest */}
+<AutoColumnsWrapper isCompact={isCompact}>
+  {rest.map((entry) => (
+    <EntryRow ... />
+  ))}
+</AutoColumnsWrapper>
 ```
 
-### Why this works
-- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
-- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
+### 3. Add imports
 
-### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
-- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+Add `useRef`, `useLayoutEffect` and `ReactNode` to the React import.
+
+## Result
+The column split is now driven by actual rendered content height vs available container height — works correctly regardless of entry count, unit filter, or screen resolution.
 
