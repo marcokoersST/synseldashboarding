@@ -1,56 +1,62 @@
 
 
-# Fix: Tekst te klein, spacing te krap, overflow kapot in niet-Inschrijvingen kolommen
+# Fix: Card Width Still Expanding Beyond Viewport
 
-## Oorzaak
+## Problem Analysis
 
-De niet-Inschrijvingen kolommen (Acquisities, Gesprekken, Intakes, Plaatsingen, Niet begonnen) hebben twee problemen:
+The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
 
-1. **Top 3 vreet hoogte op** — De top 3 entries worden buiten `AutoColumnsWrapper` gerenderd met grote styling (`py-2`, `text-base`). Dit laat minder hoogte over voor de rest, waardoor de wrapper sneller naar compressie springt.
+```text
+<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
+  <>                                             ← Fragment = NO DOM element, no constraints
+    <div flex justify-between>                   ← header with unit selector + Volgorde
+    <section min-w-0 max-w-full overflow-x-hidden>
+      <AnimatedCard overflow-hidden min-w-0>
+        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
+          <div overflow-auto>                             ← scroll container
+            <div min-w-max w-max>                         ← THIS forces intrinsic width
+              <Table>                                     ← wide table
+```
 
-2. **Compressiemodus is extreem** — Wanneer 2 kolommen niet passen, wordt `text-[9px]`, `py-0`, `gap-0.5` toegepast. Dit is onleesbaar.
+**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
 
-3. **Inline clamp override** — Regel 119 forceert `fontSize: clamp(9px, 1.1vw, 11px)` op namen, wat op smalle kolommen naar 9px zakt.
+## Fix — Two changes
 
-## Wijzigingen
+### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
+Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
 
-**File: `src/pages/TVRanglijsten.tsx`**
+```tsx
+// Before (line 335):
+<div className="min-w-max w-max">
 
-### 1. EntryRow naam-fontgrootte (regel 115-120)
-Verwijder de inline `fontSize: clamp(...)` style voor niet-top3 entries. Laat Tailwind `text-xs` (12px) het werk doen — consistent met Inschrijvingen.
+// After:
+<div className="min-w-max">
+```
+
+### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
+Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
 
 ```tsx
 // Before:
-style={{ 
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-  fontSize: isTop3 ? undefined : "clamp(9px, 1.1vw, 11px)"
-}}
+return (
+  <>
+    {/* ... */}
+  </>
+);
 
 // After:
-style={{ 
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-}}
+return (
+  <div className="w-full min-w-0">
+    {/* ... */}
+  </div>
+);
 ```
 
-### 2. Lichte compressie in AutoColumnsWrapper (regels 186, 194)
-Vervang de extreme compressie (`py-0`, `text-[9px]`) door lichte compressie:
+### Why this works
+- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
+- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
 
-```tsx
-// Before:
-className={layout.compressed ? "[&>div]:py-0 [&>div]:gap-0.5 [&>div]:text-[9px]" : ""}
-
-// After:
-className={layout.compressed ? "[&>div]:py-px [&>div]:gap-0.5 [&>div]:text-[10px]" : ""}
-```
-
-Op beide plekken (col1 en col2).
-
-### Resultaat
-- Rank 4+ entries krijgen dezelfde leesbare `text-xs` als Inschrijvingen
-- Overflow naar kolom 2 werkt identiek aan Inschrijvingen
-- Bij extreme overflow: lichte compressie (10px, minimale padding) in plaats van onleesbare 9px/geen padding
+### Files changed
+- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
+- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
 
