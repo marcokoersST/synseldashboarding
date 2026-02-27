@@ -1,62 +1,93 @@
 
 
-# Fix: Card Width Still Expanding Beyond Viewport
+# Fix: TV Ranglijsten columns should fill vertically before splitting
 
-## Problem Analysis
+## Problem
+CSS `columns` property **balances content evenly** across columns, creating two half-height columns with whitespace below. The user wants entries to fill the first column completely to the bottom of the card, and only create a second column if there are more entries than fit.
 
-The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
+## Approach
+Replace CSS `columns` with a manual split: measure available height, calculate how many rows fit in one column, then render two explicit side-by-side divs. Three tiers:
 
-```text
-<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
-  <>                                             ← Fragment = NO DOM element, no constraints
-    <div flex justify-between>                   ← header with unit selector + Volgorde
-    <section min-w-0 max-w-full overflow-x-hidden>
-      <AnimatedCard overflow-hidden min-w-0>
-        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
-          <div overflow-auto>                             ← scroll container
-            <div min-w-max w-max>                         ← THIS forces intrinsic width
-              <Table>                                     ← wide table
-```
+1. **Single column** — all entries fit vertically
+2. **Two columns** — first column filled to max, remainder in second column  
+3. **Compressed two columns** — if two columns still overflow, reduce row padding and font size
 
-**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+## Changes in `src/pages/TVRanglijsten.tsx`
 
-## Fix — Two changes
+### Rewrite `AutoColumnsWrapper`
 
-### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
-Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
+Replace the CSS-columns approach with a measurement-based manual split:
 
 ```tsx
-// Before (line 335):
-<div className="min-w-max w-max">
+function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCompact: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [layout, setLayout] = useState<{ cols: 1 | 2; splitAt: number; compressed: boolean }>({ cols: 1, splitAt: 0, compressed: false });
+  const childArray = React.Children.toArray(children);
 
-// After:
-<div className="min-w-max">
+  useLayoutEffect(() => {
+    if (!isCompact || !containerRef.current || !measureRef.current || childArray.length === 0) {
+      setLayout({ cols: 1, splitAt: 0, compressed: false });
+      return;
+    }
+    // Measure a single row height from the hidden measurer
+    const firstRow = measureRef.current.children[0] as HTMLElement;
+    if (!firstRow) return;
+    const rowH = firstRow.getBoundingClientRect().height;
+    const available = containerRef.current.clientHeight;
+    const fitInOne = Math.floor(available / rowH);
+
+    if (childArray.length <= fitInOne) {
+      setLayout({ cols: 1, splitAt: 0, compressed: false });
+    } else {
+      // Two columns — check if all fit
+      const fitInTwo = fitInOne * 2;
+      if (childArray.length <= fitInTwo) {
+        setLayout({ cols: 2, splitAt: fitInOne, compressed: false });
+      } else {
+        // Compressed: reduce row size, recalculate
+        const compressedRowH = rowH * 0.7;
+        const compFit = Math.floor(available / compressedRowH);
+        setLayout({ cols: 2, splitAt: compFit, compressed: true });
+      }
+    }
+  }, [children, isCompact, childArray.length]);
+
+  if (!isCompact) return <div className="mt-1">{children}</div>;
+
+  const col1 = layout.cols === 2 ? childArray.slice(0, layout.splitAt) : childArray;
+  const col2 = layout.cols === 2 ? childArray.slice(layout.splitAt) : [];
+
+  return (
+    <div ref={containerRef} className="mt-1 flex-1 min-h-0 overflow-hidden relative">
+      {/* Hidden measurer to get row height */}
+      <div ref={measureRef} className="absolute invisible h-0 overflow-hidden w-full">{childArray.slice(0, 1)}</div>
+      <div className={cn("h-full", layout.cols === 2 ? "flex gap-x-2" : "")}>
+        <div className={cn("flex flex-col", layout.cols === 2 && "flex-1 min-w-0")}>
+          {col1.map((child, i) => (
+            <div key={i} className={layout.compressed ? "[&>div]:py-0 [&>div]:gap-0.5 [&>div]:text-[9px]" : ""}>
+              {child}
+            </div>
+          ))}
+        </div>
+        {col2.length > 0 && (
+          <div className="flex-1 min-w-0 flex flex-col">
+            {col2.map((child, i) => (
+              <div key={i} className={layout.compressed ? "[&>div]:py-0 [&>div]:gap-0.5 [&>div]:text-[9px]" : ""}>
+                {child}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 ```
 
-### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
-Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
-
-```tsx
-// Before:
-return (
-  <>
-    {/* ... */}
-  </>
-);
-
-// After:
-return (
-  <div className="w-full min-w-0">
-    {/* ... */}
-  </div>
-);
-```
-
-### Why this works
-- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
-- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
-
-### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
-- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+Key differences from current approach:
+- Uses explicit two-div layout instead of CSS `columns` (no balancing)
+- Measures actual row height from a hidden element
+- Calculates exact split point based on container height
+- Three tiers: 1 col → 2 cols → 2 cols compressed
 
