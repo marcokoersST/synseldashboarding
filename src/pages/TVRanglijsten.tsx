@@ -90,7 +90,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
     <div
       className={cn(
         "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20 break-inside-avoid",
-        isTop3 ? "py-2" : "py-1",
+        isTop3 ? (compact ? "py-1" : "py-2") : "py-1",
         compact || isPlain ? "text-xs" : "text-sm",
         !isPlain && getRankStyle(entry.rank, isNegative),
         !isPlain && entry.isHot && entry.value > 0 && "bg-orange-50/60",
@@ -99,7 +99,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
     >
       <span className={cn(
         "w-5 text-left shrink-0 flex items-center justify-start gap-0.5",
-        isTop3 ? "text-sm font-bold" : "text-xs",
+        isTop3 ? (compact ? "text-xs font-bold" : "text-sm font-bold") : "text-xs",
         entry.value !== 0 && !isTop3 && "text-muted-foreground"
       )}>
         {!isPlain && <RankIcon rank={entry.rank} isTop3={isTop3} isNegative={isNegative} />}
@@ -108,7 +108,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       <span
         className={cn(
           "min-w-0 text-foreground",
-          isTop3 ? "text-base font-bold" : "text-[11px]",
+          isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[11px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600"
         )}
