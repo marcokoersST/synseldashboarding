@@ -159,10 +159,22 @@ function generateVariedRanking(baseValues: number[], seed: number): RankingEntry
     unit: consultants[ci].unit,
     value: allValues[vi],
     isHot: hotNames.has(consultants[ci].fullName),
+    isRocket: false,
   }));
 
   entries.sort((a, b) => b.value - a.value);
   entries.forEach((e, i) => { e.rank = i + 1; });
+
+  // Rocket mode: simulate "overtook 3+ positions in last 5 days"
+  // Deterministically pick ~10% of entries with value > 0 and rank > 3
+  entries.forEach((e, i) => {
+    if (e.value > 0 && e.rank > 3) {
+      const rocketChance = seededRandom(seed + 999, i);
+      if (rocketChance < 0.12) {
+        e.isRocket = true;
+      }
+    }
+  });
 
   return entries;
 }
