@@ -183,7 +183,7 @@ function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCo
 
   return (
     <div ref={containerRef} className="mt-1 flex-1 min-h-0 overflow-hidden relative">
-      <div ref={measureRef} className="absolute invisible h-0 overflow-hidden w-full">{childArray.slice(0, 1)}</div>
+      <div ref={measureRef} className="absolute opacity-0 pointer-events-none w-full">{childArray.slice(0, 1)}</div>
       <div className={cn("h-full", layout.cols === 2 ? "flex gap-x-2" : "")}>
         <div className={cn("flex flex-col", layout.cols === 2 && "flex-1 min-w-0")}>
           {col1.map((child, i) => (
