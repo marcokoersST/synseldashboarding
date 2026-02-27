@@ -122,7 +122,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span className={cn(
         "tabular-nums shrink-0 ml-auto flex items-center gap-1",
-        isTop3 ? "text-base font-bold" : "font-semibold",
+        isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "font-semibold",
         entry.value !== 0 && "text-foreground"
       )}>
         {!isPlain && showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
