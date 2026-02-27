@@ -410,8 +410,8 @@ function RanglijstenContent() {
           const isNegative = col.title === "Niet begonnen";
           const isPlain = col.title === "Inschrijvingen";
           const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
-          const top3 = isPlain ? [] : col.entries.slice(0, 3);
-          const rest = isPlain ? col.entries : col.entries.slice(3);
+          const top3 = isPlain || isCompact ? [] : col.entries.slice(0, 3);
+          const rest = isPlain || isCompact ? col.entries : col.entries.slice(3);
 
           return (
             <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col min-h-0 overflow-hidden")}>
@@ -421,7 +421,7 @@ function RanglijstenContent() {
               </p>
               <ComparisonBar current={col.total} previous={col.previousTotal} />
 
-              {/* Top 3 full-width */}
+              {/* Top 3 full-width (non-compact only) */}
               {top3.length > 0 && (
                 <div className="mt-3 space-y-0">
                   {top3.map((entry) => (
@@ -430,13 +430,13 @@ function RanglijstenContent() {
                 </div>
               )}
 
-              {/* Rest */}
+              {/* All entries in compact, rest in non-compact */}
               <AutoColumnsWrapper isCompact={isCompact}>
                 {rest.map((entry) => (
                   <EntryRow
                     key={`${entry.rank}-${entry.name}`}
                     entry={entry}
-                    displayName={`${entry.firstName} ${entry.lastName[0]}.`}
+                    displayName={!isCompact || entry.rank > 3 ? `${entry.firstName} ${entry.lastName[0]}.` : undefined}
                     compact
                     isNegative={isNegative}
                     showStatusIcons={showStatusIcons}
