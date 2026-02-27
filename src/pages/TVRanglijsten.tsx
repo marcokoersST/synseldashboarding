@@ -90,7 +90,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
     <div
       className={cn(
         "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20 break-inside-avoid",
-        isTop3 ? "py-2" : "py-1",
+        isTop3 ? (compact ? "py-1" : "py-2") : "py-1",
         compact || isPlain ? "text-xs" : "text-sm",
         !isPlain && getRankStyle(entry.rank, isNegative),
         !isPlain && entry.isHot && entry.value > 0 && "bg-orange-50/60",
@@ -99,7 +99,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
     >
       <span className={cn(
         "w-5 text-left shrink-0 flex items-center justify-start gap-0.5",
-        isTop3 ? "text-sm font-bold" : "text-xs",
+        isTop3 ? (compact ? "text-xs font-bold" : "text-sm font-bold") : "text-xs",
         entry.value !== 0 && !isTop3 && "text-muted-foreground"
       )}>
         {!isPlain && <RankIcon rank={entry.rank} isTop3={isTop3} isNegative={isNegative} />}
@@ -108,7 +108,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       <span
         className={cn(
           "min-w-0 text-foreground",
-          isTop3 ? "text-base font-bold" : "text-[11px]",
+          isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[11px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600"
         )}
@@ -122,7 +122,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span className={cn(
         "tabular-nums shrink-0 ml-auto flex items-center gap-1",
-        isTop3 ? "text-base font-bold" : "font-semibold",
+        isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "font-semibold",
         entry.value !== 0 && "text-foreground"
       )}>
         {!isPlain && showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
@@ -410,8 +410,8 @@ function RanglijstenContent() {
           const isNegative = col.title === "Niet begonnen";
           const isPlain = col.title === "Inschrijvingen";
           const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
-          const top3 = isPlain ? [] : col.entries.slice(0, 3);
-          const rest = isPlain ? col.entries : col.entries.slice(3);
+          const top3 = isPlain || isCompact ? [] : col.entries.slice(0, 3);
+          const rest = isPlain || isCompact ? col.entries : col.entries.slice(3);
 
           return (
             <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col min-h-0 overflow-hidden")}>
@@ -421,7 +421,7 @@ function RanglijstenContent() {
               </p>
               <ComparisonBar current={col.total} previous={col.previousTotal} />
 
-              {/* Top 3 full-width */}
+              {/* Top 3 full-width (non-compact only) */}
               {top3.length > 0 && (
                 <div className="mt-3 space-y-0">
                   {top3.map((entry) => (
@@ -430,13 +430,13 @@ function RanglijstenContent() {
                 </div>
               )}
 
-              {/* Rest */}
+              {/* All entries in compact, rest in non-compact */}
               <AutoColumnsWrapper isCompact={isCompact}>
                 {rest.map((entry) => (
                   <EntryRow
                     key={`${entry.rank}-${entry.name}`}
                     entry={entry}
-                    displayName={`${entry.firstName} ${entry.lastName[0]}.`}
+                    displayName={!isCompact || entry.rank > 3 ? `${entry.firstName} ${entry.lastName[0]}.` : undefined}
                     compact
                     isNegative={isNegative}
                     showStatusIcons={showStatusIcons}
