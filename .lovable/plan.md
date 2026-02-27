@@ -1,62 +1,44 @@
 
 
-# Fix: Card Width Still Expanding Beyond Viewport
+## Analyse
 
-## Problem Analysis
+Het probleem zit in het verschil tussen "Inschrijvingen" en alle andere kolommen in TV-modus:
 
-The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
+- **Inschrijvingen** (`isPlain=true`): Alle entries gaan in `AutoColumnsWrapper`. Uniforme styling, mooi overflow naar 2 kolommen.
+- **Andere kolommen**: Top 3 wordt **buiten** `AutoColumnsWrapper` gerenderd met grote styling (`py-2`, `text-base font-bold`). Dit vreet ~40% van de beschikbare hoogte op, waardoor de rest in een te kleine container wordt gepropt en de compressie-modus (te klein, te krap) activeert.
 
-```text
-<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
-  <>                                             ← Fragment = NO DOM element, no constraints
-    <div flex justify-between>                   ← header with unit selector + Volgorde
-    <section min-w-0 max-w-full overflow-x-hidden>
-      <AnimatedCard overflow-hidden min-w-0>
-        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
-          <div overflow-auto>                             ← scroll container
-            <div min-w-max w-max>                         ← THIS forces intrinsic width
-              <Table>                                     ← wide table
-```
+## Oplossing
 
-**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+In TV-modus (compact): render de top 3 **binnen** de `AutoColumnsWrapper`, net als Inschrijvingen. De top 3 behoudt hun rank-iconen en gouden/zilveren styling, maar krijgt dezelfde compacte row-afmetingen als de rest. Dit geeft de wrapper het volledige entry-budget om slim te splitsen over 2 kolommen.
 
-## Fix — Two changes
+## Implementatiestappen
 
-### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
-Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
+### 1. `EntryRow` top-3 styling verkleinen in compact-modus
+- Voeg `compact` prop toe aan de top-3 check: als `compact=true`, gebruik `py-1` i.p.v. `py-2` en `text-sm` i.p.v. `text-base` voor top-3 entries.
+- Rank-iconen en achtergrondkleuren blijven behouden.
 
+### 2. Top 3 verplaatsen naar binnen `AutoColumnsWrapper` in TV-modus
+- In de kolom-render (regel 413-446): als `isCompact`, stop top3 en rest samen in `AutoColumnsWrapper` in plaats van ze apart te renderen.
+- Top 3 entries krijgen `compact` prop mee zodat ze dezelfde rij-hoogte hebben.
+
+### 3. `AutoColumnsWrapper` splitlogica behouden
+- Geen wijzigingen nodig aan de wrapper zelf — alle entries zitten nu in dezelfde pool, dus de meet-logica werkt correct met het juiste totaal.
+
+## Technische details
+
+**File: `src/pages/TVRanglijsten.tsx`**
+
+**EntryRow (regel 86-133):** Pas de isTop3 styling aan zodat wanneer `compact=true`, de padding en fontgrootte kleiner zijn:
+- `py-2` → `py-1` wanneer compact
+- `text-base font-bold` → `text-sm font-semibold` wanneer compact
+- Iconen blijven (`Trophy`, `Medal`)
+
+**Kolom-render (regel 409-449):** In compact-modus alle entries in één `AutoColumnsWrapper`:
 ```tsx
-// Before (line 335):
-<div className="min-w-max w-max">
-
-// After:
-<div className="min-w-max">
+const allEntries = isPlain ? col.entries : col.entries;
+// In compact: alles in AutoColumnsWrapper
+// Niet-compact: top3 apart, rest in wrapper (huidige gedrag)
 ```
 
-### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
-Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
-
-```tsx
-// Before:
-return (
-  <>
-    {/* ... */}
-  </>
-);
-
-// After:
-return (
-  <div className="w-full min-w-0">
-    {/* ... */}
-  </div>
-);
-```
-
-### Why this works
-- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
-- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
-
-### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
-- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+Top 3 entries krijgen dan `compact` + hun rank-styling, rest blijft ongewijzigd.
 
