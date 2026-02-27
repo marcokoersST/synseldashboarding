@@ -146,31 +146,36 @@ function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCo
   const [layout, setLayout] = useState<{ cols: 1 | 2; splitAt: number; compressed: boolean }>({ cols: 1, splitAt: 0, compressed: false });
 
   useLayoutEffect(() => {
-    if (!isCompact || !containerRef.current || !measureRef.current || childArray.length === 0) {
-      setLayout({ cols: 1, splitAt: 0, compressed: false });
-      return;
-    }
-    const firstRow = measureRef.current.children[0] as HTMLElement;
-    if (!firstRow) return;
-    const rowH = firstRow.getBoundingClientRect().height;
-    const available = containerRef.current.clientHeight;
-    if (available <= 0 || rowH <= 0) return;
-    const fitInOne = Math.floor(available / rowH);
+    if (!isCompact || !containerRef.current || !measureRef.current) return;
 
-    if (childArray.length <= fitInOne) {
-      setLayout({ cols: 1, splitAt: 0, compressed: false });
-    } else {
-      const fitInTwo = fitInOne * 2;
-      if (childArray.length <= fitInTwo) {
-        setLayout({ cols: 2, splitAt: fitInOne, compressed: false });
+    const measure = () => {
+      const firstRow = measureRef.current?.children[0] as HTMLElement;
+      if (!firstRow || !containerRef.current || childArray.length === 0) return;
+      const rowH = firstRow.getBoundingClientRect().height;
+      const available = containerRef.current.clientHeight;
+      if (available <= 0 || rowH <= 0) return;
+      const fitInOne = Math.floor(available / rowH);
+
+      if (childArray.length <= fitInOne) {
+        setLayout({ cols: 1, splitAt: 0, compressed: false });
       } else {
-        const compressedRowH = rowH * 0.7;
-        const compFit = Math.floor(available / compressedRowH);
-        setLayout({ cols: 2, splitAt: compFit, compressed: true });
+        const fitInTwo = fitInOne * 2;
+        if (childArray.length <= fitInTwo) {
+          setLayout({ cols: 2, splitAt: fitInOne, compressed: false });
+        } else {
+          const compressedRowH = rowH * 0.7;
+          const compFit = Math.floor(available / compressedRowH);
+          setLayout({ cols: 2, splitAt: compFit, compressed: true });
+        }
       }
-    }
-  }, [children, isCompact, childArray.length]);
+    };
 
+    measure();
+
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [children, isCompact, childArray.length]);
   if (!isCompact) return <div className="mt-1">{children}</div>;
 
   const col1 = layout.cols === 2 ? childArray.slice(0, layout.splitAt) : childArray;
