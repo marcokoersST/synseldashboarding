@@ -51,7 +51,7 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
             <button
               onClick={toggleFullscreen}
               className={cn(
-                "flex items-center gap-2 rounded-lg transition-colors border border-border",
+                "flex items-center gap-2 rounded-lg transition-colors border border-border ml-auto",
                 isFullscreen
                   ? "px-3 py-1.5 bg-secondary hover:bg-secondary/80 text-xs text-foreground"
                   : "px-4 py-2 bg-card hover:bg-secondary text-sm text-foreground"
