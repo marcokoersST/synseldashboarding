@@ -374,7 +374,7 @@ function RanglijstenContent() {
           const rest = isPlain ? col.entries : col.entries.slice(3);
 
           return (
-            <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col")}>
+            <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col min-h-0 overflow-hidden")}>
               <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">{col.title}</h2>
               <p className="text-3xl font-bold text-foreground tabular-nums">
                 {col.total.toLocaleString("nl-NL")}
