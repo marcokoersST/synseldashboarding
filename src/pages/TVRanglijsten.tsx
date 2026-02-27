@@ -345,7 +345,7 @@ function RanglijstenContent() {
           const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
           const top3 = isPlain ? [] : col.entries.slice(0, 3);
           const rest = isPlain ? col.entries : col.entries.slice(3);
-          const needsTwoColumns = isCompact && rest.length > 37 && selectedUnits.includes("Alle units");
+          const needsTwoColumns = isCompact && rest.length > 37;
 
           return (
             <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col")}>
@@ -367,7 +367,7 @@ function RanglijstenContent() {
               {/* Rest */}
               <div className={cn(
                 "mt-1",
-                isCompact && "flex-1",
+                isCompact && "flex-1 overflow-hidden",
                 needsTwoColumns ? "columns-2 gap-x-3" : "columns-1"
               )}>
                 {rest.map((entry) => (
