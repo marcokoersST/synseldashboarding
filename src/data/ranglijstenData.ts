@@ -8,6 +8,7 @@ export interface RankingEntry {
   value: number;
   unit: string;
   isHot: boolean;
+  isRocket: boolean;
 }
 
 export interface RankingColumn {
