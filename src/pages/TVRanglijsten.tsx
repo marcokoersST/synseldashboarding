@@ -367,7 +367,7 @@ function RanglijstenContent() {
               {/* Rest */}
               <div className={cn(
                 "mt-1",
-                isCompact && "flex-1",
+                isCompact && "flex-1 overflow-hidden",
                 needsTwoColumns ? "columns-2 gap-x-3" : "columns-1"
               )}>
                 {rest.map((entry) => (
