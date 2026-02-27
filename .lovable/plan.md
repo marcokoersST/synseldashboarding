@@ -1,62 +1,76 @@
 
 
-# Fix: Card Width Still Expanding Beyond Viewport
+# Ranglijsten Overhaul: Rocket Mode, Layout & Legend
 
-## Problem Analysis
+## Changes Overview
 
-The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
+### 1. `src/data/ranglijstenData.ts` — Add rocket status to data
 
-```text
-<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
-  <>                                             ← Fragment = NO DOM element, no constraints
-    <div flex justify-between>                   ← header with unit selector + Volgorde
-    <section min-w-0 max-w-full overflow-x-hidden>
-      <AnimatedCard overflow-hidden min-w-0>
-        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
-          <div overflow-auto>                             ← scroll container
-            <div min-w-max w-max>                         ← THIS forces intrinsic width
-              <Table>                                     ← wide table
+- Add `isRocket: boolean` to `RankingEntry` interface
+- Generate rocket status deterministically: mark consultants who "overtook 3+ positions in last 5 days" using seeded logic
+- Rocket only applies to columns: Acquisities, Gesprekken, Intakes, Plaatsingen
+
+### 2. `src/pages/TVRanglijsten.tsx` — Main component changes
+
+**a) Remove period selector (P1-P13 tabs in upper right)**
+- No period tab bar exists in this component currently — those tabs appear to come from the page layout or routing. Will verify and remove if present.
+
+**b) Names always visible — dynamic font sizing**
+- Replace `truncate` on name span with a responsive approach: use `text-[length]` scaling or CSS `clamp()` so names shrink rather than truncate
+- For top 3: keep full name, allow smaller font if needed
+- For rank 4+: use abbreviated name but ensure it's never cut off — reduce font size via `text-[10px]` minimum
+
+**c) Add Rocket icon (🚀) to EntryRow**
+- Import `Rocket` from lucide-react
+- Show rocket icon next to value when `entry.isRocket && entry.value > 0`
+- Only show in eligible columns (Acquisities, Gesprekken, Intakes, Plaatsingen) — pass `showStatusIcons` prop
+- Add `tv-rocket` CSS animation class (gentle bounce/thrust effect)
+
+**d) Fire/Rocket icons only in specific columns**
+- Pass a `showStatusIcons` boolean to `EntryRow` based on column title
+- Eligible columns: `["Acquisities", "Gesprekken", "Intakes", "Plaatsingen"]`
+- Hide fire and rocket icons for Inschrijvingen and Niet begonnen
+
+**e) Orange text full opacity**
+- Change `entry.value === 0 && "opacity-25 text-orange-600"` — keep `text-orange-600` but remove `opacity-25` or increase to full opacity
+- Change `entry.isHot && entry.value > 0 && "text-orange-700 font-medium"` — ensure no reduced opacity
+
+**f) Non-TV mode: always single column**
+- When `!isCompact`: force `columns-1` regardless of entry count (user can scroll)
+- Only apply `columns-2` logic when `isCompact` (TV mode)
+
+**g) TV mode: show time period label**
+- In TV mode header area, display "Week 9" or "Periode 5" based on current selection
+
+**h) Updated legend**
+- Replace the simple "On Fire" legend with a detailed two-item legend:
+  - 🔥 **On Fire** — Minimaal +30% groei t.o.v. vorige periode (rolling vergelijking)
+  - 🚀 **Raket** — Minimaal 3 posities ingehaald in de laatste 5 dagen. Vervalt bij inhaalactie of na 5 dagen inactiviteit.
+- In non-TV mode, show a slightly more compact version
+
+### 3. `src/index.css` — Add rocket animation
+
+```css
+@keyframes tv-rocket {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px) scale(1.05); }
+}
+
+.tv-mode .tv-rocket {
+  animation: tv-rocket 1.5s ease-in-out infinite;
+  display: inline-block;
+}
 ```
 
-**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+### 4. `src/components/tv/TVDashboardLayout.tsx` — No changes needed
 
-## Fix — Two changes
+The title already shows in the header. The time period label will be added inside `RanglijstenContent` itself.
 
-### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
-Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
+## File-by-file summary
 
-```tsx
-// Before (line 335):
-<div className="min-w-max w-max">
-
-// After:
-<div className="min-w-max">
-```
-
-### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
-Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
-
-```tsx
-// Before:
-return (
-  <>
-    {/* ... */}
-  </>
-);
-
-// After:
-return (
-  <div className="w-full min-w-0">
-    {/* ... */}
-  </div>
-);
-```
-
-### Why this works
-- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
-- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
-
-### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
-- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+| File | What changes |
+|------|-------------|
+| `src/data/ranglijstenData.ts` | Add `isRocket` to interface + generation logic |
+| `src/pages/TVRanglijsten.tsx` | Rocket icon, dynamic font, single-col non-TV, legend, period label in TV, restrict icons to 4 columns, fix orange opacity |
+| `src/index.css` | Add `tv-rocket` keyframes |
 
