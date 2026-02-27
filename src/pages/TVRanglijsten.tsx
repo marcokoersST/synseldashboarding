@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useLayoutEffect, type ReactNode } from "react";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { getRanglijstenData, ranglijstenFilters, allColumnTitles, getCurrentWeekNumber, getCurrentPeriodNumber } from "@/data/ranglijstenData";
 import type { RankingColumn } from "@/data/ranglijstenData";
@@ -130,6 +130,33 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         {!isPlain && showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket" />}
         {entry.value}
       </span>
+    </div>
+  );
+}
+
+function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCompact: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [useTwoCols, setUseTwoCols] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || !isCompact) { setUseTwoCols(false); return; }
+    el.style.columnCount = '1';
+    const overflows = el.scrollHeight > el.clientHeight + 4;
+    setUseTwoCols(overflows);
+    el.style.columnCount = '';
+  }, [children, isCompact]);
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "mt-1",
+        isCompact && "flex-1 overflow-hidden",
+        useTwoCols ? "columns-2 gap-x-3" : "columns-1"
+      )}
+    >
+      {children}
     </div>
   );
 }
@@ -345,7 +372,6 @@ function RanglijstenContent() {
           const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
           const top3 = isPlain ? [] : col.entries.slice(0, 3);
           const rest = isPlain ? col.entries : col.entries.slice(3);
-          const needsTwoColumns = isCompact && rest.length > 15;
 
           return (
             <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col")}>
@@ -365,11 +391,7 @@ function RanglijstenContent() {
               )}
 
               {/* Rest */}
-              <div className={cn(
-                "mt-1",
-                isCompact && "flex-1 overflow-hidden",
-                needsTwoColumns ? "columns-2 gap-x-3" : "columns-1"
-              )}>
+              <AutoColumnsWrapper isCompact={isCompact}>
                 {rest.map((entry) => (
                   <EntryRow
                     key={`${entry.rank}-${entry.name}`}
@@ -381,7 +403,7 @@ function RanglijstenContent() {
                     isPlain={isPlain}
                   />
                 ))}
-              </div>
+              </AutoColumnsWrapper>
             </div>
           );
         })}
