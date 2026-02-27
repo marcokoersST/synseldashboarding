@@ -158,15 +158,11 @@ function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCo
 
       if (childArray.length <= fitInOne) {
         setLayout({ cols: 1, splitAt: 0, compressed: false });
+      } else if (childArray.length <= fitInOne * 2) {
+        setLayout({ cols: 2, splitAt: fitInOne, compressed: false });
       } else {
-        const fitInTwo = fitInOne * 2;
-        if (childArray.length <= fitInTwo) {
-          setLayout({ cols: 2, splitAt: fitInOne, compressed: false });
-        } else {
-          const compressedRowH = rowH * 0.7;
-          const compFit = Math.floor(available / compressedRowH);
-          setLayout({ cols: 2, splitAt: compFit, compressed: true });
-        }
+        const half = Math.ceil(childArray.length / 2);
+        setLayout({ cols: 2, splitAt: half, compressed: true });
       }
     };
 
