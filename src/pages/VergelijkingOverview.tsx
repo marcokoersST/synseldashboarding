@@ -43,7 +43,7 @@ const VergelijkingOverview = () => {
       </div>
 
       {/* Selector + Quick Insights merged */}
-      <AnimatedCard delay={50} className="mb-6 p-4 h-auto">
+      <AnimatedCard delay={50} className="mb-3 p-4 h-auto">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-medium text-muted-foreground shrink-0">Vergelijk met:</span>
           {otherMembers.map((m) => {
