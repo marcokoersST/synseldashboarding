@@ -37,15 +37,15 @@ const VergelijkingOverview = () => {
   return (
     <>
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <h1 className="text-2xl font-bold text-foreground">Vergelijking</h1>
         <p className="text-sm text-muted-foreground">Vergelijk jouw activiteiten en resultaten met een teamlid</p>
       </div>
 
-      {/* Team member selector */}
+      {/* Selector + Quick Insights merged */}
       <AnimatedCard delay={50} className="mb-6 p-4">
-        <span className="text-sm font-medium text-muted-foreground mr-3">Vergelijk met:</span>
-        <div className="inline-flex gap-2 flex-wrap mt-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium text-muted-foreground shrink-0">Vergelijk met:</span>
           {otherMembers.map((m) => {
             const isActive = m.id === selectedMemberId;
             return (
@@ -67,10 +67,9 @@ const VergelijkingOverview = () => {
             );
           })}
         </div>
-      </AnimatedCard>
 
-      {/* Quick Insights */}
-      <AnimatedCard delay={100} className="mb-6 p-4">
+        <div className="border-t border-border/50 my-3" />
+
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm text-muted-foreground">Je loopt voor op:</span>
