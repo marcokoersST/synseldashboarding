@@ -1,62 +1,110 @@
 
 
-# Fix: Card Width Still Expanding Beyond Viewport
+# Fix: AutoColumnsWrapper not filling available height
 
-## Problem Analysis
+## Root cause
 
-The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
+Two issues:
 
-```text
-<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
-  <>                                             ← Fragment = NO DOM element, no constraints
-    <div flex justify-between>                   ← header with unit selector + Volgorde
-    <section min-w-0 max-w-full overflow-x-hidden>
-      <AnimatedCard overflow-hidden min-w-0>
-        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
-          <div overflow-auto>                             ← scroll container
-            <div min-w-max w-max>                         ← THIS forces intrinsic width
-              <Table>                                     ← wide table
-```
+1. **`useLayoutEffect` fires before the grid/flex layout is fully computed** — `containerRef.current.clientHeight` returns 0 or a partial value on the first render. Since the deps (`children`, `isCompact`, `childArray.length`) don't change afterward, the measurement never re-runs.
 
-**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+2. **Hidden measurer has `h-0`** — the child inside it renders with `overflow: hidden` and height 0, so `getBoundingClientRect().height` on the first child may return 0 or an inaccurate value.
 
-## Fix — Two changes
+## Fix in `src/pages/TVRanglijsten.tsx`
 
-### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
-Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
+### Replace `useLayoutEffect` with `ResizeObserver`
+
+Use a `ResizeObserver` on `containerRef` so the measurement re-triggers whenever the container gets its real height (after the grid layout settles). This solves the timing problem completely.
+
+### Fix the hidden measurer
+
+Change from `h-0 overflow-hidden` to `absolute opacity-0 pointer-events-none` so the child renders at its natural height and can be measured accurately, without affecting visible layout.
+
+### Updated `AutoColumnsWrapper`:
 
 ```tsx
-// Before (line 335):
-<div className="min-w-max w-max">
+function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCompact: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const childArray = useMemo(() => {
+    const arr: ReactNode[] = [];
+    const flatChildren = Array.isArray(children) ? children : [children];
+    flatChildren.forEach(child => { if (child != null) arr.push(child); });
+    return arr;
+  }, [children]);
+  const [layout, setLayout] = useState<{ cols: 1 | 2; splitAt: number; compressed: boolean }>({ cols: 1, splitAt: 0, compressed: false });
 
-// After:
-<div className="min-w-max">
+  useLayoutEffect(() => {
+    if (!isCompact || !containerRef.current || !measureRef.current) return;
+
+    const measure = () => {
+      const firstRow = measureRef.current?.children[0] as HTMLElement;
+      if (!firstRow || !containerRef.current || childArray.length === 0) return;
+      const rowH = firstRow.getBoundingClientRect().height;
+      const available = containerRef.current.clientHeight;
+      if (available <= 0 || rowH <= 0) return;
+      const fitInOne = Math.floor(available / rowH);
+
+      if (childArray.length <= fitInOne) {
+        setLayout({ cols: 1, splitAt: 0, compressed: false });
+      } else {
+        const fitInTwo = fitInOne * 2;
+        if (childArray.length <= fitInTwo) {
+          setLayout({ cols: 2, splitAt: fitInOne, compressed: false });
+        } else {
+          const compressedRowH = rowH * 0.7;
+          const compFit = Math.floor(available / compressedRowH);
+          setLayout({ cols: 2, splitAt: compFit, compressed: true });
+        }
+      }
+    };
+
+    measure(); // try immediately
+
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [children, isCompact, childArray.length]);
+
+  if (!isCompact) return <div className="mt-1">{children}</div>;
+
+  const col1 = layout.cols === 2 ? childArray.slice(0, layout.splitAt) : childArray;
+  const col2 = layout.cols === 2 ? childArray.slice(layout.splitAt) : [];
+
+  return (
+    <div ref={containerRef} className="mt-1 flex-1 min-h-0 overflow-hidden relative">
+      {/* Measurer: rendered at natural height but invisible */}
+      <div ref={measureRef} className="absolute opacity-0 pointer-events-none w-full">
+        {childArray.slice(0, 1)}
+      </div>
+      <div className={cn("h-full", layout.cols === 2 ? "flex gap-x-2" : "")}>
+        <div className={cn("flex flex-col", layout.cols === 2 && "flex-1 min-w-0")}>
+          {col1.map((child, i) => (
+            <div key={i} className={layout.compressed ? "[&>div]:py-0 [&>div]:gap-0.5 [&>div]:text-[9px]" : ""}>
+              {child}
+            </div>
+          ))}
+        </div>
+        {col2.length > 0 && (
+          <div className="flex-1 min-w-0 flex flex-col">
+            {col2.map((child, i) => (
+              <div key={i} className={layout.compressed ? "[&>div]:py-0 [&>div]:gap-0.5 [&>div]:text-[9px]" : ""}>
+                {child}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 ```
 
-### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
-Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
-
-```tsx
-// Before:
-return (
-  <>
-    {/* ... */}
-  </>
-);
-
-// After:
-return (
-  <div className="w-full min-w-0">
-    {/* ... */}
-  </div>
-);
-```
-
-### Why this works
-- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
-- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
+### Key changes
+- **`ResizeObserver`** re-triggers measurement when the container's actual height becomes available (solves the timing issue)
+- **Measurer uses `opacity-0 pointer-events-none`** instead of `h-0 overflow-hidden` so child height is measurable
+- **`measure()` called immediately** in `useLayoutEffect` as well, for fastest possible first paint
 
 ### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
-- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+- `src/pages/TVRanglijsten.tsx` — rewrite `AutoColumnsWrapper` measurement logic (lines 137-201)
 
