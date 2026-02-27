@@ -152,7 +152,7 @@ function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCo
       ref={ref}
       className={cn(
         "mt-1",
-        isCompact && "flex-1 overflow-hidden",
+        isCompact && "flex-1 min-h-0 overflow-hidden",
         useTwoCols ? "columns-2 gap-x-3" : "columns-1"
       )}
     >
