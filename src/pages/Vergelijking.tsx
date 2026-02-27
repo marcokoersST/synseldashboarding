@@ -58,7 +58,7 @@ const Vergelijking = () => {
       </div>
 
       {/* Quick Insights */}
-      <AnimatedCard delay={100} className="mb-6 p-4">
+      <AnimatedCard delay={100} className="mb-6 p-4 h-auto">
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Je loopt voor op:</span>
@@ -82,7 +82,7 @@ const Vergelijking = () => {
       </div>
 
       {/* Detailed Metric Comparison */}
-      <AnimatedCard delay={400} className="p-6">
+      <AnimatedCard delay={400} className="p-6 h-auto">
         <h2 className="text-lg font-semibold text-foreground mb-4 text-center">Gedetailleerde Vergelijking</h2>
         <div className="grid grid-cols-[1fr,auto,1fr] gap-4 mb-4 pb-2 border-b border-border">
           <div className="text-right"><span className="text-sm font-medium text-primary">Jij (Plek #{currentUserRank})</span></div>
