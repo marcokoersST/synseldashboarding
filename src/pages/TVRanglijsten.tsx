@@ -135,28 +135,68 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
 }
 
 function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCompact: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [useTwoCols, setUseTwoCols] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const childArray = useMemo(() => {
+    const arr: ReactNode[] = [];
+    const flatChildren = Array.isArray(children) ? children : [children];
+    flatChildren.forEach(child => { if (child != null) arr.push(child); });
+    return arr;
+  }, [children]);
+  const [layout, setLayout] = useState<{ cols: 1 | 2; splitAt: number; compressed: boolean }>({ cols: 1, splitAt: 0, compressed: false });
 
   useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el || !isCompact) { setUseTwoCols(false); return; }
-    el.style.columnCount = '1';
-    const overflows = el.scrollHeight > el.clientHeight + 4;
-    setUseTwoCols(overflows);
-    el.style.columnCount = '';
-  }, [children, isCompact]);
+    if (!isCompact || !containerRef.current || !measureRef.current || childArray.length === 0) {
+      setLayout({ cols: 1, splitAt: 0, compressed: false });
+      return;
+    }
+    const firstRow = measureRef.current.children[0] as HTMLElement;
+    if (!firstRow) return;
+    const rowH = firstRow.getBoundingClientRect().height;
+    const available = containerRef.current.clientHeight;
+    if (available <= 0 || rowH <= 0) return;
+    const fitInOne = Math.floor(available / rowH);
+
+    if (childArray.length <= fitInOne) {
+      setLayout({ cols: 1, splitAt: 0, compressed: false });
+    } else {
+      const fitInTwo = fitInOne * 2;
+      if (childArray.length <= fitInTwo) {
+        setLayout({ cols: 2, splitAt: fitInOne, compressed: false });
+      } else {
+        const compressedRowH = rowH * 0.7;
+        const compFit = Math.floor(available / compressedRowH);
+        setLayout({ cols: 2, splitAt: compFit, compressed: true });
+      }
+    }
+  }, [children, isCompact, childArray.length]);
+
+  if (!isCompact) return <div className="mt-1">{children}</div>;
+
+  const col1 = layout.cols === 2 ? childArray.slice(0, layout.splitAt) : childArray;
+  const col2 = layout.cols === 2 ? childArray.slice(layout.splitAt) : [];
 
   return (
-    <div
-      ref={ref}
-      className={cn(
-        "mt-1",
-        isCompact && "flex-1 min-h-0 overflow-hidden",
-        useTwoCols ? "columns-2 gap-x-3 [&>div]:py-0.5 [&>div]:gap-1" : "columns-1"
-      )}
-    >
-      {children}
+    <div ref={containerRef} className="mt-1 flex-1 min-h-0 overflow-hidden relative">
+      <div ref={measureRef} className="absolute invisible h-0 overflow-hidden w-full">{childArray.slice(0, 1)}</div>
+      <div className={cn("h-full", layout.cols === 2 ? "flex gap-x-2" : "")}>
+        <div className={cn("flex flex-col", layout.cols === 2 && "flex-1 min-w-0")}>
+          {col1.map((child, i) => (
+            <div key={i} className={layout.compressed ? "[&>div]:py-0 [&>div]:gap-0.5 [&>div]:text-[9px]" : ""}>
+              {child}
+            </div>
+          ))}
+        </div>
+        {col2.length > 0 && (
+          <div className="flex-1 min-w-0 flex flex-col">
+            {col2.map((child, i) => (
+              <div key={i} className={layout.compressed ? "[&>div]:py-0 [&>div]:gap-0.5 [&>div]:text-[9px]" : ""}>
+                {child}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
