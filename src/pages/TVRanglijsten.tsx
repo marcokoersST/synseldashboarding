@@ -116,7 +116,6 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
-          fontSize: isTop3 ? undefined : "clamp(9px, 1.1vw, 11px)"
         }}
       >
         {shownName}
