@@ -134,6 +134,33 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
   );
 }
 
+function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCompact: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [useTwoCols, setUseTwoCols] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || !isCompact) { setUseTwoCols(false); return; }
+    el.style.columnCount = '1';
+    const overflows = el.scrollHeight > el.clientHeight + 4;
+    setUseTwoCols(overflows);
+    el.style.columnCount = '';
+  }, [children, isCompact]);
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "mt-1",
+        isCompact && "flex-1 overflow-hidden",
+        useTwoCols ? "columns-2 gap-x-3" : "columns-1"
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 function applyUnitFilter(columns: RankingColumn[], selectedUnits: string[]): RankingColumn[] {
   if (selectedUnits.includes("Alle units")) return columns;
   return columns.map(col => {
