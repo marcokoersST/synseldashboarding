@@ -56,6 +56,7 @@ const HendrikWerkgeluk = lazy(() => import("./pages/hendrik/Werkgeluk"));
 
 // Peter-Jan dashboards
 const PeterJanSalesFlow = lazy(() => import("./pages/peter-jan/SalesFlowDashboards"));
+const PeterJanAcquisitieFunnel = lazy(() => import("./pages/peter-jan/AcquisitieFunnel"));
 // AcquisitieConversie merged into ManagerSalesFunnel
 
 const queryClient = new QueryClient();
@@ -117,6 +118,7 @@ const App = () => (
               <Route path="/hendrik/kandidaat-relatie" element={<HendrikKandidaatRelatie />} />
               <Route path="/hendrik/werkgeluk" element={<HendrikWerkgeluk />} />
               <Route path="/peter-jan/sales-flow" element={<PeterJanSalesFlow />} />
+              <Route path="/peter-jan/acquisitie-funnel" element={<PeterJanAcquisitieFunnel />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
