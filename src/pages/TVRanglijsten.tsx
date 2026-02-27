@@ -8,7 +8,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus } from "lucide-react";
+import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, Rocket } from "lucide-react";
+
+const STATUS_ICON_COLUMNS = new Set(["Acquisities", "Gesprekken", "Intakes", "Plaatsingen"]);
 
 function ComparisonBar({ current, previous }: { current: number; previous: number }) {
   const delta = previous > 0 ? ((current - previous) / previous) * 100 : 0;
@@ -73,13 +75,14 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
 }
 
 interface EntryRowProps {
-  entry: { rank: number; name: string; firstName: string; lastName: string; value: number; isHot?: boolean };
+  entry: { rank: number; name: string; firstName: string; lastName: string; value: number; isHot?: boolean; isRocket?: boolean };
   displayName?: string;
   compact?: boolean;
   isNegative?: boolean;
+  showStatusIcons?: boolean;
 }
 
-function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons }: EntryRowProps) {
   const isTop3 = entry.rank <= 3;
   const shownName = displayName ?? entry.name;
   return (
@@ -90,7 +93,7 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
         compact ? "text-xs" : "text-sm",
         getRankStyle(entry.rank, isNegative),
         entry.isHot && entry.value > 0 && "bg-orange-50/60",
-        entry.value === 0 && "opacity-25 text-orange-600"
+        entry.value === 0 && "text-orange-600"
       )}
     >
       <span className={cn(
@@ -101,11 +104,20 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
         <RankIcon rank={entry.rank} isTop3={isTop3} isNegative={isNegative} />
         {entry.rank > 3 && `${entry.rank}.`}
       </span>
-      <span className={cn(
-        "min-w-0 truncate", entry.value !== 0 && "text-foreground",
-        isTop3 ? "text-base font-bold" : "",
-        entry.isHot && entry.value > 0 && "text-orange-700 font-medium"
-      )}>
+      <span
+        className={cn(
+          "min-w-0 text-foreground",
+          isTop3 ? "text-base font-bold" : "text-[11px]",
+          entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
+          entry.value === 0 && "text-orange-600"
+        )}
+        style={{ 
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          fontSize: isTop3 ? undefined : "clamp(9px, 1.1vw, 11px)"
+        }}
+      >
         {shownName}
       </span>
       <span className={cn(
@@ -113,7 +125,8 @@ function EntryRow({ entry, displayName, compact, isNegative }: EntryRowProps) {
         isTop3 ? "text-base font-bold" : "font-semibold",
         entry.value !== 0 && "text-foreground"
       )}>
-        {entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
+        {showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
+        {showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket" />}
         {entry.value}
       </span>
     </div>
@@ -127,7 +140,6 @@ function applyUnitFilter(columns: RankingColumn[], selectedUnits: string[]): Ran
       .filter(e => selectedUnits.includes((e as any).unit))
       .map((e, i) => ({ ...e, rank: i + 1 }));
     const total = filtered.reduce((s, e) => s + e.value, 0);
-    // Recalculate previousTotal proportionally
     const ratio = col.total > 0 ? total / col.total : 0;
     const previousTotal = Math.round(col.previousTotal * ratio);
     return { ...col, entries: filtered, total, previousTotal };
@@ -160,15 +172,14 @@ function RanglijstenContent() {
     });
   }, []);
 
-  // Get data based on current filter state
-  const rawColumns = useMemo(() => {
-    const num = tvViewMode === "week"
-      ? parseInt(selectedWeek.replace("W", ""), 10)
-      : parseInt(selectedPeriode.replace("P", ""), 10);
-    return getRanglijstenData(parseInt(jaar, 10), tvViewMode, num);
-  }, [jaar, tvViewMode, selectedWeek, selectedPeriode]);
+  const currentNum = tvViewMode === "week"
+    ? parseInt(selectedWeek.replace("W", ""), 10)
+    : parseInt(selectedPeriode.replace("P", ""), 10);
 
-  // Apply unit filter + column filter
+  const rawColumns = useMemo(() => {
+    return getRanglijstenData(parseInt(jaar, 10), tvViewMode, currentNum);
+  }, [jaar, tvViewMode, currentNum]);
+
   const columns = useMemo(() => {
     const unitFiltered = applyUnitFilter(rawColumns, selectedUnits);
     return unitFiltered.filter((col) => selectedColumns.includes(col.title));
@@ -178,6 +189,13 @@ function RanglijstenContent() {
     <div className={cn(isCompact && "flex flex-col h-full")}>
       {/* Filters */}
       <div className={cn("flex items-center gap-4", isCompact ? "mb-2" : "mb-4")}>
+        {isCompact && (
+          <div className="flex items-center gap-2">
+            <Badge variant="default" className="text-sm font-semibold">
+              {tvViewMode === "week" ? `Week ${currentNum}` : `Periode ${currentNum}`}
+            </Badge>
+          </div>
+        )}
         {!isCompact && (
           <>
             <Select value={jaar} onValueChange={setJaar}>
@@ -299,11 +317,18 @@ function RanglijstenContent() {
         )}
       </div>
 
-      {/* On Fire Legend */}
-      <div className={cn("flex items-center gap-2 mb-3", isCompact ? "text-xs" : "text-sm")}>
-        <Flame className="w-4 h-4 text-orange-500" />
-        <span className="font-semibold text-orange-700">On Fire</span>
-        <span className="text-muted-foreground">— Consultant met hoge groei en momentum deze periode</span>
+      {/* Legend */}
+      <div className={cn("flex flex-wrap items-start gap-x-6 gap-y-1 mb-3", isCompact ? "text-[10px]" : "text-xs")}>
+        <div className="flex items-center gap-1.5">
+          <Flame className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+          <span className="font-semibold text-orange-700">On Fire</span>
+          <span className="text-muted-foreground">— Min. +30% groei t.o.v. vorige periode (rolling)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Rocket className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+          <span className="font-semibold text-blue-600">Raket</span>
+          <span className="text-muted-foreground">— Min. 3 posities ingehaald in laatste 5 dagen. Vervalt bij inhaalactie of na 5 dagen.</span>
+        </div>
       </div>
 
       {/* Ranking Columns */}
@@ -313,9 +338,11 @@ function RanglijstenContent() {
       >
         {columns.map((col) => {
           const isNegative = col.title === "Niet begonnen";
+          const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
           const top3 = col.entries.slice(0, 3);
           const rest = col.entries.slice(3);
-          const needsTwoColumns = rest.length > 37;
+          // Only split into two columns in TV mode when truly overflowing
+          const needsTwoColumns = isCompact && rest.length > 37;
 
           return (
             <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col")}>
@@ -328,11 +355,11 @@ function RanglijstenContent() {
               {/* Top 3 full-width */}
               <div className="mt-3 space-y-0">
                 {top3.map((entry) => (
-                  <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} />
+                  <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} />
                 ))}
               </div>
 
-              {/* Rest: flow into columns dynamically */}
+              {/* Rest */}
               <div className={cn(
                 "mt-1",
                 isCompact && "flex-1",
@@ -345,6 +372,7 @@ function RanglijstenContent() {
                     displayName={`${entry.firstName} ${entry.lastName[0]}.`}
                     compact
                     isNegative={isNegative}
+                    showStatusIcons={showStatusIcons}
                   />
                 ))}
               </div>
