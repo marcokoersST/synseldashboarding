@@ -80,6 +80,7 @@ interface EntryRowProps {
   compact?: boolean;
   isNegative?: boolean;
   showStatusIcons?: boolean;
+  isPlain?: boolean;
 }
 
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons }: EntryRowProps) {
