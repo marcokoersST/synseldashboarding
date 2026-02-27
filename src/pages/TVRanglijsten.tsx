@@ -182,7 +182,7 @@ function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCo
       <div className={cn("h-full", layout.cols === 2 ? "flex gap-x-2" : "")}>
         <div className={cn("flex flex-col", layout.cols === 2 && "flex-1 min-w-0")}>
           {col1.map((child, i) => (
-            <div key={i} className={layout.compressed ? "[&>div]:py-0 [&>div]:gap-0.5 [&>div]:text-[9px]" : ""}>
+              <div key={i} className={layout.compressed ? "[&>div]:py-px [&>div]:gap-0.5 [&>div]:text-[10px]" : ""}>
               {child}
             </div>
           ))}
@@ -190,7 +190,7 @@ function AutoColumnsWrapper({ children, isCompact }: { children: ReactNode; isCo
         {col2.length > 0 && (
           <div className="flex-1 min-w-0 flex flex-col">
             {col2.map((child, i) => (
-              <div key={i} className={layout.compressed ? "[&>div]:py-0 [&>div]:gap-0.5 [&>div]:text-[9px]" : ""}>
+              <div key={i} className={layout.compressed ? "[&>div]:py-px [&>div]:gap-0.5 [&>div]:text-[10px]" : ""}>
                 {child}
               </div>
             ))}
