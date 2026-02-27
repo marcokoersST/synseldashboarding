@@ -191,11 +191,13 @@ function RanglijstenContent() {
       {/* Filters */}
       <div className={cn("flex items-center gap-4", isCompact ? "mb-2" : "mb-4")}>
         {isCompact && (
-          <div className="flex items-center gap-2">
-            <Badge variant="default" className="text-lg font-semibold px-4 py-1">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            Ranglijsten
+            <span className="text-primary">·</span>
+            <span className="text-primary">
               {tvViewMode === "week" ? `Week ${currentNum}` : `Periode ${currentNum}`}
-            </Badge>
-          </div>
+            </span>
+          </h1>
         )}
         {!isCompact && (
           <>
