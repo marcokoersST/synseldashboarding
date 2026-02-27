@@ -191,11 +191,13 @@ function RanglijstenContent() {
       {/* Filters */}
       <div className={cn("flex items-center gap-4", isCompact ? "mb-2" : "mb-4")}>
         {isCompact && (
-          <div className="flex items-center gap-2">
-            <Badge variant="default" className="text-lg font-semibold px-4 py-1">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            Ranglijsten
+            <span className="text-primary">·</span>
+            <span className="text-primary">
               {tvViewMode === "week" ? `Week ${currentNum}` : `Periode ${currentNum}`}
-            </Badge>
-          </div>
+            </span>
+          </h1>
         )}
         {!isCompact && (
           <>
@@ -319,16 +321,16 @@ function RanglijstenContent() {
       </div>
 
       {/* Legend */}
-      <div className={cn("flex flex-wrap items-start gap-x-6 gap-y-1 mb-3", isCompact ? "text-[10px]" : "text-xs")}>
-        <div className="flex items-center gap-1.5">
-          <Flame className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-          <span className="font-semibold text-orange-700">On Fire</span>
+      <div className={cn("flex flex-wrap items-start gap-2 mb-3", isCompact ? "text-xs" : "text-sm")}>
+        <div className="flex items-center gap-2 rounded-lg bg-muted/50 border border-border/40 px-3 py-1.5">
+          <Flame className="w-4 h-4 text-orange-500 shrink-0" />
+          <span className="font-bold text-orange-700">On Fire</span>
           <span className="text-muted-foreground">— Min. +30% groei t.o.v. vorige periode (rolling)</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Rocket className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-          <span className="font-semibold text-blue-600">Raket</span>
-          <span className="text-muted-foreground">— Min. 3 posities ingehaald in laatste 5 dagen. Vervalt bij inhaalactie of na 5 dagen.</span>
+        <div className="flex items-center gap-2 rounded-lg bg-muted/50 border border-border/40 px-3 py-1.5">
+          <Rocket className="w-4 h-4 text-blue-500 shrink-0" />
+          <span className="font-bold text-blue-600">Raket</span>
+          <span className="text-muted-foreground">— Min. 3 posities ingehaald in laatste 5 dagen</span>
         </div>
       </div>
 

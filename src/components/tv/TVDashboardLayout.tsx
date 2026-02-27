@@ -47,7 +47,7 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
       >
         <div className={cn(isFullscreen && "p-4 h-screen flex flex-col")}>
           <div className={cn("flex items-center justify-between", isFullscreen ? "mb-2" : "mb-8")}>
-            <h1 className={cn("font-bold text-foreground", isFullscreen ? "text-xl" : "text-2xl")}>{title}</h1>
+            {!isFullscreen && <h1 className="text-2xl font-bold text-foreground">{title}</h1>}
             <button
               onClick={toggleFullscreen}
               className={cn(
