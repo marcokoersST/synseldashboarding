@@ -339,10 +339,10 @@ function RanglijstenContent() {
       >
         {columns.map((col) => {
           const isNegative = col.title === "Niet begonnen";
+          const isPlain = col.title === "Inschrijvingen";
           const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
-          const top3 = col.entries.slice(0, 3);
-          const rest = col.entries.slice(3);
-          // Only split into two columns in TV mode when truly overflowing
+          const top3 = isPlain ? [] : col.entries.slice(0, 3);
+          const rest = isPlain ? col.entries : col.entries.slice(3);
           const needsTwoColumns = isCompact && rest.length > 37;
 
           return (
@@ -354,11 +354,13 @@ function RanglijstenContent() {
               <ComparisonBar current={col.total} previous={col.previousTotal} />
 
               {/* Top 3 full-width */}
-              <div className="mt-3 space-y-0">
-                {top3.map((entry) => (
-                  <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} />
-                ))}
-              </div>
+              {top3.length > 0 && (
+                <div className="mt-3 space-y-0">
+                  {top3.map((entry) => (
+                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} />
+                  ))}
+                </div>
+              )}
 
               {/* Rest */}
               <div className={cn(
@@ -374,6 +376,7 @@ function RanglijstenContent() {
                     compact
                     isNegative={isNegative}
                     showStatusIcons={showStatusIcons}
+                    isPlain={isPlain}
                   />
                 ))}
               </div>
