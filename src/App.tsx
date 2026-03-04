@@ -59,6 +59,9 @@ const PeterJanSalesFlow = lazy(() => import("./pages/peter-jan/SalesFlowDashboar
 const PeterJanAcquisitieFunnel = lazy(() => import("./pages/peter-jan/AcquisitieFunnel"));
 // AcquisitieConversie merged into ManagerSalesFunnel
 
+// Marketing dashboards
+const MarketingInschrijvingen = lazy(() => import("./pages/marketing/InschrijvingenDashboard"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
