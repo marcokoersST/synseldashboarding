@@ -167,6 +167,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnHendrikPage = location.pathname.startsWith("/hendrik/");
   const isOnPeterJanPage = location.pathname.startsWith("/peter-jan/");
   const isOnManagerPage = location.pathname.startsWith("/manager-dashboard");
+  const isOnMarketingPage = location.pathname.startsWith("/marketing");
   
   const autoExpanded = [
     ...(isOnComparisonPage ? ["/"] : []),
