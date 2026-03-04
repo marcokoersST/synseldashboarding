@@ -26,7 +26,8 @@ import {
    Timer,
    HeartHandshake,
    Smile,
-   LineChart
+   LineChart,
+   Megaphone
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -117,6 +118,12 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: Megaphone,
+    label: "Marketing Dashboards",
+    path: "/marketing",
+    subItems: []
+  },
+  {
     icon: Shield,
     label: "Super Admin",
     path: "/super-admin",
@@ -160,6 +167,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnHendrikPage = location.pathname.startsWith("/hendrik/");
   const isOnPeterJanPage = location.pathname.startsWith("/peter-jan/");
   const isOnManagerPage = location.pathname.startsWith("/manager-dashboard");
+  const isOnMarketingPage = location.pathname.startsWith("/marketing");
   
   const autoExpanded = [
     ...(isOnComparisonPage ? ["/"] : []),
@@ -168,6 +176,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
     ...(isOnHendrikPage ? ["/hendrik/overzicht"] : []),
     ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
+    ...(isOnMarketingPage ? ["/marketing"] : []),
     ...(isOnManagerPage ? ["/manager-dashboard"] : []),
   ].filter(path => !manuallyCollapsed.includes(path));
 
