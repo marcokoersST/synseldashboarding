@@ -121,7 +121,9 @@ const navItems: NavItem[] = [
     icon: Megaphone,
     label: "Marketing Dashboards",
     path: "/marketing",
-    subItems: []
+    subItems: [
+      { icon: ClipboardCheck, label: "Inschrijvingen", path: "/marketing/inschrijvingen" },
+    ]
   },
   {
     icon: Shield,
