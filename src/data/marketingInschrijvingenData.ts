@@ -16,18 +16,18 @@ export interface ConsultantInschrijving {
 }
 
 export const consultantData: ConsultantInschrijving[] = [
-  { name: "Lisa de Vries", unit: "IT", current: { totaalVerwerkt: 42, nietGebeld: 5, doorgezet: 28, afgewezen: 9 }, previous: { totaalVerwerkt: 38, nietGebeld: 7, doorgezet: 23, afgewezen: 8 } },
-  { name: "Mark Jansen", unit: "IT", current: { totaalVerwerkt: 35, nietGebeld: 8, doorgezet: 19, afgewezen: 8 }, previous: { totaalVerwerkt: 30, nietGebeld: 5, doorgezet: 18, afgewezen: 7 } },
-  { name: "Sophie Bakker", unit: "Finance", current: { totaalVerwerkt: 28, nietGebeld: 2, doorgezet: 20, afgewezen: 6 }, previous: { totaalVerwerkt: 25, nietGebeld: 4, doorgezet: 16, afgewezen: 5 } },
-  { name: "Tom Hendriks", unit: "Finance", current: { totaalVerwerkt: 31, nietGebeld: 10, doorgezet: 14, afgewezen: 7 }, previous: { totaalVerwerkt: 29, nietGebeld: 6, doorgezet: 17, afgewezen: 6 } },
-  { name: "Eva Smit", unit: "HR", current: { totaalVerwerkt: 22, nietGebeld: 1, doorgezet: 17, afgewezen: 4 }, previous: { totaalVerwerkt: 20, nietGebeld: 3, doorgezet: 13, afgewezen: 4 } },
-  { name: "Daan Peters", unit: "HR", current: { totaalVerwerkt: 19, nietGebeld: 6, doorgezet: 9, afgewezen: 4 }, previous: { totaalVerwerkt: 21, nietGebeld: 4, doorgezet: 12, afgewezen: 5 } },
-  { name: "Julia van Dijk", unit: "Engineering", current: { totaalVerwerkt: 45, nietGebeld: 3, doorgezet: 32, afgewezen: 10 }, previous: { totaalVerwerkt: 40, nietGebeld: 5, doorgezet: 27, afgewezen: 8 } },
-  { name: "Ruben Visser", unit: "Engineering", current: { totaalVerwerkt: 38, nietGebeld: 12, doorgezet: 18, afgewezen: 8 }, previous: { totaalVerwerkt: 34, nietGebeld: 8, doorgezet: 20, afgewezen: 6 } },
-  { name: "Anna Mulder", unit: "Sales", current: { totaalVerwerkt: 33, nietGebeld: 4, doorgezet: 22, afgewezen: 7 }, previous: { totaalVerwerkt: 28, nietGebeld: 3, doorgezet: 19, afgewezen: 6 } },
-  { name: "Bas de Groot", unit: "Sales", current: { totaalVerwerkt: 26, nietGebeld: 9, doorgezet: 12, afgewezen: 5 }, previous: { totaalVerwerkt: 24, nietGebeld: 7, doorgezet: 13, afgewezen: 4 } },
-  { name: "Lotte Bos", unit: "IT", current: { totaalVerwerkt: 30, nietGebeld: 3, doorgezet: 21, afgewezen: 6 }, previous: { totaalVerwerkt: 27, nietGebeld: 4, doorgezet: 18, afgewezen: 5 } },
-  { name: "Sander Kok", unit: "Finance", current: { totaalVerwerkt: 24, nietGebeld: 7, doorgezet: 12, afgewezen: 5 }, previous: { totaalVerwerkt: 22, nietGebeld: 5, doorgezet: 13, afgewezen: 4 } },
+  { name: "Lisa de Vries", unit: "Engineering", current: { totaalVerwerkt: 42, nietGebeld: 5, doorgezet: 28, afgewezen: 9 }, previous: { totaalVerwerkt: 38, nietGebeld: 7, doorgezet: 23, afgewezen: 8 } },
+  { name: "Mark Jansen", unit: "Engineering", current: { totaalVerwerkt: 35, nietGebeld: 8, doorgezet: 19, afgewezen: 8 }, previous: { totaalVerwerkt: 30, nietGebeld: 5, doorgezet: 18, afgewezen: 7 } },
+  { name: "Sophie Bakker", unit: "Monteurs", current: { totaalVerwerkt: 28, nietGebeld: 2, doorgezet: 20, afgewezen: 6 }, previous: { totaalVerwerkt: 25, nietGebeld: 4, doorgezet: 16, afgewezen: 5 } },
+  { name: "Tom Hendriks", unit: "Monteurs", current: { totaalVerwerkt: 31, nietGebeld: 10, doorgezet: 14, afgewezen: 7 }, previous: { totaalVerwerkt: 29, nietGebeld: 6, doorgezet: 17, afgewezen: 6 } },
+  { name: "Eva Smit", unit: "Operators", current: { totaalVerwerkt: 22, nietGebeld: 1, doorgezet: 17, afgewezen: 4 }, previous: { totaalVerwerkt: 20, nietGebeld: 3, doorgezet: 13, afgewezen: 4 } },
+  { name: "Daan Peters", unit: "Operators", current: { totaalVerwerkt: 19, nietGebeld: 6, doorgezet: 9, afgewezen: 4 }, previous: { totaalVerwerkt: 21, nietGebeld: 4, doorgezet: 12, afgewezen: 5 } },
+  { name: "Julia van Dijk", unit: "Trainingsunit", current: { totaalVerwerkt: 45, nietGebeld: 3, doorgezet: 32, afgewezen: 10 }, previous: { totaalVerwerkt: 40, nietGebeld: 5, doorgezet: 27, afgewezen: 8 } },
+  { name: "Ruben Visser", unit: "Trainingsunit", current: { totaalVerwerkt: 38, nietGebeld: 12, doorgezet: 18, afgewezen: 8 }, previous: { totaalVerwerkt: 34, nietGebeld: 8, doorgezet: 20, afgewezen: 6 } },
+  { name: "Anna Mulder", unit: "Early Performers", current: { totaalVerwerkt: 33, nietGebeld: 4, doorgezet: 22, afgewezen: 7 }, previous: { totaalVerwerkt: 28, nietGebeld: 3, doorgezet: 19, afgewezen: 6 } },
+  { name: "Bas de Groot", unit: "Early Performers", current: { totaalVerwerkt: 26, nietGebeld: 9, doorgezet: 12, afgewezen: 5 }, previous: { totaalVerwerkt: 24, nietGebeld: 7, doorgezet: 13, afgewezen: 4 } },
+  { name: "Lotte Bos", unit: "Engineering", current: { totaalVerwerkt: 30, nietGebeld: 3, doorgezet: 21, afgewezen: 6 }, previous: { totaalVerwerkt: 27, nietGebeld: 4, doorgezet: 18, afgewezen: 5 } },
+  { name: "Sander Kok", unit: "Monteurs", current: { totaalVerwerkt: 24, nietGebeld: 7, doorgezet: 12, afgewezen: 5 }, previous: { totaalVerwerkt: 22, nietGebeld: 5, doorgezet: 13, afgewezen: 4 } },
 ];
 
 export const businessUnits = [...new Set(consultantData.map(c => c.unit))];
