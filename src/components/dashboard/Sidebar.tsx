@@ -118,6 +118,12 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: Megaphone,
+    label: "Marketing Dashboards",
+    path: "/marketing",
+    subItems: []
+  },
+  {
     icon: Shield,
     label: "Super Admin",
     path: "/super-admin",
