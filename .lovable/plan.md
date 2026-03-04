@@ -1,62 +1,73 @@
 
 
-# Fix: Card Width Still Expanding Beyond Viewport
+# Plan: Inschrijvingen Dashboard (Marketing)
 
-## Problem Analysis
+## Overzicht
+Volledig marketing-dashboard met KPI-tiles, vergelijk-toggle, filters en consultant-tabel. Alles met mock-data, gestyled conform bestaande dashboard-stijl.
 
-The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
+## Nieuwe bestanden
 
-```text
-<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
-  <>                                             ← Fragment = NO DOM element, no constraints
-    <div flex justify-between>                   ← header with unit selector + Volgorde
-    <section min-w-0 max-w-full overflow-x-hidden>
-      <AnimatedCard overflow-hidden min-w-0>
-        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
-          <div overflow-auto>                             ← scroll container
-            <div min-w-max w-max>                         ← THIS forces intrinsic width
-              <Table>                                     ← wide table
+### 1. `src/data/marketingInschrijvingenData.ts`
+Mock-data met ~12 consultants, elk met:
+- `name`, `unit`, `totaalVerwerkt`, `nietGebeld`, `doorgezet`, `afgewezen`
+- Twee periodes (current + previous) voor compare-functionaliteit
+- Helper functies voor filtering op consultant/unit en periode-aggregatie
+
+### 2. `src/pages/marketing/InschrijvingenDashboard.tsx`
+Hoofdpagina met `ConsultantLayout`, titel "Inschrijvingen Dashboard".
+
+**State management:**
+- `dateRange` (default: laatste 7 dagen)
+- `compareEnabled` (toggle, default: uit)
+- `comparePeriod` ("previous" | "custom")
+- `customCompareRange` (optioneel)
+- `selectedConsultant` (dropdown, default: alle)
+- `selectedUnit` (dropdown, default: alle)
+
+**Sectie 1 - Header:**
+Titel + welkomtekst + datum (hergebruik `WelcomeHeader` patroon)
+
+**Sectie 2 - Filters (2 rijen):**
+- Rij 1: Date range picker (Popover + Calendar, 2 datums) | Compare toggle (Switch)
+- Rij 2: Consultant dropdown (Select) | Business Unit dropdown (Select)
+- Bij compare=aan: extra rij met radio (Vorige periode / Aangepaste periode) + optioneel date picker
+
+**Sectie 3 - KPI Tiles (3 cards in grid):**
+
+| Tile | Primary | Secondary |
+|------|---------|-----------|
+| Totaal Verwerkt | absoluut getal | Δ bij compare |
+| % Niet Gebeld | percentage | "Niet gebeld: n" + Δ |
+| Doorgezet vs Afgewezen | stacked progress bar (groen/oranje) | beide % + Δ |
+
+Delta's: groene ArrowUp bij verbetering, rode ArrowDown bij verslechtering.
+
+**Sectie 4 - Consultant Tabel:**
+Kolommen: Consultant | Unit | Totaal | Niet gebeld (n + % badge) | Doorgezet (n + % badge) | Afgewezen (n + % badge)
+- Badge kleuren: niet-gebeld rood bij >30% / groen bij <10%, doorgezet groen, afgewezen oranje
+- Bij compare: subtekst "Δ +n / +x.xpp" per cel
+- Totaalrij onderaan
+
+## Gewijzigde bestanden
+
+### 3. `src/components/dashboard/Sidebar.tsx`
+Voeg sub-item toe aan Marketing Dashboards sectie:
+```
+{ icon: ClipboardCheck, label: "Inschrijvingen", path: "/marketing/inschrijvingen" }
 ```
 
-**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+### 4. `src/App.tsx`
+- Lazy import: `const MarketingInschrijvingen = lazy(() => import("./pages/marketing/InschrijvingenDashboard"));`
+- Route: `<Route path="/marketing/inschrijvingen" element={<MarketingInschrijvingen />} />`
 
-## Fix — Two changes
+## Technische details
 
-### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
-Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
-
-```tsx
-// Before (line 335):
-<div className="min-w-max w-max">
-
-// After:
-<div className="min-w-max">
-```
-
-### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
-Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
-
-```tsx
-// Before:
-return (
-  <>
-    {/* ... */}
-  </>
-);
-
-// After:
-return (
-  <div className="w-full min-w-0">
-    {/* ... */}
-  </div>
-);
-```
-
-### Why this works
-- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
-- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
-
-### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
-- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+- Date range picker: shadcn Popover + Calendar (mode="range") met `pointer-events-auto`
+- Compare toggle: shadcn Switch
+- Dropdowns: shadcn Select
+- KPI tiles: Card + AnimatedNumber voor waarden
+- Delta indicators: `ArrowUp`/`ArrowDown` lucide icons met conditionele kleuring
+- Progress bar (doorgezet/afgewezen): custom stacked div met percentage widths
+- Tabel: shadcn Table met Badge voor percentages
+- Alle data is mock/statisch, filters werken client-side via `useMemo`
 
