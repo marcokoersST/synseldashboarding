@@ -8,13 +8,21 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpRight, ArrowDownRight, TrendingUp } from "lucide-react";
-import { omzetConsultants, allPeriodes, getOmzetForPeriodes } from "@/data/omzetDashboardData";
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Trophy, Medal, Flame, Rocket, Star } from "lucide-react";
+import { omzetConsultants, allPeriodes, getOmzetForPeriodes, unitAbbr } from "@/data/omzetDashboardData";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 
 function formatCurrency(val: number) {
   return `€${val.toLocaleString("nl-NL")}`;
 }
+
+const rankIcons = [
+  <Trophy className="h-4 w-4 text-yellow-500" />,
+  <Medal className="h-4 w-4 text-slate-400" />,
+  <Medal className="h-4 w-4 text-amber-600" />,
+  <Flame className="h-4 w-4 text-orange-500" />,
+  <Rocket className="h-4 w-4 text-primary" />,
+];
 
 const OmzetDashboard = () => {
   const [periode1, setPeriode1] = useState("P4");
@@ -145,10 +153,15 @@ const OmzetDashboard = () => {
             </TableHeader>
             <TableBody>
               {filtered.map((row, idx) => (
-                <TableRow key={row.name}>
-                  <TableCell className="font-medium text-muted-foreground">{idx + 1}</TableCell>
+                <TableRow key={row.name} className={idx < 3 ? "bg-primary/5" : ""}>
+                  <TableCell className="font-medium text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      {idx < 5 && rankIcons[idx]}
+                      <span>{idx + 1}</span>
+                    </div>
+                  </TableCell>
                   <TableCell className="font-medium">{row.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{row.unit}</TableCell>
+                  <TableCell className="text-muted-foreground font-mono text-xs">{unitAbbr(row.unit)}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatCurrency(row.periode1)}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatCurrency(row.periode2)}</TableCell>
                   <TableCell className="text-right">
