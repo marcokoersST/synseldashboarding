@@ -1,6 +1,7 @@
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { CompetitionCard } from "@/components/tv/CompetitionCard";
 import { MargePodium } from "@/components/tv/MargePodium";
+import { OmzetRankingCard } from "@/components/tv/OmzetRankingCard";
 import { omzetKoning, plaatsingsKoning, margeBaas, gesprekkenGuru, totalPotentialMargin } from "@/data/tvData";
 const fmt = (v: number) => `€${Math.abs(v) >= 1000 ? `${(Math.abs(v) / 1000).toFixed(0)}K` : Math.abs(v).toLocaleString("nl-NL")}`;
 const fmtCount = (v: number) => `${v} pl.`;
@@ -70,7 +71,7 @@ function BekerContent() {
           subtitle={`Potentiële marge: €${(totalPotentialMargin / 1000000).toFixed(1)}M`}
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <CompetitionCard
           title="Margebaas"
           icon="wallet"
@@ -85,6 +86,7 @@ function BekerContent() {
           formatValue={fmtGesprekken}
           subtitle="Totaal gesprekken in de periode"
         />
+        <OmzetRankingCard groep1={["P10", "P11", "P12"]} groep2={["P13", "P1", "P2"]} />
       </div>
     </>
   );
