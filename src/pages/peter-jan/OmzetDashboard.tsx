@@ -155,7 +155,7 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter }:
             </TableHeader>
             <TableBody>
               {filtered.map((row, idx) => (
-                <TableRow key={row.name} className={idx < 3 ? "bg-primary/5" : ""}>
+                <TableRow key={row.name} className={idx < 3 ? "bg-primary/5" : row.verschil < 0 ? "bg-red-50/60" : ""}>
                   <TableCell className="font-medium text-muted-foreground">
                     <div className="flex items-center gap-1.5">
                       {idx < 5 && rankIcons[idx]}
