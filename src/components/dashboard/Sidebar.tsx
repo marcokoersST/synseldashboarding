@@ -85,6 +85,7 @@ const navItems: NavItem[] = [
     path: "/manager-dashboard",
     subItems: [
       { icon: Briefcase, label: "Overzicht", path: "/manager-dashboard" },
+      { icon: Eye, label: "Overzicht V2", path: "/manager-dashboard/overzicht-v2" },
       { icon: TrendingUp, label: "Acquisitie Conversie", path: "/manager-dashboard/acquisitie-conversie" },
     ]
   },
