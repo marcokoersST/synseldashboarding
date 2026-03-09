@@ -127,6 +127,7 @@ const App = () => (
               <Route path="/peter-jan/omzet-dashboard" element={<PeterJanOmzetDashboard />} />
               <Route path="/marketing" element={<MarketingInschrijvingen />} />
               <Route path="/marketing/inschrijvingen" element={<MarketingInschrijvingen />} />
+              <Route path="/marketing/vacature-funnel" element={<MarketingVacatureFunnel />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

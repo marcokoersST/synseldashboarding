@@ -124,6 +124,7 @@ const navItems: NavItem[] = [
     path: "/marketing",
     subItems: [
       { icon: ClipboardCheck, label: "Inschrijvingen", path: "/marketing/inschrijvingen" },
+      { icon: Filter, label: "Vacaturetitel Funnel", path: "/marketing/vacature-funnel" },
     ]
   },
   {
