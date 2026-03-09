@@ -269,6 +269,17 @@ function RanglijstenContent() {
     return unitFiltered.filter((col) => selectedColumns.includes(col.title));
   }, [rawColumns, selectedUnits, selectedColumns]);
 
+  useEffect(() => {
+    if (isCompact) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    updateScrollButtons();
+    const ro = new ResizeObserver(() => updateScrollButtons());
+    ro.observe(el);
+    el.addEventListener("scroll", updateScrollButtons, { passive: true });
+    return () => { ro.disconnect(); el.removeEventListener("scroll", updateScrollButtons); };
+  }, [isCompact, updateScrollButtons, columns]);
+
   return (
     <div className={cn(isCompact && "flex flex-col h-full")}>
       {/* Filters */}
