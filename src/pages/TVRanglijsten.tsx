@@ -227,8 +227,35 @@ function RanglijstenContent() {
   const [unitPopoverOpen, setUnitPopoverOpen] = useState(false);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const isCompact = useTVCompact();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode">("week");
+
+  const updateScrollButtons = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 1);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    if (isCompact) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    updateScrollButtons();
+    const ro = new ResizeObserver(() => updateScrollButtons());
+    ro.observe(el);
+    el.addEventListener("scroll", updateScrollButtons, { passive: true });
+    return () => { ro.disconnect(); el.removeEventListener("scroll", updateScrollButtons); };
+  }, [isCompact, updateScrollButtons, columns]);
+
+  const scrollBy = useCallback((dir: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -el.clientWidth * 0.8 : el.clientWidth * 0.8, behavior: "smooth" });
+  }, []);
 
   const toggleColumn = useCallback((title: string) => {
     setSelectedColumns((prev) => {
