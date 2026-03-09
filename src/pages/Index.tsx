@@ -17,6 +17,7 @@ import { AINpsCard } from "@/components/dashboard/AINpsCard";
 import { ForecastGoalsProvider } from "@/contexts/ForecastGoalsContext";
 import { ProjectionCard } from "@/components/dashboard/ProjectionCard";
 import { consultantProjections } from "@/data/projectionData";
+import { FunnelCalculatorCard } from "@/components/dashboard/FunnelCalculatorCard";
 import { useParams } from "react-router-dom";
 
 const Index = () => {
@@ -27,6 +28,11 @@ const Index = () => {
       <div className="flex items-start justify-between gap-6 mb-6">
         <WelcomeHeader />
         <ForecastGoalsCard delay={50} />
+      </div>
+
+      {/* Funnel Calculator */}
+      <div className="mb-4">
+        <FunnelCalculatorCard delay={75} />
       </div>
     
       {/* Section Title */}
