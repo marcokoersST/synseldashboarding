@@ -65,6 +65,7 @@ const MarketingInschrijvingen = lazy(() => import("./pages/marketing/Inschrijvin
 const MarketingVacatureFunnel = lazy(() => import("./pages/marketing/VacatureFunnelMonitor"));
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
+const ManagerOverzichtV2 = lazy(() => import("./pages/manager/OverzichtV2"));
 
 const queryClient = new QueryClient();
 
