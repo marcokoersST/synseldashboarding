@@ -1,66 +1,62 @@
 
 
-# Vacaturetitel Funnel Monitor — Implementation Plan
+# Fix: Card Width Still Expanding Beyond Viewport
 
-## Summary
+## Problem Analysis
 
-Build the Vacaturetitel Funnel Monitor dashboard based on the uploaded briefing. It has two views (tabs), reuses the same filter pattern as the Inschrijvingen Dashboard, and uses mock data.
+The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
 
----
+```text
+<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
+  <>                                             ← Fragment = NO DOM element, no constraints
+    <div flex justify-between>                   ← header with unit selector + Volgorde
+    <section min-w-0 max-w-full overflow-x-hidden>
+      <AnimatedCard overflow-hidden min-w-0>
+        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
+          <div overflow-auto>                             ← scroll container
+            <div min-w-max w-max>                         ← THIS forces intrinsic width
+              <Table>                                     ← wide table
+```
 
-## What Gets Built
+**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
 
-### 1. Mock Data File (`src/data/vacatureFunnelData.ts`)
+## Fix — Two changes
 
-- **Normalized job titles** with funnel counts: `inschrijven`, `acquisitie`, `geplaatst` — each with `current` and `previous` values
-- ~10 titles including "Niet geclassificeerd" as a separate category
-- Each entry has a `unit` and `consultant` field for filtering
-- Helper functions: `filterByUnitAndConsultant`, `aggregateByTitle`
-- Business units and consultant names lists for filter dropdowns
+### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
+Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
 
-### 2. Dashboard Page (`src/pages/marketing/VacatureFunnelMonitor.tsx`)
+```tsx
+// Before (line 335):
+<div className="min-w-max w-max">
 
-**Filters** (identical pattern to Inschrijvingen Dashboard):
-- Date range picker (calendar popover)
-- Vergelijken toggle with "Vorige periode" / "Aangepaste periode" radio options
-- Business Unit dropdown
-- Sales Consultant dropdown
+// After:
+<div className="min-w-max">
+```
 
-**Tabs** (using Radix Tabs):
+### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
+Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
 
-**View 1 — Funnel per Normalized Title**
-- Table columns: Normalized Title | 1| Inschrijven | 2| Acquisitie (count + % of inschrijven) | Geplaatst (count + % of inschrijven)
-- Conversion percentages shown in parentheses next to counts
-- Color coding: green for high conversion, red for low
-- Compare mode: delta indicators per cell (reuse `DeltaIndicator` and `DeltaPP` pattern)
-- Totaal row at bottom
-- "Niet geclassificeerd" always visible as separate row
+```tsx
+// Before:
+return (
+  <>
+    {/* ... */}
+  </>
+);
 
-**View 2 — Share in Total**
-- Same table structure but percentages show share of total per funnel stage
-- Columns: Normalized Title | 1| Inschrijven (count + % of total) | 2| Acquisitie (count + % of total) | Geplaatst (count + % of total)
-- Totaal row showing 100% for each stage
-- Compare mode with delta indicators
+// After:
+return (
+  <div className="w-full min-w-0">
+    {/* ... */}
+  </div>
+);
+```
 
-### 3. No routing/sidebar changes needed
-Already registered at `/marketing/vacature-funnel` with sidebar entry.
+### Why this works
+- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
+- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
 
----
-
-## Technical Approach
-
-- Reuse `DeltaIndicator` and `DeltaPP` components — extract or duplicate from Inschrijvingen Dashboard
-- Use same filter card layout (Card with Popover calendar, Switch for compare, Select dropdowns)
-- Tabs component from `@/components/ui/tabs` for switching between View 1 and View 2
-- All percentages in View 1 relative to `inschrijven` for that title; in View 2 relative to column totals
-- Conditional row styling for "Niet geclassificeerd" to make it visually distinct
-
----
-
-## Files to Create/Edit
-
-| File | Action |
-|------|--------|
-| `src/data/vacatureFunnelData.ts` | Create — mock data + helpers |
-| `src/pages/marketing/VacatureFunnelMonitor.tsx` | Rewrite — full dashboard |
+### Files changed
+- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
+- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
 
