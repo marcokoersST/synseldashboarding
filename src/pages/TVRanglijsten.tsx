@@ -240,16 +240,11 @@ function RanglijstenContent() {
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
   }, []);
 
-  useEffect(() => {
-    if (isCompact) return;
+  const scrollByDir = useCallback((dir: "left" | "right") => {
     const el = scrollRef.current;
     if (!el) return;
-    updateScrollButtons();
-    const ro = new ResizeObserver(() => updateScrollButtons());
-    ro.observe(el);
-    el.addEventListener("scroll", updateScrollButtons, { passive: true });
-    return () => { ro.disconnect(); el.removeEventListener("scroll", updateScrollButtons); };
-  }, [isCompact, updateScrollButtons, columns]);
+    el.scrollBy({ left: dir === "left" ? -el.clientWidth * 0.8 : el.clientWidth * 0.8, behavior: "smooth" });
+  }, []);
 
   const scrollBy = useCallback((dir: "left" | "right") => {
     const el = scrollRef.current;
