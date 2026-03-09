@@ -1,20 +1,21 @@
 import { useState, useCallback, useEffect, DragEvent, ReactNode } from "react";
 import { ChevronUp, ChevronDown, GripVertical, ArrowUpDown } from "lucide-react";
-import { ManagerSalesFunnel } from "@/components/manager/ManagerSalesFunnel";
+import { SalesFunnelV2 } from "@/components/manager/v2/SalesFunnelV2";
+import { AlertsPanelV2 } from "@/components/manager/v2/AlertsPanelV2";
+import { OutreachCardV2 } from "@/components/manager/v2/OutreachCardV2";
+import { PerformanceCardV2 } from "@/components/manager/v2/PerformanceCardV2";
+import { RevenueChartV2 } from "@/components/manager/v2/RevenueChartV2";
+import { PlacementAttritionCard } from "@/components/manager/v2/PlacementAttritionCard";
 import { OpvolgingCard } from "@/components/manager/OpvolgingCard";
-import { ManagerCallsCard } from "@/components/manager/ManagerCallsCard";
-import { ProcesKernvaardighedenCard } from "@/components/manager/ProcesKernvaardighedenCard";
 import { ManagerGoalsCard } from "@/components/manager/ManagerGoalsCard";
-import { ManagerRevenueChart } from "@/components/manager/ManagerRevenueChart";
 import { ManagerPlacementsCard } from "@/components/manager/ManagerPlacementsCard";
 import { ManagerRevenueLeaderboard } from "@/components/manager/ManagerRevenueLeaderboard";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { unitFunnelTotals, dealRecords, unitCallTotals } from "@/data/managerOperationalData";
-import { consultantSkillData, managerGoalsData, managerRevenueChartData } from "@/data/managerPerformanceData";
-import { unitFunnelTotals as funnelTotals } from "@/data/managerOperationalData";
-import { InsightsPanel } from "@/components/manager/InsightsPanel";
+import { unitFunnelTotalsV2, unitOutreachTotals } from "@/data/managerOperationalDataV2";
+import { consultantSkillData } from "@/data/managerPerformanceData";
+import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
 
 const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
 
@@ -35,7 +36,7 @@ function loadOrder(): string[] {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length === 3) return parsed;
     }
-  } catch {}
+  } catch { /* empty */ }
   return ["operationeel", "performance", "omzet"];
 }
 
@@ -43,8 +44,20 @@ function loadCollapsed(): Record<string, boolean> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_COLLAPSED);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch { /* empty */ }
   return {};
+}
+
+// ─── Helpers ───
+
+function overallScore(c: typeof consultantSkillData[0]): number {
+  const metrics = [
+    (c.relatieScoreKlant / 10) * 100, (c.relatieScoreKandidaat / 10) * 100,
+    c.pitchingPower, c.responsiveness, c.networking, c.bezwaarverlegging,
+    c.procedureInschrijving, c.procedureAcquisities, c.systeemHygieneScore,
+    c.npsKlant, c.npsKandidaat,
+  ];
+  return Math.round(metrics.reduce((a, b) => a + b, 0) / metrics.length);
 }
 
 export default function OverzichtV2() {
@@ -89,22 +102,16 @@ export default function OverzichtV2() {
     setDragIdx(null);
     setDragOverIdx(null);
   };
-  const handleDragEnd = () => {
-    setDragIdx(null);
-    setDragOverIdx(null);
-  };
-  const handleDragLeave = () => {
-    setDragOverIdx(null);
-  };
+  const handleDragEnd = () => { setDragIdx(null); setDragOverIdx(null); };
+  const handleDragLeave = () => { setDragOverIdx(null); };
 
-  const avgSkillScore = +(
-    consultantSkillData.reduce(
-      (s, c) => s + (c.pitchingPower + c.responsiveness + c.networking) / 3,
-      0
-    ) / consultantSkillData.length
-  ).toFixed(0);
-  const activeGoals = managerGoalsData.filter((g) => !g.completed).length;
-  const lastRevenue = managerRevenueChartData[managerRevenueChartData.length - 1];
+  // Summary data
+  const avgSkillScore = Math.round(
+    consultantSkillData.reduce((s, c) => s + overallScore(c), 0) / consultantSkillData.length
+  );
+  const belowNorm = consultantSkillData.filter(c => overallScore(c) < 55).length;
+  const lastRevenue = revenueChartDataV2.filter(d => d.realised > 0).pop();
+  const prognoseWarning = revenueChartDataV2.some(d => d.belowTarget);
 
   const sections: SectionConfig[] = [
     {
@@ -112,36 +119,37 @@ export default function OverzichtV2() {
       label: "Operationeel",
       summaryBadges: () => (
         <>
-          <Badge variant="secondary" className="text-[11px] font-normal">{funnelTotals.plaatsingen} plaatsingen</Badge>
-          <Badge variant="secondary" className="text-[11px] font-normal">{dealRecords.length} deals</Badge>
-          <Badge variant="secondary" className="text-[11px] font-normal">{unitCallTotals.inbound + unitCallTotals.outbound} calls</Badge>
+          <Badge variant="secondary" className="text-[11px] font-normal">{unitFunnelTotalsV2.plaatsingen} plaatsingen</Badge>
+          <Badge variant="secondary" className="text-[11px] font-normal">{unitOutreachTotals.totalOutreach} contactmomenten</Badge>
         </>
       ),
       content: () => (
         <>
-          <ManagerSalesFunnel delay={100} selectedUnit={selectedUnit} />
+          <SalesFunnelV2 delay={100} selectedUnit={selectedUnit} />
           <div className="mt-5">
             <OpvolgingCard delay={150} selectedUnit={selectedUnit} />
           </div>
           <div className="mt-5">
-            <ManagerCallsCard delay={200} selectedUnit={selectedUnit} />
+            <OutreachCardV2 delay={200} selectedUnit={selectedUnit} />
           </div>
         </>
       ),
     },
     {
       id: "performance",
-      label: "Performance",
+      label: "Performance & Kwaliteit",
       summaryBadges: () => (
         <>
           <Badge variant="secondary" className="text-[11px] font-normal">Gem. score: {avgSkillScore}%</Badge>
-          <Badge variant="secondary" className="text-[11px] font-normal">{activeGoals} doelen actief</Badge>
+          {belowNorm > 0 && (
+            <Badge variant="destructive" className="text-[11px] font-normal">{belowNorm} onder norm</Badge>
+          )}
         </>
       ),
       content: () => (
         <div className="grid grid-cols-3 gap-5">
           <div className="col-span-2">
-            <ProcesKernvaardighedenCard delay={250} selectedUnit={selectedUnit} />
+            <PerformanceCardV2 delay={250} selectedUnit={selectedUnit} />
           </div>
           <div className="col-span-1">
             <ManagerGoalsCard delay={300} selectedUnit={selectedUnit} />
@@ -151,17 +159,22 @@ export default function OverzichtV2() {
     },
     {
       id: "omzet",
-      label: "Omzet",
+      label: "Omzet & Prognose",
       summaryBadges: () => (
         <>
-          <Badge variant="secondary" className="text-[11px] font-normal">€{lastRevenue.realised}k gerealiseerd</Badge>
-          <Badge variant="secondary" className="text-[11px] font-normal">{funnelTotals.plaatsingen} plaatsingen</Badge>
+          {lastRevenue && <Badge variant="secondary" className="text-[11px] font-normal">€{lastRevenue.realised}k gerealiseerd</Badge>}
+          {prognoseWarning && (
+            <Badge variant="destructive" className="text-[11px] font-normal">Prognose onder target</Badge>
+          )}
         </>
       ),
       content: () => (
         <>
           <div className="mb-5">
-            <ManagerRevenueChart delay={350} selectedUnit={selectedUnit} />
+            <RevenueChartV2 delay={350} selectedUnit={selectedUnit} />
+          </div>
+          <div className="mb-5">
+            <PlacementAttritionCard delay={375} />
           </div>
           <div className="grid grid-cols-3 gap-5">
             <div className="col-span-1">
@@ -184,7 +197,7 @@ export default function OverzichtV2() {
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-foreground">Manager Dashboard V2</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Overzicht van team en bedrijfsprestaties
+            Signalering, sturing & coaching — focus op afwijkingen
           </p>
         </div>
 
@@ -231,7 +244,8 @@ export default function OverzichtV2() {
         </div>
       </div>
 
-      <InsightsPanel />
+      {/* Alerts panel — always at top */}
+      <AlertsPanelV2 />
 
       {sectionOrder.map((id) => {
         const section = sectionMap[id];
