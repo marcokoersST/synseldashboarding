@@ -17,6 +17,7 @@ import { AINpsCard } from "@/components/dashboard/AINpsCard";
 import { ForecastGoalsProvider } from "@/contexts/ForecastGoalsContext";
 import { ProjectionCard } from "@/components/dashboard/ProjectionCard";
 import { consultantProjections } from "@/data/projectionData";
+import { FunnelCalculatorCard } from "@/components/dashboard/FunnelCalculatorCard";
 import { useParams } from "react-router-dom";
 
 const Index = () => {
