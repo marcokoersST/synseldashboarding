@@ -246,12 +246,6 @@ function RanglijstenContent() {
     el.scrollBy({ left: dir === "left" ? -el.clientWidth * 0.8 : el.clientWidth * 0.8, behavior: "smooth" });
   }, []);
 
-  const scrollBy = useCallback((dir: "left" | "right") => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -el.clientWidth * 0.8 : el.clientWidth * 0.8, behavior: "smooth" });
-  }, []);
-
   const toggleColumn = useCallback((title: string) => {
     setSelectedColumns((prev) => {
       if (prev.includes(title)) {
