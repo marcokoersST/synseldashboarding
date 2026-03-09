@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ChevronRight,
   AlertTriangle,
-  TrendingUp,
   TrendingDown,
   Target,
   Star,
