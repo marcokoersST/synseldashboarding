@@ -86,6 +86,7 @@ const App = () => (
               {/* AcquisitieConversie route removed - merged into Sales Funnel */}
               <Route path="/super-admin" element={<SuperAdminDashboard />} />
               <Route path="/super-admin/emulate" element={<SuperAdminEmulate />} />
+              <Route path="/super-admin/c-level" element={<CLevelDashboard />} />
               <Route path="/tv/sales-funnel-week" element={<TVSalesFunnelWeek />} />
               <Route path="/tv/sales-funnel-period" element={<TVSalesFunnelPeriod />} />
               <Route path="/tv/beker" element={<TVBekerDashboard />} />
