@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
-import { Button } from "@/components/ui/button";
 import { CalendarX2, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { placementAttritionData } from "@/data/managerPerformanceDataV2";

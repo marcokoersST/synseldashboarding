@@ -86,10 +86,6 @@ function actionForWeakness(metric: SkillMetric): string {
 function PerformanceSummary({ filteredData }: { filteredData: ConsultantSkillData[] }) {
   const avgScore = Math.round(filteredData.reduce((s, c) => s + overallScore(c), 0) / filteredData.length);
   const belowNorm = filteredData.filter(c => overallScore(c) < 55).length;
-  const quality = consultantQualityData;
-
-  // Volume vs Quality quadrant summary
-  const allMetrics = filteredData.map(getSkillMetrics);
   const avgVolume = Math.round(filteredData.reduce((s, c) => s + c.procedureInschrijving + c.procedureAcquisities, 0) / filteredData.length / 2);
   const avgQuality = Math.round(filteredData.reduce((s, c) => s + c.pitchingPower + c.responsiveness + c.networking, 0) / filteredData.length / 3);
 
