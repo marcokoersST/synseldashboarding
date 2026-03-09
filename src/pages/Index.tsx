@@ -29,6 +29,11 @@ const Index = () => {
         <WelcomeHeader />
         <ForecastGoalsCard delay={50} />
       </div>
+
+      {/* Funnel Calculator */}
+      <div className="mb-4">
+        <FunnelCalculatorCard delay={75} />
+      </div>
     
       {/* Section Title */}
       <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
