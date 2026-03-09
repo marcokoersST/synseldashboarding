@@ -1,62 +1,124 @@
 
 
-# Fix: Card Width Still Expanding Beyond Viewport
+# Plan: Overzicht V2 Dashboard Overhaul
 
-## Problem Analysis
+This is a large briefing with 10 change areas. Since V2 currently uses the same shared components as the original dashboard, we need to create **V2-specific variants** of the key components so changes don't affect the original. The plan is organized into implementation batches.
 
-The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
+## Data Layer Changes
 
-```text
-<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
-  <>                                             ← Fragment = NO DOM element, no constraints
-    <div flex justify-between>                   ← header with unit selector + Volgorde
-    <section min-w-0 max-w-full overflow-x-hidden>
-      <AnimatedCard overflow-hidden min-w-0>
-        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
-          <div overflow-auto>                             ← scroll container
-            <div min-w-max w-max>                         ← THIS forces intrinsic width
-              <Table>                                     ← wide table
-```
+### `src/data/managerOperationalDataV2.ts` (new)
+Extended copy of operational data with:
+- **Corrected funnel order**: Toegewezen → Inschrijving → Acquisitie → **Intake** → Uitnodiging → Gesprek → Vervolggesprek → Plaatsing (8 steps, intake after acquisitie)
+- **Email activity data** per consultant (for outreach section): `emailsSent`, `emailTrend[]`
+- **Trend data** per consultant: previous period funnel numbers to calculate period-over-period changes
+- **Alert generation function** that scans data for: declining trends, low conversions, below-target revenue, structural underperformance
 
-**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+### `src/data/managerPerformanceDataV2.ts` (new)
+Extended copy with:
+- **Forecast/prognose line** added to revenue chart data (third line alongside realised + target)
+- **Placement attrition data**: expected end-dates grouped by period with revenue impact per consultant
+- **Quality/sentiment scores** per consultant with trend arrays
 
-## Fix — Two changes
+## Component Changes (all new V2 variants)
 
-### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
-Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
+### 1. Sales Funnel — `src/components/manager/v2/SalesFunnelV2.tsx`
+**Overview mode:**
+- 8-step funnel: Toegewezen → Inschrijving → Acquisitie → Intake → Uitnodiging → Gesprek → Vervolggesprek → Plaatsing
+- Intake conversion calculated from Acquisitie (not Inschrijving)
+- Each step shows: name, count, conversion % from correct previous step
+- Low conversions (<40%) highlighted in amber/red
 
-```tsx
-// Before (line 335):
-<div className="min-w-max w-max">
+**Detail mode:**
+- Consultant-level table with columns per funnel step + conversion columns between them
+- Lowest conversion per consultant highlighted with red background
+- "Biggest drop-off" indicator per row
+- Sortable columns
+- Sticky first column
 
-// After:
-<div className="min-w-max">
-```
+### 2. Alerts Panel — `src/components/manager/v2/AlertsPanelV2.tsx`
+Replaces/enhances InsightsPanel. Positioned prominently at top.
+- Auto-generated alerts from data analysis:
+  - "Consultant X daalt 2 periodes op rij" (declining revenue trend)
+  - "Consultant Y: lage conversie acquisitie → intake (28%)" (low funnel conversion)
+  - "Consultant Z dreigt onder doel te komen" (revenue below target pace)
+  - "Unit A: terugval in gesprekken" (call volume drop)
+- Color-coded: red (critical), orange (warning), blue (info)
+- Compact card layout, dismissible
+- Collapsible with unread count badge
 
-### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
-Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
+### 3. Revenue Chart — `src/components/manager/v2/RevenueChartV2.tsx`
+**Overview mode:**
+- Three lines: Gerealiseerd (solid teal), Target (dotted gray), Prognose (dashed blue)
+- Warning dots where prognose/realised crosses below target
+- Toggle buttons to show/hide each line
+- Interactive legend (click to highlight)
 
-```tsx
-// Before:
-return (
-  <>
-    {/* ... */}
-  </>
-);
+**Detail mode:** same as current (per-consultant lines)
 
-// After:
-return (
-  <div className="w-full min-w-0">
-    {/* ... */}
-  </div>
-);
-```
+### 4. Placement Attrition — `src/components/manager/v2/PlacementAttritionCard.tsx`
+New card below revenue chart in Omzet section:
+- Shows active placements count, expected endings per upcoming period
+- Bar chart: periods on x-axis, expected revenue loss on y-axis
+- Table: period, # stoppers, affected consultants, estimated revenue impact
+- Red accent on periods with high attrition
 
-### Why this works
-- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
-- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
+### 5. Calls & Outreach — `src/components/manager/v2/OutreachCardV2.tsx`
+Replaces ManagerCallsCard:
+**Overview:**
+- 2x3 grid: Calls In, Calls Out, Emails, Totaal, Beltijd, Kwaliteitsscore
+- Trend arrows per metric
+- Highlight consultants below team average
 
-### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
-- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+**Detail:**
+- Table with consultant rows: calls, emails, total outreach, quality score, trend
+- Sortable, with red/amber highlights on low activity
+- Contact status summary
+
+### 6. Performance / Kernvaardigheden — `src/components/manager/v2/PerformanceCardV2.tsx`
+Enhanced version of ProcesKernvaardighedenCard:
+- Overview shows compact KPI summary: team avg quality, team avg volume, # consultants below norm
+- Separate volume vs quality indicators with traffic light
+- Detail: existing consultant expandable rows + comparison, but with:
+  - Team average overlay on skill bars
+  - Trend indicator (up/down arrow) per skill
+  - "Coaching focus" badge on biggest gaps
+
+### 7. Quality / Sentiment — integrated into PerformanceCardV2
+- NPS scores with trend sparkline in overview
+- Score distribution (how many consultants per NPS band) in detail
+- Outlier highlighting
+
+### 8. Comparison — `src/components/manager/v2/ComparisonDrawerV2.tsx`
+Enhanced comparison accessible from performance card:
+- Modes: Consultant vs Consultant, Consultant vs Unit avg, Current vs Previous period
+- Side-by-side bars with delta indicators
+- Simple toggle UI in the performance card header
+
+## Page Changes
+
+### `src/pages/manager/OverzichtV2.tsx`
+- Replace component imports with V2 variants
+- Replace InsightsPanel with AlertsPanelV2 (positioned first, before sections)
+- Omzet section: add PlacementAttritionCard below revenue chart
+- Replace ManagerCallsCard with OutreachCardV2
+- Replace ProcesKernvaardighedenCard with PerformanceCardV2
+- Keep existing section order/collapse/drag functionality
+
+## Visual Design Principles Applied Throughout
+- Red/orange warning badges on deviating values
+- Trend arrows (↑↓) on all numeric displays
+- Low conversions get amber/red text color
+- Cards use subtle left-border color coding for status
+- Detail views only shown on expand (progressive disclosure)
+- All tables sortable with sticky headers
+
+## Implementation Order
+Due to the size, this will be implemented in stages:
+1. Data files (V2 data + alert generation)
+2. SalesFunnelV2 (corrected order + detail table)
+3. AlertsPanelV2 (auto-generated signals)
+4. RevenueChartV2 + PlacementAttritionCard
+5. OutreachCardV2 (calls + emails combined)
+6. PerformanceCardV2 (quality, sentiment, comparison integrated)
+7. Wire everything into OverzichtV2.tsx
 
