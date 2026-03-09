@@ -84,6 +84,7 @@ const App = () => (
               <Route path="/vergelijking" element={<VergelijkingOverview />} />
               <Route path="/vergelijking/:memberId" element={<Vergelijking />} />
               <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+              <Route path="/manager-dashboard/overzicht-v2" element={<ManagerOverzichtV2 />} />
               {/* AcquisitieConversie route removed - merged into Sales Funnel */}
               <Route path="/super-admin" element={<SuperAdminDashboard />} />
               <Route path="/super-admin/emulate" element={<SuperAdminEmulate />} />
