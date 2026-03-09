@@ -62,6 +62,7 @@ const PeterJanOmzetDashboard = lazy(() => import("./pages/peter-jan/OmzetDashboa
 
 // Marketing dashboards
 const MarketingInschrijvingen = lazy(() => import("./pages/marketing/InschrijvingenDashboard"));
+const MarketingVacatureFunnel = lazy(() => import("./pages/marketing/VacatureFunnelMonitor"));
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="/peter-jan/omzet-dashboard" element={<PeterJanOmzetDashboard />} />
               <Route path="/marketing" element={<MarketingInschrijvingen />} />
               <Route path="/marketing/inschrijvingen" element={<MarketingInschrijvingen />} />
+              <Route path="/marketing/vacature-funnel" element={<MarketingVacatureFunnel />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
