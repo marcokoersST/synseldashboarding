@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useLayoutEffect, type ReactNode } from "react";
+import { useState, useCallback, useMemo, useRef, useLayoutEffect, useEffect, type ReactNode } from "react";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { getRanglijstenData, ranglijstenFilters, allColumnTitles, getCurrentWeekNumber, getCurrentPeriodNumber } from "@/data/ranglijstenData";
 import type { RankingColumn } from "@/data/ranglijstenData";
@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, Rocket } from "lucide-react";
+import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, Rocket, ChevronLeft, ChevronRight } from "lucide-react";
 
 const STATUS_ICON_COLUMNS = new Set(["Acquisities", "Voorstellen", "Gesprekken", "Intakes", "Plaatsingen"]);
 
@@ -227,8 +227,24 @@ function RanglijstenContent() {
   const [unitPopoverOpen, setUnitPopoverOpen] = useState(false);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const isCompact = useTVCompact();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode">("week");
+
+  const updateScrollButtons = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 1);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }, []);
+
+  const scrollByDir = useCallback((dir: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -el.clientWidth * 0.8 : el.clientWidth * 0.8, behavior: "smooth" });
+  }, []);
 
   const toggleColumn = useCallback((title: string) => {
     setSelectedColumns((prev) => {
@@ -252,6 +268,17 @@ function RanglijstenContent() {
     const unitFiltered = applyUnitFilter(rawColumns, selectedUnits);
     return unitFiltered.filter((col) => selectedColumns.includes(col.title));
   }, [rawColumns, selectedUnits, selectedColumns]);
+
+  useEffect(() => {
+    if (isCompact) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    updateScrollButtons();
+    const ro = new ResizeObserver(() => updateScrollButtons());
+    ro.observe(el);
+    el.addEventListener("scroll", updateScrollButtons, { passive: true });
+    return () => { ro.disconnect(); el.removeEventListener("scroll", updateScrollButtons); };
+  }, [isCompact, updateScrollButtons, columns]);
 
   return (
     <div className={cn(isCompact && "flex flex-col h-full")}>
@@ -402,52 +429,110 @@ function RanglijstenContent() {
       </div>
 
       {/* Ranking Columns */}
-      <div
-        className={cn("grid", isCompact ? "gap-2 flex-1 min-h-0" : "gap-5")}
-        style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, ...(isCompact ? { gridTemplateRows: '1fr' } : {}) }}
-      >
-        {columns.map((col) => {
-          const isNegative = col.title === "Niet begonnen";
-          const isPlain = col.title === "Inschrijvingen";
-          const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
-          const top3 = isPlain || isCompact ? [] : col.entries.slice(0, 3);
-          const rest = isPlain || isCompact ? col.entries : col.entries.slice(3);
+      {!isCompact && (
+        <div className="relative">
+          {canScrollLeft && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-card shadow-md border-border"
+              onClick={() => scrollByDir("left")}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+          )}
+          {canScrollRight && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-card shadow-md border-border"
+              onClick={() => scrollByDir("right")}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          )}
+          <div ref={scrollRef} className="overflow-x-auto scroll-smooth">
+            <div
+              className="grid gap-5"
+              style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(220px, 1fr))` }}
+            >
+              {columns.map((col) => {
+                const isNegative = col.title === "Niet begonnen";
+                const isPlain = col.title === "Inschrijvingen";
+                const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
+                const top3 = isPlain ? [] : col.entries.slice(0, 3);
+                const rest = isPlain ? col.entries : col.entries.slice(3);
 
-          return (
-            <div key={col.title} className={cn("min-w-0 rounded-lg border border-border p-3 bg-card", isCompact && "flex flex-col min-h-0 overflow-hidden")}>
-              <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">{col.title}</h2>
-              <p className="text-3xl font-bold text-foreground tabular-nums">
-                {col.total.toLocaleString("nl-NL")}
-              </p>
-              <ComparisonBar current={col.total} previous={col.previousTotal} />
-
-              {/* Top 3 full-width (non-compact only) */}
-              {top3.length > 0 && (
-                <div className="mt-3 space-y-0">
-                  {top3.map((entry) => (
-                    <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} />
-                  ))}
-                </div>
-              )}
-
-              {/* All entries in compact, rest in non-compact */}
-              <AutoColumnsWrapper isCompact={isCompact}>
-                {rest.map((entry) => (
-                  <EntryRow
-                    key={`${entry.rank}-${entry.name}`}
-                    entry={entry}
-                    displayName={!isCompact || entry.rank > 3 ? `${entry.firstName} ${entry.lastName[0]}.` : undefined}
-                    compact
-                    isNegative={isNegative}
-                    showStatusIcons={showStatusIcons}
-                    isPlain={isPlain}
-                  />
-                ))}
-              </AutoColumnsWrapper>
+                return (
+                  <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
+                    <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">{col.title}</h2>
+                    <p className="text-3xl font-bold text-foreground tabular-nums">
+                      {col.total.toLocaleString("nl-NL")}
+                    </p>
+                    <ComparisonBar current={col.total} previous={col.previousTotal} />
+                    {top3.length > 0 && (
+                      <div className="mt-3 space-y-0">
+                        {top3.map((entry) => (
+                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} />
+                        ))}
+                      </div>
+                    )}
+                    <AutoColumnsWrapper isCompact={false}>
+                      {rest.map((entry) => (
+                        <EntryRow
+                          key={`${entry.rank}-${entry.name}`}
+                          entry={entry}
+                          displayName={`${entry.firstName} ${entry.lastName[0]}.`}
+                          compact
+                          isNegative={isNegative}
+                          showStatusIcons={showStatusIcons}
+                          isPlain={isPlain}
+                        />
+                      ))}
+                    </AutoColumnsWrapper>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
+          </div>
+        </div>
+      )}
+
+      {isCompact && (
+        <div
+          className="grid gap-2 flex-1 min-h-0"
+          style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, gridTemplateRows: '1fr' }}
+        >
+          {columns.map((col) => {
+            const isNegative = col.title === "Niet begonnen";
+            const isPlain = col.title === "Inschrijvingen";
+            const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
+
+            return (
+              <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
+                <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">{col.title}</h2>
+                <p className="text-3xl font-bold text-foreground tabular-nums">
+                  {col.total.toLocaleString("nl-NL")}
+                </p>
+                <ComparisonBar current={col.total} previous={col.previousTotal} />
+                <AutoColumnsWrapper isCompact={true}>
+                  {col.entries.map((entry) => (
+                    <EntryRow
+                      key={`${entry.rank}-${entry.name}`}
+                      entry={entry}
+                      displayName={entry.rank > 3 ? `${entry.firstName} ${entry.lastName[0]}.` : undefined}
+                      compact
+                      isNegative={isNegative}
+                      showStatusIcons={showStatusIcons}
+                      isPlain={isPlain}
+                    />
+                  ))}
+                </AutoColumnsWrapper>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
