@@ -503,6 +503,8 @@ function RanglijstenContent() {
             const isNegative = col.title === "Niet begonnen";
             const isPlain = col.title === "Inschrijvingen";
             const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
+            const top3 = isPlain ? [] : col.entries.slice(0, 3);
+            const rest = isPlain ? col.entries : col.entries.slice(3);
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
@@ -511,12 +513,19 @@ function RanglijstenContent() {
                   {col.total.toLocaleString("nl-NL")}
                 </p>
                 <ComparisonBar current={col.total} previous={col.previousTotal} />
+                {top3.length > 0 && (
+                  <div className="mt-3 space-y-0">
+                    {top3.map((entry) => (
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} compact isNegative={isNegative} showStatusIcons={showStatusIcons} />
+                    ))}
+                  </div>
+                )}
                 <AutoColumnsWrapper isCompact={true}>
-                  {col.entries.map((entry) => (
+                  {rest.map((entry) => (
                     <EntryRow
                       key={`${entry.rank}-${entry.name}`}
                       entry={entry}
-                      displayName={entry.rank > 3 ? `${entry.firstName} ${entry.lastName[0]}.` : undefined}
+                      displayName={`${entry.firstName} ${entry.lastName[0]}.`}
                       compact
                       isNegative={isNegative}
                       showStatusIcons={showStatusIcons}
