@@ -134,6 +134,7 @@ const navItems: NavItem[] = [
     subItems: [
       { icon: BarChart3, label: "Overzicht", path: "/super-admin" },
       { icon: Eye, label: "User Emulatie", path: "/super-admin/emulate" },
+      { icon: LineChart, label: "C-Level Dashboard", path: "/super-admin/c-level" },
     ]
   },
   {

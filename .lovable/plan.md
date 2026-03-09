@@ -1,47 +1,62 @@
 
 
-# C-Level Dashboard Pagina
+# Fix: Card Width Still Expanding Beyond Viewport
 
-## Overzicht
-Nieuwe pagina `/super-admin/c-level` onder Super Admin met 12 tegels conform de briefing. Drie rijen: executive kernmetrics bovenaan, business engine midden, control/risico onderaan.
+## Problem Analysis
 
-## Bestanden
+The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
 
-### 1. `src/data/cLevelData.ts` — Mock data
-Alle data voor de 12 tegels: revenue, marge, plaatsingen, funnel stages met conversies, forecast, productiviteit, unit performance, funnel kwaliteit, workforce health, alerts, strategische initiatieven, executive summary. Afgeleid van bestaande `adminData` waar mogelijk.
-
-### 2. `src/pages/CLevelDashboard.tsx` — Pagina
-Layout met header + drie rijen:
-- **Top row (4 kolommen)**: Revenue, Marge, Plaatsingen, Forecast
-- **Middle row (4 kolommen)**: Sales & Recruitment Funnel, Consultant Productiviteit, Business Unit Performance, Funnel Kwaliteit
-- **Bottom row (4 kolommen)**: Workforce Health, Risk/Alerts, Strategische Initiatieven, Executive Summary
-
-### 3. `src/components/clevel/` — 12 tile componenten
-Elk als eigen component met premium executive styling:
-
-| Component | Inhoud |
-|-----------|--------|
-| `RevenueTile` | Groot getal, vs vorige periode, vs target, traffic light |
-| `MarginTile` | Marge €, marge %, vs target |
-| `PlacementsTile` | Totaal plaatsingen, vs vorige periode, mini trend |
-| `ForecastTile` | Forecasted plaatsingen/revenue, progress bar |
-| `SalesFunnelTile` | Funnel stappen met counts en conversie%, highlight leakage |
-| `ProductivityTile` | Gem. plaatsingen per consultant, benchmark, trend |
-| `UnitPerformanceTile` | Horizontale bars per unit op revenue/plaatsingen |
-| `FunnelQualityTile` | Opvolging %, registratie compliance, kleurstatus |
-| `WorkforceHealthTile` | Verloop %, ziekteverzuim %, openstaande vacatures |
-| `RiskAlertsTile` | Aantal kritieke alerts, top 3 issues |
-| `StrategicInitiativesTile` | Projecten on track/delayed/at risk, traffic lights |
-| `ExecutiveSummaryTile` | KPIs on track / at risk / off track tellers |
-
-Styling: `bg-card rounded-xl border`, dominant metric groot, subtiele kleuren alleen voor betekenis, voldoende whitespace. AnimatedCard wrapping met staggered delays.
-
-### 4. `src/components/dashboard/Sidebar.tsx` — Nav item toevoegen
-Onder Super Admin subItems toevoegen:
-```
-{ icon: LineChart, label: "C-Level Dashboard", path: "/super-admin/c-level" }
+```text
+<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
+  <>                                             ← Fragment = NO DOM element, no constraints
+    <div flex justify-between>                   ← header with unit selector + Volgorde
+    <section min-w-0 max-w-full overflow-x-hidden>
+      <AnimatedCard overflow-hidden min-w-0>
+        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
+          <div overflow-auto>                             ← scroll container
+            <div min-w-max w-max>                         ← THIS forces intrinsic width
+              <Table>                                     ← wide table
 ```
 
-### 5. `src/App.tsx` — Route toevoegen
-Lazy import + route `/super-admin/c-level`.
+**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+
+## Fix — Two changes
+
+### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
+Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
+
+```tsx
+// Before (line 335):
+<div className="min-w-max w-max">
+
+// After:
+<div className="min-w-max">
+```
+
+### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
+Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
+
+```tsx
+// Before:
+return (
+  <>
+    {/* ... */}
+  </>
+);
+
+// After:
+return (
+  <div className="w-full min-w-0">
+    {/* ... */}
+  </div>
+);
+```
+
+### Why this works
+- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
+- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
+
+### Files changed
+- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
+- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
 
