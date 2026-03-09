@@ -110,17 +110,9 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
           "min-w-0 flex-1 text-foreground",
           isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[11px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
-          entry.value === 0 && "text-orange-600"
+          entry.value === 0 && "text-orange-600",
+          !isTop3 && "truncate"
         )}
-        style={isTop3 ? { 
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        } : { 
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
       >
         {shownName}
       </span>
