@@ -1,62 +1,47 @@
 
 
-# Fix: Card Width Still Expanding Beyond Viewport
+# Wervingstrechter Calculator Tegel
 
-## Problem Analysis
+## Wat
+Een nieuwe tegel op het consultant dashboard (Index pagina) tussen de welkomstheader en "Doelen & Projecties". De tegel bevat een tabel met de wervingstrechter-stappen als kolommen en drie rijen:
 
-The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
+1. **Kolomheaders**: Inschrijvingen, Intakes, Acquisities, Uitnodigingen, Gesprekken, Plaatsingen
+2. **Rij 1 — "Jouw conversie"**: de actuele conversieratio's van de consultant (uit bestaande data), weergegeven als percentages tussen de kolommen
+3. **Rij 2 — "Jouw funnel"**: de huidige aantallen per stap (uit data)
+4. **Rij 3 — "Doel (input)"**: een bewerkbare rij waar de consultant een getal kan invullen bij elke stap (bijv. 5 bij Plaatsingen), waarna de tabel automatisch terugrekent hoeveel er nodig is bij elke voorgaande stap, op basis van de conversieratio's uit rij 1
 
-```text
-<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
-  <>                                             ← Fragment = NO DOM element, no constraints
-    <div flex justify-between>                   ← header with unit selector + Volgorde
-    <section min-w-0 max-w-full overflow-x-hidden>
-      <AnimatedCard overflow-hidden min-w-0>
-        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
-          <div overflow-auto>                             ← scroll container
-            <div min-w-max w-max>                         ← THIS forces intrinsic width
-              <Table>                                     ← wide table
-```
+### Voorbeeld
+Consultant vult "5" in bij Plaatsingen → systeem rekent terug:
+- 5 Plaatsingen ÷ 22% = 23 Gesprekken
+- 23 Gesprekken ÷ 72% = 32 Uitnodigingen
+- 32 Uitnodigingen ÷ 63% = 51 Acquisities
+- 51 Acquisities ÷ 78% = 65 Inschrijvingen
+- 65 Inschrijvingen × 62% = 40 Intakes
 
-**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
+De consultant kan bij **elk** veld het getal aanpassen; de cellen links ervan (hogere funnel) worden dan herberekend.
 
-## Fix — Two changes
+## Technisch
 
-### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
-Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
+### Nieuw bestand: `src/components/dashboard/FunnelCalculatorCard.tsx`
+- Card-component met tabel (6 kolommen)
+- Conversieratio's als constanten (afgeleid van bestaande data, bijv. `funnelSteps` uit consultantData)
+- `useState` voor de input-rij; bij wijziging van een veld worden alle stappen links herberekend met `Math.ceil()`
+- Tussen de kolomheaders kleine conversie-percentages tonen (pijltjes)
+- Styling conform bestaande dashboard cards (`bg-card rounded-xl border`)
 
-```tsx
-// Before (line 335):
-<div className="min-w-max w-max">
+### Conversieratio's (hardcoded, gebaseerd op consultant data):
+| Stap | Conversie naar volgende |
+|------|------------------------|
+| Inschrijvingen → Intakes | 62% |
+| Intakes → Acquisities | 78% |  
+| Acquisities → Uitnodigingen | 63% |
+| Uitnodigingen → Gesprekken | 72% |
+| Gesprekken → Plaatsingen | 22% |
 
-// After:
-<div className="min-w-max">
-```
+### Wijziging: `src/pages/Index.tsx`
+- Import `FunnelCalculatorCard`
+- Plaatsen tussen de welkomstheader+ForecastGoalsCard en de "Doelen & Projecties" sectietitel
+- Full-width (`mb-4`)
 
-### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
-Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
-
-```tsx
-// Before:
-return (
-  <>
-    {/* ... */}
-  </>
-);
-
-// After:
-return (
-  <div className="w-full min-w-0">
-    {/* ... */}
-  </div>
-);
-```
-
-### Why this works
-- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
-- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
-
-### Files changed
-- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
-- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
+### Geen andere bestanden nodig
 
