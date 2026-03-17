@@ -56,7 +56,7 @@ function Scorecard({ title, current, previous, comparing }: ScorecardProps) {
   const delta = current - previous;
   const deltaPercent = previous > 0 ? ((delta / previous) * 100).toFixed(1) : "–";
   const isPositive = delta > 0;
-  const isNegative = delta < 0;
+  
 
   return (
     <Card>
