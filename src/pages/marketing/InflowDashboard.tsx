@@ -72,14 +72,14 @@ function Scorecard({ title, current, previous, comparing }: ScorecardProps) {
               {isPositive ? (
                 <TrendingUp className="h-4 w-4 text-primary" />
               ) : delta < 0 ? (
-                <TrendingDown className="h-4 w-4 text-red-500" />
+                <TrendingDown className="h-4 w-4 text-destructive" />
               ) : (
                 <Minus className="h-4 w-4 text-muted-foreground" />
               )}
               <span className={cn(
                 "font-medium",
-                delta > 0 && "text-emerald-500",
-                delta < 0 && "text-red-500",
+                delta > 0 && "text-primary",
+                delta < 0 && "text-destructive",
                 delta === 0 && "text-muted-foreground"
               )}>
                 {delta > 0 ? "+" : ""}{delta} ({deltaPercent}%)
