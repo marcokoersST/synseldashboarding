@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, DragEvent, ReactNode } from "react";
-import { ChevronUp, ChevronDown, GripVertical, ArrowUpDown } from "lucide-react";
+import { ChevronUp, ChevronDown, GripVertical, ArrowUpDown, Filter, CalendarIcon } from "lucide-react";
 import { SalesFunnelV2 } from "@/components/manager/v2/SalesFunnelV2";
 import { AlertsPanelV2 } from "@/components/manager/v2/AlertsPanelV2";
 import { OutreachCardV2 } from "@/components/manager/v2/OutreachCardV2";
@@ -9,13 +9,18 @@ import { PlacementAttritionCard } from "@/components/manager/v2/PlacementAttriti
 import { OpvolgingCard } from "@/components/manager/OpvolgingCard";
 import { ManagerGoalsCard } from "@/components/manager/ManagerGoalsCard";
 import { ManagerPlacementsCard } from "@/components/manager/ManagerPlacementsCard";
-import { ManagerRevenueLeaderboard } from "@/components/manager/ManagerRevenueLeaderboard";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
 import { unitFunnelTotalsV2, unitOutreachTotals } from "@/data/managerOperationalDataV2";
 import { consultantSkillData } from "@/data/managerPerformanceData";
 import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
+import { format, startOfWeek, differenceInDays, subDays } from "date-fns";
+import { nl } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import type { DateRange } from "react-day-picker";
 
 const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
 
@@ -48,7 +53,24 @@ function loadCollapsed(): Record<string, boolean> {
   return {};
 }
 
-// ─── Helpers ───
+function getDefaultRange(): DateRange {
+  const today = new Date();
+  const monday = startOfWeek(today, { weekStartsOn: 1 });
+  return { from: monday, to: today };
+}
+
+function formatPeriod(range: DateRange): string {
+  if (!range.from) return "Selecteer periode";
+  const from = format(range.from, "EEE d MMM", { locale: nl });
+  const to = range.to ? format(range.to, "EEE d MMM yyyy", { locale: nl }) : "";
+  return `${from} – ${to}`;
+}
+
+function getPreviousPeriod(range: DateRange): { from: Date; to: Date } | null {
+  if (!range.from || !range.to) return null;
+  const dayCount = differenceInDays(range.to, range.from) + 1;
+  return { from: subDays(range.from, dayCount), to: subDays(range.from, 1) };
+}
 
 function overallScore(c: typeof consultantSkillData[0]): number {
   const metrics = [
@@ -65,7 +87,14 @@ export default function OverzichtV2() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(loadCollapsed);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
-  const [selectedUnit, setSelectedUnit] = useState<string>("all");
+  const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange>(getDefaultRange);
+
+  const previousPeriod = getPreviousPeriod(dateRange);
+
+  // Derive selectedUnit for components that expect a single string
+  const selectedUnit = selectedUnits.length === 0 ? "all" :
+    selectedUnits.length === 1 ? selectedUnits[0] : "all";
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(sectionOrder));
@@ -78,6 +107,12 @@ export default function OverzichtV2() {
   const toggle = useCallback((id: string) => {
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
+
+  const toggleUnit = (unit: string) => {
+    setSelectedUnits(prev =>
+      prev.includes(unit) ? prev.filter(u => u !== unit) : [...prev, unit]
+    );
+  };
 
   const handleDragStart = (e: DragEvent, idx: number) => {
     setDragIdx(idx);
@@ -105,7 +140,6 @@ export default function OverzichtV2() {
   const handleDragEnd = () => { setDragIdx(null); setDragOverIdx(null); };
   const handleDragLeave = () => { setDragOverIdx(null); };
 
-  // Summary data
   const avgSkillScore = Math.round(
     consultantSkillData.reduce((s, c) => s + overallScore(c), 0) / consultantSkillData.length
   );
@@ -176,13 +210,9 @@ export default function OverzichtV2() {
           <div className="mb-5">
             <PlacementAttritionCard delay={375} />
           </div>
-          <div className="grid grid-cols-3 gap-5">
-            <div className="col-span-1">
-              <ManagerPlacementsCard delay={400} selectedUnit={selectedUnit} />
-            </div>
-            <div className="col-span-2">
-              <ManagerRevenueLeaderboard delay={450} selectedUnit={selectedUnit} />
-            </div>
+          {/* Plaatsingen full width — leaderboard removed */}
+          <div>
+            <ManagerPlacementsCard delay={400} selectedUnit={selectedUnit} />
           </div>
         </>
       ),
@@ -202,15 +232,62 @@ export default function OverzichtV2() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap justify-end min-w-0 max-w-full">
-          <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-            <SelectTrigger className="w-[160px] h-8 text-xs">
-              <SelectValue placeholder="Alle units" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle units</SelectItem>
-              {UNITS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          {/* Period selector */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                <CalendarIcon className="h-3.5 w-3.5" />
+                {formatPeriod(dateRange)}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={(range) => range && setDateRange(range)}
+                initialFocus
+                className="p-3 pointer-events-auto"
+                locale={nl}
+                modifiers={{ today: new Date() }}
+                modifiersClassNames={{ today: "ring-2 ring-primary rounded-md" }}
+              />
+            </PopoverContent>
+          </Popover>
+
+          {previousPeriod && (
+            <Badge variant="secondary" className="text-[10px]">
+              vs {format(previousPeriod.from, "d MMM", { locale: nl })} – {format(previousPeriod.to, "d MMM", { locale: nl })}
+            </Badge>
+          )}
+
+          {/* Multi-select unit filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                <Filter className="h-3.5 w-3.5" />
+                {selectedUnits.length === 0 ? "Alle units" : `${selectedUnits.length} unit${selectedUnits.length > 1 ? "s" : ""}`}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-52 p-3" align="end">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Filter op unit</p>
+              <div className="space-y-2">
+                {UNITS.map(unit => (
+                  <label key={unit} className="flex items-center gap-2 cursor-pointer text-sm">
+                    <Checkbox
+                      checked={selectedUnits.includes(unit)}
+                      onCheckedChange={() => toggleUnit(unit)}
+                    />
+                    {unit}
+                  </label>
+                ))}
+              </div>
+              {selectedUnits.length > 0 && (
+                <Button variant="ghost" size="sm" className="w-full mt-2 text-xs" onClick={() => setSelectedUnits([])}>
+                  Reset
+                </Button>
+              )}
+            </PopoverContent>
+          </Popover>
 
           <Popover>
             <PopoverTrigger asChild>
