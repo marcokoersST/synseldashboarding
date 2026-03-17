@@ -131,6 +131,14 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: Building2,
+    label: "Corporate Recruitment",
+    path: "/corporate-recruitment",
+    subItems: [
+      { icon: TrendingUp, label: "Inflow", path: "/corporate-recruitment/inflow" },
+    ]
+  },
+  {
     icon: Shield,
     label: "Super Admin",
     path: "/super-admin",
