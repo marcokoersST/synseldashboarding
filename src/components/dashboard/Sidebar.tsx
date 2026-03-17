@@ -27,7 +27,8 @@ import {
    HeartHandshake,
    Smile,
    LineChart,
-   Megaphone
+   Megaphone,
+   Building2
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
