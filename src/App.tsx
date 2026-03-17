@@ -63,6 +63,7 @@ const PeterJanOmzetDashboard = lazy(() => import("./pages/peter-jan/OmzetDashboa
 // Marketing dashboards
 const MarketingInschrijvingen = lazy(() => import("./pages/marketing/InschrijvingenDashboard"));
 const MarketingVacatureFunnel = lazy(() => import("./pages/marketing/VacatureFunnelMonitor"));
+const MarketingInflow = lazy(() => import("./pages/marketing/InflowDashboard"));
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
 const ManagerOverzichtV2 = lazy(() => import("./pages/manager/OverzichtV2"));
@@ -132,6 +133,7 @@ const App = () => (
               <Route path="/peter-jan/omzet-dashboard" element={<PeterJanOmzetDashboard />} />
               <Route path="/marketing" element={<MarketingInschrijvingen />} />
               <Route path="/marketing/inschrijvingen" element={<MarketingInschrijvingen />} />
+              <Route path="/marketing/inflow" element={<MarketingInflow />} />
               <Route path="/marketing/vacature-funnel" element={<MarketingVacatureFunnel />} />
             </Route>
             <Route path="*" element={<NotFound />} />

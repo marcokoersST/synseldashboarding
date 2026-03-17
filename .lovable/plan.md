@@ -1,55 +1,62 @@
 
 
-# Plan: Marketing Inflow Dashboard
+# Fix: Card Width Still Expanding Beyond Viewport
 
-## New Files
+## Problem Analysis
 
-### `src/data/marketingInflowData.ts`
-Mock data file with:
-- **Bronnen** (sources): indeed, wati, xxxxx, google ads, werkzoeken_cvdatabase, E-mail, jobster_Joof, Technicus.nl, etc. — each with `inschrijvingen` and `acquisitie` counts (current + previous period)
-- **Consultants**: ~15 consultants each with `unit`, `inschrijvingen`, `acquisitie` (current + previous)
-- **Units**: Trainingsunit, Monteurs, Operators, Engineering, Early Performers — each with aggregated `inschrijvingen` and `acquisitie` for the bar chart
-- **Heractiveringen**: total current + previous
-- Helper functions: `aggregateByUnit()`, `getComparisonData()`
+The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
 
-### `src/pages/marketing/InflowDashboard.tsx`
-Full page component with:
+```text
+<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
+  <>                                             ← Fragment = NO DOM element, no constraints
+    <div flex justify-between>                   ← header with unit selector + Volgorde
+    <section min-w-0 max-w-full overflow-x-hidden>
+      <AnimatedCard overflow-hidden min-w-0>
+        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
+          <div overflow-auto>                             ← scroll container
+            <div min-w-max w-max>                         ← THIS forces intrinsic width
+              <Table>                                     ← wide table
+```
 
-**Filter bar (top)**
-- Date range picker (Calendar, range mode) — default: current week Monday → today
-- Display of active period as text: "Ma 10 mrt – Wo 12 mrt 2026"
-- Compare toggle (Switch) — when enabled, auto-calculates equal-length previous period
+**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
 
-**Comparison logic**
-- Calculate `dayCount = differenceInDays(to, from) + 1`
-- Previous period = `subDays(from, dayCount)` to `subDays(from, 1)`
-- For month comparisons: same date range in previous month
-- All deltas based on this equal-length window
+## Fix — Two changes
 
-**Layout (2-column grid + scorecards)**
+### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
+Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
 
-Row 1: Two scorecards side by side
-- **Inschrijvingen**: large number, progress bar (current vs previous as max), delta when comparing
-- **Heractiveringen**: same pattern
+```tsx
+// Before (line 335):
+<div className="min-w-max w-max">
 
-Row 2: Two tables + bar chart in 3-column grid
-- **Left table**: "Inschrijvingen & Acquisitie / Bron" — columns: Bron, Inschrijvingen, Acquisitie. Grand total row at bottom.
-- **Middle table**: "Inschrijvingen & Acquisitie / Consultant" — columns: Consultant, Inschrijvingen, Acquisitie. Grand total row at bottom.
-- **Right**: Horizontal bar chart per unit showing inschrijvingen (blue) and acquisitie (purple/orange) using Recharts `BarChart` with `layout="vertical"`
+// After:
+<div className="min-w-max">
+```
 
-## Routing & Navigation Changes
+### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
+Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
 
-### `src/App.tsx`
-- Add lazy import: `const MarketingInflow = lazy(() => import("./pages/marketing/InflowDashboard"))`
-- Add route: `<Route path="/marketing/inflow" element={<MarketingInflow />} />`
+```tsx
+// Before:
+return (
+  <>
+    {/* ... */}
+  </>
+);
 
-### `src/components/dashboard/Sidebar.tsx`
-- Add to Marketing Dashboards subItems: `{ icon: TrendingUp, label: "Inflow", path: "/marketing/inflow" }`
+// After:
+return (
+  <div className="w-full min-w-0">
+    {/* ... */}
+  </div>
+);
+```
 
-## Technical Notes
-- Reuse `ConsultantLayout` for page wrapper
-- Reuse existing UI components (Card, Table, Badge, Calendar, Switch, Popover)
-- Recharts `BarChart` with `layout="vertical"` for the unit bar graph (consistent with existing chart patterns)
-- All mock data — no backend calls
-- Progress bars: width = `(current / max(current, previous)) * 100%` for proportional display
+### Why this works
+- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
+- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
+
+### Files changed
+- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
+- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
 
