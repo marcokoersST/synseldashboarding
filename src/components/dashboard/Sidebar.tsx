@@ -195,6 +195,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
     ...(isOnMarketingPage ? ["/marketing"] : []),
     ...(isOnManagerPage ? ["/manager-dashboard"] : []),
+    ...(isOnCorporateRecruitmentPage ? ["/corporate-recruitment"] : []),
   ].filter(path => !manuallyCollapsed.includes(path));
 
   const effectiveExpandedItems = [
