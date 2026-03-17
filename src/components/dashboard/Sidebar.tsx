@@ -27,7 +27,8 @@ import {
    HeartHandshake,
    Smile,
    LineChart,
-   Megaphone
+   Megaphone,
+   Building2
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -130,6 +131,14 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: Building2,
+    label: "Corporate Recruitment",
+    path: "/corporate-recruitment",
+    subItems: [
+      { icon: TrendingUp, label: "Inflow", path: "/corporate-recruitment/inflow" },
+    ]
+  },
+  {
     icon: Shield,
     label: "Super Admin",
     path: "/super-admin",
@@ -175,6 +184,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnPeterJanPage = location.pathname.startsWith("/peter-jan/");
   const isOnManagerPage = location.pathname.startsWith("/manager-dashboard");
   const isOnMarketingPage = location.pathname.startsWith("/marketing");
+  const isOnCorporateRecruitmentPage = location.pathname.startsWith("/corporate-recruitment");
   
   const autoExpanded = [
     ...(isOnComparisonPage ? ["/"] : []),
@@ -185,6 +195,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
     ...(isOnMarketingPage ? ["/marketing"] : []),
     ...(isOnManagerPage ? ["/manager-dashboard"] : []),
+    ...(isOnCorporateRecruitmentPage ? ["/corporate-recruitment"] : []),
   ].filter(path => !manuallyCollapsed.includes(path));
 
   const effectiveExpandedItems = [

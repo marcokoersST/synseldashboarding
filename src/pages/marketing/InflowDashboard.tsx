@@ -6,13 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { CalendarIcon, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { format, startOfWeek, differenceInDays, subDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LabelList } from "recharts";
 import {
   inflowSourceData,
   inflowConsultantData,
@@ -43,56 +42,49 @@ function getPreviousPeriod(range: DateRange): { from: Date; to: Date } | null {
   };
 }
 
+// ─── Scorecard (always comparing) ───
+
 interface ScorecardProps {
   title: string;
   current: number;
   previous: number;
-  comparing: boolean;
 }
 
-function Scorecard({ title, current, previous, comparing }: ScorecardProps) {
+function Scorecard({ title, current, previous }: ScorecardProps) {
   const max = Math.max(current, previous, 1);
   const progressValue = (current / max) * 100;
   const delta = current - previous;
   const deltaPercent = previous > 0 ? ((delta / previous) * 100).toFixed(1) : "–";
   const isPositive = delta > 0;
-  
 
   return (
-    <Card>
+    <Card className="border border-border">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="text-3xl font-bold text-foreground">{current}</div>
-        {comparing && (
-          <div className="mt-2 space-y-2">
-            <Progress value={progressValue} className="h-2" />
-            <div className="flex items-center gap-1 text-sm">
-              {isPositive ? (
-                <TrendingUp className="h-4 w-4 text-primary" />
-              ) : delta < 0 ? (
-                <TrendingDown className="h-4 w-4 text-destructive" />
-              ) : (
-                <Minus className="h-4 w-4 text-muted-foreground" />
-              )}
-              <span className={cn(
-                "font-medium",
-                delta > 0 && "text-primary",
-                delta < 0 && "text-destructive",
-                delta === 0 && "text-muted-foreground"
-              )}>
-                {delta > 0 ? "+" : ""}{delta} ({deltaPercent}%)
-              </span>
-              <span className="text-muted-foreground">vs vorige periode ({previous})</span>
-            </div>
+        <div className="mt-3 space-y-2">
+          <Progress value={progressValue} className="h-2" />
+          <div className="flex items-center gap-1 text-sm">
+            {isPositive ? (
+              <TrendingUp className="h-4 w-4 text-primary" />
+            ) : delta < 0 ? (
+              <TrendingDown className="h-4 w-4 text-destructive" />
+            ) : (
+              <Minus className="h-4 w-4 text-muted-foreground" />
+            )}
+            <span className={cn(
+              "font-medium",
+              delta > 0 && "text-primary",
+              delta < 0 && "text-destructive",
+              delta === 0 && "text-muted-foreground"
+            )}>
+              {delta > 0 ? "+" : ""}{delta} ({deltaPercent}%)
+            </span>
+            <span className="text-muted-foreground">vs vorige periode ({previous})</span>
           </div>
-        )}
-        {!comparing && (
-          <div className="mt-2">
-            <Progress value={progressValue} className="h-2" />
-          </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -100,8 +92,6 @@ function Scorecard({ title, current, previous, comparing }: ScorecardProps) {
 
 export default function InflowDashboard() {
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultRange);
-  const [comparing, setComparing] = useState(false);
-
   const previousPeriod = useMemo(() => getPreviousPeriod(dateRange), [dateRange]);
 
   const sourceTotals = useMemo(() => {
@@ -132,7 +122,7 @@ export default function InflowDashboard() {
   return (
     <ConsultantLayout title="Inflow Dashboard" subtitle="Marketing overzicht van inschrijvingen en acquisities">
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
+      <div className="flex flex-wrap items-center gap-4 mb-8">
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="justify-start text-left font-normal">
@@ -148,42 +138,37 @@ export default function InflowDashboard() {
               initialFocus
               className="p-3 pointer-events-auto"
               locale={nl}
+              modifiers={{ today: new Date() }}
+              modifiersClassNames={{ today: "ring-2 ring-primary rounded-md" }}
             />
           </PopoverContent>
         </Popover>
 
-        <div className="flex items-center gap-2">
-          <Switch checked={comparing} onCheckedChange={setComparing} />
-          <span className="text-sm text-muted-foreground">Vergelijken</span>
-        </div>
-
-        {comparing && previousPeriod && (
+        {previousPeriod && (
           <Badge variant="secondary" className="text-xs">
             vs {format(previousPeriod.from, "d MMM", { locale: nl })} – {format(previousPeriod.to, "d MMM", { locale: nl })}
           </Badge>
         )}
       </div>
 
-      {/* Scorecards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      {/* Scorecards — always show comparison */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <Scorecard
           title="Inschrijvingen"
           current={totalInschrijvingen}
           previous={prevTotalInschrijvingen}
-          comparing={comparing}
         />
         <Scorecard
           title="Heractiveringen"
           current={inflowHeractiveringen.current}
           previous={inflowHeractiveringen.previous}
-          comparing={comparing}
         />
       </div>
 
       {/* Tables + Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Source table */}
-        <Card>
+        <Card className="border border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Inschrijvingen & Acquisitie per Bron</CardTitle>
           </CardHeader>
@@ -200,14 +185,14 @@ export default function InflowDashboard() {
                 {inflowSourceData.map((s) => (
                   <TableRow key={s.bron}>
                     <TableCell className="font-medium">{s.bron}</TableCell>
-                    <TableCell className="text-right">{s.inschrijvingen}</TableCell>
-                    <TableCell className="text-right">{s.acquisitie}</TableCell>
+                    <TableCell className="text-right tabular-nums">{s.inschrijvingen}</TableCell>
+                    <TableCell className="text-right tabular-nums">{s.acquisitie}</TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="bg-muted/50 font-semibold">
                   <TableCell>Totaal</TableCell>
-                  <TableCell className="text-right">{sourceTotals.inschrijvingen}</TableCell>
-                  <TableCell className="text-right">{sourceTotals.acquisitie}</TableCell>
+                  <TableCell className="text-right tabular-nums">{sourceTotals.inschrijvingen}</TableCell>
+                  <TableCell className="text-right tabular-nums">{sourceTotals.acquisitie}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -215,7 +200,7 @@ export default function InflowDashboard() {
         </Card>
 
         {/* Consultant table */}
-        <Card>
+        <Card className="border border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Inschrijvingen & Acquisitie per Consultant</CardTitle>
           </CardHeader>
@@ -232,42 +217,59 @@ export default function InflowDashboard() {
                 {inflowConsultantData.map((c) => (
                   <TableRow key={c.consultant}>
                     <TableCell className="font-medium">{c.consultant}</TableCell>
-                    <TableCell className="text-right">{c.inschrijvingen}</TableCell>
-                    <TableCell className="text-right">{c.acquisitie}</TableCell>
+                    <TableCell className="text-right tabular-nums">{c.inschrijvingen}</TableCell>
+                    <TableCell className="text-right tabular-nums">{c.acquisitie}</TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="bg-muted/50 font-semibold">
                   <TableCell>Totaal</TableCell>
-                  <TableCell className="text-right">{consultantTotals.inschrijvingen}</TableCell>
-                  <TableCell className="text-right">{consultantTotals.acquisitie}</TableCell>
+                  <TableCell className="text-right tabular-nums">{consultantTotals.inschrijvingen}</TableCell>
+                  <TableCell className="text-right tabular-nums">{consultantTotals.acquisitie}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
           </CardContent>
         </Card>
 
-        {/* Unit bar chart */}
-        <Card>
+        {/* Unit bar chart — redesigned */}
+        <Card className="border border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Inschrijvingen & Acquisitie per Unit</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={unitChartData} layout="vertical" margin={{ left: 20, right: 20, top: 5, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis type="number" className="text-xs fill-muted-foreground" />
-                <YAxis dataKey="unit" type="category" width={100} className="text-xs fill-muted-foreground" />
+            <ResponsiveContainer width="100%" height={340}>
+              <BarChart data={unitChartData} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="gradInschrijvingen" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="hsl(175, 60%, 45%)" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="hsl(175, 60%, 55%)" stopOpacity={1} />
+                  </linearGradient>
+                  <linearGradient id="gradAcquisitie" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="hsl(35, 80%, 55%)" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="hsl(35, 80%, 65%)" stopOpacity={1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="unit" type="category" width={110} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "var(--radius)",
                     color: "hsl(var(--foreground))",
+                    fontSize: "12px",
                   }}
                 />
-                <Legend />
-                <Bar dataKey="inschrijvingen" name="Inschrijvingen" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                <Bar dataKey="acquisitie" name="Acquisitie" fill="hsl(var(--accent))" radius={[0, 4, 4, 0]} />
+                <Legend
+                  wrapperStyle={{ fontSize: "12px" }}
+                />
+                <Bar dataKey="inschrijvingen" name="Inschrijvingen" fill="url(#gradInschrijvingen)" radius={[0, 6, 6, 0]} barSize={16}>
+                  <LabelList dataKey="inschrijvingen" position="right" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                </Bar>
+                <Bar dataKey="acquisitie" name="Acquisitie" fill="url(#gradAcquisitie)" radius={[0, 6, 6, 0]} barSize={16}>
+                  <LabelList dataKey="acquisitie" position="right" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
