@@ -55,6 +55,8 @@ function Scorecard({ title, current, previous, comparing }: ScorecardProps) {
   const progressValue = (current / max) * 100;
   const delta = current - previous;
   const deltaPercent = previous > 0 ? ((delta / previous) * 100).toFixed(1) : "–";
+  const isPositive = delta > 0;
+  const isNegative = delta < 0;
 
   return (
     <Card>
@@ -67,8 +69,8 @@ function Scorecard({ title, current, previous, comparing }: ScorecardProps) {
           <div className="mt-2 space-y-2">
             <Progress value={progressValue} className="h-2" />
             <div className="flex items-center gap-1 text-sm">
-              {delta > 0 ? (
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
+              {isPositive ? (
+                <TrendingUp className="h-4 w-4 text-primary" />
               ) : delta < 0 ? (
                 <TrendingDown className="h-4 w-4 text-red-500" />
               ) : (
