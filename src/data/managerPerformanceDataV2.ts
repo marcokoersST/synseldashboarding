@@ -4,30 +4,39 @@ import { consultantSkillData, consultantColors, type ConsultantSkillData } from 
 // Re-export what we still need
 export { consultantSkillData, consultantColors, type ConsultantSkillData };
 
-// ─── Revenue Chart with Forecast (Prognose) ───
+// ─── Revenue Chart with Forecast (Prognose) + Lanes + Historical ───
 
 export interface RevenueDataPointV2 {
   period: string;
   realised: number;
   target: number;
   prognose: number;
-  belowTarget?: boolean; // flag when prognose < target
+  historicalAvg: number;
+  belowTarget?: boolean;
 }
 
+// Lane reference values (in €k)
+export const revenueLanes = {
+  norm: 250,
+  fastLane: 350,
+  executive: 420,
+};
+
+// Historical seasonal pattern: high P1, dip P2-P3, rise summer, dip post-summer, rise year-end
 export const revenueChartDataV2: RevenueDataPointV2[] = [
-  { period: "P1",  realised: 180, target: 200, prognose: 185 },
-  { period: "P2",  realised: 195, target: 220, prognose: 200 },
-  { period: "P3",  realised: 210, target: 240, prognose: 218 },
-  { period: "P4",  realised: 240, target: 260, prognose: 248 },
-  { period: "P5",  realised: 260, target: 280, prognose: 268 },
-  { period: "P6",  realised: 285, target: 300, prognose: 290 },
-  { period: "P7",  realised: 310, target: 320, prognose: 315 },
-  { period: "P8",  realised: 330, target: 340, prognose: 335 },
-  { period: "P9",  realised: 0,   target: 360, prognose: 348 },
-  { period: "P10", realised: 0,   target: 380, prognose: 362, belowTarget: true },
-  { period: "P11", realised: 0,   target: 400, prognose: 378, belowTarget: true },
-  { period: "P12", realised: 0,   target: 420, prognose: 395, belowTarget: true },
-  { period: "P13", realised: 0,   target: 440, prognose: 410, belowTarget: true },
+  { period: "P1",  realised: 180, target: 200, prognose: 185, historicalAvg: 195 },
+  { period: "P2",  realised: 195, target: 220, prognose: 200, historicalAvg: 175 },
+  { period: "P3",  realised: 210, target: 240, prognose: 218, historicalAvg: 170 },
+  { period: "P4",  realised: 240, target: 260, prognose: 248, historicalAvg: 210 },
+  { period: "P5",  realised: 260, target: 280, prognose: 268, historicalAvg: 245 },
+  { period: "P6",  realised: 285, target: 300, prognose: 290, historicalAvg: 280 },
+  { period: "P7",  realised: 310, target: 320, prognose: 315, historicalAvg: 310 },
+  { period: "P8",  realised: 330, target: 340, prognose: 335, historicalAvg: 295 },
+  { period: "P9",  realised: 0,   target: 360, prognose: 348, historicalAvg: 260 },
+  { period: "P10", realised: 0,   target: 380, prognose: 362, historicalAvg: 285, belowTarget: true },
+  { period: "P11", realised: 0,   target: 400, prognose: 378, historicalAvg: 320, belowTarget: true },
+  { period: "P12", realised: 0,   target: 420, prognose: 395, historicalAvg: 360, belowTarget: true },
+  { period: "P13", realised: 0,   target: 440, prognose: 410, historicalAvg: 390, belowTarget: true },
 ];
 
 // ─── Placement Attrition Data ───
@@ -35,7 +44,7 @@ export const revenueChartDataV2: RevenueDataPointV2[] = [
 export interface PlacementAttrition {
   period: string;
   stoppersCount: number;
-  revenueImpact: number; // in thousands
+  revenueImpact: number;
   consultants: { name: string; candidateName: string; revenue: number }[];
 }
 
@@ -64,7 +73,7 @@ export const placementAttritionData: PlacementAttrition[] = [
   ]},
 ];
 
-// ─── Quality / Sentiment per consultant with trends ───
+// ─── Quality / Sentiment per consultant ───
 
 export interface ConsultantQualityData {
   consultantId: number;
@@ -72,10 +81,10 @@ export interface ConsultantQualityData {
   unit: string;
   npsKlant: number;
   npsKandidaat: number;
-  npsKlantTrend: number[]; // last 4 periods
+  npsKlantTrend: number[];
   npsKandidaatTrend: number[];
-  sentimentScore: number; // 0-100
-  sentimentTrend: number; // % change
+  sentimentScore: number;
+  sentimentTrend: number;
 }
 
 export const consultantQualityData: ConsultantQualityData[] = myTeamConsultants.map((c, i) => {
