@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, ReferenceLine } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { Button } from "@/components/ui/button";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
-import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
+import { revenueChartDataV2, revenueLanes } from "@/data/managerPerformanceDataV2";
 import { consultantRevenueData, consultantColors } from "@/data/managerPerformanceData";
 import { myTeamConsultants } from "@/data/managerData";
 
@@ -26,34 +26,39 @@ function useDetailToggle() {
   return { isDetailMode, isTransitioning, displayMode, toggle };
 }
 
-// ─── Overview: 3-line chart ───
+// ─── Overview: 3-line chart with lanes + historical ───
 
 function RevenueOverviewV2({ delay }: { delay: number }) {
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
-  const [visibleLines, setVisibleLines] = useState({ realised: true, target: true, prognose: true });
+  const [visibleLines, setVisibleLines] = useState({
+    realised: true, target: true, prognose: true, historicalAvg: true,
+    norm: true, fastLane: false, executive: false,
+  });
 
   const toggleLine = (key: keyof typeof visibleLines) => {
     setVisibleLines(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Data: filter out zero realised for clean chart
   const chartData = revenueChartDataV2.map(d => ({
     ...d,
     realised: d.realised > 0 ? d.realised : undefined,
   }));
 
-  // Warning dots where prognose < target
   const warningDots = revenueChartDataV2.filter(d => d.belowTarget && d.prognose > 0);
 
   const legendItems = [
     { key: "realised" as const, label: "Gerealiseerd", color: "hsl(var(--teal))", style: "solid" },
     { key: "target" as const, label: "Target", color: "hsl(var(--muted-foreground))", style: "dashed" },
     { key: "prognose" as const, label: "Prognose", color: "hsl(var(--primary))", style: "dashed" },
+    { key: "historicalAvg" as const, label: "Historisch gem.", color: "hsl(220, 15%, 70%)", style: "dotted" },
+    { key: "norm" as const, label: "Norm", color: "hsl(var(--muted-foreground))", style: "lane" },
+    { key: "fastLane" as const, label: "Fast Lane", color: "hsl(210, 70%, 55%)", style: "lane" },
+    { key: "executive" as const, label: "Executive", color: "hsl(45, 80%, 50%)", style: "lane" },
   ];
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-4">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-4">
         {legendItems.map(item => (
           <button key={item.key}
             className="flex items-center gap-1.5 transition-opacity duration-300"
@@ -64,9 +69,13 @@ function RevenueOverviewV2({ delay }: { delay: number }) {
               backgroundColor: item.color,
               ...(item.style === "dashed" ? {
                 background: `repeating-linear-gradient(90deg, ${item.color} 0 4px, transparent 4px 8px)`
+              } : item.style === "dotted" ? {
+                background: `repeating-linear-gradient(90deg, ${item.color} 0 2px, transparent 2px 5px)`
+              } : item.style === "lane" ? {
+                background: `repeating-linear-gradient(90deg, ${item.color} 0 6px, transparent 6px 10px)`
               } : {})
             }} />
-            <span className={cn("text-[11px]", visibleLines[item.key] ? "text-foreground font-medium" : "text-muted-foreground")}>
+            <span className={cn("text-[10px]", visibleLines[item.key] ? "text-foreground font-medium" : "text-muted-foreground")}>
               {item.label}
             </span>
           </button>
@@ -77,14 +86,28 @@ function RevenueOverviewV2({ delay }: { delay: number }) {
           <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis dataKey="period" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} />
-            <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={v => `€${v}k`} />
+            <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={v => `€${v}k`} domain={[0, 500]} />
             <Tooltip
               contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
               formatter={(value: number, name: string) => [
                 `€${value}k`,
-                name === "realised" ? "Gerealiseerd" : name === "target" ? "Target" : "Prognose"
+                name === "realised" ? "Gerealiseerd" : name === "target" ? "Target" : name === "prognose" ? "Prognose" : "Historisch gem."
               ]}
             />
+            {/* Lane reference lines */}
+            {visibleLines.norm && (
+              <ReferenceLine y={revenueLanes.norm} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" strokeWidth={1} label={{ value: "Norm", position: "right", fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+            )}
+            {visibleLines.fastLane && (
+              <ReferenceLine y={revenueLanes.fastLane} stroke="hsl(210, 70%, 55%)" strokeDasharray="6 4" strokeWidth={1} label={{ value: "Fast", position: "right", fontSize: 9, fill: "hsl(210, 70%, 55%)" }} />
+            )}
+            {visibleLines.executive && (
+              <ReferenceLine y={revenueLanes.executive} stroke="hsl(45, 80%, 50%)" strokeDasharray="6 4" strokeWidth={1} label={{ value: "Exec", position: "right", fontSize: 9, fill: "hsl(45, 80%, 50%)" }} />
+            )}
+            {/* Historical average (dotted) */}
+            {visibleLines.historicalAvg && (
+              <Line type="monotone" dataKey="historicalAvg" stroke="hsl(220, 15%, 70%)" strokeWidth={1.5} strokeDasharray="2 4" dot={false} />
+            )}
             {visibleLines.target && (
               <Line type="monotone" dataKey="target" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} strokeDasharray="3 4" dot={false} />
             )}
@@ -99,7 +122,6 @@ function RevenueOverviewV2({ delay }: { delay: number }) {
                 style={{ transition: "stroke-dasharray 2s ease-out, stroke-dashoffset 2s ease-out" }}
               />
             )}
-            {/* Warning dots where prognose drops below target */}
             {visibleLines.prognose && warningDots.map(d => (
               <ReferenceDot key={d.period} x={d.period} y={d.prognose} r={5}
                 fill="hsl(var(--destructive))" stroke="hsl(var(--card))" strokeWidth={2}
@@ -154,6 +176,8 @@ function RevenueDetailV2({ delay, selectedUnit }: { delay: number; selectedUnit?
             <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={v => `€${v}k`} />
             <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
               formatter={(value: number, name: string) => [`€${value}k`, name]} />
+            {/* Lane lines in detail view too */}
+            <ReferenceLine y={revenueLanes.norm} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" strokeWidth={1} strokeOpacity={0.4} />
             {consultants.map((c, i) => (
               <Line key={c.id} type="monotone" dataKey={c.name} stroke={consultantColors[i % consultantColors.length]}
                 strokeWidth={activeLine === c.name ? 3 : 2}
@@ -185,7 +209,7 @@ export function RevenueChartV2({ delay = 0, selectedUnit }: RevenueChartV2Props)
           <div>
             <h3 className="text-sm font-medium text-foreground">Omzet Overzicht</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {displayMode ? "Per consultant" : "Gerealiseerd, target & prognose"}
+              {displayMode ? "Per consultant" : "Gerealiseerd, target, prognose & referentielijnen"}
             </p>
           </div>
           <Button variant="ghost" size="icon" onClick={toggle}

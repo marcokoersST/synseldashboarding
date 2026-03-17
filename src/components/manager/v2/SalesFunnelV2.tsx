@@ -2,13 +2,15 @@ import { useState, useMemo } from "react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
-import { Maximize2, Minimize2, ArrowUpDown, ArrowUp, ArrowDown, TrendingDown } from "lucide-react";
+import { Maximize2, Minimize2, ArrowUpDown, ArrowUp, ArrowDown, TrendingDown, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AIInsightNote } from "./AIInsightNote";
 import {
   funnelStepsV2,
   consultantFunnelDataV2,
   unitFunnelTotalsV2,
   getConversionV2,
+  consultantDetailData,
   type FunnelStepKey,
   type ConsultantFunnelDataV2,
 } from "@/data/managerOperationalDataV2";
@@ -31,11 +33,11 @@ function useDetailToggle() {
 }
 
 const funnelColors = [
-  "hsl(175, 50%, 78%)", "hsl(175, 50%, 72%)", "hsl(175, 52%, 64%)", "hsl(175, 55%, 58%)",
-  "hsl(175, 55%, 51%)", "hsl(175, 58%, 44%)", "hsl(175, 60%, 37%)", "hsl(175, 65%, 27%)",
+  "hsl(175, 50%, 78%)", "hsl(175, 50%, 72%)", "hsl(175, 52%, 64%)", "hsl(175, 53%, 60%)",
+  "hsl(175, 55%, 55%)", "hsl(175, 55%, 51%)", "hsl(175, 58%, 44%)", "hsl(175, 60%, 37%)", "hsl(175, 65%, 27%)",
 ];
 
-// ─── Overview: Funnel Visualization ───
+// ─── Overview: Horizontal Step Chart (compact redesign) ───
 
 function FunnelOverview({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const totals = useMemo(() => {
@@ -56,49 +58,40 @@ function FunnelOverview({ delay, selectedUnit }: { delay: number; selectedUnit?:
   const max = Math.max(data[0].value, 1);
 
   return (
-    <div className="flex flex-col items-center w-full gap-0">
+    <div className="space-y-1">
       {data.map((step, i) => {
-        const widthPct = Math.max(((step.value / max) * 100), 12);
+        const widthPct = Math.max(((step.value / max) * 100), 8);
         const prevStepValue = i > 0 ? data[i - 1].value : 0;
         const convPct = i > 0 && prevStepValue > 0 ? getConversionV2(step.value, prevStepValue) : null;
-        const isLowConversion = convPct !== null && convPct < 40;
-        const isMedConversion = convPct !== null && convPct < 60 && !isLowConversion;
+        const isLow = convPct !== null && convPct < 40;
+        const isMed = convPct !== null && convPct < 60 && !isLow;
 
         return (
-          <div key={step.key} className="w-full flex flex-col items-center">
-            {convPct !== null && (
-              <div className="flex items-center justify-center h-5">
+          <div key={step.key} className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground w-[85px] text-right shrink-0 truncate">{step.label}</span>
+            <div className="flex-1 flex items-center gap-1.5">
+              <div
+                className="h-7 rounded-md flex items-center justify-end pr-2 transition-all duration-700 ease-out"
+                style={{ width: `${widthPct}%`, backgroundColor: funnelColors[i], minWidth: "40px" }}
+              >
+                <span className="text-white text-[11px] font-bold tabular-nums">
+                  <AnimatedNumber value={step.value} delay={delay + i * 50} />
+                </span>
+              </div>
+              {convPct !== null && (
                 <span className={cn(
-                  "font-semibold text-[10px]",
-                  isLowConversion ? "text-destructive" : isMedConversion ? "text-amber-500" : "text-muted-foreground"
+                  "text-[10px] font-semibold tabular-nums shrink-0",
+                  isLow ? "text-destructive" : isMed ? "text-amber-500" : "text-muted-foreground"
                 )}>
-                  {convPct}% ↓
-                  {isLowConversion && " ⚠"}
+                  {convPct}%{isLow && " ⚠"}
                 </span>
-              </div>
-            )}
-            <div
-              className="relative flex items-center justify-center rounded-md transition-all duration-700 ease-out h-9"
-              style={{
-                width: `${widthPct}%`,
-                backgroundColor: funnelColors[i],
-                clipPath: i < data.length - 1
-                  ? `polygon(2% 0%, 98% 0%, 100% 100%, 0% 100%)`
-                  : undefined,
-              }}
-            >
-              <div className="flex items-center gap-2 text-white text-xs">
-                <span className="font-medium opacity-90">{step.label}</span>
-                <span className="font-bold">
-                  <AnimatedNumber value={step.value} delay={delay + i * 60} />
-                </span>
-              </div>
+              )}
             </div>
           </div>
         );
       })}
       {totals.toegewezen > 0 && (
-        <div className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 mt-3">
+        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 mt-2">
           <span className="text-xs font-medium text-foreground">
             Totaal: {totals.toegewezen} → {totals.plaatsingen}
           </span>
@@ -111,7 +104,7 @@ function FunnelOverview({ delay, selectedUnit }: { delay: number; selectedUnit?:
   );
 }
 
-// ─── Detail: Consultant Table ───
+// ─── Detail: Consultant Table with Click-through ───
 
 type SortKey = FunnelStepKey | "consultantName" | "biggestDrop";
 
@@ -136,9 +129,12 @@ function findBiggestDrop(row: ConsultantFunnelDataV2): { stepLabel: string; conv
   return worst;
 }
 
+const categoryColors = { "A+": "text-primary font-bold", "A": "text-accent font-medium", "B": "text-muted-foreground" };
+
 function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const [sortKey, setSortKey] = useState<SortKey>("consultantName");
   const [sortAsc, setSortAsc] = useState(true);
+  const [expandedConsultant, setExpandedConsultant] = useState<number | null>(null);
 
   const filtered = useMemo(() => {
     let data = [...consultantFunnelDataV2];
@@ -174,7 +170,6 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
     return sortAsc ? <ArrowUp className="w-3 h-3 inline ml-0.5" /> : <ArrowDown className="w-3 h-3 inline ml-0.5" />;
   };
 
-  // Team averages for comparison
   const teamAvgs = useMemo(() => {
     const avgs: Record<string, number> = {};
     funnelStepsV2.forEach((step, i) => {
@@ -187,7 +182,7 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
 
   return (
     <div className="space-y-3">
-      <div className="overflow-auto max-h-[420px] rounded-md border border-border/40">
+      <div className="overflow-auto max-h-[520px] rounded-md border border-border/40">
         <table className="w-full text-xs">
           <thead className="sticky top-0 z-10 bg-card">
             <tr className="border-b border-border">
@@ -200,20 +195,14 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                   "text-center py-2 px-1.5 font-medium text-muted-foreground cursor-pointer whitespace-nowrap hover:text-foreground",
                   i > 0 && "border-l border-border/30"
                 )} onClick={() => toggleSort(step.key as SortKey)}>
-                  <div>{step.label}</div>
+                  <div className="text-[10px]">{step.label}</div>
                   <SortIcon k={step.key as SortKey} />
-                </th>
-              ))}
-              {/* Conversion columns between steps */}
-              {funnelStepsV2.slice(1).map((step, i) => (
-                <th key={`conv-${step.key}`} className="text-center py-2 px-1.5 font-medium text-muted-foreground/60 bg-muted/20 whitespace-nowrap text-[10px] border-l border-border/30">
-                  {funnelStepsV2[i].label.slice(0, 4)} → {step.label.slice(0, 4)}
                 </th>
               ))}
               <th className="text-center py-2 px-2 font-medium text-muted-foreground cursor-pointer border-l border-border/30 whitespace-nowrap"
                 onClick={() => toggleSort("biggestDrop")}>
                 <div className="flex items-center gap-1 justify-center">
-                  <TrendingDown className="w-3 h-3" /> Drop-off
+                  <TrendingDown className="w-3 h-3" /> Drop
                 </div>
                 <SortIcon k="biggestDrop" />
               </th>
@@ -222,59 +211,117 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
           <tbody>
             {sorted.map(row => {
               const drop = findBiggestDrop(row);
+              const isExpanded = expandedConsultant === row.consultantId;
+              const detail = consultantDetailData.find(d => d.consultantId === row.consultantId);
               return (
-                <tr key={row.consultantId} className="border-b border-border/30 hover:bg-muted/20">
-                  <td className="py-2 px-2 font-medium text-foreground sticky left-0 bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
-                    <div>
-                      <span className="text-xs">{row.consultantName}</span>
-                      <span className="text-[10px] text-muted-foreground block">{row.unit}</span>
-                    </div>
-                  </td>
-                  {funnelStepsV2.map((step, i) => {
-                    // Compare with previous period
-                    const prevKey = `prev${step.key.charAt(0).toUpperCase()}${step.key.slice(1)}` as keyof ConsultantFunnelDataV2;
-                    const prev = row[prevKey] as number;
-                    const curr = row[step.key];
-                    const trendDown = prev > 0 && curr < prev;
-                    return (
-                      <td key={step.key} className={cn(
-                        "text-center py-2 px-1.5 tabular-nums",
-                        i > 0 && "border-l border-border/30",
-                        trendDown && "text-destructive"
-                      )}>
-                        <span className="font-semibold">{curr}</span>
-                        {trendDown && <span className="text-[9px] ml-0.5">↓</span>}
+                <>
+                  <tr key={row.consultantId}
+                    className={cn("border-b border-border/30 cursor-pointer transition-colors", isExpanded ? "bg-primary/5" : "hover:bg-muted/20")}
+                    onClick={() => setExpandedConsultant(isExpanded ? null : row.consultantId)}
+                  >
+                    <td className="py-2 px-2 font-medium text-foreground sticky left-0 bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                      <div className="flex items-center gap-1">
+                        {isExpanded ? <ChevronDown className="w-3 h-3 shrink-0" /> : <ChevronRight className="w-3 h-3 shrink-0" />}
+                        <div>
+                          <span className="text-xs">{row.consultantName}</span>
+                          <span className="text-[10px] text-muted-foreground block">{row.unit}</span>
+                        </div>
+                      </div>
+                    </td>
+                    {funnelStepsV2.map((step, i) => {
+                      const prevKey = `prev${step.key.charAt(0).toUpperCase()}${step.key.slice(1)}` as keyof ConsultantFunnelDataV2;
+                      const prev = row[prevKey] as number;
+                      const curr = row[step.key];
+                      const trendDown = prev > 0 && curr < prev;
+                      return (
+                        <td key={step.key} className={cn(
+                          "text-center py-2 px-1.5 tabular-nums",
+                          i > 0 && "border-l border-border/30",
+                          trendDown && "text-destructive"
+                        )}>
+                          <span className="font-semibold">{curr}</span>
+                          {trendDown && <span className="text-[9px] ml-0.5">↓</span>}
+                        </td>
+                      );
+                    })}
+                    <td className={cn(
+                      "text-center py-2 px-2 border-l border-border/30",
+                      drop.convPct < 40 ? "text-destructive" : drop.convPct < 60 ? "text-amber-500" : "text-muted-foreground"
+                    )}>
+                      <div className="text-[10px] font-medium">{drop.stepLabel}</div>
+                      <div className="text-[11px] font-bold">{drop.convPct}%</div>
+                    </td>
+                  </tr>
+                  {/* ─── Expanded Detail Panel ─── */}
+                  {isExpanded && detail && (
+                    <tr key={`detail-${row.consultantId}`}>
+                      <td colSpan={funnelStepsV2.length + 2} className="p-0">
+                        <div className="bg-muted/10 border-y border-primary/10 px-4 py-4 space-y-4">
+                          {/* Candidates table */}
+                          <div>
+                            <h4 className="text-xs font-semibold text-foreground mb-2">Kandidaten overzicht</h4>
+                            <div className="overflow-auto max-h-[200px] rounded border border-border/30">
+                              <table className="w-full text-[11px]">
+                                <thead className="bg-card sticky top-0">
+                                  <tr className="border-b border-border">
+                                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Kandidaat</th>
+                                    <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Categorie</th>
+                                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Status</th>
+                                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Kanaal</th>
+                                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Contact</th>
+                                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Datum</th>
+                                    <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">AI Score</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {detail.candidates.map(cand => (
+                                    <tr key={cand.id} className="border-b border-border/20 hover:bg-muted/20">
+                                      <td className="py-1.5 px-2 font-medium text-foreground">{cand.name}</td>
+                                      <td className={cn("py-1.5 px-2 text-center", categoryColors[cand.category])}>{cand.category}</td>
+                                      <td className="py-1.5 px-2 text-muted-foreground capitalize">{cand.status}</td>
+                                      <td className="py-1.5 px-2 text-muted-foreground">{cand.intakeKanaal ?? "–"}</td>
+                                      <td className="py-1.5 px-2 text-muted-foreground">{cand.contactPersoon ?? "–"}</td>
+                                      <td className="py-1.5 px-2 text-muted-foreground">{cand.toewijzingsDatum}</td>
+                                      <td className="py-1.5 px-2 text-center tabular-nums">
+                                        {cand.aiScore ? (
+                                          <span className={cn(
+                                            "font-semibold",
+                                            cand.aiScore >= 80 ? "text-accent" : cand.aiScore >= 60 ? "text-primary" : "text-destructive"
+                                          )}>{cand.aiScore}</span>
+                                        ) : "–"}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+
+                          {/* Conversions per step */}
+                          <div className="flex flex-wrap gap-2">
+                            {funnelStepsV2.slice(1).map((step, i) => {
+                              const conv = getConversionForStep(row, i + 1);
+                              return (
+                                <div key={step.key} className="text-center px-2 py-1 rounded bg-card border border-border/30">
+                                  <div className="text-[9px] text-muted-foreground">{funnelStepsV2[i].label} → {step.label}</div>
+                                  <div className={cn("text-xs font-bold tabular-nums",
+                                    conv !== null && conv < 40 ? "text-destructive" : conv !== null && conv < 60 ? "text-amber-500" : "text-foreground"
+                                  )}>{conv !== null ? `${conv}%` : "–"}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* AI Insights + Prognose */}
+                          <AIInsightNote insights={[
+                            ...detail.aiInsights.map(text => ({ type: "observation" as const, text })),
+                            { type: "forecast" as const, text: detail.prognose },
+                          ]} />
+                        </div>
                       </td>
-                    );
-                  })}
-                  {funnelStepsV2.slice(1).map((step, i) => {
-                    const conv = getConversionForStep(row, i + 1);
-                    const avg = teamAvgs[step.key] || 0;
-                    const isLowest = conv !== null && conv === drop.convPct;
-                    const isLow = conv !== null && conv < 40;
-                    const isMed = conv !== null && conv < 60 && !isLow;
-                    const belowAvg = conv !== null && conv < avg - 10;
-                    return (
-                      <td key={`conv-${step.key}`} className={cn(
-                        "text-center py-2 px-1.5 tabular-nums text-[11px] border-l border-border/30",
-                        isLowest ? "bg-destructive/15 text-destructive font-bold" :
-                        isLow ? "text-destructive font-semibold" :
-                        isMed ? "text-amber-500 font-semibold" :
-                        belowAvg ? "text-amber-600" :
-                        "text-muted-foreground"
-                      )}>
-                        {conv !== null ? `${conv}%` : "-"}
-                      </td>
-                    );
-                  })}
-                  <td className={cn(
-                    "text-center py-2 px-2 border-l border-border/30",
-                    drop.convPct < 40 ? "text-destructive" : drop.convPct < 60 ? "text-amber-500" : "text-muted-foreground"
-                  )}>
-                    <div className="text-[10px] font-medium">{drop.stepLabel}</div>
-                    <div className="text-[11px] font-bold">{drop.convPct}%</div>
-                  </td>
-                </tr>
+                    </tr>
+                  )}
+                </>
               );
             })}
           </tbody>
@@ -301,7 +348,7 @@ export function SalesFunnelV2({ delay = 0, selectedUnit }: SalesFunnelV2Props) {
           <div>
             <h3 className="text-sm font-medium text-foreground">Sales Funnel</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {displayMode ? "Per consultant met conversies" : "8-staps conversie overzicht"}
+              {displayMode ? "Per consultant met conversies & detail" : "9-staps conversie overzicht"}
             </p>
           </div>
           <Button variant="ghost" size="icon" onClick={toggle}
