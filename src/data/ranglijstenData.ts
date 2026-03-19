@@ -190,6 +190,22 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
     const total = entries.reduce((s, e) => s + e.value, 0);
     const prevEntries = generateVariedRanking(baseTopValues[colIdx], prevSeed + colIdx * 7);
     const previousTotal = prevEntries.reduce((s, e) => s + e.value, 0);
+
+    // For "Inschrijvingen" column, generate "gedaan" values (60-95% of op naam)
+    if (title === "Inschrijvingen") {
+      entries.forEach((e, i) => {
+        const ratio = 0.6 + seededRandom(seed + 777, i) * 0.35;
+        e.valueDone = Math.round(e.value * ratio);
+      });
+      const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
+      const prevEntriesDone = prevEntries.map((e, i) => {
+        const ratio = 0.6 + seededRandom(prevSeed + 777, i) * 0.35;
+        return Math.round(e.value * ratio);
+      });
+      const previousTotalDone = prevEntriesDone.reduce((s, v) => s + v, 0);
+      return { title, total, previousTotal, totalDone, previousTotalDone, entries };
+    }
+
     return { title, total, previousTotal, entries };
   });
 }
