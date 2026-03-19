@@ -528,10 +528,21 @@ function RanglijstenContent() {
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
-                <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">{col.title}</h2>
+                <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">
+                  {col.title === "Inschrijvingen" ? "Inschrijvingen op naam" : col.title}
+                </h2>
                 <p className="text-3xl font-bold text-foreground tabular-nums">
                   {col.total.toLocaleString("nl-NL")}
                 </p>
+                {col.totalDone != null && (
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                    <span className="text-base font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      ({col.total > 0 ? ((col.totalDone / col.total) * 100).toFixed(1) : 0}%)
+                    </span>
+                  </div>
+                )}
                 <ComparisonBar current={col.total} previous={col.previousTotal} />
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
