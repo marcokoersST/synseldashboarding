@@ -458,7 +458,7 @@ function RanglijstenContent() {
           <div ref={scrollRef} className="overflow-x-auto scroll-smooth">
             <div
               className="grid gap-5"
-              style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(220px, 1fr))` }}
+              style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))` }}
             >
               {columns.map((col) => {
                 const isNegative = col.title === "Niet begonnen";
