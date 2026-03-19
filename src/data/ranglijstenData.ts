@@ -6,6 +6,7 @@ export interface RankingEntry {
   firstName: string;
   lastName: string;
   value: number;
+  valueDone?: number;
   unit: string;
   isHot: boolean;
   isRocket: boolean;
