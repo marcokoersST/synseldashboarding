@@ -16,6 +16,8 @@ export interface RankingColumn {
   title: string;
   total: number;
   previousTotal: number;
+  totalDone?: number;
+  previousTotalDone?: number;
   entries: RankingEntry[];
 }
 
