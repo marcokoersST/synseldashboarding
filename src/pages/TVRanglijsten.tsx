@@ -75,7 +75,7 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
 }
 
 interface EntryRowProps {
-  entry: { rank: number; name: string; firstName: string; lastName: string; value: number; isHot?: boolean; isRocket?: boolean };
+  entry: { rank: number; name: string; firstName: string; lastName: string; value: number; valueDone?: number; isHot?: boolean; isRocket?: boolean };
   displayName?: string;
   compact?: boolean;
   isNegative?: boolean;
@@ -89,7 +89,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-sm px-1.5 border-b border-border/20 break-inside-avoid",
+        "flex items-center gap-1.5 rounded-sm px-1 border-b border-border/20 break-inside-avoid",
         isTop3 ? (compact ? "py-1" : "py-2") : "py-1",
         compact || isPlain ? "text-xs" : "text-sm",
         !isPlain && getRankStyle(entry.rank, isNegative),
@@ -98,7 +98,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       )}
     >
       <span className={cn(
-        "w-5 text-left shrink-0 flex items-center justify-start gap-0.5",
+        "w-4 text-left shrink-0 flex items-center justify-start gap-0.5",
         isTop3 ? (compact ? "text-xs font-bold" : "text-sm font-bold") : "text-xs",
         entry.value !== 0 && !isTop3 && "text-muted-foreground"
       )}>
@@ -108,7 +108,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       <span
         className={cn(
           "min-w-0 flex-1 text-foreground",
-          isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[11px]",
+          isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[10px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600",
           !isTop3 && "truncate"
@@ -125,6 +125,14 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         {!isPlain && showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket" />}
         {entry.value}
       </span>
+      {entry.valueDone != null && (
+        <span className="tabular-nums shrink-0 flex items-center gap-0.5 text-emerald-600">
+          <Check className="w-3 h-3" />
+          <span className={cn(isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[10px] font-semibold")}>
+            {entry.valueDone}
+          </span>
+        </span>
+      )}
     </div>
   );
 }
