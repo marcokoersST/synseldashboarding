@@ -1,43 +1,62 @@
 
 
-# Plan: Inschrijvingen Gedaan + Responsieve Namen
+# Fix: Card Width Still Expanding Beyond Viewport
 
-## Wat verandert
+## Problem Analysis
 
-### 1. Data — `src/data/ranglijstenData.ts`
+The `overflow-hidden` on AnimatedCard and the card div is NOT working because the entire page content is rendered inside a React Fragment (`<>`), which provides zero width constraints. The DOM chain looks like:
 
-- Add `valueDone` field to `RankingEntry` — represents "inschrijvingen gedaan" (actual registrations performed by the consultant)
-- Generate `valueDone` only for the "Inschrijvingen" column: a value ≤ `value` (e.g. 60-95% of `value` via seeded random)
-- Add `totalDone` and `previousTotalDone` to `RankingColumn` for column-level aggregates
-- For non-Inschrijvingen columns, `valueDone` remains `undefined`
+```text
+<main overflow-y-auto overflow-x-hidden p-6>   ← has overflow-x-hidden but no explicit width
+  <>                                             ← Fragment = NO DOM element, no constraints
+    <div flex justify-between>                   ← header with unit selector + Volgorde
+    <section min-w-0 max-w-full overflow-x-hidden>
+      <AnimatedCard overflow-hidden min-w-0>
+        <div overflow-hidden min-w-0 w-full max-w-full>  ← card
+          <div overflow-auto>                             ← scroll container
+            <div min-w-max w-max>                         ← THIS forces intrinsic width
+              <Table>                                     ← wide table
+```
 
-### 2. Column header — `TVRanglijsten.tsx`
+**Root cause**: The inner table wrapper at line 335 has `w-max` which forces it (and its scroll container) to be as wide as the table's natural width. Even though `overflow-auto` is on the parent, `w-max` on the child makes the parent grow to fit the child's width first. The `overflow-hidden` on ancestor elements *should* clip, but without a concrete width anywhere in the chain (everything uses `w-full` / `max-w-full` which are percentage-based and resolve upward to the Fragment which has no DOM element), the width propagates all the way up, pushing the header controls off-screen.
 
-For the Inschrijvingen column header:
-- Rename label to **"INSCHRIJVINGEN OP NAAM"**
-- Show the main total as before (e.g. 369)
-- Below it, show a second line with a green `CheckCircle2` icon + green total for "gedaan" (e.g. 342)
-- Between them, show conversion percentage (e.g. "92.7%") in muted text
+## Fix — Two changes
 
-### 3. Entry rows for Inschrijvingen column
+### 1. `src/components/manager/ManagerSalesFunnel.tsx` — line 335
+Remove `w-max` from the inner table wrapper. Keep only `min-w-max` so the table columns don't collapse. The parent `overflow-auto` container will then correctly scroll horizontally within the card's bounds.
 
-- Each row shows the existing value (op naam) as before
-- Next to it, a small green `Check` icon + green number for `valueDone`
-- No conversion % per row (only in header)
+```tsx
+// Before (line 335):
+<div className="min-w-max w-max">
 
-### 4. Responsieve namen — font/spacing fixes
+// After:
+<div className="min-w-max">
+```
 
-Current issue: names truncated to `{firstName} {lastName[0]}.` for rank 4+, and `truncate` cuts off even top-3 names.
+### 2. `src/pages/ManagerDashboard.tsx` — line 184-185, 276-277
+Replace the React Fragment (`<>...</>`) with a constraining `<div>` wrapper. This establishes a concrete width constraint that prevents any child from expanding the layout. Without a DOM element, the Fragment cannot constrain width.
 
-Changes:
-- Reduce base font for non-top3 entries from `text-[11px]` to `text-[10px]`
-- Reduce gap in entry rows from `gap-2` to `gap-1.5`
-- Reduce rank number width from `w-5` to `w-4`
-- Reduce horizontal padding from `px-1.5` to `px-1`
-- For non-compact (site) mode: increase column `minmax` from `220px` to `200px` to fit more columns, letting names breathe
-- Show full `entry.name` for top-3 entries (already happens), and for rank 4+ use `{firstName} {lastName[0]}.` but with the reduced sizes this fits better
+```tsx
+// Before:
+return (
+  <>
+    {/* ... */}
+  </>
+);
+
+// After:
+return (
+  <div className="w-full min-w-0">
+    {/* ... */}
+  </div>
+);
+```
+
+### Why this works
+- The `<div className="w-full min-w-0">` creates a real DOM node that inherits `<main>`'s content width and prevents children from expanding it (via `min-w-0` which overrides the default `min-width: auto`)
+- Removing `w-max` from the table wrapper means the scroll container (`overflow-auto`) now has a width determined by its parent (the card), not by its content. The `min-w-max` still ensures the table itself renders at full natural width inside the scrollable area, creating the horizontal scrollbar
 
 ### Files changed
-- `src/data/ranglijstenData.ts` — add `valueDone`, `totalDone`, `previousTotalDone`
-- `src/pages/TVRanglijsten.tsx` — render dual values, green styling, tighter spacing
+- `src/components/manager/ManagerSalesFunnel.tsx` — remove `w-max` from table inner wrapper (line 335)
+- `src/pages/ManagerDashboard.tsx` — replace Fragment with constraining div wrapper (lines 184-185, 276-277)
 
