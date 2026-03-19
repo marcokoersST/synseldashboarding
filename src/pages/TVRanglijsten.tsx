@@ -214,7 +214,9 @@ function applyUnitFilter(columns: RankingColumn[], selectedUnits: string[]): Ran
     const total = filtered.reduce((s, e) => s + e.value, 0);
     const ratio = col.total > 0 ? total / col.total : 0;
     const previousTotal = Math.round(col.previousTotal * ratio);
-    return { ...col, entries: filtered, total, previousTotal };
+    const totalDone = col.totalDone != null ? filtered.reduce((s, e) => s + (e.valueDone ?? 0), 0) : undefined;
+    const previousTotalDone = col.previousTotalDone != null ? Math.round(col.previousTotalDone * ratio) : undefined;
+    return { ...col, entries: filtered, total, previousTotal, totalDone, previousTotalDone };
   });
 }
 
