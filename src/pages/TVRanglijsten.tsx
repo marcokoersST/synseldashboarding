@@ -275,7 +275,8 @@ function RanglijstenContent() {
     "Acquisities": "value",
   });
 
-  const [tvViewMode, setTvViewMode] = useState<"week" | "periode">("week");
+  const [tvViewMode, setTvViewMode] = useState<"week" | "periode" | "custom">("week");
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
 
   const updateScrollButtons = useCallback(() => {
     const el = scrollRef.current;
