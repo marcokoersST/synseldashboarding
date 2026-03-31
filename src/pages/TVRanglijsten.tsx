@@ -490,24 +490,27 @@ function RanglijstenContent() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56">
-                <p className="text-sm font-medium mb-2">Units</p>
-                <div className="flex items-center gap-2 mb-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-7 flex-1"
-                    onClick={() => setPendingUnits(["Alle units"])}
-                  >
-                    Alles selecteren
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-7 flex-1"
-                    onClick={() => setPendingUnits([])}
-                  >
-                    Alles deselecteren
-                  </Button>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium">Units</p>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-6 px-2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setPendingUnits(["Alle units"])}
+                    >
+                      Alles aan
+                    </Button>
+                    <span className="text-muted-foreground text-xs">·</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-6 px-2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setPendingUnits([])}
+                    >
+                      Alles uit
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {ranglijstenFilters.units.filter(u => u !== "Alle units").map((u) => (
