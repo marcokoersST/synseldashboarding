@@ -133,7 +133,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
           </span>
           {entry.value > 0 && (
             <span className={cn("text-muted-foreground font-normal", isTop3 ? "text-[10px]" : "text-[8px]")}>
-              ({((entry.valueDone / entry.value) * 100).toFixed(1)}%)
+              ({Math.round((entry.valueDone / entry.value) * 100)}%)
             </span>
           )}
         </span>
