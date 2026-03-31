@@ -490,7 +490,25 @@ function RanglijstenContent() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56">
-                <p className="text-sm font-medium mb-3">Units</p>
+                <p className="text-sm font-medium mb-2">Units</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7 flex-1"
+                    onClick={() => setPendingUnits(["Alle units"])}
+                  >
+                    Alles selecteren
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7 flex-1"
+                    onClick={() => setPendingUnits([])}
+                  >
+                    Alles deselecteren
+                  </Button>
+                </div>
                 <div className="space-y-2">
                   {ranglijstenFilters.units.filter(u => u !== "Alle units").map((u) => (
                     <label key={u} className="flex items-center gap-2 text-sm cursor-pointer">
