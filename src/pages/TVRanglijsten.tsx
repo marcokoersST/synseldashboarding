@@ -110,22 +110,23 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         className={cn(
           "min-w-0 flex-1 text-foreground",
           isTop3
-            ? shownName.length > 15
-              ? "text-[10px] font-medium"
-              : shownName.length > 10
-                ? "text-[10px] font-semibold"
-                : compact ? "text-xs font-semibold" : "text-sm font-bold"
-            : "text-[10px]",
+            ? isAcquisities
+              ? "text-[10px] font-semibold max-w-[90px] truncate"
+              : shownName.length > 15
+                ? "text-[10px] font-medium whitespace-nowrap"
+                : shownName.length > 10
+                  ? "text-[10px] font-semibold whitespace-nowrap"
+                  : compact ? "text-xs font-semibold whitespace-nowrap" : "text-sm font-bold whitespace-nowrap"
+            : "text-[10px] truncate",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
-          entry.value === 0 && "text-orange-600",
-          isTop3 ? "whitespace-nowrap" : "truncate"
+          entry.value === 0 && "text-orange-600"
         )}
       >
         {shownName}
       </span>
       <span className={cn(
         "tabular-nums shrink-0 ml-auto flex items-center gap-1",
-        isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "font-semibold",
+        isTop3 ? (isAcquisities ? "text-sm font-semibold" : compact ? "text-sm font-semibold" : "text-base font-bold") : "font-semibold",
         entry.value !== 0 && "text-foreground"
       )}>
         {!isPlain && showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
@@ -135,7 +136,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       {entry.valueDone != null && (
         <span className="tabular-nums shrink-0 flex items-center gap-0.5 text-emerald-600">
           <Check className="w-3 h-3" />
-          <span className={cn(isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[10px] font-semibold")}>
+          <span className={cn(isTop3 ? (isAcquisities ? "text-sm font-semibold" : compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[10px] font-semibold")}>
             {entry.valueDone}
           </span>
           {entry.value > 0 && (
