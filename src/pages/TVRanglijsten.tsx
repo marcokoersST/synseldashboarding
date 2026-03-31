@@ -81,9 +81,10 @@ interface EntryRowProps {
   isNegative?: boolean;
   showStatusIcons?: boolean;
   isPlain?: boolean;
+  isAcquisities?: boolean;
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? entry.name;
   return (
@@ -132,9 +133,24 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
             {entry.valueDone}
           </span>
           {entry.value > 0 && (
-            <span className={cn("text-muted-foreground font-normal", isTop3 ? "text-[10px]" : "text-[8px]")}>
-              ({Math.round((entry.valueDone / entry.value) * 100)}%)
-            </span>
+            isAcquisities ? (
+              <span className={cn(
+                "font-semibold",
+                isTop3 ? "text-[10px]" : "text-[8px]",
+                (() => {
+                  const ratio = entry.valueDone! / entry.value;
+                  if (ratio < 10) return "text-red-500";
+                  if (ratio < 15) return "text-orange-500";
+                  return "text-muted-foreground";
+                })()
+              )}>
+                ×{(entry.valueDone! / entry.value).toFixed(1)}
+              </span>
+            ) : (
+              <span className={cn("text-muted-foreground font-normal", isTop3 ? "text-[10px]" : "text-[8px]")}>
+                ({Math.round((entry.valueDone / entry.value) * 100)}%)
+              </span>
+            )
           )}
         </span>
       )}
@@ -498,16 +514,27 @@ function RanglijstenContent() {
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                         <span className="text-lg font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
                         <span className="text-xs text-emerald-600">{doneLabel}</span>
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({col.total > 0 ? Math.round((col.totalDone / col.total) * 100) : 0}%)
-                        </span>
+                        {isAcquisities ? (
+                          <span className={cn("text-xs font-semibold ml-1", (() => {
+                            const r = col.total > 0 ? col.totalDone! / col.total : 0;
+                            if (r < 10) return "text-red-500";
+                            if (r < 15) return "text-orange-500";
+                            return "text-muted-foreground";
+                          })())}>
+                            ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0}%)
+                          </span>
+                        )}
                       </div>
                     )}
                     <ComparisonBar current={col.total} previous={col.previousTotal} />
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
                         {top3.map((entry) => (
-                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} />
+                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} />
                         ))}
                       </div>
                     )}
@@ -521,6 +548,7 @@ function RanglijstenContent() {
                           isNegative={isNegative}
                           showStatusIcons={showStatusIcons}
                           isPlain={isPlain}
+                          isAcquisities={isAcquisities}
                         />
                       ))}
                     </AutoColumnsWrapper>
@@ -568,16 +596,27 @@ function RanglijstenContent() {
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                     <span className="text-base font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
                     <span className="text-xs text-emerald-600">{doneLabel}</span>
-                    <span className="text-[10px] text-muted-foreground ml-0.5">
-                      ({col.total > 0 ? Math.round((col.totalDone / col.total) * 100) : 0}%)
-                    </span>
+                    {isAcquisities ? (
+                      <span className={cn("text-[10px] font-semibold ml-0.5", (() => {
+                        const r = col.total > 0 ? col.totalDone! / col.total : 0;
+                        if (r < 10) return "text-red-500";
+                        if (r < 15) return "text-orange-500";
+                        return "text-muted-foreground";
+                      })())}>
+                        ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground ml-0.5">
+                        ({col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0}%)
+                      </span>
+                    )}
                   </div>
                 )}
                 <ComparisonBar current={col.total} previous={col.previousTotal} />
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
                     {top3.map((entry) => (
-                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} compact isNegative={isNegative} showStatusIcons={showStatusIcons} />
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} />
                     ))}
                   </div>
                 )}
@@ -591,6 +630,7 @@ function RanglijstenContent() {
                       isNegative={isNegative}
                       showStatusIcons={showStatusIcons}
                       isPlain={isPlain}
+                      isAcquisities={isAcquisities}
                     />
                   ))}
                 </AutoColumnsWrapper>
