@@ -1,26 +1,31 @@
 
 
-# Plan: Top 3 namen volledig tonen zonder afkorting
+# Fix: Top 3 layout overlap in Acquisities kolom
 
 ## Probleem
-De `truncate` CSS-class op regel 115 knipt top 3 namen af met "...". De gebruiker wil volledige namen (met achternaam afgekort als "B." etc.) zonder ellipsis, en een automatisch kleinere font als de naam lang is.
+In de top 3 entries overlappen naam, acquisitie-getal, voorstellen-getal en ratio elkaar. Te veel content op één horizontale rij met te grote fonts.
 
-## Wijzigingen — `src/pages/TVRanglijsten.tsx`
+## Oplossing
 
-### 1. Verwijder `truncate` voor top 3
-Regel 115: maak `truncate` conditioneel — alleen toepassen als het GEEN top 3 entry is.
+### `src/pages/TVRanglijsten.tsx` — EntryRow component
 
-### 2. Automatisch kleinere font voor lange namen in top 3
-Voeg een dynamische font-size toe voor top 3 namen op basis van naamlengte:
-- Naam ≤ 10 tekens → huidige font (`text-sm font-bold` / `text-xs font-semibold`)
-- Naam > 10 tekens → één stap kleiner (`text-xs font-semibold` / `text-[10px] font-semibold`)
-- Naam > 15 tekens → nog kleiner (`text-[10px] font-medium`)
+**1. Verklein value fonts voor top 3 in Acquisities kolom:**
+- Hoofdgetal (acquisities): van `text-base font-bold` → `text-sm font-bold` voor top 3
+- Voorstellen getal: zelfde reductie `text-base` → `text-sm`
+- Dit geeft meer ruimte voor de naam
 
-Dit zorgt ervoor dat namen als "Christiaan van K." of "Xander Blok" volledig zichtbaar zijn zonder te wrappen of af te knippen.
+**2. Naam mag truncaten voor top 3 als het Acquisities is:**
+- Vervang `whitespace-nowrap` door `truncate` voor Acquisities top 3 entries, zodat lange namen netjes afkorten in plaats van te overlappen
+- Alternatief: gebruik `overflow-hidden text-ellipsis whitespace-nowrap` met een `max-width` (bijv. `max-w-[80px]`)
 
-### 3. Toevoeg `whitespace-nowrap` voor top 3
-Zodat de naam altijd op één regel blijft, maar dan met kleinere font i.p.v. afknippen.
+**3. Vergroot gap tussen naam en waarden:**
+- Voeg `gap-2` toe i.p.v. `gap-1.5` voor top 3 entries om meer ademruimte te geven
+
+**Concrete aanpak** (eenvoudigst en meest robuust):
+- Op regel 109-125: voor `isAcquisities && isTop3`, gebruik `truncate` i.p.v. `whitespace-nowrap` en cap naam met `max-w-[90px]`
+- Op regel 128: voor `isAcquisities && isTop3`, reduceer font: `text-sm font-semibold` i.p.v. `text-base font-bold`
+- Op regel 138: zelfde reductie voor valueDone font
 
 ### Bestand
-- `src/pages/TVRanglijsten.tsx` — regels 109-116
+- `src/pages/TVRanglijsten.tsx`
 
