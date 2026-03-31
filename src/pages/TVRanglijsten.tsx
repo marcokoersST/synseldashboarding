@@ -477,8 +477,8 @@ function RanglijstenContent() {
                 const rest = isPlain ? col.entries : col.entries.slice(3);
 
                 const headerTitle = isAcquisities ? "Acquisities / Voorstellen" : col.title;
-                const primaryLabel = isAcquisities ? "acquisities" : isPlain ? "op naam" : undefined;
-                const doneLabel = isAcquisities ? "voorstellen" : isPlain ? "gedaan" : undefined;
+                const primaryLabel = isAcquisities ? "voorstellen" : isPlain ? "op naam" : undefined;
+                const doneLabel = isAcquisities ? "acquisities" : isPlain ? "gedaan" : undefined;
 
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
@@ -547,8 +547,8 @@ function RanglijstenContent() {
             const rest = isPlain ? col.entries : col.entries.slice(3);
 
             const headerTitle = isAcquisities ? "Acquisities / Voorstellen" : col.title;
-            const primaryLabel = isAcquisities ? "acquisities" : isPlain ? "op naam" : undefined;
-            const doneLabel = isAcquisities ? "voorstellen" : isPlain ? "gedaan" : undefined;
+            const primaryLabel = isAcquisities ? "voorstellen" : isPlain ? "op naam" : undefined;
+            const doneLabel = isAcquisities ? "acquisities" : isPlain ? "gedaan" : undefined;
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
