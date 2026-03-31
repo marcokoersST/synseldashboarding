@@ -134,7 +134,7 @@ const basePeriodeTopValues: number[][] = [
   [2, 1, 1],
 ];
 
-const columnTitles = ["Inschrijvingen", "Acquisities", "Voorstellen", "Gesprekken", "Intakes", "Plaatsingen", "Niet begonnen"];
+const columnTitles = ["Inschrijvingen", "Acquisities", "Gesprekken", "Intakes", "Plaatsingen", "Niet begonnen"];
 
 function generateVariedRanking(baseValues: number[], seed: number): RankingEntry[] {
   // Apply variation: scale values by a factor between 0.7 and 1.3
