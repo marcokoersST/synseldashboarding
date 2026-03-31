@@ -1,30 +1,30 @@
 
 
-# Fix: Top 3 layout overlap in Acquisities kolom
+# Plan: Sorteer-dropdown per kolom (Inschrijvingen & Acquisities)
 
-## Probleem
-In de top 3 entries overlappen naam, acquisitie-getal, voorstellen-getal en ratio elkaar. Te veel content op één horizontale rij met te grote fonts.
+## Wat verandert
 
-## Oplossing
+### State toevoegen — `src/pages/TVRanglijsten.tsx`
+- Nieuwe state: `sortModes` object met per kolom-titel de actieve sorteeroptie
+  - `"Inschrijvingen"` → default `"name"`, opties: `"name"` | `"done"`
+  - `"Acquisities"` → default `"value"`, opties: `"value"` (acquisities) | `"done"` (voorstellen)
 
-### `src/pages/TVRanglijsten.tsx` — EntryRow component
+### Sorteer-icoon met dropdown — naast de titel
+- Import `ArrowUpDown` icoon uit lucide-react
+- Naast de `<h2>` titel van Inschrijvingen en Acquisities kolommen: een klein `ArrowUpDown` icoon toevoegen
+- Bij klik opent een `Popover` met de sorteeropties:
+  - **Inschrijvingen**: "Op naam" / "Op gedaan"
+  - **Acquisities**: "Op acquisities" / "Op voorstellen"
+- Actieve optie gemarkeerd met een checkmark
+- Icoon + popover past in dezelfde header-rij, dus titel blijft op dezelfde hoogte als andere kolommen
 
-**1. Verklein value fonts voor top 3 in Acquisities kolom:**
-- Hoofdgetal (acquisities): van `text-base font-bold` → `text-sm font-bold` voor top 3
-- Voorstellen getal: zelfde reductie `text-base` → `text-sm`
-- Dit geeft meer ruimte voor de naam
-
-**2. Naam mag truncaten voor top 3 als het Acquisities is:**
-- Vervang `whitespace-nowrap` door `truncate` voor Acquisities top 3 entries, zodat lange namen netjes afkorten in plaats van te overlappen
-- Alternatief: gebruik `overflow-hidden text-ellipsis whitespace-nowrap` met een `max-width` (bijv. `max-w-[80px]`)
-
-**3. Vergroot gap tussen naam en waarden:**
-- Voeg `gap-2` toe i.p.v. `gap-1.5` voor top 3 entries om meer ademruimte te geven
-
-**Concrete aanpak** (eenvoudigst en meest robuust):
-- Op regel 109-125: voor `isAcquisities && isTop3`, gebruik `truncate` i.p.v. `whitespace-nowrap` en cap naam met `max-w-[90px]`
-- Op regel 128: voor `isAcquisities && isTop3`, reduceer font: `text-sm font-semibold` i.p.v. `text-base font-bold`
-- Op regel 138: zelfde reductie voor valueDone font
+### Sorteerlogica toepassen
+- Na het filteren van entries (unit filter), maar vóór het renderen: sorteer entries op basis van de gekozen sortmode
+  - `"name"` → alfabetisch op `entry.name`
+  - `"value"` → numeriek aflopend op `entry.value` (huidige default)
+  - `"done"` → numeriek aflopend op `entry.valueDone`
+- Na sortering: re-rank (rank = index + 1)
+- Toepassen op beide views (site-modus en compact/TV-modus)
 
 ### Bestand
 - `src/pages/TVRanglijsten.tsx`
