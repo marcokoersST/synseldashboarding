@@ -109,10 +109,16 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       <span
         className={cn(
           "min-w-0 flex-1 text-foreground",
-          isTop3 ? (compact ? "text-xs font-semibold" : "text-sm font-bold") : "text-[10px]",
+          isTop3
+            ? shownName.length > 15
+              ? "text-[10px] font-medium"
+              : shownName.length > 10
+                ? "text-[10px] font-semibold"
+                : compact ? "text-xs font-semibold" : "text-sm font-bold"
+            : "text-[10px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600",
-          "truncate"
+          isTop3 ? "whitespace-nowrap" : "truncate"
         )}
       >
         {shownName}
