@@ -7,9 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, Rocket, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown } from "lucide-react";
+import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, Rocket, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
+import type { DateRange } from "react-day-picker";
 
 const STATUS_ICON_COLUMNS = new Set(["Acquisities", "Gesprekken", "Intakes", "Plaatsingen"]);
 
@@ -271,7 +275,8 @@ function RanglijstenContent() {
     "Acquisities": "value",
   });
 
-  const [tvViewMode, setTvViewMode] = useState<"week" | "periode">("week");
+  const [tvViewMode, setTvViewMode] = useState<"week" | "periode" | "custom">("week");
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
 
   const updateScrollButtons = useCallback(() => {
     const el = scrollRef.current;
@@ -296,13 +301,14 @@ function RanglijstenContent() {
     });
   }, []);
 
-  const currentNum = tvViewMode === "week"
+  const effectiveViewMode = tvViewMode === "custom" ? "week" : tvViewMode;
+  const currentNum = effectiveViewMode === "week"
     ? parseInt(selectedWeek.replace("W", ""), 10)
     : parseInt(selectedPeriode.replace("P", ""), 10);
 
   const rawColumns = useMemo(() => {
-    return getRanglijstenData(parseInt(jaar, 10), tvViewMode, currentNum);
-  }, [jaar, tvViewMode, currentNum]);
+    return getRanglijstenData(parseInt(jaar, 10), effectiveViewMode, currentNum);
+  }, [jaar, effectiveViewMode, currentNum]);
 
   const sortEntries = useCallback((entries: typeof rawColumns[0]["entries"], colTitle: string) => {
     const mode = sortModes[colTitle];
@@ -346,7 +352,11 @@ function RanglijstenContent() {
             Ranglijsten
             <span className="text-primary">·</span>
             <span className="text-primary">
-              {tvViewMode === "week" ? `Week ${currentNum}` : `Periode ${currentNum}`}
+              {tvViewMode === "custom" && customDateRange?.from
+                ? customDateRange.to
+                  ? `${format(customDateRange.from, "d MMM", { locale: nl })} – ${format(customDateRange.to, "d MMM", { locale: nl })}`
+                  : format(customDateRange.from, "d MMM", { locale: nl })
+                : tvViewMode === "week" ? `Week ${currentNum}` : `Periode ${currentNum}`}
             </span>
           </h1>
         )}
@@ -378,21 +388,71 @@ function RanglijstenContent() {
               >
                 Periode
               </Badge>
+              <Badge
+                variant={tvViewMode === "custom" ? "default" : "secondary"}
+                className="transition-all duration-300 cursor-pointer"
+                onClick={() => setTvViewMode("custom")}
+              >
+                Aangepast
+              </Badge>
             </div>
 
-            <Select
-              value={tvViewMode === "week" ? selectedWeek : selectedPeriode}
-              onValueChange={tvViewMode === "week" ? setSelectedWeek : setSelectedPeriode}
-            >
-              <SelectTrigger className={cn("bg-card border-border", tvViewMode === "week" ? "w-[110px]" : "w-[100px]")}>
-                <SelectValue placeholder={tvViewMode === "week" ? "Week" : "Periode"} />
-              </SelectTrigger>
-              <SelectContent>
-                {(tvViewMode === "week" ? ranglijstenFilters.weeknummers : ranglijstenFilters.periodenummers).map((item) => (
-                  <SelectItem key={item} value={item}>{item}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {tvViewMode === "week" && (
+              <Select value={selectedWeek} onValueChange={setSelectedWeek}>
+                <SelectTrigger className="w-[110px] bg-card border-border">
+                  <SelectValue placeholder="Week" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ranglijstenFilters.weeknummers.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {tvViewMode === "periode" && (
+              <Select value={selectedPeriode} onValueChange={setSelectedPeriode}>
+                <SelectTrigger className="w-[100px] bg-card border-border">
+                  <SelectValue placeholder="Periode" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ranglijstenFilters.periodenummers.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {tvViewMode === "custom" && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 min-w-[200px] justify-start text-left font-normal">
+                    <CalendarIcon className="w-4 h-4" />
+                    {customDateRange?.from ? (
+                      customDateRange.to ? (
+                        <>
+                          {format(customDateRange.from, "d MMM", { locale: nl })} – {format(customDateRange.to, "d MMM yyyy", { locale: nl })}
+                        </>
+                      ) : (
+                        format(customDateRange.from, "d MMM yyyy", { locale: nl })
+                      )
+                    ) : (
+                      <span className="text-muted-foreground">Selecteer periode</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="range"
+                    selected={customDateRange}
+                    onSelect={setCustomDateRange}
+                    numberOfMonths={2}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
 
             <Popover>
               <PopoverTrigger asChild>
