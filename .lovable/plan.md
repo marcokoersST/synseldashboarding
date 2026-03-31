@@ -1,35 +1,42 @@
 
 
-# Plan: Acquisities kolom fixen — data flip + top3 font verkleinen
+# Plan: Percentage vervangen door ratio (×15.0) met kleurcodering
 
-## Probleem
+## Wat verandert
 
-1. **Data is omgedraaid**: Momenteel is `value` = voorstellen (groot getal) en `valueDone` = acquisities (klein getal). Gebruiker wil acquisities als hoofdgetal en voorstellen als "done" getal.
-2. **Top 3 namen te groot**: In de Acquisities kolom nemen Jort Koggel, Christiaan van Krieken, Xander Blok te veel verticale ruimte in. Font size moet kleiner zodat ze op 1 rij passen, vergelijkbaar met andere kolommen.
+### 1. EntryRow aanpassen — `src/pages/TVRanglijsten.tsx`
 
-## Wijzigingen
+**Nieuwe prop**: `isAcquisities?: boolean` toevoegen aan `EntryRowProps`.
 
-### 1. Data flip — `src/data/ranglijstenData.ts`
+**In de `valueDone` rendering (regels 128-139)**:
+- Als `isAcquisities` en `entry.value > 0`: toon ratio i.p.v. percentage
+  - Berekening: `(entry.valueDone / entry.value).toFixed(1)`
+  - Format: `×14.2` (met ×-teken)
+  - Kleurcodering:
+    - `< 10×` → `text-red-500` (te weinig voorstellen)
+    - `10× - 14×` → `text-orange-500` (onder target)
+    - `≥ 15×` → huidige `text-muted-foreground` (op target)
+- Anders (Inschrijvingen): bestaand percentage behouden
 
-In het `if (title === "Acquisities")` blok:
-- **Huidige situatie**: `value` = voorstellen (~100-300), `valueDone` = acquisities (~5-15)
-- **Gewenst**: `value` = acquisities (klein getal), `valueDone` = voorstellen (groot getal)
-- Swap de logica: genereer eerst het acquisitie-getal als `value` (gebruik de huidige base values die al lager zijn, of pas `baseWeekTopValues`/`basePeriodeTopValues` aan naar ~10-30 range), en bereken `valueDone` = `value * ~15` (de voorstellen)
-- Pas `totalDone` en `previousTotalDone` mee aan
+### 2. Prop doorgeven — `src/pages/TVRanglijsten.tsx`
 
-### 2. Labels flippen — `src/pages/TVRanglijsten.tsx`
+Op 4 plekken waar `<EntryRow>` wordt aangeroepen (top3 + rest, in site- en compact-modus): `isAcquisities={isAcquisities}` toevoegen.
 
-Op **twee plekken** (site-modus ~regel 480 en compact-modus ~regel 550):
-- `primaryLabel` voor Acquisities wordt `"acquisities"` (was "voorstellen")
-- `doneLabel` voor Acquisities wordt `"voorstellen"` (was "acquisities")
+### 3. Header ratio — `src/pages/TVRanglijsten.tsx`
 
-### 3. Top 3 font verkleinen — `src/pages/TVRanglijsten.tsx`
+In de header voor Acquisities: percentage ook vervangen door gemiddelde ratio (`×` formaat) met dezelfde kleurcodering.
 
-In de `EntryRow` component (~regel 108-117), wanneer het een Acquisities top3 entry is met een lange naam:
-- Reduceer de naam font-size voor top3 van `text-base font-bold` naar `text-sm font-semibold` specifiek voor de Acquisities kolom, of generiek: maak de top3 naam iets kleiner zodat langere namen (2 woorden) op 1 regel passen
-- Eenvoudigste aanpak: voeg `truncate` toe aan top3 namen (nu alleen bij niet-top3) zodat ze niet wrappen
+### Voorbeeld resultaat
+
+```text
+Header:   106  acquisities
+          ✅ 1590  voorstellen  ×15.0
+
+Rij:      1.  Jort Koggel    10  ✅ 150  ×15.0     (grijs)
+          8.  Dees B.         3  ✅  18  ×6.0      (rood)
+          5.  Nina V.         7  ✅  84  ×12.0     (oranje)
+```
 
 ### Bestanden
-- `src/data/ranglijstenData.ts` — flip value/valueDone voor Acquisities
-- `src/pages/TVRanglijsten.tsx` — flip labels + top3 namen trunceren
+- `src/pages/TVRanglijsten.tsx` — ratio logica, kleurcodering, prop doorgeven
 
