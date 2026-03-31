@@ -81,9 +81,10 @@ interface EntryRowProps {
   isNegative?: boolean;
   showStatusIcons?: boolean;
   isPlain?: boolean;
+  isAcquisities?: boolean;
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? entry.name;
   return (
