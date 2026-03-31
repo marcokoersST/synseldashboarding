@@ -204,16 +204,32 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
     }
 
-    // For "Acquisities" column, generate "voorstellen" values (40-80% of acquisities)
+    // For "Acquisities" column: value = voorstellen (groot), valueDone = acquisities (klein, ~1/15 ratio)
     if (title === "Acquisities") {
       entries.forEach((e, i) => {
-        const ratio = 0.4 + seededRandom(seed + 888, i) * 0.4;
-        e.valueDone = Math.round(e.value * ratio);
+        // Most consultants: 5-10% conversion (1/15 ≈ 6.7%)
+        // A few get very low conversion (<5%) to stand out
+        const rand = seededRandom(seed + 888, i);
+        let ratio: number;
+        if (rand < 0.15) {
+          // ~15% of consultants: very low conversion (2-4%)
+          ratio = 0.02 + seededRandom(seed + 889, i) * 0.02;
+        } else {
+          // Normal range: 5-10%
+          ratio = 0.05 + seededRandom(seed + 890, i) * 0.05;
+        }
+        e.valueDone = Math.max(e.value > 0 ? 1 : 0, Math.round(e.value * ratio));
       });
       const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
       const prevEntriesDone = prevEntries.map((e, i) => {
-        const ratio = 0.4 + seededRandom(prevSeed + 888, i) * 0.4;
-        return Math.round(e.value * ratio);
+        const rand = seededRandom(prevSeed + 888, i);
+        let ratio: number;
+        if (rand < 0.15) {
+          ratio = 0.02 + seededRandom(prevSeed + 889, i) * 0.02;
+        } else {
+          ratio = 0.05 + seededRandom(prevSeed + 890, i) * 0.05;
+        }
+        return Math.max(e.value > 0 ? 1 : 0, Math.round(e.value * ratio));
       });
       const previousTotalDone = prevEntriesDone.reduce((s, v) => s + v, 0);
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
