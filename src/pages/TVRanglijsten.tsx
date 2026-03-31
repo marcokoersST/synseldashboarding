@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, Rocket, ChevronLeft, ChevronRight, CheckCircle2, Check } from "lucide-react";
 
-const STATUS_ICON_COLUMNS = new Set(["Acquisities", "Voorstellen", "Gesprekken", "Intakes", "Plaatsingen"]);
+const STATUS_ICON_COLUMNS = new Set(["Acquisities", "Gesprekken", "Intakes", "Plaatsingen"]);
 
 function ComparisonBar({ current, previous }: { current: number; previous: number }) {
   const delta = previous > 0 ? ((current - previous) / previous) * 100 : 0;
@@ -133,7 +133,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
           </span>
           {entry.value > 0 && (
             <span className={cn("text-muted-foreground font-normal", isTop3 ? "text-[10px]" : "text-[8px]")}>
-              ({((entry.valueDone / entry.value) * 100).toFixed(1)}%)
+              ({Math.round((entry.valueDone / entry.value) * 100)}%)
             </span>
           )}
         </span>
@@ -470,30 +470,36 @@ function RanglijstenContent() {
               {columns.map((col) => {
                 const isNegative = col.title === "Niet begonnen";
                 const isPlain = col.title === "Inschrijvingen";
+                const isAcquisities = col.title === "Acquisities";
+                const isDualValue = isPlain || isAcquisities;
                 const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
                 const top3 = isPlain ? [] : col.entries.slice(0, 3);
                 const rest = isPlain ? col.entries : col.entries.slice(3);
 
+                const headerTitle = isAcquisities ? "Acquisities / Voorstellen" : col.title;
+                const primaryLabel = isAcquisities ? "acquisities" : isPlain ? "op naam" : undefined;
+                const doneLabel = isAcquisities ? "voorstellen" : isPlain ? "gedaan" : undefined;
+
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
                     <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">
-                      {col.title}
+                      {headerTitle}
                     </h2>
                     <div className="flex items-baseline gap-1.5">
                       <p className="text-3xl font-bold text-foreground tabular-nums">
                         {col.total.toLocaleString("nl-NL")}
                       </p>
-                      {col.totalDone != null && (
-                        <span className="text-xs text-muted-foreground">op naam</span>
+                      {isDualValue && primaryLabel && (
+                        <span className="text-xs text-muted-foreground">{primaryLabel}</span>
                       )}
                     </div>
-                    {col.totalDone != null && (
+                    {col.totalDone != null && doneLabel && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                         <span className="text-lg font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
-                        <span className="text-xs text-emerald-600">gedaan</span>
+                        <span className="text-xs text-emerald-600">{doneLabel}</span>
                         <span className="text-xs text-muted-foreground ml-1">
-                          ({col.total > 0 ? ((col.totalDone / col.total) * 100).toFixed(1) : 0}%)
+                          ({col.total > 0 ? Math.round((col.totalDone / col.total) * 100) : 0}%)
                         </span>
                       </div>
                     )}
@@ -534,30 +540,36 @@ function RanglijstenContent() {
           {columns.map((col) => {
             const isNegative = col.title === "Niet begonnen";
             const isPlain = col.title === "Inschrijvingen";
+            const isAcquisities = col.title === "Acquisities";
+            const isDualValue = isPlain || isAcquisities;
             const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
             const top3 = isPlain ? [] : col.entries.slice(0, 3);
             const rest = isPlain ? col.entries : col.entries.slice(3);
 
+            const headerTitle = isAcquisities ? "Acquisities / Voorstellen" : col.title;
+            const primaryLabel = isAcquisities ? "acquisities" : isPlain ? "op naam" : undefined;
+            const doneLabel = isAcquisities ? "voorstellen" : isPlain ? "gedaan" : undefined;
+
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
                 <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">
-                  {col.title}
+                  {headerTitle}
                 </h2>
                 <div className="flex items-baseline gap-1.5">
                   <p className="text-3xl font-bold text-foreground tabular-nums">
                     {col.total.toLocaleString("nl-NL")}
                   </p>
-                  {col.totalDone != null && (
-                    <span className="text-xs text-muted-foreground">op naam</span>
+                  {isDualValue && primaryLabel && (
+                    <span className="text-xs text-muted-foreground">{primaryLabel}</span>
                   )}
                 </div>
-                {col.totalDone != null && (
+                {col.totalDone != null && doneLabel && (
                   <div className="flex items-center gap-1 mt-0.5">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                     <span className="text-base font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
-                    <span className="text-xs text-emerald-600">gedaan</span>
+                    <span className="text-xs text-emerald-600">{doneLabel}</span>
                     <span className="text-[10px] text-muted-foreground ml-0.5">
-                      ({col.total > 0 ? ((col.totalDone / col.total) * 100).toFixed(1) : 0}%)
+                      ({col.total > 0 ? Math.round((col.totalDone / col.total) * 100) : 0}%)
                     </span>
                   </div>
                 )}
