@@ -630,6 +630,7 @@ function RanglijstenContent() {
                       isNegative={isNegative}
                       showStatusIcons={showStatusIcons}
                       isPlain={isPlain}
+                      isAcquisities={isAcquisities}
                     />
                   ))}
                 </AutoColumnsWrapper>
