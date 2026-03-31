@@ -301,13 +301,14 @@ function RanglijstenContent() {
     });
   }, []);
 
-  const currentNum = tvViewMode === "week"
+  const effectiveViewMode = tvViewMode === "custom" ? "week" : tvViewMode;
+  const currentNum = effectiveViewMode === "week"
     ? parseInt(selectedWeek.replace("W", ""), 10)
     : parseInt(selectedPeriode.replace("P", ""), 10);
 
   const rawColumns = useMemo(() => {
-    return getRanglijstenData(parseInt(jaar, 10), tvViewMode, currentNum);
-  }, [jaar, tvViewMode, currentNum]);
+    return getRanglijstenData(parseInt(jaar, 10), effectiveViewMode, currentNum);
+  }, [jaar, effectiveViewMode, currentNum]);
 
   const sortEntries = useCallback((entries: typeof rawColumns[0]["entries"], colTitle: string) => {
     const mode = sortModes[colTitle];
