@@ -1,31 +1,32 @@
 
 
-# Plan: Sorteer-dropdown per kolom (Inschrijvingen & Acquisities)
+# Plan: Verbeterde datum/periode selectie met jaar, modus en custom range
 
-## Wat verandert
+## Huidige situatie
+De filter-balk heeft: jaar-select → week/periode badges → W/P-select. Geen custom date range optie.
 
-### State toevoegen — `src/pages/TVRanglijsten.tsx`
-- Nieuwe state: `sortModes` object met per kolom-titel de actieve sorteeroptie
-  - `"Inschrijvingen"` → default `"name"`, opties: `"name"` | `"done"`
-  - `"Acquisities"` → default `"value"`, opties: `"value"` (acquisities) | `"done"` (voorstellen)
+## Wat verandert — `src/pages/TVRanglijsten.tsx`
 
-### Sorteer-icoon met dropdown — naast de titel
-- Import `ArrowUpDown` icoon uit lucide-react
-- Naast de `<h2>` titel van Inschrijvingen en Acquisities kolommen: een klein `ArrowUpDown` icoon toevoegen
-- Bij klik opent een `Popover` met de sorteeropties:
-  - **Inschrijvingen**: "Op naam" / "Op gedaan"
-  - **Acquisities**: "Op acquisities" / "Op voorstellen"
-- Actieve optie gemarkeerd met een checkmark
-- Icoon + popover past in dezelfde header-rij, dus titel blijft op dezelfde hoogte als andere kolommen
+### 1. Derde modus toevoegen: "custom"
+- State `tvViewMode` uitbreiden van `"week" | "periode"` naar `"week" | "periode" | "custom"`
+- Nieuwe state: `customDateRange: { from: Date | undefined; to: Date | undefined }`
+- Drie badges naast elkaar: **Week** · **Periode** · **Aangepast**
 
-### Sorteerlogica toepassen
-- Na het filteren van entries (unit filter), maar vóór het renderen: sorteer entries op basis van de gekozen sortmode
-  - `"name"` → alfabetisch op `entry.name`
-  - `"value"` → numeriek aflopend op `entry.value` (huidige default)
-  - `"done"` → numeriek aflopend op `entry.valueDone`
-- Na sortering: re-rank (rank = index + 1)
-- Toepassen op beide views (site-modus en compact/TV-modus)
+### 2. Dynamische selector op basis van modus
+De derde select (nu W14 of P6) verandert mee:
+- **Week** → huidige week-select dropdown (W1-W52)
+- **Periode** → huidige periode-select dropdown (P1-P13)
+- **Aangepast** → date range picker met twee datumvelden (van/tot) in een Popover met twee Calendar components, consistent met Shadcn datepicker pattern
+
+### 3. Custom date range picker
+- Popover met "Van" en "Tot" kalenders (of een enkele kalender in `range` mode via `react-day-picker`)
+- Trigger toont geselecteerde range als "dd MMM - dd MMM" tekst
+- Gebruikt bestaande `Calendar` component uit `@/components/ui/calendar` met `mode="range"`
+- `pointer-events-auto` class op Calendar (conform project-conventie)
+
+### 4. Data-integratie
+- Bij `custom` modus: `getRanglijstenData` wordt aangeroepen met het jaar en een fallback period/week (bijv. huidige week), aangezien de mock data niet op exacte datums filtert. Dit houdt het werkend totdat echte data beschikbaar is.
 
 ### Bestand
-- `src/pages/TVRanglijsten.tsx`
+- `src/pages/TVRanglijsten.tsx` — state, filter-balk UI, date range picker
 
