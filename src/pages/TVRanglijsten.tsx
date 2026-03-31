@@ -384,21 +384,71 @@ function RanglijstenContent() {
               >
                 Periode
               </Badge>
+              <Badge
+                variant={tvViewMode === "custom" ? "default" : "secondary"}
+                className="transition-all duration-300 cursor-pointer"
+                onClick={() => setTvViewMode("custom")}
+              >
+                Aangepast
+              </Badge>
             </div>
 
-            <Select
-              value={tvViewMode === "week" ? selectedWeek : selectedPeriode}
-              onValueChange={tvViewMode === "week" ? setSelectedWeek : setSelectedPeriode}
-            >
-              <SelectTrigger className={cn("bg-card border-border", tvViewMode === "week" ? "w-[110px]" : "w-[100px]")}>
-                <SelectValue placeholder={tvViewMode === "week" ? "Week" : "Periode"} />
-              </SelectTrigger>
-              <SelectContent>
-                {(tvViewMode === "week" ? ranglijstenFilters.weeknummers : ranglijstenFilters.periodenummers).map((item) => (
-                  <SelectItem key={item} value={item}>{item}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {tvViewMode === "week" && (
+              <Select value={selectedWeek} onValueChange={setSelectedWeek}>
+                <SelectTrigger className="w-[110px] bg-card border-border">
+                  <SelectValue placeholder="Week" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ranglijstenFilters.weeknummers.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {tvViewMode === "periode" && (
+              <Select value={selectedPeriode} onValueChange={setSelectedPeriode}>
+                <SelectTrigger className="w-[100px] bg-card border-border">
+                  <SelectValue placeholder="Periode" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ranglijstenFilters.periodenummers.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {tvViewMode === "custom" && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 min-w-[200px] justify-start text-left font-normal">
+                    <CalendarIcon className="w-4 h-4" />
+                    {customDateRange?.from ? (
+                      customDateRange.to ? (
+                        <>
+                          {format(customDateRange.from, "d MMM", { locale: nl })} – {format(customDateRange.to, "d MMM yyyy", { locale: nl })}
+                        </>
+                      ) : (
+                        format(customDateRange.from, "d MMM yyyy", { locale: nl })
+                      )
+                    ) : (
+                      <span className="text-muted-foreground">Selecteer periode</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="range"
+                    selected={customDateRange}
+                    onSelect={setCustomDateRange}
+                    numberOfMonths={2}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
 
             <Popover>
               <PopoverTrigger asChild>
