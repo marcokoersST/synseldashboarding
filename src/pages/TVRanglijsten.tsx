@@ -646,9 +646,45 @@ function RanglijstenContent() {
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
-                <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">
-                  {headerTitle}
-                </h2>
+                <div className="flex items-center gap-1 mb-1">
+                  <h2 className="text-xs font-semibold text-muted-foreground truncate uppercase tracking-wide">
+                    {headerTitle}
+                  </h2>
+                  {(isPlain || isAcquisities) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors">
+                          <ArrowUpDown className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="min-w-[140px]">
+                        {isPlain ? (
+                          <>
+                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "name" }))}>
+                              <span className="flex-1">Op naam</span>
+                              {sortModes[col.title] === "name" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
+                              <span className="flex-1">Op gedaan</span>
+                              {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                            </DropdownMenuItem>
+                          </>
+                        ) : (
+                          <>
+                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "value" }))}>
+                              <span className="flex-1">Op acquisities</span>
+                              {sortModes[col.title] === "value" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
+                              <span className="flex-1">Op voorstellen</span>
+                              {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
                 <div className="flex items-baseline gap-1.5">
                   <p className="text-3xl font-bold text-foreground tabular-nums">
                     {col.total.toLocaleString("nl-NL")}
