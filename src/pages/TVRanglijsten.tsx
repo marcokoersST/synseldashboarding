@@ -514,9 +514,20 @@ function RanglijstenContent() {
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                         <span className="text-lg font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
                         <span className="text-xs text-emerald-600">{doneLabel}</span>
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({col.total > 0 ? Math.round((col.totalDone / col.total) * 100) : 0}%)
-                        </span>
+                        {isAcquisities ? (
+                          <span className={cn("text-xs font-semibold ml-1", (() => {
+                            const r = col.total > 0 ? col.totalDone! / col.total : 0;
+                            if (r < 10) return "text-red-500";
+                            if (r < 15) return "text-orange-500";
+                            return "text-muted-foreground";
+                          })())}>
+                            ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0}%)
+                          </span>
+                        )}
                       </div>
                     )}
                     <ComparisonBar current={col.total} previous={col.previousTotal} />
