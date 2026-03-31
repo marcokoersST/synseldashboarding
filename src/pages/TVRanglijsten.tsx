@@ -304,10 +304,27 @@ function RanglijstenContent() {
     return getRanglijstenData(parseInt(jaar, 10), tvViewMode, currentNum);
   }, [jaar, tvViewMode, currentNum]);
 
+  const sortEntries = useCallback((entries: typeof rawColumns[0]["entries"], colTitle: string) => {
+    const mode = sortModes[colTitle];
+    if (!mode) return entries;
+    const sorted = [...entries].sort((a, b) => {
+      if (mode === "name") return a.name.localeCompare(b.name, "nl");
+      if (mode === "done") return ((b as any).valueDone ?? 0) - ((a as any).valueDone ?? 0);
+      return b.value - a.value; // "value" default
+    });
+    return sorted.map((e, i) => ({ ...e, rank: i + 1 }));
+  }, [sortModes]);
+
   const columns = useMemo(() => {
     const unitFiltered = applyUnitFilter(rawColumns, selectedUnits);
-    return unitFiltered.filter((col) => selectedColumns.includes(col.title));
-  }, [rawColumns, selectedUnits, selectedColumns]);
+    const filtered = unitFiltered.filter((col) => selectedColumns.includes(col.title));
+    return filtered.map(col => {
+      if (sortModes[col.title]) {
+        return { ...col, entries: sortEntries(col.entries, col.title) };
+      }
+      return col;
+    });
+  }, [rawColumns, selectedUnits, selectedColumns, sortEntries, sortModes]);
 
   useEffect(() => {
     if (isCompact) return;
