@@ -352,7 +352,11 @@ function RanglijstenContent() {
             Ranglijsten
             <span className="text-primary">·</span>
             <span className="text-primary">
-              {tvViewMode === "week" ? `Week ${currentNum}` : `Periode ${currentNum}`}
+              {tvViewMode === "custom" && customDateRange?.from
+                ? customDateRange.to
+                  ? `${format(customDateRange.from, "d MMM", { locale: nl })} – ${format(customDateRange.to, "d MMM", { locale: nl })}`
+                  : format(customDateRange.from, "d MMM", { locale: nl })
+                : tvViewMode === "week" ? `Week ${currentNum}` : `Periode ${currentNum}`}
             </span>
           </h1>
         )}
