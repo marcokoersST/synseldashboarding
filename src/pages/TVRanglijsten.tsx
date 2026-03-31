@@ -470,30 +470,36 @@ function RanglijstenContent() {
               {columns.map((col) => {
                 const isNegative = col.title === "Niet begonnen";
                 const isPlain = col.title === "Inschrijvingen";
+                const isAcquisities = col.title === "Acquisities";
+                const isDualValue = isPlain || isAcquisities;
                 const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
                 const top3 = isPlain ? [] : col.entries.slice(0, 3);
                 const rest = isPlain ? col.entries : col.entries.slice(3);
 
+                const headerTitle = isAcquisities ? "Acquisities / Voorstellen" : col.title;
+                const primaryLabel = isAcquisities ? "acquisities" : isPlain ? "op naam" : undefined;
+                const doneLabel = isAcquisities ? "voorstellen" : isPlain ? "gedaan" : undefined;
+
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
                     <h2 className="text-xs font-semibold text-muted-foreground mb-1 truncate uppercase tracking-wide">
-                      {col.title}
+                      {headerTitle}
                     </h2>
                     <div className="flex items-baseline gap-1.5">
                       <p className="text-3xl font-bold text-foreground tabular-nums">
                         {col.total.toLocaleString("nl-NL")}
                       </p>
-                      {col.totalDone != null && (
-                        <span className="text-xs text-muted-foreground">op naam</span>
+                      {isDualValue && primaryLabel && (
+                        <span className="text-xs text-muted-foreground">{primaryLabel}</span>
                       )}
                     </div>
-                    {col.totalDone != null && (
+                    {col.totalDone != null && doneLabel && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                         <span className="text-lg font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
-                        <span className="text-xs text-emerald-600">gedaan</span>
+                        <span className="text-xs text-emerald-600">{doneLabel}</span>
                         <span className="text-xs text-muted-foreground ml-1">
-                          ({col.total > 0 ? ((col.totalDone / col.total) * 100).toFixed(1) : 0}%)
+                          ({col.total > 0 ? Math.round((col.totalDone / col.total) * 100) : 0}%)
                         </span>
                       </div>
                     )}
