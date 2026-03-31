@@ -131,6 +131,11 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
           <span className={cn(isTop3 ? (compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[10px] font-semibold")}>
             {entry.valueDone}
           </span>
+          {entry.value > 0 && (
+            <span className={cn("text-muted-foreground font-normal", isTop3 ? "text-[10px]" : "text-[8px]")}>
+              ({((entry.valueDone / entry.value) * 100).toFixed(1)}%)
+            </span>
+          )}
         </span>
       )}
     </div>
