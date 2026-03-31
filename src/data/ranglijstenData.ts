@@ -116,7 +116,7 @@ function seededRandom(seed: number, index: number): number {
 // Base top values for week view per column
 const baseWeekTopValues: number[][] = [
   [28, 24, 22, 19, 17, 16, 15, 14, 13, 13, 12, 11, 10, 10, 9, 9, 8, 7, 6, 5, 4, 4, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1],
-  [135, 120, 105, 100, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 42, 38, 35, 30, 25, 20, 15, 12, 8],
+  [10, 8, 7, 6, 6, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1],
   [8, 7, 6, 5, 5, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1],
   [5, 4, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1],
   [2, 1, 1, 1, 1, 1, 1],
@@ -125,7 +125,7 @@ const baseWeekTopValues: number[][] = [
 
 const basePeriodeTopValues: number[][] = [
   [125, 95, 93, 88, 73, 70, 69, 69, 65, 65, 63, 61, 60, 58, 55, 52, 48, 45, 42, 38, 35, 30, 28, 25, 22, 20, 18, 15, 12, 10, 8, 6, 5, 4, 3, 2, 1],
-  [310, 280, 260, 250, 240, 230, 210, 200, 195, 185, 175, 165, 155, 145, 135, 125, 115, 105, 95, 85, 75, 65, 55, 45, 35, 28, 22, 16, 10, 5],
+  [31, 25, 25, 22, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 3, 2, 2, 1, 1, 1, 1, 1],
   [43, 40, 36, 28, 23, 21, 19, 18, 16, 16, 14, 14, 12, 11, 10, 9, 8, 8, 7, 6, 5, 4, 3, 2, 1],
   [18, 16, 14, 13, 12, 12, 11, 11, 10, 10, 9, 8, 8, 7, 7, 6, 6, 5, 4, 3, 2, 1, 1],
   [6, 4, 4, 4, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -204,32 +204,34 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
     }
 
-    // For "Acquisities" column: value = voorstellen (groot), valueDone = acquisities (klein, ~1/15 ratio)
+    // For "Acquisities" column: value = acquisities (klein), valueDone = voorstellen (groot, ~15x)
     if (title === "Acquisities") {
       entries.forEach((e, i) => {
-        // Most consultants: 5-10% conversion (1/15 ≈ 6.7%)
-        // A few get very low conversion (<5%) to stand out
+        // ~15 voorstellen per acquisitie, with variation (12-18x)
         const rand = seededRandom(seed + 888, i);
-        let ratio: number;
-        if (rand < 0.15) {
-          // ~15% of consultants: very low conversion (2-4%)
-          ratio = 0.02 + seededRandom(seed + 889, i) * 0.02;
-        } else {
-          // Normal range: 5-10%
-          ratio = 0.05 + seededRandom(seed + 890, i) * 0.05;
+        const multiplier = 12 + rand * 6; // 12-18x
+        e.valueDone = e.value > 0 ? Math.round(e.value * multiplier) : 0;
+      });
+      // A few consultants get disproportionately many voorstellen (low conversion, <5%)
+      entries.forEach((e, i) => {
+        const rand = seededRandom(seed + 891, i);
+        if (rand < 0.15 && e.value > 0) {
+          // Very low conversion: 25-40x voorstellen per acquisitie
+          const highMultiplier = 25 + seededRandom(seed + 892, i) * 15;
+          e.valueDone = Math.round(e.value * highMultiplier);
         }
-        e.valueDone = Math.max(e.value > 0 ? 1 : 0, Math.round(e.value * ratio));
       });
       const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
       const prevEntriesDone = prevEntries.map((e, i) => {
         const rand = seededRandom(prevSeed + 888, i);
-        let ratio: number;
-        if (rand < 0.15) {
-          ratio = 0.02 + seededRandom(prevSeed + 889, i) * 0.02;
-        } else {
-          ratio = 0.05 + seededRandom(prevSeed + 890, i) * 0.05;
+        const multiplier = 12 + rand * 6;
+        let vd = e.value > 0 ? Math.round(e.value * multiplier) : 0;
+        const rand2 = seededRandom(prevSeed + 891, i);
+        if (rand2 < 0.15 && e.value > 0) {
+          const highMultiplier = 25 + seededRandom(prevSeed + 892, i) * 15;
+          vd = Math.round(e.value * highMultiplier);
         }
-        return Math.max(e.value > 0 ? 1 : 0, Math.round(e.value * ratio));
+        return vd;
       });
       const previousTotalDone = prevEntriesDone.reduce((s, v) => s + v, 0);
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
