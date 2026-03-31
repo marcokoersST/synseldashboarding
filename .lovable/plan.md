@@ -1,50 +1,35 @@
 
 
-# Plan: Voorstellen/Acquisities ratio corrigeren in mockdata
+# Plan: Acquisities kolom fixen — data flip + top3 font verkleinen
 
 ## Probleem
 
-De huidige mockdata heeft voorstellen als 40-80% van acquisities (dus minder voorstellen dan acquisities). In werkelijkheid zijn er ~15 voorstellen nodig per acquisitie. Voorstellen is dus het grotere getal, acquisities het kleinere (de conversie).
+1. **Data is omgedraaid**: Momenteel is `value` = voorstellen (groot getal) en `valueDone` = acquisities (klein getal). Gebruiker wil acquisities als hoofdgetal en voorstellen als "done" getal.
+2. **Top 3 namen te groot**: In de Acquisities kolom nemen Jort Koggel, Christiaan van Krieken, Xander Blok te veel verticale ruimte in. Font size moet kleiner zodat ze op 1 rij passen, vergelijkbaar met andere kolommen.
 
-## Wat verandert
+## Wijzigingen
 
-### Data — `src/data/ranglijstenData.ts`
+### 1. Data flip — `src/data/ranglijstenData.ts`
 
-**Flip de relatie in de Acquisities kolom:**
-- `value` wordt nu het aantal **voorstellen** (het grotere getal)
-- `valueDone` wordt het aantal **acquisities** (het kleinere getal, de conversie)
-- Ratio: `valueDone` = ca. 1/15 van `value` (5-10% conversie), met variatie per consultant
-- Sommige consultants krijgen bewust een heel lage ratio (<5%) zodat ze opvallen
-- `baseWeekTopValues[1]` en `basePeriodeTopValues[1]` moeten omhoog (want voorstellen zijn nu het hoofdgetal) — bijv. periode top: 310, 280, 260... i.p.v. huidige 31, 25, 25...
-- `totalDone` en `previousTotalDone` worden mee aangepast
+In het `if (title === "Acquisities")` blok:
+- **Huidige situatie**: `value` = voorstellen (~100-300), `valueDone` = acquisities (~5-15)
+- **Gewenst**: `value` = acquisities (klein getal), `valueDone` = voorstellen (groot getal)
+- Swap de logica: genereer eerst het acquisitie-getal als `value` (gebruik de huidige base values die al lager zijn, of pas `baseWeekTopValues`/`basePeriodeTopValues` aan naar ~10-30 range), en bereken `valueDone` = `value * ~15` (de voorstellen)
+- Pas `totalDone` en `previousTotalDone` mee aan
 
-### Header — `src/pages/TVRanglijsten.tsx`
+### 2. Labels flippen — `src/pages/TVRanglijsten.tsx`
 
-**Aanpassen labels in de Acquisities header:**
+Op **twee plekken** (site-modus ~regel 480 en compact-modus ~regel 550):
+- `primaryLabel` voor Acquisities wordt `"acquisities"` (was "voorstellen")
+- `doneLabel` voor Acquisities wordt `"voorstellen"` (was "acquisities")
 
-```text
-┌─────────────────────────────┐
-│  ACQUISITIES / VOORSTELLEN  │  ← titel
-│                             │
-│  1590  voorstellen          │  ← groot getal + "voorstellen" in muted kleur
-│  ✅ 106  acquisities  (7%)  │  ← groen vinkje + groen getal + "acquisities" groen + % grijs
-│                             │
-│  ████████████░░░░           │  ← comparison bar
-│  ↗ +7% t.o.v. vorige periode│
-└─────────────────────────────┘
-```
+### 3. Top 3 font verkleinen — `src/pages/TVRanglijsten.tsx`
 
-**Entry-rij voorbeeld:**
-```text
-1.  Jort Koggel    150  ✅ 10  (7%)
-```
-
-Sommige consultants met lage conversie (<5%):
-```text
-8.  Dees B.    95  ✅ 3  (3%)
-```
+In de `EntryRow` component (~regel 108-117), wanneer het een Acquisities top3 entry is met een lange naam:
+- Reduceer de naam font-size voor top3 van `text-base font-bold` naar `text-sm font-semibold` specifiek voor de Acquisities kolom, of generiek: maak de top3 naam iets kleiner zodat langere namen (2 woorden) op 1 regel passen
+- Eenvoudigste aanpak: voeg `truncate` toe aan top3 namen (nu alleen bij niet-top3) zodat ze niet wrappen
 
 ### Bestanden
-- `src/data/ranglijstenData.ts` — verhoog base values voor Acquisities kolom (nu voorstellen), genereer valueDone als ~1/15 ratio met variatie
-- `src/pages/TVRanglijsten.tsx` — flip labels: "voorstellen" (muted) bij hoofdgetal, "acquisities" (groen) bij valueDone
+- `src/data/ranglijstenData.ts` — flip value/valueDone voor Acquisities
+- `src/pages/TVRanglijsten.tsx` — flip labels + top3 namen trunceren
 
