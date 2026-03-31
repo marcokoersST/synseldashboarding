@@ -133,9 +133,24 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
             {entry.valueDone}
           </span>
           {entry.value > 0 && (
-            <span className={cn("text-muted-foreground font-normal", isTop3 ? "text-[10px]" : "text-[8px]")}>
-              ({Math.round((entry.valueDone / entry.value) * 100)}%)
-            </span>
+            isAcquisities ? (
+              <span className={cn(
+                "font-semibold",
+                isTop3 ? "text-[10px]" : "text-[8px]",
+                (() => {
+                  const ratio = entry.valueDone! / entry.value;
+                  if (ratio < 10) return "text-red-500";
+                  if (ratio < 15) return "text-orange-500";
+                  return "text-muted-foreground";
+                })()
+              )}>
+                ×{(entry.valueDone! / entry.value).toFixed(1)}
+              </span>
+            ) : (
+              <span className={cn("text-muted-foreground font-normal", isTop3 ? "text-[10px]" : "text-[8px]")}>
+                ({Math.round((entry.valueDone / entry.value) * 100)}%)
+              </span>
+            )
           )}
         </span>
       )}
