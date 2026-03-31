@@ -1,51 +1,50 @@
 
 
-# Plan: Acquisities/Voorstellen integratie + afgeronde percentages
+# Plan: Voorstellen/Acquisities ratio corrigeren in mockdata
+
+## Probleem
+
+De huidige mockdata heeft voorstellen als 40-80% van acquisities (dus minder voorstellen dan acquisities). In werkelijkheid zijn er ~15 voorstellen nodig per acquisitie. Voorstellen is dus het grotere getal, acquisities het kleinere (de conversie).
 
 ## Wat verandert
 
-### 1. Percentages afronden (zonder decimaal)
+### Data — `src/data/ranglijstenData.ts`
 
-**Bestand: `src/pages/TVRanglijsten.tsx`**
+**Flip de relatie in de Acquisities kolom:**
+- `value` wordt nu het aantal **voorstellen** (het grotere getal)
+- `valueDone` wordt het aantal **acquisities** (het kleinere getal, de conversie)
+- Ratio: `valueDone` = ca. 1/15 van `value` (5-10% conversie), met variatie per consultant
+- Sommige consultants krijgen bewust een heel lage ratio (<5%) zodat ze opvallen
+- `baseWeekTopValues[1]` en `basePeriodeTopValues[1]` moeten omhoog (want voorstellen zijn nu het hoofdgetal) — bijv. periode top: 310, 280, 260... i.p.v. huidige 31, 25, 25...
+- `totalDone` en `previousTotalDone` worden mee aangepast
 
-Regel 136: wijzig `.toFixed(1)` naar `Math.round(...)` zodat percentages als `59%` verschijnen i.p.v. `59.4%`. Dit geldt zowel voor de entry-rijen als de header-totalen.
+### Header — `src/pages/TVRanglijsten.tsx`
 
-### 2. Acquisities/Voorstellen kolom samenvoegen
+**Aanpassen labels in de Acquisities header:**
 
-**Gewenst header design:**
 ```text
 ┌─────────────────────────────┐
 │  ACQUISITIES / VOORSTELLEN  │  ← titel
 │                             │
-│  106  acquisities           │  ← groot getal + "acquisities" in muted kleur
-│  ✅ 62  voorstellen  (58%)  │  ← groen vinkje + groen getal + "voorstellen" groen + % grijs
+│  1590  voorstellen          │  ← groot getal + "voorstellen" in muted kleur
+│  ✅ 106  acquisities  (7%)  │  ← groen vinkje + groen getal + "acquisities" groen + % grijs
 │                             │
 │  ████████████░░░░           │  ← comparison bar
 │  ↗ +7% t.o.v. vorige periode│
 └─────────────────────────────┘
 ```
 
-**Gewenste entry-rij:**
+**Entry-rij voorbeeld:**
 ```text
-1.  Jort Koggel    10  ✅ 6  (60%)
+1.  Jort Koggel    150  ✅ 10  (7%)
 ```
 
-### 3. Data — `src/data/ranglijstenData.ts`
-
-- In `generateColumns`: voor de kolom "Acquisities", genereer `valueDone` per entry op basis van de corresponderende "Voorstellen"-waarden. Concreet: gebruik de Voorstellen-ranking voor dezelfde consultant om `valueDone` te vullen (of genereer een ratio 40-80% van acquisities).
-- Voeg `totalDone` en `previousTotalDone` toe aan de Acquisities kolom.
-- Verwijder de "Voorstellen" kolom uit `columnTitles` (van 7 naar 6 kolommen).
-- Update `baseWeekTopValues` en `basePeriodeTopValues` arrays: verwijder de Voorstellen-index (index 2).
-- Update `STATUS_ICON_COLUMNS` in TVRanglijsten.tsx: verwijder "Voorstellen".
-
-### 4. UI — `src/pages/TVRanglijsten.tsx`
-
-- **Header rendering**: Pas de `isInschrijvingen`-check aan naar een generieke check die ook "Acquisities" omvat. Beide kolommen krijgen dezelfde dual-value header structuur:
-  - Acquisities: titel "ACQUISITIES / VOORSTELLEN", label "acquisities" (muted), "voorstellen" (groen)
-  - Inschrijvingen: bestaande structuur blijft (titel "INSCHRIJVINGEN", "op naam", "gedaan")
-- **Entry rows**: De bestaande `valueDone` rendering werkt al generiek — zodra de data `valueDone` bevat voor Acquisities-entries, verschijnt het groene vinkje + getal + percentage automatisch.
+Sommige consultants met lage conversie (<5%):
+```text
+8.  Dees B.    95  ✅ 3  (3%)
+```
 
 ### Bestanden
-- `src/data/ranglijstenData.ts` — Voorstellen kolom verwijderen, valueDone toevoegen aan Acquisities
-- `src/pages/TVRanglijsten.tsx` — header dual-value voor Acquisities, percentages afronden
+- `src/data/ranglijstenData.ts` — verhoog base values voor Acquisities kolom (nu voorstellen), genereer valueDone als ~1/15 ratio met variatie
+- `src/pages/TVRanglijsten.tsx` — flip labels: "voorstellen" (muted) bij hoofdgetal, "acquisities" (groen) bij valueDone
 
