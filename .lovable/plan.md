@@ -1,29 +1,23 @@
 
 
-# Plan: Herstructureer Inschrijvingen kolom header
+# Plan: Conversiepercentage per consultant in Inschrijvingen rijen
 
-## Gewenst design
+## Wat verandert
 
+In de `EntryRow` component, wanneer `valueDone` aanwezig is, wordt na het groene getal ook het conversiepercentage getoond in grijze, kleine tekst.
+
+### Voorbeeld per rij:
 ```text
-┌─────────────────────────────┐
-│  INSCHRIJVINGEN             │  ← titel (klein, uppercase, grijs)
-│                             │
-│  340  op naam               │  ← groot getal + "op naam" in normale/muted kleur
-│  ✅ 251  gedaan  (73.8%)    │  ← groen vinkje + groen getal + "gedaan" groen + percentage grijs
-│                             │
-│  ████████████░░░░           │  ← comparison bar
-│  ↗ +7% t.o.v. vorige periode│
-└─────────────────────────────┘
+1.  Sijmen B.    32  ✅ 19  (59.4%)
 ```
 
-## Wijzigingen — `src/pages/TVRanglijsten.tsx`
+## Wijziging — `src/pages/TVRanglijsten.tsx` (~regel 128-135)
 
-Twee plekken (site-modus en compact-modus headers):
-
-1. **Titel**: Wijzig van `"Inschrijvingen op naam"` naar `"Inschrijvingen"`
-2. **Groot getal regel**: Voeg rechts naast het getal (340) een klein label toe: `op naam` in **normale muted kleur** (text-muted-foreground)
-3. **Gedaan regel**: Wijzig volgorde naar: groen vinkje → groen getal → groene tekst "gedaan" → grijs percentage `(73.8%)`
+Na het groene `valueDone` getal, voeg een grijs percentage toe:
+- Berekening: `Math.round((valueDone / value) * 100)` (of 1 decimaal als gewenst)
+- Styling: `text-muted-foreground` met zeer kleine font (`text-[8px]` voor niet-top3, `text-[10px]` voor top3)
+- Tussen haakjes, net als in de header: `(59.4%)`
 
 ### Bestanden
-- `src/pages/TVRanglijsten.tsx` — header structuur aanpassen op beide plekken (site + compact mode)
+- `src/pages/TVRanglijsten.tsx` — EntryRow component aanpassen
 
