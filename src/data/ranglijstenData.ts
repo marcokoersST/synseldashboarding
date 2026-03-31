@@ -204,6 +204,21 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
     }
 
+    // For "Acquisities" column, generate "voorstellen" values (40-80% of acquisities)
+    if (title === "Acquisities") {
+      entries.forEach((e, i) => {
+        const ratio = 0.4 + seededRandom(seed + 888, i) * 0.4;
+        e.valueDone = Math.round(e.value * ratio);
+      });
+      const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
+      const prevEntriesDone = prevEntries.map((e, i) => {
+        const ratio = 0.4 + seededRandom(prevSeed + 888, i) * 0.4;
+        return Math.round(e.value * ratio);
+      });
+      const previousTotalDone = prevEntriesDone.reduce((s, v) => s + v, 0);
+      return { title, total, previousTotal, totalDone, previousTotalDone, entries };
+    }
+
     return { title, total, previousTotal, entries };
   });
 }
