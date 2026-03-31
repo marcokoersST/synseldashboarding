@@ -204,32 +204,34 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
     }
 
-    // For "Acquisities" column: value = voorstellen (groot), valueDone = acquisities (klein, ~1/15 ratio)
+    // For "Acquisities" column: value = acquisities (klein), valueDone = voorstellen (groot, ~15x)
     if (title === "Acquisities") {
       entries.forEach((e, i) => {
-        // Most consultants: 5-10% conversion (1/15 ≈ 6.7%)
-        // A few get very low conversion (<5%) to stand out
+        // ~15 voorstellen per acquisitie, with variation (12-18x)
         const rand = seededRandom(seed + 888, i);
-        let ratio: number;
-        if (rand < 0.15) {
-          // ~15% of consultants: very low conversion (2-4%)
-          ratio = 0.02 + seededRandom(seed + 889, i) * 0.02;
-        } else {
-          // Normal range: 5-10%
-          ratio = 0.05 + seededRandom(seed + 890, i) * 0.05;
+        const multiplier = 12 + rand * 6; // 12-18x
+        e.valueDone = e.value > 0 ? Math.round(e.value * multiplier) : 0;
+      });
+      // A few consultants get disproportionately many voorstellen (low conversion, <5%)
+      entries.forEach((e, i) => {
+        const rand = seededRandom(seed + 891, i);
+        if (rand < 0.15 && e.value > 0) {
+          // Very low conversion: 25-40x voorstellen per acquisitie
+          const highMultiplier = 25 + seededRandom(seed + 892, i) * 15;
+          e.valueDone = Math.round(e.value * highMultiplier);
         }
-        e.valueDone = Math.max(e.value > 0 ? 1 : 0, Math.round(e.value * ratio));
       });
       const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
       const prevEntriesDone = prevEntries.map((e, i) => {
         const rand = seededRandom(prevSeed + 888, i);
-        let ratio: number;
-        if (rand < 0.15) {
-          ratio = 0.02 + seededRandom(prevSeed + 889, i) * 0.02;
-        } else {
-          ratio = 0.05 + seededRandom(prevSeed + 890, i) * 0.05;
+        const multiplier = 12 + rand * 6;
+        let vd = e.value > 0 ? Math.round(e.value * multiplier) : 0;
+        const rand2 = seededRandom(prevSeed + 891, i);
+        if (rand2 < 0.15 && e.value > 0) {
+          const highMultiplier = 25 + seededRandom(prevSeed + 892, i) * 15;
+          vd = Math.round(e.value * highMultiplier);
         }
-        return Math.max(e.value > 0 ? 1 : 0, Math.round(e.value * ratio));
+        return vd;
       });
       const previousTotalDone = prevEntriesDone.reduce((s, v) => s + v, 0);
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
