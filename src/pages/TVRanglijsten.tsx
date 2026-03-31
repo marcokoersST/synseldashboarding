@@ -266,6 +266,11 @@ function RanglijstenContent() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
+  const [sortModes, setSortModes] = useState<Record<string, string>>({
+    "Inschrijvingen": "name",
+    "Acquisities": "value",
+  });
+
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode">("week");
 
   const updateScrollButtons = useCallback(() => {
