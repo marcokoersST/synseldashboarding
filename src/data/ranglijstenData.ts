@@ -207,16 +207,13 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
     // For "Acquisities" column: value = acquisities (klein), valueDone = voorstellen (groot, ~15x)
     if (title === "Acquisities") {
       entries.forEach((e, i) => {
-        // ~15 voorstellen per acquisitie, with variation (12-18x)
         const rand = seededRandom(seed + 888, i);
-        const multiplier = 12 + rand * 6; // 12-18x
+        const multiplier = 12 + rand * 6;
         e.valueDone = e.value > 0 ? Math.round(e.value * multiplier) : 0;
       });
-      // A few consultants get disproportionately many voorstellen (low conversion, <5%)
       entries.forEach((e, i) => {
         const rand = seededRandom(seed + 891, i);
         if (rand < 0.15 && e.value > 0) {
-          // Very low conversion: 25-40x voorstellen per acquisitie
           const highMultiplier = 25 + seededRandom(seed + 892, i) * 15;
           e.valueDone = Math.round(e.value * highMultiplier);
         }
@@ -237,8 +234,57 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
     }
 
+    // For "Gesprekken" column: valueDone = uitnodigingen (~1.1-1.5× gesprekken)
+    if (title === "Gesprekken") {
+      entries.forEach((e, i) => {
+        const multiplier = 1.1 + seededRandom(seed + 1100, i) * 0.4;
+        e.valueDone = e.value > 0 ? Math.round(e.value * multiplier) : 0;
+      });
+      const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
+      const prevEntriesDone = prevEntries.map((e, i) => {
+        const multiplier = 1.1 + seededRandom(prevSeed + 1100, i) * 0.4;
+        return e.value > 0 ? Math.round(e.value * multiplier) : 0;
+      });
+      const previousTotalDone = prevEntriesDone.reduce((s, v) => s + v, 0);
+      return { title, total, previousTotal, totalDone, previousTotalDone, entries };
+    }
+
+    // For "Plaatsingen" column: valueDone = detacheringsplaatsingen (~50-85% van totaal)
+    if (title === "Plaatsingen") {
+      entries.forEach((e, i) => {
+        const ratio = 0.5 + seededRandom(seed + 1300, i) * 0.35;
+        e.valueDone = e.value > 0 ? Math.round(e.value * ratio) : 0;
+      });
+      const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
+      const prevEntriesDone = prevEntries.map((e, i) => {
+        const ratio = 0.5 + seededRandom(prevSeed + 1300, i) * 0.35;
+        return e.value > 0 ? Math.round(e.value * ratio) : 0;
+      });
+      const previousTotalDone = prevEntriesDone.reduce((s, v) => s + v, 0);
+      return { title, total, previousTotal, totalDone, previousTotalDone, entries };
+    }
+
     return { title, total, previousTotal, entries };
   });
+
+  // Post-process: set Intakes valueDone = acquisities count per consultant (cross-reference)
+  const acqCol = result.find(c => c.title === "Acquisities");
+  const intCol = result.find(c => c.title === "Intakes");
+  if (acqCol && intCol) {
+    const acqMap = new Map<string, number>();
+    acqCol.entries.forEach(e => acqMap.set(e.name, e.value));
+    intCol.entries.forEach(e => {
+      e.valueDone = acqMap.get(e.name) ?? 0;
+    });
+    intCol.totalDone = intCol.entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
+    // Previous totals for intakes - approximate with ratio
+    const prevAcqCol = generateColumns.__prevAcqEntries;
+    // Use a simpler approach: derive from current ratio
+    const ratio = intCol.total > 0 ? intCol.totalDone / intCol.total : 0;
+    intCol.previousTotalDone = Math.round(intCol.previousTotal * ratio * (0.9 + seededRandom(prevSeed + 1200, 0) * 0.2));
+  }
+
+  return result;
 }
 
 /**
