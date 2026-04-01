@@ -1,53 +1,34 @@
 
 
-# Plan: Secundaire metrics toevoegen aan Gesprekken, Intakes en Plaatsingen
+# Plan: Fixes voor Ranglijsten — sortering, mockdata, responsive fonts
 
-## Overzicht
-Drie kolommen krijgen dezelfde groene secundaire waarde-stijl als Inschrijvingen ("gedaan") en Acquisities ("voorstellen"):
+## 1. Sortering "op naam" fix — `TVRanglijsten.tsx`
+De sorteeroptie "op naam" bij Inschrijvingen sorteert nu alfabetisch. Dat is verkeerd. "Op naam" betekent sorteren op het zwarte hoofdcijfer (`value` = "op naam"). "Op gedaan" sorteert op het groene cijfer (`valueDone`).
 
-| Kolom | Secundair getal (groen) | Percentage (grijs) |
-|-------|------------------------|-------------------|
-| **Gesprekken** | Uitnodigingen (hoger dan gesprekken) | gesprekken / uitnodigingen × 100% |
-| **Intakes** | Acquisities-getal per persoon | intakes / acquisities × 100% |
-| **Plaatsingen** | Detacheringsplaatsingen | detachering / totaal plaatsingen × 100% |
+**Fix**: In `sortEntries`, wijzig `mode === "name"` van `a.name.localeCompare(...)` naar `b.value - a.value` (aflopend op value). Hernoemd intern naar `"value"` i.p.v. `"name"`. Default voor Inschrijvingen wordt `"value"`.
 
-## Wijzigingen
+Dropdown-labels blijven: "Op naam" en "Op gedaan" — maar "Op naam" mapt nu naar sortering op `value`.
 
-### 1. Data generatie — `src/data/ranglijstenData.ts`
+## 2. Mockdata Intakes logisch maken — `ranglijstenData.ts`
+Probleem: Intakes en Acquisities worden onafhankelijk gegenereerd, waardoor iemand 4 intakes kan hebben maar 1 acquisitie (onmogelijk: intakes ≤ acquisities).
 
-**Gesprekken kolom**: `valueDone` = uitnodigingen (~1.1-1.5× gesprekken). Label: "uitnodigingen".
+**Fix**: In de post-processing stap (regel 270-282), naast het zetten van `valueDone` op intakes, ook de intake-waarde zelf clampen: `entry.value = Math.min(entry.value, entry.valueDone)`. Zo kan het aantal intakes nooit hoger zijn dan het aantal acquisities. Herbereken daarna `total` en re-rank.
 
-**Plaatsingen kolom**: `valueDone` = detacheringsplaatsingen (~50-85% van totaal). Label: "detachering".
+Ook: als `valueDone` (acquisities) 0 is, toon dan `0%` i.p.v. niets. Fix in `TVRanglijsten.tsx`: verwijder de conditie `entry.valueDone > 0` bij isRatioOnly rendering — toon altijd het percentage (0% als valueDone=0).
 
-**Intakes kolom**: Complexer — vereist cross-referentie met Acquisities. Oplossing: in `generateColumns` (waar alle kolommen beschikbaar zijn), na generatie van de Acquisities-kolom, de acquisitiewaarde per consultant opslaan in een map, en die gebruiken om `valueDone` op de Intakes-entries te zetten. Zo toont elke intake-entry het aantal acquisities van diezelfde consultant. Label: "van acq." of vergelijkbaar.
+## 3. Responsive font-scaling — `TVRanglijsten.tsx`
+Probleem: bij smallere schermen overlappen tekst en cijfers in de top-3, en kolomtitels worden afgekapt.
 
-Alle drie kolommen krijgen ook `totalDone` en `previousTotalDone` voor de header-totalen.
+**Fix**: Gebruik CSS `clamp()` via Tailwind arbitrary values voor dynamische font-sizing:
+- Kolomtitel (`headerTitle`): verwijder `truncate`, gebruik `text-[clamp(8px,1.1vw,12px)]` zodat de volledige titel altijd zichtbaar is
+- Top-3 namen: gebruik `text-[clamp(8px,1vw,14px)]` i.p.v. vaste `text-[10px]`/`text-sm`
+- Top-3 cijfers (value + valueDone): gebruik `text-[clamp(10px,1.2vw,16px)]` 
+- Hoofd-totaal: `text-[clamp(20px,2.5vw,30px)]` i.p.v. vaste `text-3xl`
+- Secundaire totalen: `text-[clamp(12px,1.5vw,18px)]`
 
-### 2. Kolomheaders — `src/pages/TVRanglijsten.tsx`
+Dit zorgt ervoor dat bij minder kolommen de font groter is, en bij meer kolommen alles proportioneel krimpt zonder overlap of afkapping.
 
-Huidige logica: `isDualValue` = alleen Inschrijvingen of Acquisities. Uitbreiden zodat ook Gesprekken, Intakes, Plaatsingen als dual-value behandeld worden.
-
-Per kolom een `primaryLabel`, `doneLabel` en percentage-formule configureren:
-
-- **Gesprekken**: primary="gesprekken", done="uitnodigingen", pct = `(value/valueDone)*100`
-- **Intakes**: primary="intakes", done="van acquisities", pct = `(value/valueDone)*100`  
-- **Plaatsingen**: primary="plaatsingen", done="detachering", pct = `(valueDone/value)*100`
-
-Weergave in header: zelfde stijl als bestaand (CheckCircle2 icoon, groene tekst, grijs percentage).
-
-### 3. Entry rows — `EntryRow` component
-
-De bestaande `valueDone`-rendering in EntryRow werkt al generiek: groen getal + percentage. Moet alleen de percentage-berekening per kolom correct zijn:
-- Gesprekken/Intakes: percentage = value/valueDone (gesprekken zijn subset van uitnodigingen; intakes zijn subset van acquisities)
-- Plaatsingen: percentage = valueDone/value (detachering is deel van plaatsingen)
-
-Voeg een `isInverse` prop toe aan EntryRow om aan te geven of de ratio valueDone/value of value/valueDone moet zijn. Voor Gesprekken en Intakes: value < valueDone (inverse). Voor Plaatsingen: valueDone < value (normaal, zoals Inschrijvingen).
-
-### 4. Beide views (site + compact/TV)
-
-Dezelfde wijzigingen toepassen in zowel het `!isCompact` als het `isCompact` blok — labels, header-totalen en entry rendering.
-
-### Bestanden
-- `src/data/ranglijstenData.ts` — valueDone generatie voor 3 kolommen
-- `src/pages/TVRanglijsten.tsx` — header labels, EntryRow prop, dual-value uitbreiding
+## Bestanden
+- `src/data/ranglijstenData.ts` — clamp intakes ≤ acquisities
+- `src/pages/TVRanglijsten.tsx` — sort fix, ratioOnly 0% fix, responsive clamp fonts
 
