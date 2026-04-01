@@ -183,7 +183,7 @@ function generateVariedRanking(baseValues: number[], seed: number): RankingEntry
 }
 
 function generateColumns(baseTopValues: number[][], seed: number, prevSeed: number): RankingColumn[] {
-  return columnTitles.map((title, colIdx) => {
+  const result = columnTitles.map((title, colIdx) => {
     const entries = generateVariedRanking(baseTopValues[colIdx], seed + colIdx * 7);
     const total = entries.reduce((s, e) => s + e.value, 0);
     const prevEntries = generateVariedRanking(baseTopValues[colIdx], prevSeed + colIdx * 7);
@@ -277,9 +277,6 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
       e.valueDone = acqMap.get(e.name) ?? 0;
     });
     intCol.totalDone = intCol.entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
-    // Previous totals for intakes - approximate with ratio
-    const prevAcqCol = generateColumns.__prevAcqEntries;
-    // Use a simpler approach: derive from current ratio
     const ratio = intCol.total > 0 ? intCol.totalDone / intCol.total : 0;
     intCol.previousTotalDone = Math.round(intCol.previousTotal * ratio * (0.9 + seededRandom(prevSeed + 1200, 0) * 0.2));
   }
