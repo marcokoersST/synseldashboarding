@@ -644,7 +644,7 @@ function RanglijstenContent() {
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
                     <div className="flex items-center gap-1 mb-1">
-                      <h2 className="text-xs font-semibold text-muted-foreground truncate uppercase tracking-wide">
+                      <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                         {headerTitle}
                       </h2>
                       {(isPlain || isAcquisities) && (
