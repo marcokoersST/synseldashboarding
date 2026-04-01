@@ -717,7 +717,7 @@ function RanglijstenContent() {
                     {colIsRatioOnly && col.totalDone != null && (
                       <div className="flex items-center gap-1 mt-0.5">
                         {(() => {
-                          const pct = Math.round((col.total / col.totalDone) * 100);
+                          const pct = col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0;
                           return (
                             <>
                               <span className={cn("text-lg font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
