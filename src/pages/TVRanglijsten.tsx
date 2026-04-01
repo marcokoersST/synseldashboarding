@@ -79,6 +79,15 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
   return null;
 }
 
+// Column configuration for dual-value display
+const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean }> = {
+  "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false },
+  "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false },
+  "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true },
+  "Intakes": { headerTitle: "Intakes / Acquisities", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true },
+  "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
+};
+
 interface EntryRowProps {
   entry: { rank: number; name: string; firstName: string; lastName: string; value: number; valueDone?: number; isHot?: boolean; isRocket?: boolean };
   displayName?: string;
@@ -87,6 +96,7 @@ interface EntryRowProps {
   showStatusIcons?: boolean;
   isPlain?: boolean;
   isAcquisities?: boolean;
+  isInverseRatio?: boolean;
 }
 
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities }: EntryRowProps) {
