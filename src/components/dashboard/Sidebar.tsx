@@ -51,10 +51,6 @@ const navItems: NavItem[] = [
     label: "Ranglijsten", 
     path: "/tv/ranglijsten",
     sectionLabel: "Ready for development",
-    subItems: [
-      { icon: ListOrdered, label: "Ranglijsten", path: "/tv/ranglijsten" },
-      { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
-    ]
   },
   { 
     icon: LayoutDashboard, 
