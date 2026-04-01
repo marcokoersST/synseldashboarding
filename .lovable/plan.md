@@ -1,57 +1,46 @@
 
 
-# Plan: Ranglijsten Grafiek Dashboard
+# Plan: Consultant Filter Dropdown voor TV Ranglijsten
 
-## Doel
-Een nieuw TV-dashboard dat de **ontwikkeling over tijd** toont voor alle zes ranglijsten-metrics via lijngrafieken. Gebruikers kunnen weken, periodes of een custom date range selecteren om trends per consultant te analyseren.
+## Wat
+Een nieuwe multi-select dropdown "Consultants" links van de bestaande "Alle units" filter, met zoekbalk, alles aan/uit, en gekoppeld aan de unit-filter.
 
-## Nieuwe bestanden
+## Wijzigingen
 
-### 1. `src/data/ranglijstenChartData.ts`
-Genereer tijdreeksdata door `getRanglijstenData()` herhaaldelijk aan te roepen over meerdere weken/periodes. Per consultant worden totalen per tijdseenheid opgebouwd voor alle zes kolommen. Exporteert een functie `getRanglijstenTimeSeries(year, mode, range)` die per kolom een array van `{ week/periode, [consultant]: value }` objecten retourneert.
+### 1. `src/data/ranglijstenData.ts`
+- Exporteer de `consultants` array (momenteel privé) als `allConsultantsList` zodat de pagina er toegang toe heeft.
 
-### 2. `src/pages/TVRanglijstenGrafiek.tsx`
-Het hoofddashboard met:
+### 2. `src/pages/TVRanglijsten.tsx`
 
-**Filters (bovenkant)**
-- Jaar selector (2024-2026)
-- Modus: Week / Periode / Aangepast (date range picker)
-- Bereik: van-tot week/periode selector
-- Consultant multi-select (standaard top-5 per kolom, max ~8 tegelijk)
-- Unit filter (multi-select)
+**Nieuwe state:**
+- `selectedConsultants: string[]` — default `["Alle consultants"]`
+- `pendingConsultants: string[]` — voor batch-update patroon
+- `consultantPopoverOpen: boolean`
+- `consultantSearch: string` — zoekbalk tekst
 
-**Zes grafieksecties** — elk voor een kolom:
-1. **Inschrijvingen** — lijngrafiek met "op naam" als primaire lijn, optioneel "gedaan" als secundaire (gestippeld)
-2. **Acquisities / Voorstellen** — dubbele y-as of twee lijnen: acquisities (primair) en voorstellen (secundair)
-3. **Gesprekken / Uitnodigingen** — twee lijnen per consultant
-4. **Intakes / % van acq.** — lijn voor intakes + percentage-lijn op secundaire as
-5. **Plaatsingen / Detachering** — twee lijnen
-6. **Niet begonnen** — enkele lijn (lager = beter, inverse kleuring)
+**Consultant dropdown (links van unit dropdown):**
+- Zelfde stijl als unit-popover (Popover + PopoverContent)
+- Bovenkant: zoekbalk (`<Input placeholder="Zoek consultant..." />`)
+- Daaronder: "Alles aan" / "Alles uit" knoppen
+- Checkboxlijst van consultants, gefilterd op:
+  1. Zoekterm (case-insensitive match op volledige naam)
+  2. Geselecteerde units — als niet "Alle units", toon alleen consultants uit die units
+- Onderaan: "Toepassen" knop
+- Knoptekst: "Alle consultants" of "3 consultants" etc.
 
-**Per grafiek:**
-- Recharts `LineChart` met `ResponsiveContainer`
-- Elke consultant een eigen kleur (uit vaste palette)
-- Tooltip met alle geselecteerde consultants
-- Legend met klikbaar aan/uit per consultant
-- Optionele "team totaal" lijn (dik, grijs, gestippeld)
+**Koppeling met unit-filter:**
+- Wanneer `selectedUnits` wijzigt, reset `selectedConsultants` naar `["Alle consultants"]` (zodat je niet onzichtbare consultants geselecteerd houdt)
+- De beschikbare consultants in de dropdown worden gefilterd op basis van `selectedUnits`
 
-**Layout:**
-- 2 kolommen grid (3 rijen) in normaal modus
-- TVDashboardLayout wrapper voor fullscreen/TV-modus
-- Scrollbaar indien nodig
+**Data-filtering:**
+- Na `applyUnitFilter`, pas een extra filter toe: als `selectedConsultants` niet "Alle consultants" bevat, filter entries op naam
+- Hertotaliseer kolom-totalen na filtering
 
-## Wijzigingen in bestaande bestanden
-
-### 3. `src/App.tsx`
-- Import + route: `/tv/ranglijsten-grafiek` -> `TVRanglijstenGrafiek`
-
-### 4. `src/components/dashboard/Sidebar.tsx`
-- Nieuw menu-item onder TV Dashboards: `{ icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" }`
+**Logica "Alles aan/uit":**
+- Zelfde patroon als units: "Alle consultants" als sentinel, individuele selectie wist sentinel, alle individueel geselecteerd → terug naar sentinel
 
 ## Technische details
-- Hergebruik `getRanglijstenData()` uit `ranglijstenData.ts` — deze is al deterministisch per (year, mode, num)
-- Recharts is al in het project (gebruikt in RevenueChart, etc.)
-- Kleurenpalet: 8-10 distincte kleuren, consistent per consultant across grafieken
-- Responsive: `clamp()` font-sizes zoals bestaande TV dashboards
-- TVDashboardLayout voor consistente TV-modus toggle
+- Hergebruik exact hetzelfde Popover/Checkbox/Button patroon als de unit-filter
+- Zoekbalk: simpele `Input` component met `onChange` die `consultantSearch` state zet
+- De `consultants` array uit ranglijstenData.ts bevat `fullName` en `unit` — perfect voor filtering
 
