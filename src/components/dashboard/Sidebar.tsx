@@ -196,10 +196,13 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnMarketingPage = location.pathname.startsWith("/marketing");
   const isOnCorporateRecruitmentPage = location.pathname.startsWith("/corporate-recruitment");
   
+  const isOnRanglijstenPage = location.pathname.startsWith("/tv/ranglijsten");
+  
   const autoExpanded = [
     ...(isOnComparisonPage ? ["/"] : []),
     ...(isOnSuperAdminPage ? ["/super-admin"] : []),
-    ...(isOnTVPage ? ["/tv/sales-funnel-week"] : []),
+    ...(isOnRanglijstenPage ? ["/tv/ranglijsten"] : []),
+    ...(isOnTVPage && !isOnRanglijstenPage ? ["/tv/sales-funnel-week"] : []),
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
     ...(isOnHendrikPage ? ["/hendrik/overzicht"] : []),
     ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
