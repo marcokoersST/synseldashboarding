@@ -1,32 +1,33 @@
 
 
-# Plan: Namen volledig tonen + kolom-spacing verkleinen
+# Plan: Naam-weergave fixen — altijd leesbaar, nooit afgekapt
 
 ## Probleem
-Namen worden afgekapt met "..." door de `truncate` CSS class. De gebruiker wil namen altijd zichtbaar — eventueel met afgekort achternaam (bijv. "Simon B."), maar nooit met ellipsis. Daarnaast is de ruimte (gap) tussen kolommen te groot.
+De huidige aanpak (`smartName` met vaste `maxChars` + `whitespace-nowrap`) werkt niet: namen overlappen met iconen en cijfers, of worden alsnog afgekapt. De root cause is dat we proberen namen op één regel te forceren in een flexbox met `flex-1 min-w-0` maar zonder `truncate` — waardoor ze ofwel overlappen ofwel onzichtbaar worden.
 
-## Wijzigingen — `src/pages/TVRanglijsten.tsx`
+## Nieuwe aanpak — `src/pages/TVRanglijsten.tsx`
 
-### 1. Naam-weergave: smart afkorting i.p.v. truncate
-- Verwijder `truncate` van de naam-span (regel 128)
-- Voeg een helper-functie `smartName(firstName, lastName, maxChars)` toe die:
-  1. Eerst de volledige naam probeert: "Falco Zegveld"
-  2. Als die te lang is (> maxChars): achternaam afkorten tot eerste letter: "Falco Z."
-  3. De naam wordt nooit met "..." afgekapt
-- `maxChars` dynamisch bepalen op basis van context (top-3 vs rest, compact vs niet)
-- Verwijder `truncate`, gebruik `whitespace-nowrap overflow-hidden` met kleinere font als fallback via bestaande `clamp()` — de clamp zorgt ervoor dat de font krimpt i.p.v. dat tekst verdwijnt
+### 1. Naam altijd tonen met CSS `text-overflow: clip` + font-shrink
+Verwijder de `smartName` helper. Gebruik in plaats daarvan:
+- **Voornaam + eerste letter achternaam** als standaard displayformaat voor top-3 entries (bijv. "Jort K.", "Christiaan K.")
+- **Volledige naam** alleen in de niet-top-3 lijst (waar meer ruimte is), met fallback naar "Voornaam A." als het niet past
+- Verwijder `whitespace-nowrap` van de naam-span; laat het op `overflow-hidden text-ellipsis` staan als uiterste fallback maar met agressievere font-scaling via kleinere clamp-waarden
 
-### 2. EntryRow naam-rendering aanpassen
-- In `EntryRow`: bereken `smartName` op basis van `entry.firstName` en `entry.lastName`
-- Top-3 entries: `maxChars` ~14 (past ruim in clamp-scaling)
-- Overige entries: `maxChars` ~12
-- Verwijder `truncate` class, vervang door `whitespace-nowrap` zodat de naam altijd op één regel blijft maar nooit wordt afgekapt
+### 2. Top-3 EntryRow: compactere layout
+- Naam-span: `text-[clamp(8px,0.85vw,12px)]` (kleiner dan nu)
+- Value-span: `text-[clamp(10px,1vw,14px)]` (kleiner dan nu)  
+- Gebruik `gap-1` i.p.v. `gap-2` in top-3 rows
+- Display format: altijd `firstName + " " + lastName[0] + "."` voor top-3
 
-### 3. Kolom-gap verkleinen
-- Non-compact grid: verklein `gap-5` naar `gap-3` (regel 619)
-- Compact/TV grid: verklein de gap naar `gap-2` als die groter is
-- Padding in kolomkaart: verklein `p-3` naar `p-2` (regel 640) om meer ruimte te geven aan content
+### 3. Rest-lijst: slimmere naam-afkorting
+- Gebruik `firstName + " " + lastName[0] + "."` als standaard
+- Font: `text-[9px]` (vast, geen clamp nodig voor de kleine lijst)
+
+### 4. Kolom-gap en padding verder optimaliseren
+- Non-compact grid gap: `gap-2` (was `gap-3`)
+- Kolom padding: `p-1.5` (was `p-2`)
+- Compact grid gap: `gap-1.5` (was `gap-2`)
 
 ## Bestanden
-- `src/pages/TVRanglijsten.tsx` — smartName helper, truncate verwijderen, gap/padding verkleinen
+- `src/pages/TVRanglijsten.tsx` — naam-format logica, font-sizes, gaps
 
