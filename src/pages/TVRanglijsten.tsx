@@ -836,7 +836,7 @@ function RanglijstenContent() {
                 {col.totalDone != null && doneLabel && !colIsRatioOnly && (
                   <div className="flex items-center gap-1 mt-0.5">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                    <span className="text-base font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
+                    <span className="text-[clamp(11px,1.3vw,16px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
                     <span className="text-xs text-emerald-600">{doneLabel}</span>
                     {isAcquisities ? (
                       <span className={cn("text-[10px] font-semibold ml-0.5", (() => {
