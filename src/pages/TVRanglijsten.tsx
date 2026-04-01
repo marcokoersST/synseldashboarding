@@ -763,7 +763,7 @@ function RanglijstenContent() {
 
       {isCompact && (
         <div
-          className="grid gap-2 flex-1 min-h-0"
+          className="grid gap-1.5 flex-1 min-h-0"
           style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, gridTemplateRows: '1fr' }}
         >
           {columns.map((col) => {
