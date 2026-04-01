@@ -17,9 +17,7 @@ import type { DateRange } from "react-day-picker";
 
 const STATUS_ICON_COLUMNS = new Set(["Acquisities", "Gesprekken", "Intakes", "Plaatsingen"]);
 
-function smartName(firstName: string, lastName: string, maxChars: number): string {
-  const full = `${firstName} ${lastName}`;
-  if (full.length <= maxChars) return full;
+function shortName(firstName: string, lastName: string): string {
   return `${firstName} ${lastName.charAt(0)}.`;
 }
 
