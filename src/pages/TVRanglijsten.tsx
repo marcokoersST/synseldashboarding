@@ -620,7 +620,7 @@ function RanglijstenContent() {
           <div ref={scrollRef} className="overflow-x-auto scroll-smooth">
             <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(0, 1fr)) !important; } }`}</style>
             <div
-              className="ranglijsten-grid grid gap-3 grid-cols-1 md:grid-cols-3"
+              className="ranglijsten-grid grid gap-2 grid-cols-1 md:grid-cols-3"
               style={{ ['--col-count' as any]: columns.length }}
             >
               {columns.map((col) => {
