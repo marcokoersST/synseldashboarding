@@ -857,7 +857,7 @@ function RanglijstenContent() {
                     )}
                   </div>
                 )}
-                {colIsRatioOnly && col.totalDone != null && col.totalDone > 0 && (
+                {colIsRatioOnly && col.totalDone != null && (
                   <div className="flex items-center gap-1 mt-0.5">
                     {(() => {
                       const pct = Math.round((col.total / col.totalDone) * 100);
