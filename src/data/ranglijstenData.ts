@@ -27,11 +27,12 @@ export interface ConsultantInfo {
   lastName: string;
   unit: string;
   fullName: string;
+  isActive: boolean;
 }
 
-function buildConsultant(first: string, infix: string, last: string, unit: string): ConsultantInfo {
+function buildConsultant(first: string, infix: string, last: string, unit: string, isActive: boolean = true): ConsultantInfo {
   const fullName = infix ? `${first} ${infix} ${last}` : `${first} ${last}`;
-  return { firstName: first, infix, lastName: last, unit, fullName };
+  return { firstName: first, infix, lastName: last, unit, fullName, isActive };
 }
 
 export const allConsultantsList: ConsultantInfo[] = [
