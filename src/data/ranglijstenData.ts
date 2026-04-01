@@ -92,6 +92,15 @@ export const allConsultantsList: ConsultantInfo[] = [
   buildConsultant("Tom", "", "Tulen", "Engineering"),
   buildConsultant("Tomas", "", "Jansen", "Engineering"),
   buildConsultant("Xander", "", "Blok", "Engineering"),
+  // Inactive / historical consultants
+  buildConsultant("Dennis", "van", "Hoek", "Engineering", false),
+  buildConsultant("Kevin", "", "Smits", "Monteurs", false),
+  buildConsultant("Lisa", "", "Vermeer", "Operators", false),
+  buildConsultant("Mark", "de", "Jong", "Early Performers", false),
+  buildConsultant("Peter", "", "Bakker", "Trainingsunit", false),
+  buildConsultant("Sandra", "", "Willems", "Monteurs", false),
+  buildConsultant("Thomas", "van der", "Linden", "Engineering", false),
+  buildConsultant("Wouter", "", "Hendriks", "Operators", false),
 ];
 const consultants = allConsultantsList;
 
