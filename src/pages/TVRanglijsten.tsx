@@ -344,7 +344,7 @@ function RanglijstenContent() {
     const mode = sortModes[colTitle];
     if (!mode) return entries;
     const sorted = [...entries].sort((a, b) => {
-      if (mode === "name") return a.name.localeCompare(b.name, "nl");
+      if (mode === "name") return b.value - a.value; // "Op naam" = sort by primary value (not alphabetical)
       if (mode === "done") return ((b as any).valueDone ?? 0) - ((a as any).valueDone ?? 0);
       return b.value - a.value; // "value" default
     });
