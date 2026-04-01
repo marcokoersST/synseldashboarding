@@ -784,7 +784,7 @@ function RanglijstenContent() {
             const colRatioLabel = config?.ratioLabel;
 
             return (
-              <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
+              <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card flex flex-col min-h-0 overflow-hidden">
                 <div className="flex items-center gap-1 mb-1">
                   <h2 className="text-[clamp(7px,1vw,11px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                     {headerTitle}
