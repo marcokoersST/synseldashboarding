@@ -690,7 +690,7 @@ function RanglijstenContent() {
                         <span className="text-xs text-muted-foreground">{primaryLabel}</span>
                       )}
                     </div>
-                    {col.totalDone != null && doneLabel && (
+                    {col.totalDone != null && doneLabel && !colIsRatioOnly && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                         <span className="text-lg font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
@@ -712,6 +712,21 @@ function RanglijstenContent() {
                             }%)
                           </span>
                         )}
+                      </div>
+                    )}
+                    {colIsRatioOnly && col.totalDone != null && col.totalDone > 0 && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {(() => {
+                          const pct = Math.round((col.total / col.totalDone) * 100);
+                          return (
+                            <>
+                              <span className={cn("text-lg font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
+                                {pct}%
+                              </span>
+                              <span className="text-xs text-muted-foreground">{colRatioLabel}</span>
+                            </>
+                          );
+                        })()}
                       </div>
                     )}
                     <ComparisonBar current={col.total} previous={col.previousTotal} />
