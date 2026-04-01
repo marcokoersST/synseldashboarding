@@ -132,7 +132,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span
         className={cn(
-          "min-w-0 flex-1 truncate text-foreground",
+          "min-w-0 flex-1 whitespace-nowrap text-foreground",
           isTop3
             ? "text-[clamp(9px,0.9vw,13px)] font-semibold"
             : "text-[10px]",
