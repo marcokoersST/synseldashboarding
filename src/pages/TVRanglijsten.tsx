@@ -94,6 +94,15 @@ const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string;
   "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
 };
 
+const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
+  "Inschrijvingen": { value: "Op naam", done: "Op gedaan" },
+  "Acquisities": { value: "Op acquisities", done: "Op voorstellen" },
+  "Gesprekken": { value: "Op gesprekken", done: "Op uitnodigingen" },
+  "Intakes": { value: "Op intakes", done: "Op % van acq." },
+  "Plaatsingen": { value: "Op plaatsingen", done: "Op detachering" },
+  "Niet begonnen": { value: "Op niet begonnen" },
+};
+
 interface EntryRowProps {
   entry: { rank: number; name: string; firstName: string; lastName: string; value: number; valueDone?: number; isHot?: boolean; isRocket?: boolean };
   displayName?: string;
