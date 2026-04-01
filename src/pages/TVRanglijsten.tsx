@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo, useRef, useLayoutEffect, useEffect, type ReactNode } from "react";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
-import { getRanglijstenData, ranglijstenFilters, allColumnTitles, getCurrentWeekNumber, getCurrentPeriodNumber } from "@/data/ranglijstenData";
+import { getRanglijstenData, ranglijstenFilters, allColumnTitles, getCurrentWeekNumber, getCurrentPeriodNumber, allConsultantsList } from "@/data/ranglijstenData";
 import type { RankingColumn } from "@/data/ranglijstenData";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -356,6 +357,10 @@ function RanglijstenContent() {
   const [selectedUnits, setSelectedUnits] = useState<string[]>(["Alle units"]);
   const [pendingUnits, setPendingUnits] = useState<string[]>(["Alle units"]);
   const [unitPopoverOpen, setUnitPopoverOpen] = useState(false);
+  const [selectedConsultants, setSelectedConsultants] = useState<string[]>(["Alle consultants"]);
+  const [pendingConsultants, setPendingConsultants] = useState<string[]>(["Alle consultants"]);
+  const [consultantPopoverOpen, setConsultantPopoverOpen] = useState(false);
+  const [consultantSearch, setConsultantSearch] = useState("");
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const isCompact = useTVCompact();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -413,16 +418,44 @@ function RanglijstenContent() {
     return sorted.map((e, i) => ({ ...e, rank: i + 1 }));
   }, [sortModes]);
 
+  // Available consultants based on selected units
+  const availableConsultants = useMemo(() => {
+    if (selectedUnits.includes("Alle units")) return allConsultantsList;
+    return allConsultantsList.filter(c => selectedUnits.includes(c.unit));
+  }, [selectedUnits]);
+
+  // Reset consultant selection when units change
+  useEffect(() => {
+    setSelectedConsultants(["Alle consultants"]);
+    setPendingConsultants(["Alle consultants"]);
+  }, [selectedUnits]);
+
+  function applyConsultantFilter(cols: RankingColumn[], selected: string[]): RankingColumn[] {
+    if (selected.includes("Alle consultants")) return cols;
+    return cols.map(col => {
+      const filtered = col.entries
+        .filter(e => selected.includes(e.name))
+        .map((e, i) => ({ ...e, rank: i + 1 }));
+      const total = filtered.reduce((s, e) => s + e.value, 0);
+      const ratio = col.total > 0 ? total / col.total : 0;
+      const previousTotal = Math.round(col.previousTotal * ratio);
+      const totalDone = col.totalDone != null ? filtered.reduce((s, e) => s + (e.valueDone ?? 0), 0) : undefined;
+      const previousTotalDone = col.previousTotalDone != null ? Math.round(col.previousTotalDone * ratio) : undefined;
+      return { ...col, entries: filtered, total, previousTotal, totalDone, previousTotalDone };
+    });
+  }
+
   const columns = useMemo(() => {
     const unitFiltered = applyUnitFilter(rawColumns, selectedUnits);
-    const filtered = unitFiltered.filter((col) => selectedColumns.includes(col.title));
+    const consultantFiltered = applyConsultantFilter(unitFiltered, selectedConsultants);
+    const filtered = consultantFiltered.filter((col) => selectedColumns.includes(col.title));
     return filtered.map(col => {
       if (sortModes[col.title]) {
         return { ...col, entries: sortEntries(col.entries, col.title) };
       }
       return col;
     });
-  }, [rawColumns, selectedUnits, selectedColumns, sortEntries, sortModes]);
+  }, [rawColumns, selectedUnits, selectedConsultants, selectedColumns, sortEntries, sortModes]);
 
   useEffect(() => {
     if (isCompact) return;
@@ -570,6 +603,88 @@ function RanglijstenContent() {
             </Popover>
 
             <div className="flex-1" />
+
+            {/* Consultant filter */}
+            <Popover open={consultantPopoverOpen} onOpenChange={(open) => {
+              setConsultantPopoverOpen(open);
+              if (open) {
+                setPendingConsultants([...selectedConsultants]);
+                setConsultantSearch("");
+              }
+            }}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 min-w-[180px] justify-between bg-card border-border">
+                  {selectedConsultants.includes("Alle consultants") ? "Alle consultants" : `${selectedConsultants.length} consultant${selectedConsultants.length > 1 ? "s" : ""}`}
+                  <ChevronDown className="w-4 h-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Consultants</p>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-6 px-2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setPendingConsultants(["Alle consultants"])}
+                    >
+                      Alles aan
+                    </Button>
+                    <span className="text-muted-foreground text-xs">·</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-6 px-2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setPendingConsultants([])}
+                    >
+                      Alles uit
+                    </Button>
+                  </div>
+                </div>
+                <Input
+                  placeholder="Zoek consultant..."
+                  value={consultantSearch}
+                  onChange={(e) => setConsultantSearch(e.target.value)}
+                  className="mb-2 h-8 text-sm"
+                />
+                <div className="max-h-[240px] overflow-y-auto space-y-1">
+                  {availableConsultants
+                    .filter(c => c.fullName.toLowerCase().includes(consultantSearch.toLowerCase()))
+                    .map((c) => (
+                      <label key={c.fullName} className="flex items-center gap-2 text-sm cursor-pointer py-0.5">
+                        <Checkbox
+                          checked={pendingConsultants.includes("Alle consultants") || pendingConsultants.includes(c.fullName)}
+                          onCheckedChange={() => {
+                            setPendingConsultants(prev => {
+                              if (prev.includes("Alle consultants")) {
+                                return [c.fullName];
+                              }
+                              if (prev.includes(c.fullName)) {
+                                const next = prev.filter(x => x !== c.fullName);
+                                return next.length === 0 ? ["Alle consultants"] : next;
+                              }
+                              const next = [...prev, c.fullName];
+                              return next.length === availableConsultants.length ? ["Alle consultants"] : next;
+                            });
+                          }}
+                        />
+                        <span className="truncate">{c.fullName}</span>
+                        <span className="text-xs text-muted-foreground ml-auto shrink-0">{c.unit}</span>
+                      </label>
+                    ))}
+                </div>
+                <Button
+                  size="sm"
+                  className="w-full mt-3"
+                  onClick={() => {
+                    setSelectedConsultants([...pendingConsultants]);
+                    setConsultantPopoverOpen(false);
+                  }}
+                >
+                  Toepassen
+                </Button>
+              </PopoverContent>
+            </Popover>
 
             <Popover open={unitPopoverOpen} onOpenChange={(open) => {
               setUnitPopoverOpen(open);

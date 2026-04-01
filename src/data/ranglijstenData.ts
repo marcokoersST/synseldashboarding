@@ -21,7 +21,7 @@ export interface RankingColumn {
   entries: RankingEntry[];
 }
 
-interface ConsultantInfo {
+export interface ConsultantInfo {
   firstName: string;
   infix: string;
   lastName: string;
@@ -34,7 +34,7 @@ function buildConsultant(first: string, infix: string, last: string, unit: strin
   return { firstName: first, infix, lastName: last, unit, fullName };
 }
 
-const consultants: ConsultantInfo[] = [
+export const allConsultantsList: ConsultantInfo[] = [
   buildConsultant("Amer", "", "Faraman", "Early Performers"),
   buildConsultant("Bart", "van", "Vliet", "Monteurs"),
   buildConsultant("Bas", "de", "Ruiter", "Operators"),
@@ -92,6 +92,7 @@ const consultants: ConsultantInfo[] = [
   buildConsultant("Tomas", "", "Jansen", "Engineering"),
   buildConsultant("Xander", "", "Blok", "Engineering"),
 ];
+const consultants = allConsultantsList;
 
 const hotNames = new Set([
   "Joey de Vries", "Senna Ekkers", "Thijs Dirksen",
