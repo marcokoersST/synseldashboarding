@@ -181,9 +181,9 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
           )}
         </span>
       )}
-      {isRatioOnly && entry.valueDone != null && entry.valueDone > 0 && (
+      {isRatioOnly && entry.valueDone != null && (
         (() => {
-          const pct = Math.round((entry.value / entry.valueDone) * 100);
+          const pct = entry.valueDone > 0 ? Math.round((entry.value / entry.valueDone) * 100) : 0;
           return (
             <span className={cn(
               "tabular-nums shrink-0 font-semibold",
