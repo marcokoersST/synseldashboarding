@@ -107,7 +107,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 rounded-sm px-1 border-b border-border/20 break-inside-avoid",
+        "flex items-center gap-2 rounded-sm px-1 border-b border-border/20 break-inside-avoid",
         isTop3 ? (compact ? "py-1" : "py-2") : "py-1",
         compact || isPlain ? "text-xs" : "text-sm",
         !isPlain && getRankStyle(entry.rank, isNegative),
@@ -125,16 +125,10 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span
         className={cn(
-          "min-w-0 flex-1 text-foreground",
+          "min-w-0 flex-1 truncate text-foreground",
           isTop3
-            ? isAcquisities
-              ? "text-[10px] font-semibold max-w-[90px] truncate"
-              : shownName.length > 15
-                ? "text-[10px] font-medium whitespace-nowrap"
-                : shownName.length > 10
-                  ? "text-[10px] font-semibold whitespace-nowrap"
-                  : compact ? "text-xs font-semibold whitespace-nowrap" : "text-sm font-bold whitespace-nowrap"
-            : "text-[10px] truncate",
+            ? "text-[clamp(9px,0.9vw,13px)] font-semibold"
+            : "text-[10px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600"
         )}
@@ -143,23 +137,23 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span className={cn(
         "tabular-nums shrink-0 ml-auto flex items-center gap-1",
-        isTop3 ? (isAcquisities ? "text-sm font-semibold" : compact ? "text-sm font-semibold" : "text-base font-bold") : "font-semibold",
+        isTop3 ? "text-[clamp(11px,1.1vw,16px)] font-bold" : "font-semibold",
         entry.value !== 0 && "text-foreground"
       )}>
-        {!isPlain && showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire" />}
-        {!isPlain && showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket" />}
+        {!isPlain && showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire shrink-0" />}
+        {!isPlain && showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket shrink-0" />}
         {entry.value}
       </span>
       {entry.valueDone != null && !isRatioOnly && (
         <span className="tabular-nums shrink-0 flex items-center gap-0.5 text-emerald-600">
-          <Check className="w-3 h-3" />
-          <span className={cn(isTop3 ? (isAcquisities ? "text-sm font-semibold" : compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[10px] font-semibold")}>
+          <Check className="w-3 h-3 shrink-0" />
+          <span className={cn(isTop3 ? "text-[clamp(11px,1.1vw,16px)] font-bold" : "text-[10px] font-semibold")}>
             {entry.valueDone}
           </span>
           {entry.value > 0 && (
             isAcquisities ? (
               <span className={cn(
-                "font-semibold",
+                "font-semibold shrink-0",
                 isTop3 ? "text-[10px]" : "text-[8px]",
                 (() => {
                   const ratio = entry.valueDone! / entry.value;
@@ -171,7 +165,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
                 ×{(entry.valueDone! / entry.value).toFixed(1)}
               </span>
             ) : (
-              <span className={cn("text-muted-foreground font-normal", isTop3 ? "text-[10px]" : "text-[8px]")}>
+              <span className={cn("text-muted-foreground font-normal shrink-0", isTop3 ? "text-[10px]" : "text-[8px]")}>
                 ({isInverseRatio
                   ? (entry.valueDone! > 0 ? Math.round((entry.value / entry.valueDone!) * 100) : 0)
                   : Math.round((entry.valueDone! / entry.value) * 100)
@@ -620,9 +614,10 @@ function RanglijstenContent() {
             </Button>
           )}
           <div ref={scrollRef} className="overflow-x-auto scroll-smooth">
+            <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(0, 1fr)) !important; } }`}</style>
             <div
-              className="grid gap-5"
-              style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))` }}
+              className="ranglijsten-grid grid gap-5 grid-cols-1 md:grid-cols-3"
+              style={{ ['--col-count' as any]: columns.length }}
             >
               {columns.map((col) => {
                 const isNegative = col.title === "Niet begonnen";
