@@ -1,43 +1,39 @@
 
 
-# Plan: Menu herstructureren + Standalone consultant dashboard link
+# Plan: Inactieve consultants toggle + Sorteeropties voor alle kolommen
 
-## Wat verandert
+## 1. Inactieve consultants toggle
 
-### 1. Sidebar menu herstructureren (`src/components/dashboard/Sidebar.tsx`)
+### Data (`src/data/ranglijstenData.ts`)
+- Voeg `isActive?: boolean` toe aan `ConsultantInfo` interface
+- Voeg een `isActive` veld toe aan `buildConsultant()` (default `true`)
+- Markeer ~8 consultants als `isActive: false` (historische/vertrokken consultants) — bijv. voeg extra inactieve consultants toe aan de lijst
 
-Twee nieuwe top-level menu-items bovenaan het menu, met een visueel **sectie-label** (niet-klikbaar kopje):
+### UI (`src/pages/TVRanglijsten.tsx`)
+- Voeg `hideInactive` state toe (default `true`)
+- In de consultant filter popover: voeg een toggle/switch toe boven de zoekbalk met label "Verberg inactieve consultants"
+- Wanneer `hideInactive === true`, filter `availableConsultants` op `c.isActive !== false`
+- Inactieve consultants in de lijst tonen met gedimde stijl (opacity-50) als de toggle uit staat
 
-**① "Ready for development"**
-- Ranglijsten (verplaatst van TV Dashboards → hier, zelfde path `/tv/ranglijsten`)
-- Ranglijsten Grafiek (verplaatst van TV Dashboards → hier, zelfde path `/tv/ranglijsten-grafiek`)
+## 2. Sorteeropties voor alle kolommen
 
-**② "Pending feedback beta-groep & stakeholders"**
-- Dashboard (huidige `/` index pagina)
-- Vergelijking (huidige `/vergelijking`)
+### Huidige situatie
+- Sorteer-dropdown (`ArrowUpDown` icoon) verschijnt alleen bij `isPlain || isAcquisities` (= Inschrijvingen en Acquisities)
+- Overige kolommen (Gesprekken, Intakes, Plaatsingen, Niet begonnen) missen dit
 
-De overige menu-items (Consultant, Manager, Hendrik, etc.) blijven staan waar ze zijn. De verplaatste items worden uit hun oorspronkelijke sectie verwijderd.
-
-### 2. Standalone consultant dashboard route (`src/App.tsx`)
-
-Nieuwe route **buiten** de `<AppLayout>` wrapper:
-- `/preview/consultant` → rendert de `<Index />` component direct, zonder Sidebar/TopBar
-- Dit geeft een deelbare link waar alleen het consultant dashboard zichtbaar is
-
-### 3. Sidebar sectie-labels
-
-De `navItems` structuur wordt uitgebreid met een `sectionLabel` property. Vóór het renderen van zo'n item wordt een niet-klikbaar label getoond (bijv. grijs, uppercase, klein). Dit maakt de twee categorieën visueel duidelijk.
+### Wijziging (`src/pages/TVRanglijsten.tsx`)
+- Verwijder de `(isPlain || isAcquisities)` conditie — toon de sort dropdown bij **alle** kolommen
+- Per kolom de juiste labels tonen op basis van `COLUMN_CONFIG`:
+  - **Gesprekken**: "Op gesprekken" / "Op uitnodigingen"
+  - **Intakes**: "Op intakes" / "Op % van acq."
+  - **Plaatsingen**: "Op plaatsingen" / "Op detachering"
+  - **Niet begonnen**: "Op niet begonnen" (enkele optie, of value/name)
+- Voeg default sortModes toe voor de nieuwe kolommen in de `useState` initialisatie
+- Pas dit aan op **beide** plekken (normaal + compact/TV modus, rond regel 829 en 977)
 
 ## Bestanden
-
 | Bestand | Wijziging |
 |---|---|
-| `src/components/dashboard/Sidebar.tsx` | Herstructureer `navItems`: voeg sectie-labels toe, verplaats Ranglijsten items, groepeer Dashboard+Vergelijking onder "Pending" |
-| `src/App.tsx` | Voeg standalone route `/preview/consultant` toe buiten `<AppLayout>` |
-
-## Technische details
-
-- `navItems` array krijgt optioneel `sectionLabel?: string` veld — als gezet, wordt een label-div gerenderd vóór het item
-- Standalone route: `<Route path="/preview/consultant" element={<Index />} />` buiten de `<Route element={<AppLayout />}>` wrapper, met eigen padding/wrapper div
-- Auto-expand logica in Sidebar wordt aangepast voor de nieuwe paden
+| `src/data/ranglijstenData.ts` | `isActive` veld + inactieve consultants toevoegen |
+| `src/pages/TVRanglijsten.tsx` | Toggle in consultant popover + sort dropdown voor alle 6 kolommen |
 
