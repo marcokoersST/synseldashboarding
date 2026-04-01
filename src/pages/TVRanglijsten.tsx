@@ -683,7 +683,7 @@ function RanglijstenContent() {
                       )}
                     </div>
                     <div className="flex items-baseline gap-1.5">
-                      <p className="text-3xl font-bold text-foreground tabular-nums">
+                      <p className="text-[clamp(20px,2.5vw,30px)] font-bold text-foreground tabular-nums leading-tight">
                         {col.total.toLocaleString("nl-NL")}
                       </p>
                       {isDualValue && primaryLabel && (
