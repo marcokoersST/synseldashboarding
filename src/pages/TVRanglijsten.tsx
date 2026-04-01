@@ -107,13 +107,12 @@ interface EntryRowProps {
 
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
-  const maxChars = isTop3 ? 14 : 12;
-  const shownName = displayName ?? smartName(entry.firstName, entry.lastName, maxChars);
+  const shownName = displayName ?? shortName(entry.firstName, entry.lastName);
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-sm px-1 border-b border-border/20 break-inside-avoid",
-        isTop3 ? (compact ? "py-1" : "py-2") : "py-1",
+        "flex items-center gap-1.5 rounded-sm px-1 border-b border-border/20 break-inside-avoid",
+        isTop3 ? (compact ? "py-1" : "py-1.5") : "py-0.5",
         compact || isPlain ? "text-xs" : "text-sm",
         !isPlain && getRankStyle(entry.rank, isNegative),
         !isPlain && entry.isHot && entry.value > 0 && "bg-orange-50/60",
@@ -130,10 +129,10 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span
         className={cn(
-          "min-w-0 flex-1 whitespace-nowrap text-foreground",
+          "min-w-0 flex-1 text-foreground",
           isTop3
-            ? "text-[clamp(9px,0.9vw,13px)] font-semibold"
-            : "text-[10px]",
+            ? "text-[clamp(8px,0.85vw,12px)] font-semibold"
+            : "text-[9px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600"
         )}
