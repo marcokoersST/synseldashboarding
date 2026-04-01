@@ -749,6 +749,8 @@ function RanglijstenContent() {
                           isPlain={isPlain}
                           isAcquisities={isAcquisities}
                           isInverseRatio={isInverse}
+                          isRatioOnly={colIsRatioOnly}
+                          ratioLabel={colRatioLabel}
                         />
                       ))}
                     </AutoColumnsWrapper>
