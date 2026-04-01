@@ -684,8 +684,8 @@ function RanglijstenContent() {
                             });
                           }}
                         />
-                        <span className="truncate">{c.fullName}</span>
-                        <span className="text-xs text-muted-foreground ml-auto shrink-0">{c.unit}</span>
+                        <span className={cn("truncate", !c.isActive && "opacity-50")}>{c.fullName}</span>
+                        <span className={cn("text-xs text-muted-foreground ml-auto shrink-0", !c.isActive && "opacity-50")}>{c.unit}{!c.isActive && " ·  inactief"}</span>
                       </label>
                     ))}
                 </div>
