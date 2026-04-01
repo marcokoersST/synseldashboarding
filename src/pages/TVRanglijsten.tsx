@@ -426,9 +426,15 @@ function RanglijstenContent() {
 
   // Available consultants based on selected units
   const availableConsultants = useMemo(() => {
-    if (selectedUnits.includes("Alle units")) return allConsultantsList;
-    return allConsultantsList.filter(c => selectedUnits.includes(c.unit));
-  }, [selectedUnits]);
+    let list = allConsultantsList;
+    if (!selectedUnits.includes("Alle units")) {
+      list = list.filter(c => selectedUnits.includes(c.unit));
+    }
+    if (hideInactive) {
+      list = list.filter(c => c.isActive);
+    }
+    return list;
+  }, [selectedUnits, hideInactive]);
 
   // Reset consultant selection when units change
   useEffect(() => {
