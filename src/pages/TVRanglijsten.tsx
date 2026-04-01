@@ -17,6 +17,12 @@ import type { DateRange } from "react-day-picker";
 
 const STATUS_ICON_COLUMNS = new Set(["Acquisities", "Gesprekken", "Intakes", "Plaatsingen"]);
 
+function smartName(firstName: string, lastName: string, maxChars: number): string {
+  const full = `${firstName} ${lastName}`;
+  if (full.length <= maxChars) return full;
+  return `${firstName} ${lastName.charAt(0)}.`;
+}
+
 function ComparisonBar({ current, previous }: { current: number; previous: number }) {
   const delta = previous > 0 ? ((current - previous) / previous) * 100 : 0;
   const max = Math.max(current, previous);
@@ -103,7 +109,8 @@ interface EntryRowProps {
 
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
-  const shownName = displayName ?? entry.name;
+  const maxChars = isTop3 ? 14 : 12;
+  const shownName = displayName ?? smartName(entry.firstName, entry.lastName, maxChars);
   return (
     <div
       className={cn(
@@ -125,7 +132,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span
         className={cn(
-          "min-w-0 flex-1 truncate text-foreground",
+          "min-w-0 flex-1 whitespace-nowrap text-foreground",
           isTop3
             ? "text-[clamp(9px,0.9vw,13px)] font-semibold"
             : "text-[10px]",
@@ -616,7 +623,7 @@ function RanglijstenContent() {
           <div ref={scrollRef} className="overflow-x-auto scroll-smooth">
             <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(0, 1fr)) !important; } }`}</style>
             <div
-              className="ranglijsten-grid grid gap-5 grid-cols-1 md:grid-cols-3"
+              className="ranglijsten-grid grid gap-3 grid-cols-1 md:grid-cols-3"
               style={{ ['--col-count' as any]: columns.length }}
             >
               {columns.map((col) => {
@@ -637,7 +644,7 @@ function RanglijstenContent() {
                 const colRatioLabel = config?.ratioLabel;
 
                 return (
-                  <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
+                  <div key={col.title} className="min-w-0 rounded-lg border border-border p-2 bg-card">
                     <div className="flex items-center gap-1 mb-1">
                       <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                         {headerTitle}
