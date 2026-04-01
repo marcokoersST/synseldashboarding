@@ -150,7 +150,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         {!isPlain && showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket" />}
         {entry.value}
       </span>
-      {entry.valueDone != null && (
+      {entry.valueDone != null && !isRatioOnly && (
         <span className="tabular-nums shrink-0 flex items-center gap-0.5 text-emerald-600">
           <Check className="w-3 h-3" />
           <span className={cn(isTop3 ? (isAcquisities ? "text-sm font-semibold" : compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[10px] font-semibold")}>
@@ -180,6 +180,21 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
             )
           )}
         </span>
+      )}
+      {isRatioOnly && entry.valueDone != null && entry.valueDone > 0 && (
+        (() => {
+          const pct = Math.round((entry.value / entry.valueDone) * 100);
+          return (
+            <span className={cn(
+              "tabular-nums shrink-0 font-semibold",
+              isTop3 ? "text-[11px]" : "text-[10px]",
+              pct < 80 ? "text-orange-500" : "text-emerald-600"
+            )}>
+              {pct}%
+              <span className="text-muted-foreground font-normal text-[8px] ml-0.5">{ratioLabel}</span>
+            </span>
+          );
+        })()
       )}
     </div>
   );
