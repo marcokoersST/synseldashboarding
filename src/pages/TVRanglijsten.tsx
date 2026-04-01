@@ -79,6 +79,15 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
   return null;
 }
 
+// Column configuration for dual-value display
+const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean }> = {
+  "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false },
+  "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false },
+  "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true },
+  "Intakes": { headerTitle: "Intakes / Acquisities", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true },
+  "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
+};
+
 interface EntryRowProps {
   entry: { rank: number; name: string; firstName: string; lastName: string; value: number; valueDone?: number; isHot?: boolean; isRocket?: boolean };
   displayName?: string;
@@ -87,9 +96,10 @@ interface EntryRowProps {
   showStatusIcons?: boolean;
   isPlain?: boolean;
   isAcquisities?: boolean;
+  isInverseRatio?: boolean;
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? entry.name;
   return (
@@ -160,7 +170,10 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
               </span>
             ) : (
               <span className={cn("text-muted-foreground font-normal", isTop3 ? "text-[10px]" : "text-[8px]")}>
-                ({Math.round((entry.valueDone / entry.value) * 100)}%)
+                ({isInverseRatio
+                  ? (entry.valueDone! > 0 ? Math.round((entry.value / entry.valueDone!) * 100) : 0)
+                  : Math.round((entry.valueDone! / entry.value) * 100)
+                }%)
               </span>
             )
           )}
@@ -598,14 +611,16 @@ function RanglijstenContent() {
                 const isNegative = col.title === "Niet begonnen";
                 const isPlain = col.title === "Inschrijvingen";
                 const isAcquisities = col.title === "Acquisities";
-                const isDualValue = isPlain || isAcquisities;
+                const config = COLUMN_CONFIG[col.title];
+                const isDualValue = !!config;
                 const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
                 const top3 = isPlain ? [] : col.entries.slice(0, 3);
                 const rest = isPlain ? col.entries : col.entries.slice(3);
 
-                const headerTitle = isAcquisities ? "Acquisities / Voorstellen" : col.title;
-                const primaryLabel = isAcquisities ? "acquisities" : isPlain ? "op naam" : undefined;
-                const doneLabel = isAcquisities ? "voorstellen" : isPlain ? "gedaan" : undefined;
+                const headerTitle = config?.headerTitle ?? col.title;
+                const primaryLabel = config?.primaryLabel;
+                const doneLabel = config?.doneLabel;
+                const isInverse = config?.isInverse ?? false;
 
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
@@ -672,7 +687,10 @@ function RanglijstenContent() {
                           </span>
                         ) : (
                           <span className="text-xs text-muted-foreground ml-1">
-                            ({col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0}%)
+                            ({isInverse
+                              ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
+                              : (col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0)
+                            }%)
                           </span>
                         )}
                       </div>
@@ -681,7 +699,7 @@ function RanglijstenContent() {
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
                         {top3.map((entry) => (
-                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} />
+                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} />
                         ))}
                       </div>
                     )}
@@ -696,6 +714,7 @@ function RanglijstenContent() {
                           showStatusIcons={showStatusIcons}
                           isPlain={isPlain}
                           isAcquisities={isAcquisities}
+                          isInverseRatio={isInverse}
                         />
                       ))}
                     </AutoColumnsWrapper>
@@ -716,14 +735,16 @@ function RanglijstenContent() {
             const isNegative = col.title === "Niet begonnen";
             const isPlain = col.title === "Inschrijvingen";
             const isAcquisities = col.title === "Acquisities";
-            const isDualValue = isPlain || isAcquisities;
+            const config = COLUMN_CONFIG[col.title];
+            const isDualValue = !!config;
             const showStatusIcons = STATUS_ICON_COLUMNS.has(col.title);
             const top3 = isPlain ? [] : col.entries.slice(0, 3);
             const rest = isPlain ? col.entries : col.entries.slice(3);
 
-            const headerTitle = isAcquisities ? "Acquisities / Voorstellen" : col.title;
-            const primaryLabel = isAcquisities ? "acquisities" : isPlain ? "op naam" : undefined;
-            const doneLabel = isAcquisities ? "voorstellen" : isPlain ? "gedaan" : undefined;
+            const headerTitle = config?.headerTitle ?? col.title;
+            const primaryLabel = config?.primaryLabel;
+            const doneLabel = config?.doneLabel;
+            const isInverse = config?.isInverse ?? false;
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
@@ -790,7 +811,10 @@ function RanglijstenContent() {
                       </span>
                     ) : (
                       <span className="text-[10px] text-muted-foreground ml-0.5">
-                        ({col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0}%)
+                        ({isInverse
+                          ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
+                          : (col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0)
+                        }%)
                       </span>
                     )}
                   </div>
@@ -799,7 +823,7 @@ function RanglijstenContent() {
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
                     {top3.map((entry) => (
-                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} />
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} />
                     ))}
                   </div>
                 )}
@@ -814,6 +838,7 @@ function RanglijstenContent() {
                       showStatusIcons={showStatusIcons}
                       isPlain={isPlain}
                       isAcquisities={isAcquisities}
+                      isInverseRatio={isInverse}
                     />
                   ))}
                 </AutoColumnsWrapper>
