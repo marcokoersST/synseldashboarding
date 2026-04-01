@@ -372,6 +372,10 @@ function RanglijstenContent() {
   const [sortModes, setSortModes] = useState<Record<string, string>>({
     "Inschrijvingen": "name",
     "Acquisities": "value",
+    "Gesprekken": "value",
+    "Intakes": "value",
+    "Plaatsingen": "value",
+    "Niet begonnen": "value",
   });
 
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode" | "custom">("week");
