@@ -159,6 +159,7 @@ const navItems: NavItem[] = [
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
       { icon: ListOrdered, label: "Ranglijsten", path: "/tv/ranglijsten" },
       { icon: Monitor, label: "Heatmap", path: "/tv/heatmap" },
+      { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
     ]
   },
 ];

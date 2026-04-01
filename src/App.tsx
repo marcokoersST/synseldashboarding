@@ -67,6 +67,7 @@ const MarketingInflow = lazy(() => import("./pages/marketing/InflowDashboard"));
 const CorporateRecruitmentInflow = lazy(() => import("./pages/corporate-recruitment/InflowDashboard"));
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
+const TVRanglijstenGrafiek = lazy(() => import("./pages/TVRanglijstenGrafiek"));
 const ManagerOverzichtV2 = lazy(() => import("./pages/manager/OverzichtV2"));
 
 const queryClient = new QueryClient();
@@ -97,6 +98,7 @@ const App = () => (
               <Route path="/tv/gedetacheerden" element={<TVGedetacheerden />} />
               <Route path="/tv/ranglijsten" element={<TVRanglijsten />} />
               <Route path="/tv/heatmap" element={<TVHeatmap />} />
+              <Route path="/tv/ranglijsten-grafiek" element={<TVRanglijstenGrafiek />} />
               <Route path="/consultant/geld-bonus" element={<GeldBonus />} />
               <Route path="/consultant/kpi-cockpit" element={<KPICockpit />} />
               <Route path="/consultant/sales-funnel" element={<SalesFunnel />} />
