@@ -604,6 +604,88 @@ function RanglijstenContent() {
 
             <div className="flex-1" />
 
+            {/* Consultant filter */}
+            <Popover open={consultantPopoverOpen} onOpenChange={(open) => {
+              setConsultantPopoverOpen(open);
+              if (open) {
+                setPendingConsultants([...selectedConsultants]);
+                setConsultantSearch("");
+              }
+            }}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 min-w-[180px] justify-between bg-card border-border">
+                  {selectedConsultants.includes("Alle consultants") ? "Alle consultants" : `${selectedConsultants.length} consultant${selectedConsultants.length > 1 ? "s" : ""}`}
+                  <ChevronDown className="w-4 h-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Consultants</p>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-6 px-2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setPendingConsultants(["Alle consultants"])}
+                    >
+                      Alles aan
+                    </Button>
+                    <span className="text-muted-foreground text-xs">·</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-6 px-2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setPendingConsultants([])}
+                    >
+                      Alles uit
+                    </Button>
+                  </div>
+                </div>
+                <Input
+                  placeholder="Zoek consultant..."
+                  value={consultantSearch}
+                  onChange={(e) => setConsultantSearch(e.target.value)}
+                  className="mb-2 h-8 text-sm"
+                />
+                <div className="max-h-[240px] overflow-y-auto space-y-1">
+                  {availableConsultants
+                    .filter(c => c.fullName.toLowerCase().includes(consultantSearch.toLowerCase()))
+                    .map((c) => (
+                      <label key={c.fullName} className="flex items-center gap-2 text-sm cursor-pointer py-0.5">
+                        <Checkbox
+                          checked={pendingConsultants.includes("Alle consultants") || pendingConsultants.includes(c.fullName)}
+                          onCheckedChange={() => {
+                            setPendingConsultants(prev => {
+                              if (prev.includes("Alle consultants")) {
+                                return [c.fullName];
+                              }
+                              if (prev.includes(c.fullName)) {
+                                const next = prev.filter(x => x !== c.fullName);
+                                return next.length === 0 ? ["Alle consultants"] : next;
+                              }
+                              const next = [...prev, c.fullName];
+                              return next.length === availableConsultants.length ? ["Alle consultants"] : next;
+                            });
+                          }}
+                        />
+                        <span className="truncate">{c.fullName}</span>
+                        <span className="text-xs text-muted-foreground ml-auto shrink-0">{c.unit}</span>
+                      </label>
+                    ))}
+                </div>
+                <Button
+                  size="sm"
+                  className="w-full mt-3"
+                  onClick={() => {
+                    setSelectedConsultants([...pendingConsultants]);
+                    setConsultantPopoverOpen(false);
+                  }}
+                >
+                  Toepassen
+                </Button>
+              </PopoverContent>
+            </Popover>
+
             <Popover open={unitPopoverOpen} onOpenChange={(open) => {
               setUnitPopoverOpen(open);
               if (open) setPendingUnits([...selectedUnits]);
