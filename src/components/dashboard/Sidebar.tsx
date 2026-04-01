@@ -165,6 +165,7 @@ const navItems: NavItem[] = [
       { icon: Trophy, label: "Beker Dashboard", path: "/tv/beker" },
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
       { icon: Monitor, label: "Heatmap", path: "/tv/heatmap" },
+      { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
     ]
   },
 ];
