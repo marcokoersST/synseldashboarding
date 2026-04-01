@@ -98,6 +98,7 @@ const App = () => (
               <Route path="/tv/gedetacheerden" element={<TVGedetacheerden />} />
               <Route path="/tv/ranglijsten" element={<TVRanglijsten />} />
               <Route path="/tv/heatmap" element={<TVHeatmap />} />
+              <Route path="/tv/ranglijsten-grafiek" element={<TVRanglijstenGrafiek />} />
               <Route path="/consultant/geld-bonus" element={<GeldBonus />} />
               <Route path="/consultant/kpi-cockpit" element={<KPICockpit />} />
               <Route path="/consultant/sales-funnel" element={<SalesFunnel />} />
