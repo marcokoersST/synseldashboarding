@@ -67,6 +67,7 @@ const MarketingInflow = lazy(() => import("./pages/marketing/InflowDashboard"));
 const CorporateRecruitmentInflow = lazy(() => import("./pages/corporate-recruitment/InflowDashboard"));
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
+const TVRanglijstenGrafiek = lazy(() => import("./pages/TVRanglijstenGrafiek"));
 const ManagerOverzichtV2 = lazy(() => import("./pages/manager/OverzichtV2"));
 
 const queryClient = new QueryClient();
