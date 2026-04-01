@@ -278,6 +278,15 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
               
               return (
                 <div key={item.label}>
+                  {/* Section label */}
+                  {item.sectionLabel && !isCollapsed && (
+                    <div className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 truncate">
+                      {item.sectionLabel}
+                    </div>
+                  )}
+                  {item.sectionLabel && isCollapsed && (
+                    <div className="mx-2 my-2 border-t border-sidebar-border" />
+                  )}
                   {/* Always render Tooltip wrapper to prevent re-mounting */}
                   <Tooltip>
                     <TooltipTrigger asChild>
