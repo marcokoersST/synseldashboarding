@@ -108,11 +108,120 @@ interface EntryRowProps {
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? shortName(entry.firstName, entry.lastName);
+  
+  const hasIcons = !isPlain && showStatusIcons && (entry.isHot || entry.isRocket) && entry.value > 0;
+  const hasSecondary = (entry.valueDone != null && !isRatioOnly) || (isRatioOnly && entry.valueDone != null);
+
+  // Build secondary content
+  let secondaryContent: ReactNode = null;
+  if (entry.valueDone != null && !isRatioOnly) {
+    secondaryContent = (
+      <span className="tabular-nums flex items-center gap-0.5 text-emerald-600">
+        <Check className="w-3 h-3 shrink-0" />
+        <span className={cn(isTop3 ? "text-[clamp(9px,0.9vw,14px)] font-bold" : "text-[10px] font-semibold")}>
+          {entry.valueDone}
+        </span>
+        {entry.value > 0 && (
+          isAcquisities ? (
+            <span className={cn(
+              "font-semibold shrink-0",
+              isTop3 ? "text-[9px]" : "text-[8px]",
+              (() => {
+                const ratio = entry.valueDone! / entry.value;
+                if (ratio < 10) return "text-red-500";
+                if (ratio < 15) return "text-orange-500";
+                return "text-muted-foreground";
+              })()
+            )}>
+              ×{(entry.valueDone! / entry.value).toFixed(1)}
+            </span>
+          ) : (
+            <span className={cn("text-muted-foreground font-normal shrink-0", isTop3 ? "text-[9px]" : "text-[8px]")}>
+              ({isInverseRatio
+                ? (entry.valueDone! > 0 ? Math.round((entry.value / entry.valueDone!) * 100) : 0)
+                : Math.round((entry.valueDone! / entry.value) * 100)
+              }%)
+            </span>
+          )
+        )}
+      </span>
+    );
+  }
+  if (isRatioOnly && entry.valueDone != null) {
+    const pct = entry.valueDone > 0 ? Math.round((entry.value / entry.valueDone) * 100) : 0;
+    secondaryContent = (
+      <span className={cn(
+        "tabular-nums shrink-0 font-semibold",
+        isTop3 ? "text-[10px]" : "text-[10px]",
+        pct < 80 ? "text-orange-500" : "text-emerald-600"
+      )}>
+        {pct}%
+        <span className="text-muted-foreground font-normal text-[8px] ml-0.5">{ratioLabel}</span>
+      </span>
+    );
+  }
+
+  // Use CSS grid for top-3 to guarantee slot containment
+  if (isTop3) {
+    return (
+      <div
+        className={cn(
+          "grid items-center rounded-sm px-1 border-b border-border/20 break-inside-avoid",
+          compact ? "py-1" : "py-1.5",
+          getRankStyle(entry.rank, isNegative),
+          entry.isHot && entry.value > 0 && "bg-orange-50/60",
+          entry.value === 0 && "text-orange-600"
+        )}
+        style={{
+          gridTemplateColumns: `1rem 1fr ${hasIcons ? 'auto' : '0px'} auto ${hasSecondary ? 'auto' : '0px'}`,
+          gap: '4px',
+        }}
+      >
+        {/* Rank icon */}
+        <span className="flex items-center justify-start shrink-0">
+          <RankIcon rank={entry.rank} isTop3 isNegative={isNegative} />
+        </span>
+        {/* Name — contained in its grid slot, overflow hidden, no ellipsis */}
+        <span
+          className={cn(
+            "min-w-0 whitespace-nowrap overflow-hidden font-semibold text-foreground",
+            "text-[clamp(7px,0.7vw,12px)]",
+            entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
+            entry.value === 0 && "text-orange-600"
+          )}
+          style={{ textOverflow: 'clip' }}
+        >
+          {shownName}
+        </span>
+        {/* Status icons */}
+        {hasIcons ? (
+          <span className="shrink-0 flex items-center gap-0.5">
+            {entry.isHot && <Flame className="w-3 h-3 text-orange-500 tv-fire shrink-0" />}
+            {entry.isRocket && <Rocket className="w-3 h-3 text-blue-500 tv-rocket shrink-0" />}
+          </span>
+        ) : <span />}
+        {/* Primary value */}
+        <span className={cn(
+          "tabular-nums font-bold text-right text-foreground",
+          "text-[clamp(9px,0.9vw,14px)]",
+          entry.value === 0 && "text-orange-600"
+        )}>
+          {entry.value}
+        </span>
+        {/* Secondary value block */}
+        {hasSecondary ? (
+          <span className="flex items-center">{secondaryContent}</span>
+        ) : <span />}
+      </div>
+    );
+  }
+
+  // Non-top-3: keep flex layout (simpler, smaller rows)
   return (
     <div
       className={cn(
         "flex items-center gap-1.5 rounded-sm px-1 border-b border-border/20 break-inside-avoid",
-        isTop3 ? (compact ? "py-1" : "py-1.5") : "py-0.5",
+        "py-0.5",
         compact || isPlain ? "text-xs" : "text-sm",
         !isPlain && getRankStyle(entry.rank, isNegative),
         !isPlain && entry.isHot && entry.value > 0 && "bg-orange-50/60",
@@ -120,84 +229,35 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       )}
     >
       <span className={cn(
-        "w-4 text-left shrink-0 flex items-center justify-start gap-0.5",
-        isTop3 ? (compact ? "text-xs font-bold" : "text-sm font-bold") : "text-xs",
-        entry.value !== 0 && !isTop3 && "text-muted-foreground"
+        "w-4 text-left shrink-0 flex items-center justify-start gap-0.5 text-xs",
+        entry.value !== 0 && "text-muted-foreground"
       )}>
-        {!isPlain && <RankIcon rank={entry.rank} isTop3={isTop3} isNegative={isNegative} />}
+        {!isPlain && <RankIcon rank={entry.rank} isNegative={isNegative} />}
         {(isPlain || entry.rank > 3) && `${entry.rank}.`}
       </span>
       <span
         className={cn(
-          "min-w-0 flex-1 whitespace-nowrap text-foreground",
-          isTop3
-            ? "text-[clamp(6px,0.75vw,12px)] font-semibold"
-            : "text-[9px]",
+          "min-w-0 flex-1 whitespace-nowrap overflow-hidden text-foreground text-[9px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600"
         )}
+        style={{ textOverflow: 'clip' }}
       >
         {shownName}
       </span>
-      {!isPlain && showStatusIcons && (entry.isHot || entry.isRocket) && entry.value > 0 && (
+      {hasIcons && (
         <span className="shrink-0 flex items-center gap-0.5">
           {entry.isHot && <Flame className="w-3 h-3 text-orange-500 tv-fire shrink-0" />}
           {entry.isRocket && <Rocket className="w-3 h-3 text-blue-500 tv-rocket shrink-0" />}
         </span>
       )}
       <span className={cn(
-        "tabular-nums shrink-0 ml-auto",
-        isTop3 ? "text-[clamp(10px,1vw,14px)] font-bold" : "text-[10px] font-semibold",
+        "tabular-nums shrink-0 ml-auto text-[10px] font-semibold",
         entry.value !== 0 && "text-foreground"
       )}>
         {entry.value}
       </span>
-      {entry.valueDone != null && !isRatioOnly && (
-        <span className="tabular-nums shrink-0 flex items-center gap-0.5 text-emerald-600">
-          <Check className="w-3 h-3 shrink-0" />
-          <span className={cn(isTop3 ? "text-[clamp(11px,1.1vw,16px)] font-bold" : "text-[10px] font-semibold")}>
-            {entry.valueDone}
-          </span>
-          {entry.value > 0 && (
-            isAcquisities ? (
-              <span className={cn(
-                "font-semibold shrink-0",
-                isTop3 ? "text-[10px]" : "text-[8px]",
-                (() => {
-                  const ratio = entry.valueDone! / entry.value;
-                  if (ratio < 10) return "text-red-500";
-                  if (ratio < 15) return "text-orange-500";
-                  return "text-muted-foreground";
-                })()
-              )}>
-                ×{(entry.valueDone! / entry.value).toFixed(1)}
-              </span>
-            ) : (
-              <span className={cn("text-muted-foreground font-normal shrink-0", isTop3 ? "text-[10px]" : "text-[8px]")}>
-                ({isInverseRatio
-                  ? (entry.valueDone! > 0 ? Math.round((entry.value / entry.valueDone!) * 100) : 0)
-                  : Math.round((entry.valueDone! / entry.value) * 100)
-                }%)
-              </span>
-            )
-          )}
-        </span>
-      )}
-      {isRatioOnly && entry.valueDone != null && (
-        (() => {
-          const pct = entry.valueDone > 0 ? Math.round((entry.value / entry.valueDone) * 100) : 0;
-          return (
-            <span className={cn(
-              "tabular-nums shrink-0 font-semibold",
-              isTop3 ? "text-[11px]" : "text-[10px]",
-              pct < 80 ? "text-orange-500" : "text-emerald-600"
-            )}>
-              {pct}%
-              <span className="text-muted-foreground font-normal text-[8px] ml-0.5">{ratioLabel}</span>
-            </span>
-          );
-        })()
-      )}
+      {secondaryContent}
     </div>
   );
 }
@@ -646,7 +706,8 @@ function RanglijstenContent() {
 
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
-                    <div className="flex items-center gap-1 mb-1">
+                    {/* Title — fixed height for alignment */}
+                    <div className="flex items-center gap-1 mb-1 min-h-[1.5rem]">
                       <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                         {headerTitle}
                       </h2>
@@ -685,7 +746,8 @@ function RanglijstenContent() {
                         </DropdownMenu>
                       )}
                     </div>
-                    <div className="flex items-baseline gap-1.5">
+                    {/* Main metric — fixed height */}
+                    <div className="flex items-baseline gap-1.5 min-h-[2rem]">
                       <p className="text-[clamp(20px,2.5vw,30px)] font-bold text-foreground tabular-nums leading-tight">
                         {col.total.toLocaleString("nl-NL")}
                       </p>
@@ -693,45 +755,48 @@ function RanglijstenContent() {
                         <span className="text-xs text-muted-foreground">{primaryLabel}</span>
                       )}
                     </div>
-                    {col.totalDone != null && doneLabel && !colIsRatioOnly && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                        <span className="text-[clamp(12px,1.5vw,18px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
-                        <span className="text-xs text-emerald-600">{doneLabel}</span>
-                        {isAcquisities ? (
-                          <span className={cn("text-xs font-semibold ml-1", (() => {
-                            const r = col.total > 0 ? col.totalDone! / col.total : 0;
-                            if (r < 10) return "text-red-500";
-                            if (r < 15) return "text-orange-500";
-                            return "text-muted-foreground";
-                          })())}>
-                            ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({isInverse
-                              ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
-                              : (col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0)
-                            }%)
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    {colIsRatioOnly && col.totalDone != null && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        {(() => {
-                          const pct = col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0;
-                          return (
-                            <>
-                              <span className={cn("text-lg font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
-                                {pct}%
-                              </span>
-                              <span className="text-xs text-muted-foreground">{colRatioLabel}</span>
-                            </>
-                          );
-                        })()}
-                      </div>
-                    )}
+                    {/* Secondary metric — fixed height so columns align */}
+                    <div className="min-h-[1.25rem]">
+                      {col.totalDone != null && doneLabel && !colIsRatioOnly && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                          <span className="text-[clamp(12px,1.5vw,18px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
+                          <span className="text-xs text-emerald-600">{doneLabel}</span>
+                          {isAcquisities ? (
+                            <span className={cn("text-xs font-semibold ml-1", (() => {
+                              const r = col.total > 0 ? col.totalDone! / col.total : 0;
+                              if (r < 10) return "text-red-500";
+                              if (r < 15) return "text-orange-500";
+                              return "text-muted-foreground";
+                            })())}>
+                              ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({isInverse
+                                ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
+                                : (col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0)
+                              }%)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {colIsRatioOnly && col.totalDone != null && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {(() => {
+                            const pct = col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0;
+                            return (
+                              <>
+                                <span className={cn("text-lg font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
+                                  {pct}%
+                                </span>
+                                <span className="text-xs text-muted-foreground">{colRatioLabel}</span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
                     <ComparisonBar current={col.total} previous={col.previousTotal} />
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
@@ -789,7 +854,8 @@ function RanglijstenContent() {
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card flex flex-col min-h-0 overflow-hidden">
-                <div className="flex items-center gap-1 mb-1">
+                {/* Title — fixed height */}
+                <div className="flex items-center gap-1 mb-1 min-h-[1.25rem]">
                   <h2 className="text-[clamp(7px,1vw,11px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                     {headerTitle}
                   </h2>
@@ -828,7 +894,8 @@ function RanglijstenContent() {
                     </DropdownMenu>
                   )}
                 </div>
-                <div className="flex items-baseline gap-1.5">
+                {/* Main metric — fixed height */}
+                <div className="flex items-baseline gap-1.5 min-h-[1.75rem]">
                   <p className="text-[clamp(18px,2.2vw,28px)] font-bold text-foreground tabular-nums leading-tight">
                     {col.total.toLocaleString("nl-NL")}
                   </p>
@@ -836,45 +903,48 @@ function RanglijstenContent() {
                     <span className="text-xs text-muted-foreground">{primaryLabel}</span>
                   )}
                 </div>
-                {col.totalDone != null && doneLabel && !colIsRatioOnly && (
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                    <span className="text-[clamp(11px,1.3vw,16px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
-                    <span className="text-xs text-emerald-600">{doneLabel}</span>
-                    {isAcquisities ? (
-                      <span className={cn("text-[10px] font-semibold ml-0.5", (() => {
-                        const r = col.total > 0 ? col.totalDone! / col.total : 0;
-                        if (r < 10) return "text-red-500";
-                        if (r < 15) return "text-orange-500";
-                        return "text-muted-foreground";
-                      })())}>
-                        ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground ml-0.5">
-                        ({isInverse
-                          ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
-                          : (col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0)
-                        }%)
-                      </span>
-                    )}
-                  </div>
-                )}
-                {colIsRatioOnly && col.totalDone != null && (
-                  <div className="flex items-center gap-1 mt-0.5">
-                    {(() => {
-                      const pct = col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0;
-                      return (
-                        <>
-                          <span className={cn("text-base font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
-                            {pct}%
-                          </span>
-                          <span className="text-xs text-muted-foreground">{colRatioLabel}</span>
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
+                {/* Secondary metric — fixed height for alignment */}
+                <div className="min-h-[1.1rem]">
+                  {col.totalDone != null && doneLabel && !colIsRatioOnly && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                      <span className="text-[clamp(11px,1.3vw,16px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
+                      <span className="text-xs text-emerald-600">{doneLabel}</span>
+                      {isAcquisities ? (
+                        <span className={cn("text-[10px] font-semibold ml-0.5", (() => {
+                          const r = col.total > 0 ? col.totalDone! / col.total : 0;
+                          if (r < 10) return "text-red-500";
+                          if (r < 15) return "text-orange-500";
+                          return "text-muted-foreground";
+                        })())}>
+                          ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground ml-0.5">
+                          ({isInverse
+                            ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
+                            : (col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0)
+                          }%)
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {colIsRatioOnly && col.totalDone != null && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      {(() => {
+                        const pct = col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0;
+                        return (
+                          <>
+                            <span className={cn("text-base font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
+                              {pct}%
+                            </span>
+                            <span className="text-xs text-muted-foreground">{colRatioLabel}</span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
                 <ComparisonBar current={col.total} previous={col.previousTotal} />
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
