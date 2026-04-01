@@ -41,15 +41,26 @@ interface NavItem {
   label: string;
   path: string;
   active?: boolean;
+  sectionLabel?: string;
   subItems?: { icon: typeof LayoutDashboard; label: string; path: string }[];
 }
 
 const navItems: NavItem[] = [
   { 
+    icon: ListOrdered, 
+    label: "Ranglijsten", 
+    path: "/tv/ranglijsten",
+    sectionLabel: "Ready for development",
+    subItems: [
+      { icon: ListOrdered, label: "Ranglijsten", path: "/tv/ranglijsten" },
+      { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
+    ]
+  },
+  { 
     icon: LayoutDashboard, 
     label: "Dashboard", 
     path: "/",
-    active: true,
+    sectionLabel: "Pending feedback beta-groep & stakeholders",
     subItems: [
       { icon: GitCompare, label: "Vergelijking", path: "/vergelijking" }
     ]
@@ -157,9 +168,7 @@ const navItems: NavItem[] = [
       { icon: BarChart3, label: "Sales Funnel (Periode)", path: "/tv/sales-funnel-period" },
       { icon: Trophy, label: "Beker Dashboard", path: "/tv/beker" },
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
-      { icon: ListOrdered, label: "Ranglijsten", path: "/tv/ranglijsten" },
       { icon: Monitor, label: "Heatmap", path: "/tv/heatmap" },
-      { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
     ]
   },
 ];
