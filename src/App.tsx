@@ -140,6 +140,12 @@ const App = () => (
               <Route path="/marketing/vacature-funnel" element={<MarketingVacatureFunnel />} />
               <Route path="/corporate-recruitment/inflow" element={<CorporateRecruitmentInflow />} />
             </Route>
+            {/* Standalone preview routes (no sidebar/topbar) */}
+            <Route path="/preview/consultant" element={
+              <div className="min-h-screen bg-background p-6 overflow-y-auto">
+                <Index />
+              </div>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
