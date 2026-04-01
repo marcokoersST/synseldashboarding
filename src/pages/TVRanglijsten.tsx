@@ -781,6 +781,8 @@ function RanglijstenContent() {
             const primaryLabel = config?.primaryLabel;
             const doneLabel = config?.doneLabel;
             const isInverse = config?.isInverse ?? false;
+            const colIsRatioOnly = config?.isRatioOnly ?? false;
+            const colRatioLabel = config?.ratioLabel;
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
