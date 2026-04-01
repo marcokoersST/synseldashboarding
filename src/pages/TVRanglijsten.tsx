@@ -101,7 +101,7 @@ interface EntryRowProps {
   ratioLabel?: string;
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? entry.name;
   return (
