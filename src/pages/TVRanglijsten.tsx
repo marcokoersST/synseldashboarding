@@ -129,9 +129,9 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span
         className={cn(
-          "min-w-0 flex-1 text-foreground",
+          "min-w-0 flex-1 whitespace-nowrap text-foreground",
           isTop3
-            ? "text-[clamp(8px,0.85vw,12px)] font-semibold"
+            ? "text-[clamp(6px,0.75vw,12px)] font-semibold"
             : "text-[9px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600"
