@@ -34,7 +34,7 @@ function buildConsultant(first: string, infix: string, last: string, unit: strin
   return { firstName: first, infix, lastName: last, unit, fullName };
 }
 
-const consultants: ConsultantInfo[] = [
+export const allConsultantsList: ConsultantInfo[] = [
   buildConsultant("Amer", "", "Faraman", "Early Performers"),
   buildConsultant("Bart", "van", "Vliet", "Monteurs"),
   buildConsultant("Bas", "de", "Ruiter", "Operators"),
