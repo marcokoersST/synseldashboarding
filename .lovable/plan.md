@@ -1,33 +1,25 @@
 
 
-# Plan: Naam-weergave fixen — altijd leesbaar, nooit afgekapt
+# Fix: Icoon-naam overlap bij Top-3 entries
 
 ## Probleem
-De huidige aanpak (`smartName` met vaste `maxChars` + `whitespace-nowrap`) werkt niet: namen overlappen met iconen en cijfers, of worden alsnog afgekapt. De root cause is dat we proberen namen op één regel te forceren in een flexbox met `flex-1 min-w-0` maar zonder `truncate` — waardoor ze ofwel overlappen ofwel onzichtbaar worden.
+Het Flame/Rocket icoon bij de value (rechts) overlapt visueel met de naam (bijv. "Christiaan K.") doordat de naam `flex-1` inneemt en het icoon direct ernaast staat zonder voldoende ruimte.
 
-## Nieuwe aanpak — `src/pages/TVRanglijsten.tsx`
+## Oplossing — `src/pages/TVRanglijsten.tsx`
 
-### 1. Naam altijd tonen met CSS `text-overflow: clip` + font-shrink
-Verwijder de `smartName` helper. Gebruik in plaats daarvan:
-- **Voornaam + eerste letter achternaam** als standaard displayformaat voor top-3 entries (bijv. "Jort K.", "Christiaan K.")
-- **Volledige naam** alleen in de niet-top-3 lijst (waar meer ruimte is), met fallback naar "Voornaam A." als het niet past
-- Verwijder `whitespace-nowrap` van de naam-span; laat het op `overflow-hidden text-ellipsis` staan als uiterste fallback maar met agressievere font-scaling via kleinere clamp-waarden
+### Status-iconen verplaatsen vóór de value-span
+De iconen (Flame, Rocket) staan nu ín de value-span maar links ervan, waardoor ze in de naam-ruimte drukken. Fix: geef de iconen een eigen `shrink-0` span **tussen** naam en value, zodat ze altijd eigen ruimte innemen en niet overlappen met de naam.
 
-### 2. Top-3 EntryRow: compactere layout
-- Naam-span: `text-[clamp(8px,0.85vw,12px)]` (kleiner dan nu)
-- Value-span: `text-[clamp(10px,1vw,14px)]` (kleiner dan nu)  
-- Gebruik `gap-1` i.p.v. `gap-2` in top-3 rows
-- Display format: altijd `firstName + " " + lastName[0] + "."` voor top-3
+Concreet:
+- Verplaats regels 147-148 (Flame/Rocket) uit de value-span naar een aparte `<span className="shrink-0 flex items-center">` die tussen de naam-span en de value-span staat
+- Dit zorgt dat de flexbox de iconen als apart element behandelt met eigen ruimte
 
-### 3. Rest-lijst: slimmere naam-afkorting
-- Gebruik `firstName + " " + lastName[0] + "."` als standaard
-- Font: `text-[9px]` (vast, geen clamp nodig voor de kleine lijst)
+### Alternatief (simpeler)
+- Voeg `gap-1` toe aan de value-span (regel 142) zodat er ruimte zit tussen icoon en getal
+- En voeg `ml-1` toe aan de value-span zodat er marge is tussen naam en iconen
 
-### 4. Kolom-gap en padding verder optimaliseren
-- Non-compact grid gap: `gap-2` (was `gap-3`)
-- Kolom padding: `p-1.5` (was `p-2`)
-- Compact grid gap: `gap-1.5` (was `gap-2`)
+Ik ga voor de eerste aanpak (iconen als apart element) — robuuster.
 
-## Bestanden
-- `src/pages/TVRanglijsten.tsx` — naam-format logica, font-sizes, gaps
+## Bestand
+- `src/pages/TVRanglijsten.tsx` — verplaats status-iconen uit value-span naar eigen flex-item
 
