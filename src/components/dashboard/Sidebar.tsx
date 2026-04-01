@@ -41,15 +41,26 @@ interface NavItem {
   label: string;
   path: string;
   active?: boolean;
+  sectionLabel?: string;
   subItems?: { icon: typeof LayoutDashboard; label: string; path: string }[];
 }
 
 const navItems: NavItem[] = [
   { 
+    icon: ListOrdered, 
+    label: "Ranglijsten", 
+    path: "/tv/ranglijsten",
+    sectionLabel: "Ready for development",
+    subItems: [
+      { icon: ListOrdered, label: "Ranglijsten", path: "/tv/ranglijsten" },
+      { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
+    ]
+  },
+  { 
     icon: LayoutDashboard, 
     label: "Dashboard", 
     path: "/",
-    active: true,
+    sectionLabel: "Pending feedback beta-groep & stakeholders",
     subItems: [
       { icon: GitCompare, label: "Vergelijking", path: "/vergelijking" }
     ]
@@ -157,9 +168,7 @@ const navItems: NavItem[] = [
       { icon: BarChart3, label: "Sales Funnel (Periode)", path: "/tv/sales-funnel-period" },
       { icon: Trophy, label: "Beker Dashboard", path: "/tv/beker" },
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
-      { icon: ListOrdered, label: "Ranglijsten", path: "/tv/ranglijsten" },
       { icon: Monitor, label: "Heatmap", path: "/tv/heatmap" },
-      { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
     ]
   },
 ];
@@ -187,10 +196,13 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnMarketingPage = location.pathname.startsWith("/marketing");
   const isOnCorporateRecruitmentPage = location.pathname.startsWith("/corporate-recruitment");
   
+  const isOnRanglijstenPage = location.pathname.startsWith("/tv/ranglijsten");
+  
   const autoExpanded = [
     ...(isOnComparisonPage ? ["/"] : []),
     ...(isOnSuperAdminPage ? ["/super-admin"] : []),
-    ...(isOnTVPage ? ["/tv/sales-funnel-week"] : []),
+    ...(isOnRanglijstenPage ? ["/tv/ranglijsten"] : []),
+    ...(isOnTVPage && !isOnRanglijstenPage ? ["/tv/sales-funnel-week"] : []),
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
     ...(isOnHendrikPage ? ["/hendrik/overzicht"] : []),
     ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
@@ -266,6 +278,15 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
               
               return (
                 <div key={item.label}>
+                  {/* Section label */}
+                  {item.sectionLabel && !isCollapsed && (
+                    <div className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 truncate">
+                      {item.sectionLabel}
+                    </div>
+                  )}
+                  {item.sectionLabel && isCollapsed && (
+                    <div className="mx-2 my-2 border-t border-sidebar-border" />
+                  )}
                   {/* Always render Tooltip wrapper to prevent re-mounting */}
                   <Tooltip>
                     <TooltipTrigger asChild>
