@@ -362,6 +362,7 @@ function RanglijstenContent() {
   const [pendingConsultants, setPendingConsultants] = useState<string[]>(["Alle consultants"]);
   const [consultantPopoverOpen, setConsultantPopoverOpen] = useState(false);
   const [consultantSearch, setConsultantSearch] = useState("");
+  const [hideInactive, setHideInactive] = useState(true);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const isCompact = useTVCompact();
   const scrollRef = useRef<HTMLDivElement>(null);
