@@ -653,6 +653,10 @@ function RanglijstenContent() {
                     </Button>
                   </div>
                 </div>
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-border/40">
+                  <label htmlFor="hide-inactive" className="text-xs text-muted-foreground cursor-pointer">Verberg inactieve consultants</label>
+                  <Switch id="hide-inactive" checked={hideInactive} onCheckedChange={setHideInactive} className="scale-75" />
+                </div>
                 <Input
                   placeholder="Zoek consultant..."
                   value={consultantSearch}
