@@ -706,7 +706,8 @@ function RanglijstenContent() {
 
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
-                    <div className="flex items-center gap-1 mb-1">
+                    {/* Title — fixed height for alignment */}
+                    <div className="flex items-center gap-1 mb-1 min-h-[1.5rem]">
                       <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                         {headerTitle}
                       </h2>
@@ -745,7 +746,8 @@ function RanglijstenContent() {
                         </DropdownMenu>
                       )}
                     </div>
-                    <div className="flex items-baseline gap-1.5">
+                    {/* Main metric — fixed height */}
+                    <div className="flex items-baseline gap-1.5 min-h-[2rem]">
                       <p className="text-[clamp(20px,2.5vw,30px)] font-bold text-foreground tabular-nums leading-tight">
                         {col.total.toLocaleString("nl-NL")}
                       </p>
@@ -753,45 +755,48 @@ function RanglijstenContent() {
                         <span className="text-xs text-muted-foreground">{primaryLabel}</span>
                       )}
                     </div>
-                    {col.totalDone != null && doneLabel && !colIsRatioOnly && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                        <span className="text-[clamp(12px,1.5vw,18px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
-                        <span className="text-xs text-emerald-600">{doneLabel}</span>
-                        {isAcquisities ? (
-                          <span className={cn("text-xs font-semibold ml-1", (() => {
-                            const r = col.total > 0 ? col.totalDone! / col.total : 0;
-                            if (r < 10) return "text-red-500";
-                            if (r < 15) return "text-orange-500";
-                            return "text-muted-foreground";
-                          })())}>
-                            ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({isInverse
-                              ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
-                              : (col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0)
-                            }%)
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    {colIsRatioOnly && col.totalDone != null && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        {(() => {
-                          const pct = col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0;
-                          return (
-                            <>
-                              <span className={cn("text-lg font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
-                                {pct}%
-                              </span>
-                              <span className="text-xs text-muted-foreground">{colRatioLabel}</span>
-                            </>
-                          );
-                        })()}
-                      </div>
-                    )}
+                    {/* Secondary metric — fixed height so columns align */}
+                    <div className="min-h-[1.25rem]">
+                      {col.totalDone != null && doneLabel && !colIsRatioOnly && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                          <span className="text-[clamp(12px,1.5vw,18px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
+                          <span className="text-xs text-emerald-600">{doneLabel}</span>
+                          {isAcquisities ? (
+                            <span className={cn("text-xs font-semibold ml-1", (() => {
+                              const r = col.total > 0 ? col.totalDone! / col.total : 0;
+                              if (r < 10) return "text-red-500";
+                              if (r < 15) return "text-orange-500";
+                              return "text-muted-foreground";
+                            })())}>
+                              ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({isInverse
+                                ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
+                                : (col.total > 0 ? Math.round((col.totalDone! / col.total) * 100) : 0)
+                              }%)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {colIsRatioOnly && col.totalDone != null && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {(() => {
+                            const pct = col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0;
+                            return (
+                              <>
+                                <span className={cn("text-lg font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
+                                  {pct}%
+                                </span>
+                                <span className="text-xs text-muted-foreground">{colRatioLabel}</span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
                     <ComparisonBar current={col.total} previous={col.previousTotal} />
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
