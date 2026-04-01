@@ -418,16 +418,44 @@ function RanglijstenContent() {
     return sorted.map((e, i) => ({ ...e, rank: i + 1 }));
   }, [sortModes]);
 
+  // Available consultants based on selected units
+  const availableConsultants = useMemo(() => {
+    if (selectedUnits.includes("Alle units")) return allConsultantsList;
+    return allConsultantsList.filter(c => selectedUnits.includes(c.unit));
+  }, [selectedUnits]);
+
+  // Reset consultant selection when units change
+  useEffect(() => {
+    setSelectedConsultants(["Alle consultants"]);
+    setPendingConsultants(["Alle consultants"]);
+  }, [selectedUnits]);
+
+  function applyConsultantFilter(cols: RankingColumn[], selected: string[]): RankingColumn[] {
+    if (selected.includes("Alle consultants")) return cols;
+    return cols.map(col => {
+      const filtered = col.entries
+        .filter(e => selected.includes(e.name))
+        .map((e, i) => ({ ...e, rank: i + 1 }));
+      const total = filtered.reduce((s, e) => s + e.value, 0);
+      const ratio = col.total > 0 ? total / col.total : 0;
+      const previousTotal = Math.round(col.previousTotal * ratio);
+      const totalDone = col.totalDone != null ? filtered.reduce((s, e) => s + (e.valueDone ?? 0), 0) : undefined;
+      const previousTotalDone = col.previousTotalDone != null ? Math.round(col.previousTotalDone * ratio) : undefined;
+      return { ...col, entries: filtered, total, previousTotal, totalDone, previousTotalDone };
+    });
+  }
+
   const columns = useMemo(() => {
     const unitFiltered = applyUnitFilter(rawColumns, selectedUnits);
-    const filtered = unitFiltered.filter((col) => selectedColumns.includes(col.title));
+    const consultantFiltered = applyConsultantFilter(unitFiltered, selectedConsultants);
+    const filtered = consultantFiltered.filter((col) => selectedColumns.includes(col.title));
     return filtered.map(col => {
       if (sortModes[col.title]) {
         return { ...col, entries: sortEntries(col.entries, col.title) };
       }
       return col;
     });
-  }, [rawColumns, selectedUnits, selectedColumns, sortEntries, sortModes]);
+  }, [rawColumns, selectedUnits, selectedConsultants, selectedColumns, sortEntries, sortModes]);
 
   useEffect(() => {
     if (isCompact) return;
