@@ -109,7 +109,8 @@ interface EntryRowProps {
 
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
-  const shownName = displayName ?? entry.name;
+  const maxChars = isTop3 ? 14 : 12;
+  const shownName = displayName ?? smartName(entry.firstName, entry.lastName, maxChars);
   return (
     <div
       className={cn(
