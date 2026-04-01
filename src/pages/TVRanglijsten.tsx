@@ -756,7 +756,7 @@ function RanglijstenContent() {
                       )}
                     </div>
                     {/* Secondary metric — fixed height so columns align */}
-                    <div className="min-h-[1.25rem]">
+                    <div className="min-h-[1.5rem]">
                       {col.totalDone != null && doneLabel && !colIsRatioOnly && (
                         <div className="flex items-center gap-1 mt-0.5">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
@@ -904,7 +904,7 @@ function RanglijstenContent() {
                   )}
                 </div>
                 {/* Secondary metric — fixed height for alignment */}
-                <div className="min-h-[1.1rem]">
+                <div className="min-h-[1.25rem]">
                   {col.totalDone != null && doneLabel && !colIsRatioOnly && (
                     <div className="flex items-center gap-1 mt-0.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-500" />
