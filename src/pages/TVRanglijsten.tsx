@@ -615,9 +615,12 @@ function RanglijstenContent() {
           )}
           <div ref={scrollRef} className="overflow-x-auto scroll-smooth">
             <div
-              className="grid gap-5"
-              style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))` }}
+              className="grid gap-5 grid-cols-1 md:grid-cols-3"
+              style={{ ['--col-count' as any]: columns.length }}
+              // xl+ uses all columns side by side
+              // We apply xl grid via inline style since col count is dynamic
             >
+              <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(0, 1fr)) !important; } }`}</style>
               {columns.map((col) => {
                 const isNegative = col.title === "Niet begonnen";
                 const isPlain = col.title === "Inschrijvingen";
