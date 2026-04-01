@@ -21,7 +21,7 @@ export interface RankingColumn {
   entries: RankingEntry[];
 }
 
-interface ConsultantInfo {
+export interface ConsultantInfo {
   firstName: string;
   infix: string;
   lastName: string;
