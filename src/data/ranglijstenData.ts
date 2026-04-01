@@ -92,8 +92,8 @@ export const allConsultantsList: ConsultantInfo[] = [
   buildConsultant("Tomas", "", "Jansen", "Engineering"),
   buildConsultant("Xander", "", "Blok", "Engineering"),
 ];
+const consultants = allConsultantsList;
 
-const hotNames = new Set([
   "Joey de Vries", "Senna Ekkers", "Thijs Dirksen",
   "Christiaan van Krieken", "Dees Beeking",
 ]);
