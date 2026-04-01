@@ -80,11 +80,11 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
 }
 
 // Column configuration for dual-value display
-const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean }> = {
+const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string }> = {
   "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false },
   "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false },
   "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true },
-  "Intakes": { headerTitle: "Intakes / Acquisities", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true },
+  "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq." },
   "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
 };
 
@@ -97,9 +97,11 @@ interface EntryRowProps {
   isPlain?: boolean;
   isAcquisities?: boolean;
   isInverseRatio?: boolean;
+  isRatioOnly?: boolean;
+  ratioLabel?: string;
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? entry.name;
   return (
@@ -148,7 +150,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         {!isPlain && showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket" />}
         {entry.value}
       </span>
-      {entry.valueDone != null && (
+      {entry.valueDone != null && !isRatioOnly && (
         <span className="tabular-nums shrink-0 flex items-center gap-0.5 text-emerald-600">
           <Check className="w-3 h-3" />
           <span className={cn(isTop3 ? (isAcquisities ? "text-sm font-semibold" : compact ? "text-sm font-semibold" : "text-base font-bold") : "text-[10px] font-semibold")}>
@@ -178,6 +180,21 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
             )
           )}
         </span>
+      )}
+      {isRatioOnly && entry.valueDone != null && entry.valueDone > 0 && (
+        (() => {
+          const pct = Math.round((entry.value / entry.valueDone) * 100);
+          return (
+            <span className={cn(
+              "tabular-nums shrink-0 font-semibold",
+              isTop3 ? "text-[11px]" : "text-[10px]",
+              pct < 80 ? "text-orange-500" : "text-emerald-600"
+            )}>
+              {pct}%
+              <span className="text-muted-foreground font-normal text-[8px] ml-0.5">{ratioLabel}</span>
+            </span>
+          );
+        })()
       )}
     </div>
   );
@@ -621,6 +638,8 @@ function RanglijstenContent() {
                 const primaryLabel = config?.primaryLabel;
                 const doneLabel = config?.doneLabel;
                 const isInverse = config?.isInverse ?? false;
+                const colIsRatioOnly = config?.isRatioOnly ?? false;
+                const colRatioLabel = config?.ratioLabel;
 
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
@@ -671,7 +690,7 @@ function RanglijstenContent() {
                         <span className="text-xs text-muted-foreground">{primaryLabel}</span>
                       )}
                     </div>
-                    {col.totalDone != null && doneLabel && (
+                    {col.totalDone != null && doneLabel && !colIsRatioOnly && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                         <span className="text-lg font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
@@ -695,11 +714,26 @@ function RanglijstenContent() {
                         )}
                       </div>
                     )}
+                    {colIsRatioOnly && col.totalDone != null && col.totalDone > 0 && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {(() => {
+                          const pct = Math.round((col.total / col.totalDone) * 100);
+                          return (
+                            <>
+                              <span className={cn("text-lg font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
+                                {pct}%
+                              </span>
+                              <span className="text-xs text-muted-foreground">{colRatioLabel}</span>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
                     <ComparisonBar current={col.total} previous={col.previousTotal} />
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
                         {top3.map((entry) => (
-                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} />
+                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} />
                         ))}
                       </div>
                     )}
@@ -715,6 +749,8 @@ function RanglijstenContent() {
                           isPlain={isPlain}
                           isAcquisities={isAcquisities}
                           isInverseRatio={isInverse}
+                          isRatioOnly={colIsRatioOnly}
+                          ratioLabel={colRatioLabel}
                         />
                       ))}
                     </AutoColumnsWrapper>
@@ -745,6 +781,8 @@ function RanglijstenContent() {
             const primaryLabel = config?.primaryLabel;
             const doneLabel = config?.doneLabel;
             const isInverse = config?.isInverse ?? false;
+            const colIsRatioOnly = config?.isRatioOnly ?? false;
+            const colRatioLabel = config?.ratioLabel;
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
@@ -795,7 +833,7 @@ function RanglijstenContent() {
                     <span className="text-xs text-muted-foreground">{primaryLabel}</span>
                   )}
                 </div>
-                {col.totalDone != null && doneLabel && (
+                {col.totalDone != null && doneLabel && !colIsRatioOnly && (
                   <div className="flex items-center gap-1 mt-0.5">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                     <span className="text-base font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
@@ -819,11 +857,26 @@ function RanglijstenContent() {
                     )}
                   </div>
                 )}
+                {colIsRatioOnly && col.totalDone != null && col.totalDone > 0 && (
+                  <div className="flex items-center gap-1 mt-0.5">
+                    {(() => {
+                      const pct = Math.round((col.total / col.totalDone) * 100);
+                      return (
+                        <>
+                          <span className={cn("text-base font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
+                            {pct}%
+                          </span>
+                          <span className="text-xs text-muted-foreground">{colRatioLabel}</span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
                 <ComparisonBar current={col.total} previous={col.previousTotal} />
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
                     {top3.map((entry) => (
-                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} />
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} />
                     ))}
                   </div>
                 )}
@@ -839,6 +892,8 @@ function RanglijstenContent() {
                       isPlain={isPlain}
                       isAcquisities={isAcquisities}
                       isInverseRatio={isInverse}
+                      isRatioOnly={colIsRatioOnly}
+                      ratioLabel={colRatioLabel}
                     />
                   ))}
                 </AutoColumnsWrapper>
