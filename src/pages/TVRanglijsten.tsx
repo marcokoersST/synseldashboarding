@@ -97,6 +97,8 @@ interface EntryRowProps {
   isPlain?: boolean;
   isAcquisities?: boolean;
   isInverseRatio?: boolean;
+  isRatioOnly?: boolean;
+  ratioLabel?: string;
 }
 
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio }: EntryRowProps) {
