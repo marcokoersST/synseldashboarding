@@ -181,9 +181,9 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
           )}
         </span>
       )}
-      {isRatioOnly && entry.valueDone != null && entry.valueDone > 0 && (
+      {isRatioOnly && entry.valueDone != null && (
         (() => {
-          const pct = Math.round((entry.value / entry.valueDone) * 100);
+          const pct = entry.valueDone > 0 ? Math.round((entry.value / entry.valueDone) * 100) : 0;
           return (
             <span className={cn(
               "tabular-nums shrink-0 font-semibold",
@@ -344,7 +344,7 @@ function RanglijstenContent() {
     const mode = sortModes[colTitle];
     if (!mode) return entries;
     const sorted = [...entries].sort((a, b) => {
-      if (mode === "name") return a.name.localeCompare(b.name, "nl");
+      if (mode === "name") return b.value - a.value; // "Op naam" = sort by primary value (not alphabetical)
       if (mode === "done") return ((b as any).valueDone ?? 0) - ((a as any).valueDone ?? 0);
       return b.value - a.value; // "value" default
     });
@@ -644,7 +644,7 @@ function RanglijstenContent() {
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card">
                     <div className="flex items-center gap-1 mb-1">
-                      <h2 className="text-xs font-semibold text-muted-foreground truncate uppercase tracking-wide">
+                      <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                         {headerTitle}
                       </h2>
                       {(isPlain || isAcquisities) && (
@@ -683,7 +683,7 @@ function RanglijstenContent() {
                       )}
                     </div>
                     <div className="flex items-baseline gap-1.5">
-                      <p className="text-3xl font-bold text-foreground tabular-nums">
+                      <p className="text-[clamp(20px,2.5vw,30px)] font-bold text-foreground tabular-nums leading-tight">
                         {col.total.toLocaleString("nl-NL")}
                       </p>
                       {isDualValue && primaryLabel && (
@@ -693,7 +693,7 @@ function RanglijstenContent() {
                     {col.totalDone != null && doneLabel && !colIsRatioOnly && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                        <span className="text-lg font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
+                        <span className="text-[clamp(12px,1.5vw,18px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
                         <span className="text-xs text-emerald-600">{doneLabel}</span>
                         {isAcquisities ? (
                           <span className={cn("text-xs font-semibold ml-1", (() => {
@@ -714,10 +714,10 @@ function RanglijstenContent() {
                         )}
                       </div>
                     )}
-                    {colIsRatioOnly && col.totalDone != null && col.totalDone > 0 && (
+                    {colIsRatioOnly && col.totalDone != null && (
                       <div className="flex items-center gap-1 mt-0.5">
                         {(() => {
-                          const pct = Math.round((col.total / col.totalDone) * 100);
+                          const pct = col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0;
                           return (
                             <>
                               <span className={cn("text-lg font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>
@@ -787,7 +787,7 @@ function RanglijstenContent() {
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
                 <div className="flex items-center gap-1 mb-1">
-                  <h2 className="text-xs font-semibold text-muted-foreground truncate uppercase tracking-wide">
+                  <h2 className="text-[clamp(7px,1vw,11px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                     {headerTitle}
                   </h2>
                   {(isPlain || isAcquisities) && (
@@ -826,7 +826,7 @@ function RanglijstenContent() {
                   )}
                 </div>
                 <div className="flex items-baseline gap-1.5">
-                  <p className="text-3xl font-bold text-foreground tabular-nums">
+                  <p className="text-[clamp(18px,2.2vw,28px)] font-bold text-foreground tabular-nums leading-tight">
                     {col.total.toLocaleString("nl-NL")}
                   </p>
                   {isDualValue && primaryLabel && (
@@ -836,7 +836,7 @@ function RanglijstenContent() {
                 {col.totalDone != null && doneLabel && !colIsRatioOnly && (
                   <div className="flex items-center gap-1 mt-0.5">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                    <span className="text-base font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
+                    <span className="text-[clamp(11px,1.3vw,16px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
                     <span className="text-xs text-emerald-600">{doneLabel}</span>
                     {isAcquisities ? (
                       <span className={cn("text-[10px] font-semibold ml-0.5", (() => {
@@ -857,10 +857,10 @@ function RanglijstenContent() {
                     )}
                   </div>
                 )}
-                {colIsRatioOnly && col.totalDone != null && col.totalDone > 0 && (
+                {colIsRatioOnly && col.totalDone != null && (
                   <div className="flex items-center gap-1 mt-0.5">
                     {(() => {
-                      const pct = Math.round((col.total / col.totalDone) * 100);
+                      const pct = col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0;
                       return (
                         <>
                           <span className={cn("text-base font-bold tabular-nums", pct < 80 ? "text-orange-500" : "text-emerald-600")}>

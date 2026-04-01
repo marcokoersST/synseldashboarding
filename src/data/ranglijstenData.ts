@@ -268,14 +268,26 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
   });
 
   // Post-process: set Intakes valueDone = acquisities count per consultant (cross-reference)
+  // Also clamp intakes <= acquisities (logically impossible to have more intakes than acquisities)
   const acqCol = result.find(c => c.title === "Acquisities");
   const intCol = result.find(c => c.title === "Intakes");
   if (acqCol && intCol) {
     const acqMap = new Map<string, number>();
     acqCol.entries.forEach(e => acqMap.set(e.name, e.value));
     intCol.entries.forEach(e => {
-      e.valueDone = acqMap.get(e.name) ?? 0;
+      const acqValue = acqMap.get(e.name) ?? 0;
+      e.valueDone = acqValue;
+      // Clamp: intakes can never exceed acquisities
+      if (e.value > acqValue && acqValue > 0) {
+        e.value = Math.max(1, Math.round(acqValue * (0.3 + seededRandom(seed + 1250, intCol.entries.indexOf(e)) * 0.5)));
+      } else if (acqValue === 0) {
+        e.value = 0;
+      }
     });
+    // Re-sort and re-rank after clamping
+    intCol.entries.sort((a, b) => b.value - a.value);
+    intCol.entries.forEach((e, i) => { e.rank = i + 1; });
+    intCol.total = intCol.entries.reduce((s, e) => s + e.value, 0);
     intCol.totalDone = intCol.entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
     const ratio = intCol.total > 0 ? intCol.totalDone / intCol.total : 0;
     intCol.previousTotalDone = Math.round(intCol.previousTotal * ratio * (0.9 + seededRandom(prevSeed + 1200, 0) * 0.2));
