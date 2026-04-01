@@ -1,34 +1,43 @@
 
 
-# Plan: Fixes voor Ranglijsten — sortering, mockdata, responsive fonts
+# Plan: Responsive layout fixes en overlap-preventie voor Ranglijsten
 
-## 1. Sortering "op naam" fix — `TVRanglijsten.tsx`
-De sorteeroptie "op naam" bij Inschrijvingen sorteert nu alfabetisch. Dat is verkeerd. "Op naam" betekent sorteren op het zwarte hoofdcijfer (`value` = "op naam"). "Op gedaan" sorteert op het groene cijfer (`valueDone`).
+## Problemen uit screenshot
+1. **Raket-icoon overlapt naam** (bijv. Falco Zegveld bij Intakes) — icoon en naam zitten te dicht op elkaar
+2. **Cijfers tegen naam geplakt** (bijv. Jonah Waterborg "1" bij Plaatsingen) — geen ruimte tussen naam en waarde
+3. **Top-3 inconsistente grootte** (Ruben Zoet te groot vs. anderen) — font-sizing logica maakt sommige korte namen te groot
+4. **Geen mobiele responsiviteit** — grid is altijd horizontaal, nooit kolommen onder elkaar
 
-**Fix**: In `sortEntries`, wijzig `mode === "name"` van `a.name.localeCompare(...)` naar `b.value - a.value` (aflopend op value). Hernoemd intern naar `"value"` i.p.v. `"name"`. Default voor Inschrijvingen wordt `"value"`.
+## Wijzigingen — `src/pages/TVRanglijsten.tsx`
 
-Dropdown-labels blijven: "Op naam" en "Op gedaan" — maar "Op naam" mapt nu naar sortering op `value`.
+### 1. EntryRow: spacing en overlap fixes
+- Verhoog `gap` van `gap-1.5` naar `gap-2` in de row container
+- Geef de naam-span een `max-w` met `truncate` zodat deze nooit in de cijfers drukt
+- Iconen (Rocket, Flame) krijgen `shrink-0` en staan al vóór de value — controleer dat ze niet in de naam-ruimte staan
+- Voor top-3 entries: **uniformiseer font-sizing**. Verwijder de huidige conditie-boom (die op naamlengte checkt) en gebruik één consistente `text-[clamp(9px,0.9vw,13px)]` voor alle top-3 namen. Dit voorkomt dat korte namen (Ruben Zoet) veel groter zijn dan lange namen
 
-## 2. Mockdata Intakes logisch maken — `ranglijstenData.ts`
-Probleem: Intakes en Acquisities worden onafhankelijk gegenereerd, waardoor iemand 4 intakes kan hebben maar 1 acquisitie (onmogelijk: intakes ≤ acquisities).
+### 2. Value/cijfer sizing in EntryRow
+- Top-3 value: gebruik `text-[clamp(11px,1.1vw,16px)]` i.p.v. vaste `text-base`/`text-sm`
+- Niet-top-3: houd `text-[10px]` maar met `shrink-0`
+- valueDone (groene cijfers): zelfde clamp-schaal als value
 
-**Fix**: In de post-processing stap (regel 270-282), naast het zetten van `valueDone` op intakes, ook de intake-waarde zelf clampen: `entry.value = Math.min(entry.value, entry.valueDone)`. Zo kan het aantal intakes nooit hoger zijn dan het aantal acquisities. Herbereken daarna `total` en re-rank.
+### 3. Responsief grid — desktop, tablet, mobiel
+Huidige grid: `repeat(N, minmax(200px, 1fr))` — scrollt horizontaal, nooit wrappen.
 
-Ook: als `valueDone` (acquisities) 0 is, toon dan `0%` i.p.v. niets. Fix in `TVRanglijsten.tsx`: verwijder de conditie `entry.valueDone > 0` bij isRatioOnly rendering — toon altijd het percentage (0% als valueDone=0).
+**Nieuw** (niet-compact modus):
+- **≥1280px (xl)**: huidige grid, alle kolommen naast elkaar
+- **768px–1279px (md)**: `grid-cols-3` met wrapping, kolommen gaan naar 2e rij
+- **<768px (sm)**: `grid-cols-1`, kolommen gestapeld onder elkaar, volledig leesbaar
 
-## 3. Responsive font-scaling — `TVRanglijsten.tsx`
-Probleem: bij smallere schermen overlappen tekst en cijfers in de top-3, en kolomtitels worden afgekapt.
+Implementatie: vervang de inline `gridTemplateColumns` door Tailwind responsive classes:
+```
+grid grid-cols-1 md:grid-cols-3 xl:grid-cols-[repeat(var(--col-count),minmax(0,1fr))]
+```
+Met een CSS variable `--col-count` gezet op `columns.length`.
 
-**Fix**: Gebruik CSS `clamp()` via Tailwind arbitrary values voor dynamische font-sizing:
-- Kolomtitel (`headerTitle`): verwijder `truncate`, gebruik `text-[clamp(8px,1.1vw,12px)]` zodat de volledige titel altijd zichtbaar is
-- Top-3 namen: gebruik `text-[clamp(8px,1vw,14px)]` i.p.v. vaste `text-[10px]`/`text-sm`
-- Top-3 cijfers (value + valueDone): gebruik `text-[clamp(10px,1.2vw,16px)]` 
-- Hoofd-totaal: `text-[clamp(20px,2.5vw,30px)]` i.p.v. vaste `text-3xl`
-- Secundaire totalen: `text-[clamp(12px,1.5vw,18px)]`
-
-Dit zorgt ervoor dat bij minder kolommen de font groter is, en bij meer kolommen alles proportioneel krimpt zonder overlap of afkapping.
+### 4. Kolomkaart min-width verwijderen
+De huidige `minmax(200px, 1fr)` in het non-compact grid forceert horizontaal scrollen. Op kleinere schermen moet de kaart de volledige breedte pakken. De `min-w-0` op de kaart-div blijft.
 
 ## Bestanden
-- `src/data/ranglijstenData.ts` — clamp intakes ≤ acquisities
-- `src/pages/TVRanglijsten.tsx` — sort fix, ratioOnly 0% fix, responsive clamp fonts
+- `src/pages/TVRanglijsten.tsx` — EntryRow spacing, uniforme top-3 fonts, responsive grid breakpoints
 
