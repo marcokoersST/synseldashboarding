@@ -17,6 +17,12 @@ import type { DateRange } from "react-day-picker";
 
 const STATUS_ICON_COLUMNS = new Set(["Acquisities", "Gesprekken", "Intakes", "Plaatsingen"]);
 
+function smartName(firstName: string, lastName: string, maxChars: number): string {
+  const full = `${firstName} ${lastName}`;
+  if (full.length <= maxChars) return full;
+  return `${firstName} ${lastName.charAt(0)}.`;
+}
+
 function ComparisonBar({ current, previous }: { current: number; previous: number }) {
   const delta = previous > 0 ? ((current - previous) / previous) * 100 : 0;
   const max = Math.max(current, previous);
