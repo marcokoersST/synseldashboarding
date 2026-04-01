@@ -1,43 +1,32 @@
 
 
-# Plan: Responsive layout fixes en overlap-preventie voor Ranglijsten
+# Plan: Namen volledig tonen + kolom-spacing verkleinen
 
-## Problemen uit screenshot
-1. **Raket-icoon overlapt naam** (bijv. Falco Zegveld bij Intakes) — icoon en naam zitten te dicht op elkaar
-2. **Cijfers tegen naam geplakt** (bijv. Jonah Waterborg "1" bij Plaatsingen) — geen ruimte tussen naam en waarde
-3. **Top-3 inconsistente grootte** (Ruben Zoet te groot vs. anderen) — font-sizing logica maakt sommige korte namen te groot
-4. **Geen mobiele responsiviteit** — grid is altijd horizontaal, nooit kolommen onder elkaar
+## Probleem
+Namen worden afgekapt met "..." door de `truncate` CSS class. De gebruiker wil namen altijd zichtbaar — eventueel met afgekort achternaam (bijv. "Simon B."), maar nooit met ellipsis. Daarnaast is de ruimte (gap) tussen kolommen te groot.
 
 ## Wijzigingen — `src/pages/TVRanglijsten.tsx`
 
-### 1. EntryRow: spacing en overlap fixes
-- Verhoog `gap` van `gap-1.5` naar `gap-2` in de row container
-- Geef de naam-span een `max-w` met `truncate` zodat deze nooit in de cijfers drukt
-- Iconen (Rocket, Flame) krijgen `shrink-0` en staan al vóór de value — controleer dat ze niet in de naam-ruimte staan
-- Voor top-3 entries: **uniformiseer font-sizing**. Verwijder de huidige conditie-boom (die op naamlengte checkt) en gebruik één consistente `text-[clamp(9px,0.9vw,13px)]` voor alle top-3 namen. Dit voorkomt dat korte namen (Ruben Zoet) veel groter zijn dan lange namen
+### 1. Naam-weergave: smart afkorting i.p.v. truncate
+- Verwijder `truncate` van de naam-span (regel 128)
+- Voeg een helper-functie `smartName(firstName, lastName, maxChars)` toe die:
+  1. Eerst de volledige naam probeert: "Falco Zegveld"
+  2. Als die te lang is (> maxChars): achternaam afkorten tot eerste letter: "Falco Z."
+  3. De naam wordt nooit met "..." afgekapt
+- `maxChars` dynamisch bepalen op basis van context (top-3 vs rest, compact vs niet)
+- Verwijder `truncate`, gebruik `whitespace-nowrap overflow-hidden` met kleinere font als fallback via bestaande `clamp()` — de clamp zorgt ervoor dat de font krimpt i.p.v. dat tekst verdwijnt
 
-### 2. Value/cijfer sizing in EntryRow
-- Top-3 value: gebruik `text-[clamp(11px,1.1vw,16px)]` i.p.v. vaste `text-base`/`text-sm`
-- Niet-top-3: houd `text-[10px]` maar met `shrink-0`
-- valueDone (groene cijfers): zelfde clamp-schaal als value
+### 2. EntryRow naam-rendering aanpassen
+- In `EntryRow`: bereken `smartName` op basis van `entry.firstName` en `entry.lastName`
+- Top-3 entries: `maxChars` ~14 (past ruim in clamp-scaling)
+- Overige entries: `maxChars` ~12
+- Verwijder `truncate` class, vervang door `whitespace-nowrap` zodat de naam altijd op één regel blijft maar nooit wordt afgekapt
 
-### 3. Responsief grid — desktop, tablet, mobiel
-Huidige grid: `repeat(N, minmax(200px, 1fr))` — scrollt horizontaal, nooit wrappen.
-
-**Nieuw** (niet-compact modus):
-- **≥1280px (xl)**: huidige grid, alle kolommen naast elkaar
-- **768px–1279px (md)**: `grid-cols-3` met wrapping, kolommen gaan naar 2e rij
-- **<768px (sm)**: `grid-cols-1`, kolommen gestapeld onder elkaar, volledig leesbaar
-
-Implementatie: vervang de inline `gridTemplateColumns` door Tailwind responsive classes:
-```
-grid grid-cols-1 md:grid-cols-3 xl:grid-cols-[repeat(var(--col-count),minmax(0,1fr))]
-```
-Met een CSS variable `--col-count` gezet op `columns.length`.
-
-### 4. Kolomkaart min-width verwijderen
-De huidige `minmax(200px, 1fr)` in het non-compact grid forceert horizontaal scrollen. Op kleinere schermen moet de kaart de volledige breedte pakken. De `min-w-0` op de kaart-div blijft.
+### 3. Kolom-gap verkleinen
+- Non-compact grid: verklein `gap-5` naar `gap-3` (regel 619)
+- Compact/TV grid: verklein de gap naar `gap-2` als die groter is
+- Padding in kolomkaart: verklein `p-3` naar `p-2` (regel 640) om meer ruimte te geven aan content
 
 ## Bestanden
-- `src/pages/TVRanglijsten.tsx` — EntryRow spacing, uniforme top-3 fonts, responsive grid breakpoints
+- `src/pages/TVRanglijsten.tsx` — smartName helper, truncate verwijderen, gap/padding verkleinen
 
