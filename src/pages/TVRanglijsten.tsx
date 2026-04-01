@@ -17,9 +17,7 @@ import type { DateRange } from "react-day-picker";
 
 const STATUS_ICON_COLUMNS = new Set(["Acquisities", "Gesprekken", "Intakes", "Plaatsingen"]);
 
-function smartName(firstName: string, lastName: string, maxChars: number): string {
-  const full = `${firstName} ${lastName}`;
-  if (full.length <= maxChars) return full;
+function shortName(firstName: string, lastName: string): string {
   return `${firstName} ${lastName.charAt(0)}.`;
 }
 
@@ -109,13 +107,12 @@ interface EntryRowProps {
 
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
-  const maxChars = isTop3 ? 14 : 12;
-  const shownName = displayName ?? smartName(entry.firstName, entry.lastName, maxChars);
+  const shownName = displayName ?? shortName(entry.firstName, entry.lastName);
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-sm px-1 border-b border-border/20 break-inside-avoid",
-        isTop3 ? (compact ? "py-1" : "py-2") : "py-1",
+        "flex items-center gap-1.5 rounded-sm px-1 border-b border-border/20 break-inside-avoid",
+        isTop3 ? (compact ? "py-1" : "py-1.5") : "py-0.5",
         compact || isPlain ? "text-xs" : "text-sm",
         !isPlain && getRankStyle(entry.rank, isNegative),
         !isPlain && entry.isHot && entry.value > 0 && "bg-orange-50/60",
@@ -132,10 +129,10 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span
         className={cn(
-          "min-w-0 flex-1 whitespace-nowrap text-foreground",
+          "min-w-0 flex-1 text-foreground",
           isTop3
-            ? "text-[clamp(9px,0.9vw,13px)] font-semibold"
-            : "text-[10px]",
+            ? "text-[clamp(8px,0.85vw,12px)] font-semibold"
+            : "text-[9px]",
           !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600"
         )}
@@ -144,7 +141,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span className={cn(
         "tabular-nums shrink-0 ml-auto flex items-center gap-1",
-        isTop3 ? "text-[clamp(11px,1.1vw,16px)] font-bold" : "font-semibold",
+        isTop3 ? "text-[clamp(10px,1vw,14px)] font-bold" : "text-[10px] font-semibold",
         entry.value !== 0 && "text-foreground"
       )}>
         {!isPlain && showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire shrink-0" />}
@@ -623,7 +620,7 @@ function RanglijstenContent() {
           <div ref={scrollRef} className="overflow-x-auto scroll-smooth">
             <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(0, 1fr)) !important; } }`}</style>
             <div
-              className="ranglijsten-grid grid gap-3 grid-cols-1 md:grid-cols-3"
+              className="ranglijsten-grid grid gap-2 grid-cols-1 md:grid-cols-3"
               style={{ ['--col-count' as any]: columns.length }}
             >
               {columns.map((col) => {
@@ -644,7 +641,7 @@ function RanglijstenContent() {
                 const colRatioLabel = config?.ratioLabel;
 
                 return (
-                  <div key={col.title} className="min-w-0 rounded-lg border border-border p-2 bg-card">
+                  <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
                     <div className="flex items-center gap-1 mb-1">
                       <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                         {headerTitle}
@@ -735,7 +732,7 @@ function RanglijstenContent() {
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
                         {top3.map((entry) => (
-                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} />
+                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} />
                         ))}
                       </div>
                     )}
@@ -766,7 +763,7 @@ function RanglijstenContent() {
 
       {isCompact && (
         <div
-          className="grid gap-2 flex-1 min-h-0"
+          className="grid gap-1.5 flex-1 min-h-0"
           style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, gridTemplateRows: '1fr' }}
         >
           {columns.map((col) => {
@@ -787,7 +784,7 @@ function RanglijstenContent() {
             const colRatioLabel = config?.ratioLabel;
 
             return (
-              <div key={col.title} className="min-w-0 rounded-lg border border-border p-3 bg-card flex flex-col min-h-0 overflow-hidden">
+              <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card flex flex-col min-h-0 overflow-hidden">
                 <div className="flex items-center gap-1 mb-1">
                   <h2 className="text-[clamp(7px,1vw,11px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                     {headerTitle}
@@ -878,7 +875,7 @@ function RanglijstenContent() {
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
                     {top3.map((entry) => (
-                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} />
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} />
                     ))}
                   </div>
                 )}
