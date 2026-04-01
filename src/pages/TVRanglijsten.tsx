@@ -986,7 +986,7 @@ function RanglijstenContent() {
                   <h2 className="text-[clamp(7px,1vw,11px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                     {headerTitle}
                   </h2>
-                  {(isPlain || isAcquisities) && (
+                  {SORT_OPTIONS[col.title] && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors">
@@ -994,28 +994,15 @@ function RanglijstenContent() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start" className="min-w-[140px]">
-                        {isPlain ? (
-                          <>
-                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "name" }))}>
-                              <span className="flex-1">Op naam</span>
-                              {sortModes[col.title] === "name" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
-                              <span className="flex-1">Op gedaan</span>
-                              {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                            </DropdownMenuItem>
-                          </>
-                        ) : (
-                          <>
-                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "value" }))}>
-                              <span className="flex-1">Op acquisities</span>
-                              {sortModes[col.title] === "value" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
-                              <span className="flex-1">Op voorstellen</span>
-                              {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                            </DropdownMenuItem>
-                          </>
+                        <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: col.title === "Inschrijvingen" ? "name" : "value" }))}>
+                          <span className="flex-1">{SORT_OPTIONS[col.title].value}</span>
+                          {sortModes[col.title] === (col.title === "Inschrijvingen" ? "name" : "value") && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                        </DropdownMenuItem>
+                        {SORT_OPTIONS[col.title].done && (
+                          <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
+                            <span className="flex-1">{SORT_OPTIONS[col.title].done}</span>
+                            {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                          </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
