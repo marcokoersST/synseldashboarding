@@ -139,13 +139,17 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       >
         {shownName}
       </span>
+      {!isPlain && showStatusIcons && (entry.isHot || entry.isRocket) && entry.value > 0 && (
+        <span className="shrink-0 flex items-center gap-0.5">
+          {entry.isHot && <Flame className="w-3 h-3 text-orange-500 tv-fire shrink-0" />}
+          {entry.isRocket && <Rocket className="w-3 h-3 text-blue-500 tv-rocket shrink-0" />}
+        </span>
+      )}
       <span className={cn(
-        "tabular-nums shrink-0 ml-auto flex items-center gap-1",
+        "tabular-nums shrink-0 ml-auto",
         isTop3 ? "text-[clamp(10px,1vw,14px)] font-bold" : "text-[10px] font-semibold",
         entry.value !== 0 && "text-foreground"
       )}>
-        {!isPlain && showStatusIcons && entry.isHot && entry.value > 0 && <Flame className="w-3 h-3 text-orange-500 tv-fire shrink-0" />}
-        {!isPlain && showStatusIcons && entry.isRocket && entry.value > 0 && <Rocket className="w-3 h-3 text-blue-500 tv-rocket shrink-0" />}
         {entry.value}
       </span>
       {entry.valueDone != null && !isRatioOnly && (
