@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useLayoutEffect, useEffect, type ReactNode } from "react";
+import { Switch } from "@/components/ui/switch";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { getRanglijstenData, ranglijstenFilters, allColumnTitles, getCurrentWeekNumber, getCurrentPeriodNumber, allConsultantsList } from "@/data/ranglijstenData";
 import type { RankingColumn } from "@/data/ranglijstenData";
@@ -91,6 +92,15 @@ const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string;
   "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true },
   "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq." },
   "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
+};
+
+const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
+  "Inschrijvingen": { value: "Op naam", done: "Op gedaan" },
+  "Acquisities": { value: "Op acquisities", done: "Op voorstellen" },
+  "Gesprekken": { value: "Op gesprekken", done: "Op uitnodigingen" },
+  "Intakes": { value: "Op intakes", done: "Op % van acq." },
+  "Plaatsingen": { value: "Op plaatsingen", done: "Op detachering" },
+  "Niet begonnen": { value: "Op niet begonnen" },
 };
 
 interface EntryRowProps {
@@ -361,6 +371,7 @@ function RanglijstenContent() {
   const [pendingConsultants, setPendingConsultants] = useState<string[]>(["Alle consultants"]);
   const [consultantPopoverOpen, setConsultantPopoverOpen] = useState(false);
   const [consultantSearch, setConsultantSearch] = useState("");
+  const [hideInactive, setHideInactive] = useState(true);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const isCompact = useTVCompact();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -370,6 +381,10 @@ function RanglijstenContent() {
   const [sortModes, setSortModes] = useState<Record<string, string>>({
     "Inschrijvingen": "name",
     "Acquisities": "value",
+    "Gesprekken": "value",
+    "Intakes": "value",
+    "Plaatsingen": "value",
+    "Niet begonnen": "value",
   });
 
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode" | "custom">("week");
@@ -420,9 +435,15 @@ function RanglijstenContent() {
 
   // Available consultants based on selected units
   const availableConsultants = useMemo(() => {
-    if (selectedUnits.includes("Alle units")) return allConsultantsList;
-    return allConsultantsList.filter(c => selectedUnits.includes(c.unit));
-  }, [selectedUnits]);
+    let list = allConsultantsList;
+    if (!selectedUnits.includes("Alle units")) {
+      list = list.filter(c => selectedUnits.includes(c.unit));
+    }
+    if (hideInactive) {
+      list = list.filter(c => c.isActive);
+    }
+    return list;
+  }, [selectedUnits, hideInactive]);
 
   // Reset consultant selection when units change
   useEffect(() => {
@@ -641,6 +662,10 @@ function RanglijstenContent() {
                     </Button>
                   </div>
                 </div>
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-border/40">
+                  <label htmlFor="hide-inactive" className="text-xs text-muted-foreground cursor-pointer">Verberg inactieve consultants</label>
+                  <Switch id="hide-inactive" checked={hideInactive} onCheckedChange={setHideInactive} className="scale-75" />
+                </div>
                 <Input
                   placeholder="Zoek consultant..."
                   value={consultantSearch}
@@ -668,8 +693,8 @@ function RanglijstenContent() {
                             });
                           }}
                         />
-                        <span className="truncate">{c.fullName}</span>
-                        <span className="text-xs text-muted-foreground ml-auto shrink-0">{c.unit}</span>
+                        <span className={cn("truncate", !c.isActive && "opacity-50")}>{c.fullName}</span>
+                        <span className={cn("text-xs text-muted-foreground ml-auto shrink-0", !c.isActive && "opacity-50")}>{c.unit}{!c.isActive && " ·  inactief"}</span>
                       </label>
                     ))}
                 </div>
@@ -826,7 +851,7 @@ function RanglijstenContent() {
                       <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                         {headerTitle}
                       </h2>
-                      {(isPlain || isAcquisities) && (
+                      {SORT_OPTIONS[col.title] && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors">
@@ -834,28 +859,15 @@ function RanglijstenContent() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" className="min-w-[140px]">
-                            {isPlain ? (
-                              <>
-                                <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "name" }))}>
-                                  <span className="flex-1">Op naam</span>
-                                  {sortModes[col.title] === "name" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
-                                  <span className="flex-1">Op gedaan</span>
-                                  {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                                </DropdownMenuItem>
-                              </>
-                            ) : (
-                              <>
-                                <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "value" }))}>
-                                  <span className="flex-1">Op acquisities</span>
-                                  {sortModes[col.title] === "value" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
-                                  <span className="flex-1">Op voorstellen</span>
-                                  {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                                </DropdownMenuItem>
-                              </>
+                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: col.title === "Inschrijvingen" ? "name" : "value" }))}>
+                              <span className="flex-1">{SORT_OPTIONS[col.title].value}</span>
+                              {sortModes[col.title] === (col.title === "Inschrijvingen" ? "name" : "value") && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                            </DropdownMenuItem>
+                            {SORT_OPTIONS[col.title].done && (
+                              <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
+                                <span className="flex-1">{SORT_OPTIONS[col.title].done}</span>
+                                {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                              </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -974,7 +986,7 @@ function RanglijstenContent() {
                   <h2 className="text-[clamp(7px,1vw,11px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
                     {headerTitle}
                   </h2>
-                  {(isPlain || isAcquisities) && (
+                  {SORT_OPTIONS[col.title] && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors">
@@ -982,28 +994,15 @@ function RanglijstenContent() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start" className="min-w-[140px]">
-                        {isPlain ? (
-                          <>
-                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "name" }))}>
-                              <span className="flex-1">Op naam</span>
-                              {sortModes[col.title] === "name" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
-                              <span className="flex-1">Op gedaan</span>
-                              {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                            </DropdownMenuItem>
-                          </>
-                        ) : (
-                          <>
-                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "value" }))}>
-                              <span className="flex-1">Op acquisities</span>
-                              {sortModes[col.title] === "value" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
-                              <span className="flex-1">Op voorstellen</span>
-                              {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
-                            </DropdownMenuItem>
-                          </>
+                        <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: col.title === "Inschrijvingen" ? "name" : "value" }))}>
+                          <span className="flex-1">{SORT_OPTIONS[col.title].value}</span>
+                          {sortModes[col.title] === (col.title === "Inschrijvingen" ? "name" : "value") && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                        </DropdownMenuItem>
+                        {SORT_OPTIONS[col.title].done && (
+                          <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: "done" }))}>
+                            <span className="flex-1">{SORT_OPTIONS[col.title].done}</span>
+                            {sortModes[col.title] === "done" && <Check className="w-3.5 h-3.5 ml-2 text-primary" />}
+                          </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>

@@ -27,11 +27,12 @@ export interface ConsultantInfo {
   lastName: string;
   unit: string;
   fullName: string;
+  isActive: boolean;
 }
 
-function buildConsultant(first: string, infix: string, last: string, unit: string): ConsultantInfo {
+function buildConsultant(first: string, infix: string, last: string, unit: string, isActive: boolean = true): ConsultantInfo {
   const fullName = infix ? `${first} ${infix} ${last}` : `${first} ${last}`;
-  return { firstName: first, infix, lastName: last, unit, fullName };
+  return { firstName: first, infix, lastName: last, unit, fullName, isActive };
 }
 
 export const allConsultantsList: ConsultantInfo[] = [
@@ -91,6 +92,15 @@ export const allConsultantsList: ConsultantInfo[] = [
   buildConsultant("Tom", "", "Tulen", "Engineering"),
   buildConsultant("Tomas", "", "Jansen", "Engineering"),
   buildConsultant("Xander", "", "Blok", "Engineering"),
+  // Inactive / historical consultants
+  buildConsultant("Dennis", "van", "Hoek", "Engineering", false),
+  buildConsultant("Kevin", "", "Smits", "Monteurs", false),
+  buildConsultant("Lisa", "", "Vermeer", "Operators", false),
+  buildConsultant("Mark", "de", "Jong", "Early Performers", false),
+  buildConsultant("Peter", "", "Bakker", "Trainingsunit", false),
+  buildConsultant("Sandra", "", "Willems", "Monteurs", false),
+  buildConsultant("Thomas", "van der", "Linden", "Engineering", false),
+  buildConsultant("Wouter", "", "Hendriks", "Operators", false),
 ];
 const consultants = allConsultantsList;
 
