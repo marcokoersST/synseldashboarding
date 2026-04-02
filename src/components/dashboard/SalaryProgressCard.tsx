@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { TrendingUp, DollarSign } from "lucide-react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedProgress } from "@/components/animations/AnimatedProgress";
@@ -33,10 +32,10 @@ const targetBonusTiers = [
   { margin: 2000000, bonus: 40000 },
 ];
 
-export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
-  const [mode, setMode] = useState<'salary' | 'bonus'>('salary');
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('nl-NL', { style: 'decimal', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
 
-  // Salary mock data
+function SalaryPanel({ delay }: { delay: number }) {
   const currentSalary = 3000;
   const nextSalary = 3500;
   const currentRevenue = 420000;
@@ -46,171 +45,155 @@ export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
   const nextAnnualSalary = 42000;
   const nextStep = 3;
 
-  // Bonus mock data (margin-based)
+  const progress = Math.max(0, Math.min(((currentRevenue - revenueMin) / (revenueMax - revenueMin)) * 100, 100));
+  const amountNeeded = revenueMax - currentRevenue;
+
+  const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
+
+  return (
+    <div className="flex-1 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <TrendingUp className="w-5 h-5 text-muted-foreground" />
+        <h3 className="text-base font-medium text-foreground">Voortgang salarisstap</h3>
+      </div>
+
+      <div className="mb-1">
+        <span className="text-4xl font-bold text-success">
+          <AnimatedNumber value={progress} decimals={1} delay={delay + 200} />%
+        </span>
+        <span className="text-muted-foreground ml-2">van de weg</span>
+      </div>
+
+      <p className="text-sm text-muted-foreground mb-4">
+        Nog € {formatCurrency(amountNeeded)} omzet nodig voor volgende stap
+      </p>
+
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">Huidig salaris</p>
+          <p className="text-lg font-bold text-foreground">€ <AnimatedNumber value={currentSalary} delay={delay + 300} formatFn={formatCurrency} /></p>
+          <p className="text-xs text-muted-foreground">per maand</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground mb-1">Huidige omzet (13 per.)</p>
+          <p className="text-lg font-bold text-foreground">€ <AnimatedNumber value={currentRevenue} delay={delay + 400} formatFn={formatCurrency} /></p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-muted-foreground mb-1">Volgend salaris</p>
+          <p className="text-lg font-bold text-success">€ <AnimatedNumber value={nextSalary} delay={delay + 300} formatFn={formatCurrency} /></p>
+          <p className="text-xs text-muted-foreground">per maand</p>
+        </div>
+      </div>
+
+      <div ref={ref} className="relative mb-2">
+        <AnimatedProgress value={progress} delay={delay + 500} barClassName="bg-gradient-to-r from-gold to-success" trackClassName="bg-muted/30" />
+        <div className="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-card rounded-full border-2 border-border shadow-lg flex items-center justify-center transition-all duration-1000 ease-out" style={{ left: isVisible ? `calc(${progress}% - 14px)` : '-14px' }}>
+          <span className="text-xs text-muted-foreground font-medium">€</span>
+        </div>
+      </div>
+
+      <div className="flex justify-between text-xs text-muted-foreground mt-3 mb-4">
+        <span>€ {formatCurrency(revenueMin)}</span>
+        <span>€ {formatCurrency(revenueMax)}</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
+        <div>
+          <p className="text-sm font-medium text-foreground mb-1">Huidig jaarsalaris</p>
+          <p className="text-lg font-bold text-foreground">€ <AnimatedNumber value={currentAnnualSalary} delay={delay + 600} formatFn={formatCurrency} /></p>
+          <p className="text-xs text-muted-foreground mt-1">Bij € {formatCurrency(revenueMax)} omzet bereik je stap {nextStep}</p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-foreground mb-1">Volgend jaarsalaris</p>
+          <p className="text-lg font-bold text-success">€ <AnimatedNumber value={nextAnnualSalary} delay={delay + 700} formatFn={formatCurrency} /></p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BonusPanel({ delay }: { delay: number }) {
   const currentPeriodMargin = 45000;
   const currentYearMargin = 420000;
 
-  // Bonus calculations
   const currentOmzetTier = [...omzetBonusTiers].reverse().find(t => currentPeriodMargin >= t.margin) || omzetBonusTiers[0];
   const nextOmzetTier = omzetBonusTiers.find(t => t.margin > currentPeriodMargin) || omzetBonusTiers[omzetBonusTiers.length - 1];
   const currentTargetTier = [...targetBonusTiers].reverse().find(t => currentYearMargin >= t.margin) || targetBonusTiers[0];
   const nextTargetTier = targetBonusTiers.find(t => t.margin > currentYearMargin) || targetBonusTiers[targetBonusTiers.length - 1];
 
-  // Derived values based on mode
-  const isSalary = mode === 'salary';
-
-  const progressValue = isSalary
-    ? ((currentRevenue - revenueMin) / (revenueMax - revenueMin)) * 100
-    : ((currentPeriodMargin - currentOmzetTier.margin) / (nextOmzetTier.margin - currentOmzetTier.margin)) * 100;
-
-  const progress = Math.max(0, Math.min(progressValue, 100));
-
-  const amountNeeded = isSalary
-    ? revenueMax - currentRevenue
-    : nextOmzetTier.margin - currentPeriodMargin;
-
-  const rangeMin = isSalary ? revenueMin : currentOmzetTier.margin;
-  const rangeMax = isSalary ? revenueMax : nextOmzetTier.margin;
-  const currentMiddleValue = isSalary ? currentRevenue : currentPeriodMargin;
-
-  const leftValue = isSalary ? currentSalary : currentOmzetTier.bonus;
-  const rightValue = isSalary ? nextSalary : nextOmzetTier.bonus;
-
-  const bottomLeftValue = isSalary ? currentAnnualSalary : currentTargetTier.bonus;
-  const bottomRightValue = isSalary ? nextAnnualSalary : nextTargetTier.bonus;
+  const progress = Math.max(0, Math.min(((currentPeriodMargin - currentOmzetTier.margin) / (nextOmzetTier.margin - currentOmzetTier.margin)) * 100, 100));
+  const amountNeeded = nextOmzetTier.margin - currentPeriodMargin;
 
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('nl-NL', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  return (
+    <div className="flex-1 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <DollarSign className="w-5 h-5 text-muted-foreground" />
+        <h3 className="text-base font-medium text-foreground">Voortgang bonusstap</h3>
+      </div>
 
+      <div className="mb-1">
+        <span className="text-4xl font-bold text-success">
+          <AnimatedNumber value={progress} decimals={1} delay={delay + 200} />%
+        </span>
+        <span className="text-muted-foreground ml-2">van de weg</span>
+      </div>
+
+      <p className="text-sm text-muted-foreground mb-4">
+        Nog € {formatCurrency(amountNeeded)} marge nodig voor volgende stap
+      </p>
+
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">Huidige periodebonus</p>
+          <p className="text-lg font-bold text-foreground">€ <AnimatedNumber value={currentOmzetTier.bonus} delay={delay + 300} formatFn={formatCurrency} /></p>
+          <p className="text-xs text-muted-foreground">per periode</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground mb-1">Huidige periodemarge</p>
+          <p className="text-lg font-bold text-foreground">€ <AnimatedNumber value={currentPeriodMargin} delay={delay + 400} formatFn={formatCurrency} /></p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-muted-foreground mb-1">Volgende periodebonus</p>
+          <p className="text-lg font-bold text-success">€ <AnimatedNumber value={nextOmzetTier.bonus} delay={delay + 300} formatFn={formatCurrency} /></p>
+          <p className="text-xs text-muted-foreground">per periode</p>
+        </div>
+      </div>
+
+      <div ref={ref} className="relative mb-2">
+        <AnimatedProgress value={progress} delay={delay + 500} barClassName="bg-gradient-to-r from-gold to-primary" trackClassName="bg-muted/30" />
+        <div className="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-card rounded-full border-2 border-border shadow-lg flex items-center justify-center transition-all duration-1000 ease-out" style={{ left: isVisible ? `calc(${progress}% - 14px)` : '-14px' }}>
+          <span className="text-xs text-muted-foreground font-medium">€</span>
+        </div>
+      </div>
+
+      <div className="flex justify-between text-xs text-muted-foreground mt-3 mb-4">
+        <span>€ {formatCurrency(currentOmzetTier.margin)}</span>
+        <span>€ {formatCurrency(nextOmzetTier.margin)}</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
+        <div>
+          <p className="text-sm font-medium text-foreground mb-1">Huidige targetbonus (jaar)</p>
+          <p className="text-lg font-bold text-foreground">€ <AnimatedNumber value={currentTargetTier.bonus} delay={delay + 600} formatFn={formatCurrency} /></p>
+          <p className="text-xs text-muted-foreground mt-1">Bij € {formatCurrency(nextTargetTier.margin)} jaarmarge volgende targetbonus</p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-foreground mb-1">Volgende targetbonus (jaar)</p>
+          <p className="text-lg font-bold text-success">€ <AnimatedNumber value={nextTargetTier.bonus} delay={delay + 700} formatFn={formatCurrency} /></p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border">
-        {/* Header with inline toggle */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            {mode === 'salary'
-              ? <TrendingUp className="w-5 h-5 text-muted-foreground" />
-              : <DollarSign className="w-5 h-5 text-muted-foreground" />
-            }
-            <h3 className="text-base font-medium text-foreground">
-              {mode === 'salary' ? "Voortgang naar volgende salarisstap" : "Voortgang naar volgende bonusstap"}
-            </h3>
-          </div>
-          <div className="flex rounded-md bg-muted/50 p-0.5 gap-0.5 opacity-60 hover:opacity-100 transition-all">
-            <button
-              onClick={() => setMode(mode === 'salary' ? 'bonus' : 'salary')}
-              className={`p-1 rounded transition-colors ${mode === 'salary' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              <TrendingUp className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setMode(mode === 'salary' ? 'bonus' : 'salary')}
-              className={`p-1 rounded transition-colors ${mode === 'bonus' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              <DollarSign className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Progress percentage */}
-        <div className="mb-1">
-          <span className="text-4xl font-bold text-success">
-            <AnimatedNumber value={progress} decimals={1} delay={delay + 200} />%
-          </span>
-          <span className="text-muted-foreground ml-2">van de weg</span>
-        </div>
-
-        {/* Subtitle */}
-        <p className="text-sm text-muted-foreground mb-4">
-          Nog € {formatCurrency(amountNeeded)} {isSalary ? "omzet" : "marge"} nodig voor volgende stap
-        </p>
-
-        {/* Three column info */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">
-              {isSalary ? "Huidig salaris" : "Huidige periodebonus"}
-            </p>
-            <p className="text-xl font-bold text-foreground">
-              € <AnimatedNumber value={leftValue} delay={delay + 300} formatFn={formatCurrency} />
-            </p>
-            {isSalary && <p className="text-xs text-muted-foreground">per maand</p>}
-            {!isSalary && <p className="text-xs text-muted-foreground">per periode</p>}
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground mb-1">
-              {isSalary ? "Huidige omzet (13 periodes)" : "Huidige periodemarge"}
-            </p>
-            <p className="text-xl font-bold text-foreground">
-              € <AnimatedNumber value={currentMiddleValue} delay={delay + 400} formatFn={formatCurrency} />
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground mb-1">
-              {isSalary ? "Volgend salaris" : "Volgende periodebonus"}
-            </p>
-            <p className="text-xl font-bold text-success">
-              € <AnimatedNumber value={rightValue} delay={delay + 300} formatFn={formatCurrency} />
-            </p>
-            {isSalary && <p className="text-xs text-muted-foreground">per maand</p>}
-            {!isSalary && <p className="text-xs text-muted-foreground">per periode</p>}
-          </div>
-        </div>
-
-        {/* Progress Bar Section */}
-        <div ref={ref} className="relative mb-2">
-          <AnimatedProgress
-            value={progress}
-            delay={delay + 500}
-            barClassName={isSalary ? "bg-gradient-to-r from-gold to-success" : "bg-gradient-to-r from-gold to-primary"}
-            trackClassName="bg-muted/30"
-          />
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-card rounded-full border-2 border-border shadow-lg flex items-center justify-center transition-all duration-1000 ease-out"
-            style={{ left: isVisible ? `calc(${progress}% - 16px)` : '-16px' }}
-          >
-            <span className="text-xs text-muted-foreground font-medium">€</span>
-          </div>
-        </div>
-
-        {/* Progress range labels */}
-        <div className="flex justify-between text-xs text-muted-foreground mt-3 mb-4">
-          <span>€ {formatCurrency(rangeMin)}</span>
-          <span>€ {formatCurrency(rangeMax)}</span>
-        </div>
-
-        {/* Bottom section */}
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
-          <div>
-            <p className="text-sm font-medium text-foreground mb-1">
-              {isSalary ? "Huidig jaarsalaris" : "Huidige targetbonus (jaar)"}
-            </p>
-            <p className="text-xl font-bold text-foreground">
-              € <AnimatedNumber value={bottomLeftValue} delay={delay + 600} formatFn={formatCurrency} />
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              {isSalary
-                ? `Bij € ${formatCurrency(revenueMax)} omzet bereik je salarisstap ${nextStep}`
-                : `Bij € ${formatCurrency(nextTargetTier.margin)} jaarmarge bereik je de volgende targetbonus`
-              }
-            </p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground mb-1">
-              {isSalary ? "Volgend jaarsalaris" : "Volgende targetbonus (jaar)"}
-            </p>
-            <p className="text-xl font-bold text-success">
-              € <AnimatedNumber value={bottomRightValue} delay={delay + 700} formatFn={formatCurrency} />
-            </p>
-          </div>
-        </div>
+      <div className="bg-card rounded-xl border border-border flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border">
+        <SalaryPanel delay={delay} />
+        <BonusPanel delay={delay + 100} />
       </div>
     </AnimatedCard>
   );
