@@ -1,71 +1,51 @@
 
 
-# Plan: Donkere topbalk doorlopend vanuit sidebar + opruimen TopBar
+# Plan: Vacature Aanvraag Funnel Dashboard
 
-## Wat verandert
+## Wat wordt gebouwd
 
-De donkere sidebar-achtergrond loopt door in een topbalk over de volle breedte. De content-area krijgt een afgeronde binnenhoek (linksboven). Zoekbalk en periodeselector worden verwijderd. Acties zoals "TV Modus" verhuizen naar de donkere topbalk.
+Een nieuw, minimalistisch funnel-dashboard dat toont hoe kandidaten met status "Vacature aanvraag" door de recruitment-funnel bewegen. Hoofdcomponent is één overzichtelijke tabel met absolute aantallen en step-to-step conversiepercentages.
 
-## Wijzigingen
+## Nieuwe bestanden
 
-### 1. `src/components/layout/AppLayout.tsx` — Nieuwe layout structuur
+### 1. `src/data/vacatureAanvraagFunnelData.ts`
+- Statische demodata: een array van kandidaat-records met `firstVacatureAanvraagDate`, en booleans/datums voor elke funnelstap (Voorgesteld, Op gesprek, 2e gesprek, Geplaatst)
+- Filterfunctie op datumbereik (filtert op `firstVacatureAanvraagDate`)
+- Aggregatiefunctie die per geselecteerde periode de totalen per stap teruggeeft
+- ~40-50 demorecords verspreid over meerdere weken
 
-Huidige structuur:
-```text
-┌──────────┬─────────────────────────┐
-│          │  TopBar (licht)         │
-│ Sidebar  ├─────────────────────────┤
-│ (donker) │  Content                │
-│          │                         │
-└──────────┴─────────────────────────┘
-```
+### 2. `src/pages/marketing/VacatureAanvraagFunnel.tsx`
+- Layout: `ConsultantLayout` wrapper (zelfde als andere marketing dashboards)
+- **Bovenaan**: titel "Vacature Aanvraag Funnel" + datumbereik selector (week/maand/kwartaal/custom, zelfde patroon als InflowDashboard)
+- **Hoofdtabel**: 6 kolommen — Periode | Vacature aanvraag | Voorgesteld | Op gesprek | 2e gesprek | Geplaatst
+  - Rij 1: absolute aantallen (bold, grote font)
+  - Rij 2: conversiepercentages (step-to-step, subtielere styling, gescheiden door border-top)
+- Conversielogica: elke stap / vorige stap (niet t.o.v. eerste stap)
+- Kleurcodering: groen ≥60%, oranje 30-60%, rood <30%
+- Clean card-gebaseerd design, geen charts
 
-Nieuwe structuur:
-```text
-┌──────────┬─────────────────────────┐
-│  Logo    │  DarkTopBar (donker)    │
-├──────────┤╭────────────────────────┤
-│ Sidebar  ││ Content (afgerond LB)  │
-│ (donker) ││                        │
-└──────────┘╰────────────────────────┘
-```
+## Bestaande bestanden
 
-- Verander van `flex` (zij-aan-zij) naar een grid/flex met een donkere header-rij bovenaan
-- De sidebar en donkere topbalk delen dezelfde donkere achtergrondkleur (`--sidebar-background`)
-- Het content-panel krijgt `rounded-tl-2xl` (of `rounded-tl-xl`) en een lichte achtergrond, waardoor de "interne afronding" ontstaat zoals in het referentie-design
-- De hele rechterkolom (topbar + content) zit in een container met donkere achtergrond, met daarbinnen het lichte content-panel dat de afgeronde hoek maakt
+### 3. `src/App.tsx`
+- Route toevoegen: `/marketing/vacature-aanvraag-funnel` → lazy import van nieuwe pagina
 
-### 2. `src/components/dashboard/TopBar.tsx` — Donkere topbalk
+### 4. `src/components/dashboard/Sidebar.tsx`
+- Toevoegen aan "Marketing Dashboards" subItems: `{ icon: Filter, label: "Vacature Aanvraag Funnel", path: "/marketing/vacature-aanvraag-funnel" }`
 
-- Verwijder de zoekbalk (Search + Input)
-- Verwijder de periodeselector (P1-P13 knoppen)
-- Achtergrond wordt donker (`bg-sidebar` / sidebar kleuren)
-- Tekst wordt licht (`text-sidebar-foreground`)
-- Voeg een slot/children prop toe zodat pagina's hun eigen acties (zoals "TV Modus") in de balk kunnen plaatsen
-- Alternatief: maak de TopBar een simpele donkere balk die via React context of Outlet context acties ontvangt
+## Technische details
 
-### 3. `src/components/tv/TVDashboardLayout.tsx` — TV Modus knop verhuizen
-
-- De "TV Modus" knop wordt verplaatst naar de donkere topbalk (via de TopBar children/slot)
-- In non-fullscreen modus rendert TVDashboardLayout de TV Modus knop als onderdeel van de topbalk in plaats van in de content-area
-- In fullscreen modus blijft het huidige gedrag behouden
-
-### 4. `src/components/dashboard/Sidebar.tsx` — Logo-gebied aanpassen
-
-- Het logo-gedeelte bovenaan de sidebar blijft, maar de hoogte moet matchen met de nieuwe donkere topbalk (bijv. beide `h-14`)
-- Dit zorgt voor visuele uitlijning tussen sidebar-logo en topbalk
-
-### 5. `src/index.css` — Eventuele utility classes
-
-- Voeg indien nodig een `rounded-tl-2xl` variant toe of gebruik bestaande Tailwind classes voor de binnenafronding
+- Datumfilter: hergebruik `getDefaultRange()` / `DateRange` patroon uit InflowDashboard
+- Snelkeuze-knoppen: "Deze week", "Deze maand", "Dit kwartaal", "Custom" + calendar picker
+- Tabel gebruikt bestaande `Table` / `TableRow` / `TableCell` shadcn components
+- Periode-kolom toont het geselecteerde bereik als tekst (bijv. "Week 14, 2026")
+- Geen vergelijkingsmodus nodig in v1 — puur één periode, één rij absolute + één rij conversie
 
 ## Bestanden
 
-| Bestand | Wijziging |
+| Bestand | Actie |
 |---|---|
-| `src/components/layout/AppLayout.tsx` | Nieuwe layout: donkere wrapper, content met afgeronde hoek |
-| `src/components/dashboard/TopBar.tsx` | Strip tot donkere balk, verwijder zoek + periodes, voeg children slot toe |
-| `src/components/dashboard/Sidebar.tsx` | Logo-hoogte afstemmen op topbalk |
-| `src/components/tv/TVDashboardLayout.tsx` | TV Modus knop via topbalk renderen (non-fullscreen) |
-| `src/index.css` | Eventuele styling aanpassingen |
+| `src/data/vacatureAanvraagFunnelData.ts` | Nieuw — demodata + filter/aggregatie |
+| `src/pages/marketing/VacatureAanvraagFunnel.tsx` | Nieuw — dashboard pagina |
+| `src/App.tsx` | Route toevoegen |
+| `src/components/dashboard/Sidebar.tsx` | Menu-item toevoegen onder Marketing |
 
