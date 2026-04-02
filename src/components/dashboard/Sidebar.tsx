@@ -209,6 +209,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnManagerPage = location.pathname.startsWith("/manager-dashboard");
   const isOnMarketingPage = location.pathname.startsWith("/marketing");
   const isOnCorporateRecruitmentPage = location.pathname.startsWith("/corporate-recruitment");
+  const isOnMarcoPage = location.pathname.startsWith("/marco/");
   
   const isOnRanglijstenPage = location.pathname.startsWith("/tv/ranglijsten");
   
