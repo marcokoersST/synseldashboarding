@@ -1,32 +1,28 @@
 
 
-# Plan: Verwijder leidinggevende doelen uit consultant dashboard
+# Plan: Salaris & Bonus als twee naast-elkaar-staande panelen
 
 ## Wat verandert
 
-### `src/components/dashboard/GoalsCard.tsx`
+De huidige `SalaryProgressCard` gebruikt een toggle om te wisselen tussen salaris- en bonusmodus. Dit wordt vervangen door **één brede kaart met twee panelen naast elkaar**, gescheiden door een verticale lijn.
 
-**Card view:**
-- Verwijder de hele "Doelen van leidinggevende" sectie (regels 154-177)
-- Verwijder het "Mijn doelen" sub-kopje (regels 133-137) — niet meer nodig als er maar één categorie is
-- Vergroot de scroll-container van `h-[160px]` naar de volledige beschikbare hoogte zodat meer doelen zichtbaar zijn
+### `src/components/dashboard/SalaryProgressCard.tsx`
+- Verwijder de `mode` state en toggle-knoppen
+- Render beide views (salaris links, bonus rechts) naast elkaar in een `flex` container met `divide-x`
+- Linker paneel: "Voortgang naar volgende salarisstap" (TrendingUp icoon) — huidige salaris-view
+- Rechter paneel: "Voortgang naar volgende bonusstap" (DollarSign icoon) — huidige bonus-view
+- Elk paneel bevat: percentage, subtitle, 3-koloms info, progress bar, range labels, en bottom sectie
+- Beide panelen delen dezelfde data/berekeningen die nu al bestaan
 
-**Management dialog:**
-- Verwijder de rechter kolom "Doelen van leidinggevende" (regels 260-300)
-- Verwijder de twee-koloms layout (`flex-row`) — maak er één centered kolom van
-- Verwijder `border-r` van de persoonlijke doelen kolom
-- Pas de dialog breedte aan van `max-w-[80vw]` naar `max-w-2xl` voor een strakker design met één kolom
+### `src/pages/Index.tsx`
+- `SalaryProgressCard` neemt nu meer ruimte in; pas de grid aan van `grid-cols-3` naar een layout waar de salary+bonus kaart de volle breedte of 2 kolommen pakt:
+  - Regel 44: `grid grid-cols-3` → de SalaryProgressCard krijgt `col-span-2` (of de grid wordt `grid-cols-2` met PlacementsCard en GoalsCard eronder)
+  - Alternatief: SalaryProgressCard op eigen rij (volle breedte), PlacementsCard + GoalsCard op rij eronder
 
-**Data & types opschonen:**
-- Verwijder alle `isManagerGoal: true` items uit `initialGoals` (regels 41-47)
-- Verwijder `isManagerGoal` uit de `Goal` interface en alle referenties
-- Verwijder `sortedManagerGoals` useMemo
-- Verwijder `Shield` import en gerelateerde tooltip/styling in `GoalItemCompact` en `GoalItemFull`
-- Verwijder `readOnly` prop logica uit `GoalItemFull`
-- Verwijder gold-gerelateerde styling (`bg-gold/5`, `border-gold/30`, etc.)
+## Bestanden
 
-## Resultaat
-- Eén schone lijst met persoonlijke doelen op de card
-- Eén-koloms dialog voor doelen beheren
-- Alle manager-goal logica volledig verwijderd
+| Bestand | Wijziging |
+|---|---|
+| `src/components/dashboard/SalaryProgressCard.tsx` | Twee panelen naast elkaar, geen toggle |
+| `src/pages/Index.tsx` | Grid layout aanpassen voor bredere kaart |
 
