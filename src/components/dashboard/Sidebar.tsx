@@ -53,6 +53,11 @@ const navItems: NavItem[] = [
     sectionLabel: "Ready for development",
   },
   { 
+    icon: BarChart3, 
+    label: "Omzetdashboard", 
+    path: "/peter-jan/omzet-dashboard",
+  },
+  { 
     icon: LayoutDashboard, 
     label: "Dashboard", 
     path: "/",
