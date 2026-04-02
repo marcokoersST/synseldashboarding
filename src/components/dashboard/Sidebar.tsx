@@ -58,6 +58,11 @@ const navItems: NavItem[] = [
     path: "/peter-jan/omzet-dashboard",
   },
   { 
+    icon: Filter, 
+    label: "Vacaturetitel Funnel", 
+    path: "/marketing/vacature-funnel",
+  },
+  { 
     icon: LayoutDashboard, 
     label: "Dashboard", 
     path: "/",
@@ -138,7 +143,6 @@ const navItems: NavItem[] = [
     subItems: [
       { icon: TrendingUp, label: "Inflow", path: "/marketing/inflow" },
       { icon: ClipboardCheck, label: "Inschrijvingen", path: "/marketing/inschrijvingen" },
-      { icon: Filter, label: "Vacaturetitel Funnel", path: "/marketing/vacature-funnel" },
     ]
   },
   {
