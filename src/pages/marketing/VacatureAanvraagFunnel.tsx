@@ -90,7 +90,7 @@ export default function VacatureAanvraagFunnel() {
 
   return (
     <ConsultantLayout
-      title="Vacature Aanvraag Funnel"
+      title="Reverse Matching"
       subtitle="Kandidaten die de status 'Vacature aanvraag' bereikten — funnelprogressie per cohort"
     >
       {/* Filters */}
