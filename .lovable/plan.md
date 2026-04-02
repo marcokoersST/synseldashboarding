@@ -1,51 +1,62 @@
 
 
-# Plan: Vacature Aanvraag Funnel Dashboard
+# Plan: Smallere sidebar + Inzichten Center in TopBar
 
-## Wat wordt gebouwd
+## Overzicht
 
-Een nieuw, minimalistisch funnel-dashboard dat toont hoe kandidaten met status "Vacature aanvraag" door de recruitment-funnel bewegen. Hoofdcomponent is één overzichtelijke tabel met absolute aantallen en step-to-step conversiepercentages.
+Twee wijzigingen: (1) sidebar ~20% smaller, (2) een inzichten-systeem in de donkere topbalk met notificatie-icoon, snippet van het laatste inzicht, en een slide-in panel vanaf rechts.
 
-## Nieuwe bestanden
+## 1. Sidebar smaller maken
 
-### 1. `src/data/vacatureAanvraagFunnelData.ts`
-- Statische demodata: een array van kandidaat-records met `firstVacatureAanvraagDate`, en booleans/datums voor elke funnelstap (Voorgesteld, Op gesprek, 2e gesprek, Geplaatst)
-- Filterfunctie op datumbereik (filtert op `firstVacatureAanvraagDate`)
-- Aggregatiefunctie die per geselecteerde periode de totalen per stap teruggeeft
-- ~40-50 demorecords verspreid over meerdere weken
+Huidige breedte: `w-64` (256px) → nieuwe breedte: `w-52` (208px, ~19% smaller).
+Collapsed blijft `w-16`.
 
-### 2. `src/pages/marketing/VacatureAanvraagFunnel.tsx`
-- Layout: `ConsultantLayout` wrapper (zelfde als andere marketing dashboards)
-- **Bovenaan**: titel "Vacature Aanvraag Funnel" + datumbereik selector (week/maand/kwartaal/custom, zelfde patroon als InflowDashboard)
-- **Hoofdtabel**: 6 kolommen — Periode | Vacature aanvraag | Voorgesteld | Op gesprek | 2e gesprek | Geplaatst
-  - Rij 1: absolute aantallen (bold, grote font)
-  - Rij 2: conversiepercentages (step-to-step, subtielere styling, gescheiden door border-top)
-- Conversielogica: elke stap / vorige stap (niet t.o.v. eerste stap)
-- Kleurcodering: groen ≥60%, oranje 30-60%, rood <30%
-- Clean card-gebaseerd design, geen charts
+**Bestanden:**
+- `src/components/dashboard/Sidebar.tsx`: `w-64` → `w-52`
+- `src/components/layout/AppLayout.tsx`: `ml-64` → `ml-52`
 
-## Bestaande bestanden
+## 2. Inzichten Center
 
-### 3. `src/App.tsx`
-- Route toevoegen: `/marketing/vacature-aanvraag-funnel` → lazy import van nieuwe pagina
+### Datamodel — `src/data/consultantInsightsData.ts` (nieuw)
 
-### 4. `src/components/dashboard/Sidebar.tsx`
-- Toevoegen aan "Marketing Dashboards" subItems: `{ icon: Filter, label: "Vacature Aanvraag Funnel", path: "/marketing/vacature-aanvraag-funnel" }`
+Nieuwe dataset met inzichten voor de ingelogde consultant (niet de manager-insights). Elk inzicht bevat:
+- `id`, `type` (warning/info/success), `title`, `message`, `timestamp`, `isRead`
+- `linkTo`: pad naar relevant dashboard (bijv. `/consultant/activiteit-resultaat`)
+- `linkParams`: optionele query params voor datum/filters (bijv. `?period=week&from=2026-03-30`)
 
-## Technische details
+~8-10 demo-inzichten, bijv.:
+- "De laatste 3 dagen heb je 40% minder gebeld dan vorige week"
+- "Je conversie van intakes naar acquisities is gestegen naar 78%"
+- "3 deals staan al 5+ dagen zonder update"
 
-- Datumfilter: hergebruik `getDefaultRange()` / `DateRange` patroon uit InflowDashboard
-- Snelkeuze-knoppen: "Deze week", "Deze maand", "Dit kwartaal", "Custom" + calendar picker
-- Tabel gebruikt bestaande `Table` / `TableRow` / `TableCell` shadcn components
-- Periode-kolom toont het geselecteerde bereik als tekst (bijv. "Week 14, 2026")
-- Geen vergelijkingsmodus nodig in v1 — puur één periode, één rij absolute + één rij conversie
+### TopBar aanpassing — `src/components/dashboard/TopBar.tsx`
+
+Aan de rechterkant van de donkere topbalk:
+1. **Inzicht-snippet** (links van het icoon): een klein kaartje/tekst met de eerste ongelezen inzicht-tekst, afgekort op ~1 regel. Subtiele styling, lichte tekst op donkere achtergrond.
+2. **Notificatie-icoon** (Bell) met badge die het aantal ongelezen inzichten toont (bijv. "6"). Klikbaar — opent het slide-in panel.
+
+### Inzichten Panel — `src/components/dashboard/InsightsDrawer.tsx` (nieuw)
+
+Een Sheet/Drawer die vanaf rechts inschuift, ~50% schermbreedte:
+- Header: "Inzichten Center" + sluit-knop
+- Lijst van alle inzichten als kaarten (hergebruik stijl vergelijkbaar met `InsightTile` uit manager InsightsPanel)
+- Elke kaart toont: icoon, titel, bericht, relatieve tijd, en een klikbare link-knop die navigeert naar het juiste dashboard met de juiste parameters
+- Ongelezen/gelezen status wordt bijgehouden (localStorage)
+- "Alles gelezen" knop bovenaan
+
+### State management
+
+- `InsightsDrawer` beheert eigen open/dicht state via een context of prop vanuit `AppLayout`
+- Ongelezen count wordt berekend en doorgegeven aan TopBar
+- Bij klikken op een inzicht: markeer als gelezen + navigeer via `useNavigate`
 
 ## Bestanden
 
 | Bestand | Actie |
 |---|---|
-| `src/data/vacatureAanvraagFunnelData.ts` | Nieuw — demodata + filter/aggregatie |
-| `src/pages/marketing/VacatureAanvraagFunnel.tsx` | Nieuw — dashboard pagina |
-| `src/App.tsx` | Route toevoegen |
-| `src/components/dashboard/Sidebar.tsx` | Menu-item toevoegen onder Marketing |
+| `src/components/dashboard/Sidebar.tsx` | `w-64` → `w-52` |
+| `src/components/layout/AppLayout.tsx` | `ml-64` → `ml-52`, insights state + drawer toevoegen |
+| `src/components/dashboard/TopBar.tsx` | Snippet + bell icon + unread count toevoegen |
+| `src/data/consultantInsightsData.ts` | Nieuw — inzichten dataset met linkTo/linkParams |
+| `src/components/dashboard/InsightsDrawer.tsx` | Nieuw — slide-in panel vanaf rechts (~50% breedte) |
 
