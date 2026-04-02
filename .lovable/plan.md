@@ -1,62 +1,51 @@
 
 
-# Plan: Smallere sidebar + Inzichten Center in TopBar
+# Plan: Productiviteitsdashboard onder "Dashboards Marco"
 
 ## Overzicht
 
-Twee wijzigingen: (1) sidebar ~20% smaller, (2) een inzichten-systeem in de donkere topbalk met notificatie-icoon, snippet van het laatste inzicht, en een slide-in panel vanaf rechts.
+Nieuw menu-item "Dashboards Marco" in de sidebar met daaronder een "Productiviteitsdashboard". Dit dashboard toont per consultant/unit de productiviteitsmetrics (inschrijvingen, acquisities, voorstellen, bellen, mails, gesprekken) en berekent een productiviteitsscore op basis van ingestelde werkuren.
 
-## 1. Sidebar smaller maken
+## Nieuwe bestanden
 
-Huidige breedte: `w-64` (256px) → nieuwe breedte: `w-52` (208px, ~19% smaller).
-Collapsed blijft `w-16`.
+### 1. `src/data/productiviteitData.ts`
+- Demodata per consultant (hergebruik namen/units uit `teamData.ts`: Engineering, Monteurs, Operators, Early Performers, Trainingsunit)
+- Per consultant: inschrijvingen (aantal + gesprekstijd H:M:S), acquisities, voorstellen (totaal + type-verdeling: detachering/vast/interim), mails, telefoontjes (aantal + gesprekstijd), gesprekken in te plannen, gesprekken gevoerd, negatieve-status belpogingen
+- `werkuren` instelling (standaard 40 uur/week)
+- Aggregatie- en filterfuncties op datumbereik, unit, consultant
+- Productiviteitsscore-berekening: per KPI het aantal gedeeld door beschikbare werkuren → genormaliseerde score per onderdeel + totaalscore (gewogen gemiddelde)
 
-**Bestanden:**
-- `src/components/dashboard/Sidebar.tsx`: `w-64` → `w-52`
-- `src/components/layout/AppLayout.tsx`: `ml-64` → `ml-52`
+### 2. `src/pages/marco/ProductiviteitDashboard.tsx`
+- **Filters bovenaan**: datumbereik (week/periode/custom met calendar picker), unit multi-select, consultant filter
+- **Samenvattingskaarten** (bovenste rij): 6-8 KPI-kaarten met totalen (inschrijvingen, acquisities, voorstellen, mails, calls, gesprekstijd, gesprekken) — met AnimatedNumber
+- **Productiviteitsmeter**: visuele gauge/progress bars per KPI-onderdeel die tonen hoeveel % van werkuren aan elke activiteit besteed is, plus een totale "aan het werk"-score als prominente ring/gauge
+- **Detail-tabel**: sorteerbare tabel per consultant met alle kolommen (inschrijvingen, gesprekstijd, acq, voorstellen, type, mails, calls, beltijd, gesprekken, productiviteitsscore)
+- **Negatieve-status indicator**: kolom/badge die toont of er gebeld wordt met bedrijven met negatieve statussen
+- Hergebruik `ConsultantLayout`, `AnimatedCard`, bestaande `Table` components, `Recharts` voor de gauge/charts
 
-## 2. Inzichten Center
+## Bestaande bestanden
 
-### Datamodel — `src/data/consultantInsightsData.ts` (nieuw)
+### 3. `src/App.tsx`
+- Lazy import + route: `/marco/productiviteit`
 
-Nieuwe dataset met inzichten voor de ingelogde consultant (niet de manager-insights). Elk inzicht bevat:
-- `id`, `type` (warning/info/success), `title`, `message`, `timestamp`, `isRead`
-- `linkTo`: pad naar relevant dashboard (bijv. `/consultant/activiteit-resultaat`)
-- `linkParams`: optionele query params voor datum/filters (bijv. `?period=week&from=2026-03-30`)
+### 4. `src/components/dashboard/Sidebar.tsx`
+- Nieuw menu-item "Dashboards Marco" (icon: `BarChart3`) met subItem "Productiviteitsdashboard" (`/marco/productiviteit`)
+- Auto-expand logica toevoegen voor `/marco/` pad
 
-~8-10 demo-inzichten, bijv.:
-- "De laatste 3 dagen heb je 40% minder gebeld dan vorige week"
-- "Je conversie van intakes naar acquisities is gestegen naar 78%"
-- "3 deals staan al 5+ dagen zonder update"
+## Visueel ontwerp
 
-### TopBar aanpassing — `src/components/dashboard/TopBar.tsx`
-
-Aan de rechterkant van de donkere topbalk:
-1. **Inzicht-snippet** (links van het icoon): een klein kaartje/tekst met de eerste ongelezen inzicht-tekst, afgekort op ~1 regel. Subtiele styling, lichte tekst op donkere achtergrond.
-2. **Notificatie-icoon** (Bell) met badge die het aantal ongelezen inzichten toont (bijv. "6"). Klikbaar — opent het slide-in panel.
-
-### Inzichten Panel — `src/components/dashboard/InsightsDrawer.tsx` (nieuw)
-
-Een Sheet/Drawer die vanaf rechts inschuift, ~50% schermbreedte:
-- Header: "Inzichten Center" + sluit-knop
-- Lijst van alle inzichten als kaarten (hergebruik stijl vergelijkbaar met `InsightTile` uit manager InsightsPanel)
-- Elke kaart toont: icoon, titel, bericht, relatieve tijd, en een klikbare link-knop die navigeert naar het juiste dashboard met de juiste parameters
-- Ongelezen/gelezen status wordt bijgehouden (localStorage)
-- "Alles gelezen" knop bovenaan
-
-### State management
-
-- `InsightsDrawer` beheert eigen open/dicht state via een context of prop vanuit `AppLayout`
-- Ongelezen count wordt berekend en doorgegeven aan TopBar
-- Bij klikken op een inzicht: markeer als gelezen + navigeer via `useNavigate`
+- Bovenste rij: 4-6 compacte KPI-kaarten (AnimatedNumber, subtitel, sparkline)
+- Middenrij: productiviteitsmeter — horizontale progress bars per activiteit (bijv. "Bellen: 3.2 uur van 8 uur = 40%") + grote circulaire gauge voor totaalscore
+- Onderste sectie: volledige tabel met alle consultants, sorteerbaar op elke kolom
+- Kleurcodering: groen (>80% productief), oranje (50-80%), rood (<50%)
+- Werkuren-instelling: klein input veld rechtsboven om standaard werkuren aan te passen (wijzigt alle berekeningen live)
 
 ## Bestanden
 
 | Bestand | Actie |
 |---|---|
-| `src/components/dashboard/Sidebar.tsx` | `w-64` → `w-52` |
-| `src/components/layout/AppLayout.tsx` | `ml-64` → `ml-52`, insights state + drawer toevoegen |
-| `src/components/dashboard/TopBar.tsx` | Snippet + bell icon + unread count toevoegen |
-| `src/data/consultantInsightsData.ts` | Nieuw — inzichten dataset met linkTo/linkParams |
-| `src/components/dashboard/InsightsDrawer.tsx` | Nieuw — slide-in panel vanaf rechts (~50% breedte) |
+| `src/data/productiviteitData.ts` | Nieuw — demodata + filter/aggregatie/scoring |
+| `src/pages/marco/ProductiviteitDashboard.tsx` | Nieuw — dashboard pagina |
+| `src/App.tsx` | Route toevoegen |
+| `src/components/dashboard/Sidebar.tsx` | Menu-item "Dashboards Marco" toevoegen |
 
