@@ -262,7 +262,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     <TooltipProvider delayDuration={0}>
       <aside className={cn(
         "fixed left-0 top-0 h-screen bg-sidebar flex flex-col z-50 transition-[width] duration-300 ease-in-out",
-        isCollapsed ? "w-16" : "w-64"
+        isCollapsed ? "w-16" : "w-52"
       )}>
         {/* Logo */}
         <div className="h-14 px-6 flex items-center overflow-hidden shrink-0">
