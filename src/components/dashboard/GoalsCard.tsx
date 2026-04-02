@@ -1,7 +1,6 @@
-import { Plus, Trash2, Pencil, Shield, X, Check } from "lucide-react";
+import { Plus, Trash2, Pencil, X, Check } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
-import { useAnimateOnMount, getStaggerDelay } from "@/hooks/useAnimateOnMount";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,33 +17,21 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Input } from "@/components/ui/input";
 
 interface Goal {
   id: number;
   text: string;
   completed: boolean;
-  isManagerGoal: boolean;
 }
 
 const initialGoals: Goal[] = [
-  // Personal development goals (user's own) - 7 goals
-  { id: 1, text: "Acquisitiegesprekken volledig zelfstandig uitvoeren zonder begeleiding van een senior collega", completed: true, isManagerGoal: false },
-  { id: 2, text: "Actief luisteren verbeteren tijdens klantgesprekken door samenvattingen te geven", completed: false, isManagerGoal: false },
-  { id: 3, text: "Elke week één nieuwe onderhandelingstechniek toepassen en evalueren", completed: false, isManagerGoal: false },
-  { id: 4, text: "Netwerk uitbreiden door maandelijks minimaal 2 branche-events bij te wonen", completed: true, isManagerGoal: false },
-  { id: 5, text: "Timemanagement verbeteren door dagelijks prioriteiten te stellen met de Eisenhower-matrix", completed: false, isManagerGoal: false },
-  { id: 6, text: "Presentatievaardigheden ontwikkelen door kwartaallijks een interne kennissessie te geven", completed: true, isManagerGoal: false },
-  { id: 7, text: "Stressbestendigheid vergroten door mindfulness-technieken toe te passen bij piekdrukte", completed: false, isManagerGoal: false },
-  
-  // Manager-set goals - 7 goals
-  { id: 8, text: "Kwaliteitsscore van minimaal 8.0 behalen bij AI-coach inschrijvingen dit kwartaal", completed: false, isManagerGoal: true },
-  { id: 9, text: "Meer oplossingsgerichte houding tonen in teamoverleggen en minder focussen op obstakels", completed: false, isManagerGoal: true },
-  { id: 10, text: "Proactief kennis en best practices delen met junior collega's tijdens wekelijkse check-ins", completed: true, isManagerGoal: true },
-  { id: 11, text: "Initiatief tonen bij het oppakken van nieuwe klantrelaties zonder directe aansturing", completed: false, isManagerGoal: true },
-  { id: 12, text: "Feedbackcultuur versterken door constructieve feedback te geven én te ontvangen", completed: false, isManagerGoal: true },
-  { id: 13, text: "Samenwerking met andere business units verbeteren door maandelijks kennis uit te wisselen", completed: true, isManagerGoal: true },
-  { id: 14, text: "Klanttevredenheid verhogen door proactief follow-up gesprekken te voeren na plaatsingen", completed: false, isManagerGoal: true },
+  { id: 1, text: "Acquisitiegesprekken volledig zelfstandig uitvoeren zonder begeleiding van een senior collega", completed: true },
+  { id: 2, text: "Actief luisteren verbeteren tijdens klantgesprekken door samenvattingen te geven", completed: false },
+  { id: 3, text: "Elke week één nieuwe onderhandelingstechniek toepassen en evalueren", completed: false },
+  { id: 4, text: "Netwerk uitbreiden door maandelijks minimaal 2 branche-events bij te wonen", completed: true },
+  { id: 5, text: "Timemanagement verbeteren door dagelijks prioriteiten te stellen met de Eisenhower-matrix", completed: false },
+  { id: 6, text: "Presentatievaardigheden ontwikkelen door kwartaallijks een interne kennissessie te geven", completed: true },
+  { id: 7, text: "Stressbestendigheid vergroten door mindfulness-technieken toe te passen bij piekdrukte", completed: false },
 ];
 
 interface GoalsCardProps {
@@ -70,7 +57,6 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
         id: Date.now(),
         text: newGoalText.trim(),
         completed: false,
-        isManagerGoal: false,
       };
       setGoals([...goals, newGoal]);
       setNewGoalText("");
@@ -101,17 +87,8 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
     setEditingText("");
   };
 
-  // Separate and sort goals: uncompleted first, then completed
-  const sortedUserGoals = useMemo(() => {
-    return goals
-      .filter(g => !g.isManagerGoal)
-      .sort((a, b) => Number(a.completed) - Number(b.completed));
-  }, [goals]);
-
-  const sortedManagerGoals = useMemo(() => {
-    return goals
-      .filter(g => g.isManagerGoal)
-      .sort((a, b) => Number(a.completed) - Number(b.completed));
+  const sortedGoals = useMemo(() => {
+    return [...goals].sort((a, b) => Number(a.completed) - Number(b.completed));
   }, [goals]);
 
   return (
@@ -128,174 +105,83 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
           </button>
         </div>
         
-        <div className="flex flex-col gap-4">
-          {/* User Goals Section */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-medium text-muted-foreground">Mijn doelen</span>
-              <span className="text-xs text-muted-foreground/60">({sortedUserGoals.length})</span>
-            </div>
-            <div className="relative">
-              <div className="h-[160px] overflow-y-auto scrollbar-thin">
-                <div className="space-y-2 pr-2 pb-4">
-                  {sortedUserGoals.map((goal) => (
-                    <GoalItemCompact 
-                      key={goal.id} 
-                      goal={goal} 
-                      onToggle={handleToggleComplete}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="absolute bottom-0 left-0 right-2 h-2 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+        <div className="relative flex-1">
+          <div className="h-[280px] overflow-y-auto scrollbar-thin">
+            <div className="space-y-2 pr-2 pb-4">
+              {sortedGoals.map((goal) => (
+                <GoalItemCompact 
+                  key={goal.id} 
+                  goal={goal} 
+                  onToggle={handleToggleComplete}
+                />
+              ))}
             </div>
           </div>
-          
-          {/* Manager Goals Section */}
-          {sortedManagerGoals.length > 0 && (
-            <div className="flex flex-col border-t border-border/50 pt-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Shield className="w-3.5 h-3.5 text-gold" />
-                <span className="text-xs font-medium text-muted-foreground">Doelen van leidinggevende</span>
-                <span className="text-xs text-muted-foreground/60">({sortedManagerGoals.length})</span>
-              </div>
-              <div className="relative">
-                <div className="h-[160px] overflow-y-auto scrollbar-thin">
-                  <div className="space-y-2 pr-2 pb-4">
-                    {sortedManagerGoals.map((goal) => (
-                      <GoalItemCompact 
-                        key={goal.id} 
-                        goal={goal} 
-                        onToggle={handleToggleComplete}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-2 h-2 bg-gradient-to-t from-card to-transparent pointer-events-none" />
-              </div>
-            </div>
-          )}
+          <div className="absolute bottom-0 left-0 right-2 h-2 bg-gradient-to-t from-card to-transparent pointer-events-none" />
         </div>
 
-        {/* Goals Management Dialog - Large 70% screen */}
+        {/* Goals Management Dialog */}
         <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
-          <DialogContent className="max-w-[80vw] h-[80vh] flex flex-col p-0 gap-0">
+          <DialogContent className="max-w-2xl h-[80vh] flex flex-col p-0 gap-0">
             <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
               <DialogTitle className="text-lg font-semibold">Doelen Beheren</DialogTitle>
             </DialogHeader>
             
-            <div className="flex-1 overflow-hidden flex flex-col lg:flex-row min-h-0">
-              {/* Personal Goals Column */}
-              <div className="flex-1 flex flex-col border-r border-border min-h-0">
-                <div className="px-6 py-4 border-b border-border/50 shrink-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-medium text-foreground">Mijn doelen</h4>
-                      <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-                        {sortedUserGoals.length}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Add new goal input */}
-                <div className="px-6 py-3 border-b border-border/30 shrink-0">
-                  <div className="flex flex-col gap-2">
-                    <Textarea
-                      placeholder="Nieuw doel toevoegen..."
-                      value={newGoalText}
-                      onChange={(e) => {
-                        setNewGoalText(e.target.value);
-                        // Auto-resize
-                        e.target.style.height = 'auto';
-                        e.target.style.height = Math.max(e.target.scrollHeight, 52) + 'px';
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleAddGoal();
-                        }
-                      }}
-                      className="w-full min-h-[52px] max-h-[150px] resize-none"
-                      rows={2}
-                    />
-                    <Button 
-                      size="sm" 
-                      onClick={handleAddGoal}
-                      disabled={!newGoalText.trim()}
-                      className="self-end"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Toevoegen
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Goals list */}
-                <div className="flex-1 overflow-y-auto px-6 py-4">
-                  <div className="space-y-2">
-                    {sortedUserGoals.map((goal) => (
-                      <GoalItemFull
-                        key={goal.id}
-                        goal={goal}
-                        isEditing={editingGoalId === goal.id}
-                        editingText={editingText}
-                        onToggle={handleToggleComplete}
-                        onDelete={handleDeleteGoal}
-                        onStartEdit={startEditing}
-                        onSaveEdit={saveEdit}
-                        onCancelEdit={cancelEdit}
-                        onEditTextChange={setEditingText}
-                      />
-                    ))}
-                    {sortedUserGoals.length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-8">
-                        Nog geen persoonlijke doelen. Voeg er een toe hierboven.
-                      </p>
-                    )}
-                  </div>
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+              {/* Add new goal input */}
+              <div className="px-6 py-3 border-b border-border/30 shrink-0">
+                <div className="flex flex-col gap-2">
+                  <Textarea
+                    placeholder="Nieuw doel toevoegen..."
+                    value={newGoalText}
+                    onChange={(e) => {
+                      setNewGoalText(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.max(e.target.scrollHeight, 52) + 'px';
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAddGoal();
+                      }
+                    }}
+                    className="w-full min-h-[52px] max-h-[150px] resize-none"
+                    rows={2}
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={handleAddGoal}
+                    disabled={!newGoalText.trim()}
+                    className="self-end"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Toevoegen
+                  </Button>
                 </div>
               </div>
               
-              {/* Manager Goals Column */}
-              <div className="flex-1 flex flex-col bg-gold/5 min-h-0">
-                <div className="px-6 py-4 border-b border-gold/20 shrink-0">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-gold" />
-                    <h4 className="text-sm font-medium text-foreground">Doelen van leidinggevende</h4>
-                    <span className="text-xs text-muted-foreground bg-gold/20 px-2 py-0.5 rounded-full">
-                      {sortedManagerGoals.length}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Deze doelen zijn ingesteld door je leidinggevende
-                  </p>
-                </div>
-                
-                {/* Manager goals list */}
-                <div className="flex-1 overflow-y-auto px-6 py-4">
-                  <div className="space-y-2">
-                    {sortedManagerGoals.map((goal) => (
-                      <GoalItemFull
-                        key={goal.id}
-                        goal={goal}
-                        isEditing={false}
-                        editingText=""
-                        onToggle={handleToggleComplete}
-                        onDelete={() => {}}
-                        onStartEdit={() => {}}
-                        onSaveEdit={() => {}}
-                        onCancelEdit={() => {}}
-                        onEditTextChange={() => {}}
-                        readOnly
-                      />
-                    ))}
-                    {sortedManagerGoals.length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-8">
-                        Geen doelen van leidinggevende.
-                      </p>
-                    )}
-                  </div>
+              {/* Goals list */}
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                <div className="space-y-2">
+                  {sortedGoals.map((goal) => (
+                    <GoalItemFull
+                      key={goal.id}
+                      goal={goal}
+                      isEditing={editingGoalId === goal.id}
+                      editingText={editingText}
+                      onToggle={handleToggleComplete}
+                      onDelete={handleDeleteGoal}
+                      onStartEdit={startEditing}
+                      onSaveEdit={saveEdit}
+                      onCancelEdit={cancelEdit}
+                      onEditTextChange={setEditingText}
+                    />
+                  ))}
+                  {sortedGoals.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      Nog geen doelen. Voeg er een toe hierboven.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -314,12 +200,7 @@ interface GoalItemCompactProps {
 
 function GoalItemCompact({ goal, onToggle }: GoalItemCompactProps) {
   return (
-    <div 
-      className={cn(
-        "flex items-start gap-2.5 group p-1.5 rounded-lg",
-        goal.isManagerGoal && "bg-gold/5 border border-gold/30"
-      )}
-    >
+    <div className="flex items-start gap-2.5 group p-1.5 rounded-lg">
       <Checkbox 
         checked={goal.completed}
         onCheckedChange={() => onToggle(goal.id)}
@@ -327,9 +208,7 @@ function GoalItemCompact({ goal, onToggle }: GoalItemCompactProps) {
           "w-4 h-4 rounded-md border-2 transition-all duration-300 cursor-pointer mt-0.5 flex-shrink-0",
           goal.completed 
             ? "bg-success border-success text-success-foreground" 
-            : goal.isManagerGoal
-              ? "border-gold/50 hover:border-gold"
-              : "border-border hover:border-primary"
+            : "border-border hover:border-primary"
         )}
       />
       <span className={cn(
@@ -340,22 +219,6 @@ function GoalItemCompact({ goal, onToggle }: GoalItemCompactProps) {
       )}>
         {goal.text}
       </span>
-      
-      {/* Manager goal indicator */}
-      {goal.isManagerGoal && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
-                <Shield className="w-3.5 h-3.5 text-gold" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <p>Ingesteld door leidinggevende</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
     </div>
   );
 }
@@ -371,7 +234,6 @@ interface GoalItemFullProps {
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onEditTextChange: (text: string) => void;
-  readOnly?: boolean;
 }
 
 function GoalItemFull({ 
@@ -384,17 +246,9 @@ function GoalItemFull({
   onSaveEdit,
   onCancelEdit,
   onEditTextChange,
-  readOnly = false 
 }: GoalItemFullProps) {
   return (
-    <div 
-      className={cn(
-        "flex items-start gap-3 group p-3 rounded-lg border transition-all",
-        goal.isManagerGoal 
-          ? "bg-gold/5 border-gold/30" 
-          : "bg-card border-border hover:border-primary/30"
-      )}
-    >
+    <div className="flex items-start gap-3 group p-3 rounded-lg border transition-all bg-card border-border hover:border-primary/30">
       <Checkbox 
         checked={goal.completed}
         onCheckedChange={() => onToggle(goal.id)}
@@ -402,9 +256,7 @@ function GoalItemFull({
           "w-5 h-5 rounded-md border-2 transition-all duration-300 cursor-pointer mt-0.5 flex-shrink-0",
           goal.completed 
             ? "bg-success border-success text-success-foreground" 
-            : goal.isManagerGoal
-              ? "border-gold/50 hover:border-gold"
-              : "border-border hover:border-primary"
+            : "border-border hover:border-primary"
         )}
       />
       
@@ -436,49 +288,43 @@ function GoalItemFull({
             {goal.text}
           </span>
           
-          {!readOnly && (
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onStartEdit(goal)}
-                      className="h-7 w-7 hover:bg-primary/20 hover:text-primary"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p>Bewerken</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDelete(goal.id)}
-                      className="h-7 w-7 hover:bg-destructive/20 hover:text-destructive"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p>Verwijderen</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          )}
-          
-          {goal.isManagerGoal && (
-            <Shield className="w-4 h-4 text-gold flex-shrink-0" />
-          )}
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onStartEdit(goal)}
+                    className="h-7 w-7 hover:bg-primary/20 hover:text-primary"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Bewerken</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(goal.id)}
+                    className="h-7 w-7 hover:bg-destructive/20 hover:text-destructive"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Verwijderen</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </>
       )}
     </div>
