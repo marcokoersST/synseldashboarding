@@ -41,8 +41,10 @@ const Index = () => {
       </div>
       
       {/* Top Row - Progress Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="mb-4">
         <SalaryProgressCard delay={100} />
+      </div>
+      <div className="grid grid-cols-2 gap-4 mb-4">
         <PlacementsCard delay={200} />
         <GoalsCard delay={300} />
       </div>
