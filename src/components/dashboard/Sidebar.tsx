@@ -224,6 +224,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnMarketingPage ? ["/marketing"] : []),
     ...(isOnManagerPage ? ["/manager-dashboard"] : []),
     ...(isOnCorporateRecruitmentPage ? ["/corporate-recruitment"] : []),
+    ...(isOnMarcoPage ? ["/marco/productiviteit"] : []),
   ].filter(path => !manuallyCollapsed.includes(path));
 
   const effectiveExpandedItems = [

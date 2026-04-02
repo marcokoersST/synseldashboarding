@@ -142,6 +142,7 @@ const App = () => (
               <Route path="/marketing/vacature-funnel" element={<MarketingVacatureFunnel />} />
               <Route path="/marketing/vacature-aanvraag-funnel" element={<VacatureAanvraagFunnel />} />
               <Route path="/corporate-recruitment/inflow" element={<CorporateRecruitmentInflow />} />
+              <Route path="/marco/productiviteit" element={<ProductiviteitDashboard />} />
             </Route>
             {/* Standalone preview routes (no sidebar/topbar) */}
             <Route path="/preview/consultant" element={
