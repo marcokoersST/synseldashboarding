@@ -147,6 +147,14 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: BarChart3,
+    label: "Dashboards Marco",
+    path: "/marco/productiviteit",
+    subItems: [
+      { icon: TrendingUp, label: "Productiviteitsdashboard", path: "/marco/productiviteit" },
+    ]
+  },
+  {
     icon: Building2,
     label: "Corporate Recruitment",
     path: "/corporate-recruitment",
