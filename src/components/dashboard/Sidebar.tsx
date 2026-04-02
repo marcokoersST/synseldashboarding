@@ -147,6 +147,14 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: BarChart3,
+    label: "Dashboards Marco",
+    path: "/marco/productiviteit",
+    subItems: [
+      { icon: TrendingUp, label: "Productiviteitsdashboard", path: "/marco/productiviteit" },
+    ]
+  },
+  {
     icon: Building2,
     label: "Corporate Recruitment",
     path: "/corporate-recruitment",
@@ -201,6 +209,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnManagerPage = location.pathname.startsWith("/manager-dashboard");
   const isOnMarketingPage = location.pathname.startsWith("/marketing");
   const isOnCorporateRecruitmentPage = location.pathname.startsWith("/corporate-recruitment");
+  const isOnMarcoPage = location.pathname.startsWith("/marco/");
   
   const isOnRanglijstenPage = location.pathname.startsWith("/tv/ranglijsten");
   
@@ -215,6 +224,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnMarketingPage ? ["/marketing"] : []),
     ...(isOnManagerPage ? ["/manager-dashboard"] : []),
     ...(isOnCorporateRecruitmentPage ? ["/corporate-recruitment"] : []),
+    ...(isOnMarcoPage ? ["/marco/productiviteit"] : []),
   ].filter(path => !manuallyCollapsed.includes(path));
 
   const effectiveExpandedItems = [
