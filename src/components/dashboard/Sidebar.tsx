@@ -264,7 +264,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
         isCollapsed ? "w-16" : "w-64"
       )}>
         {/* Logo */}
-        <div className="p-6 flex items-center overflow-hidden">
+        <div className="h-14 px-6 flex items-center overflow-hidden shrink-0">
           <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
             <span className="text-sidebar-primary-foreground font-bold text-sm">S</span>
           </div>
