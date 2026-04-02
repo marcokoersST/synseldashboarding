@@ -58,6 +58,11 @@ const navItems: NavItem[] = [
     path: "/peter-jan/omzet-dashboard",
   },
   { 
+    icon: Filter, 
+    label: "Vacaturetitel Funnel", 
+    path: "/marketing/vacature-funnel",
+  },
+  { 
     icon: LayoutDashboard, 
     label: "Dashboard", 
     path: "/",
