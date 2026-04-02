@@ -64,6 +64,7 @@ const PeterJanOmzetDashboard = lazy(() => import("./pages/peter-jan/OmzetDashboa
 const MarketingInschrijvingen = lazy(() => import("./pages/marketing/InschrijvingenDashboard"));
 const MarketingVacatureFunnel = lazy(() => import("./pages/marketing/VacatureFunnelMonitor"));
 const MarketingInflow = lazy(() => import("./pages/marketing/InflowDashboard"));
+const VacatureAanvraagFunnel = lazy(() => import("./pages/marketing/VacatureAanvraagFunnel"));
 const CorporateRecruitmentInflow = lazy(() => import("./pages/corporate-recruitment/InflowDashboard"));
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
@@ -138,6 +139,7 @@ const App = () => (
               <Route path="/marketing/inschrijvingen" element={<MarketingInschrijvingen />} />
               <Route path="/marketing/inflow" element={<MarketingInflow />} />
               <Route path="/marketing/vacature-funnel" element={<MarketingVacatureFunnel />} />
+              <Route path="/marketing/vacature-aanvraag-funnel" element={<VacatureAanvraagFunnel />} />
               <Route path="/corporate-recruitment/inflow" element={<CorporateRecruitmentInflow />} />
             </Route>
             {/* Standalone preview routes (no sidebar/topbar) */}
