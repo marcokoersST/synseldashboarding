@@ -129,7 +129,6 @@ const navItems: NavItem[] = [
     subItems: [
       { icon: TrendingUp, label: "Sales Flow Dashboards", path: "/peter-jan/sales-flow" },
       { icon: Filter, label: "Acquisitie Funnel", path: "/peter-jan/acquisitie-funnel" },
-      { icon: BarChart3, label: "Omzetdashboard", path: "/peter-jan/omzet-dashboard" }
     ]
   },
   {
