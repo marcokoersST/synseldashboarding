@@ -1,28 +1,71 @@
 
 
-# Plan: Salaris & Bonus als twee naast-elkaar-staande panelen
+# Plan: Donkere topbalk doorlopend vanuit sidebar + opruimen TopBar
 
 ## Wat verandert
 
-De huidige `SalaryProgressCard` gebruikt een toggle om te wisselen tussen salaris- en bonusmodus. Dit wordt vervangen door **één brede kaart met twee panelen naast elkaar**, gescheiden door een verticale lijn.
+De donkere sidebar-achtergrond loopt door in een topbalk over de volle breedte. De content-area krijgt een afgeronde binnenhoek (linksboven). Zoekbalk en periodeselector worden verwijderd. Acties zoals "TV Modus" verhuizen naar de donkere topbalk.
 
-### `src/components/dashboard/SalaryProgressCard.tsx`
-- Verwijder de `mode` state en toggle-knoppen
-- Render beide views (salaris links, bonus rechts) naast elkaar in een `flex` container met `divide-x`
-- Linker paneel: "Voortgang naar volgende salarisstap" (TrendingUp icoon) — huidige salaris-view
-- Rechter paneel: "Voortgang naar volgende bonusstap" (DollarSign icoon) — huidige bonus-view
-- Elk paneel bevat: percentage, subtitle, 3-koloms info, progress bar, range labels, en bottom sectie
-- Beide panelen delen dezelfde data/berekeningen die nu al bestaan
+## Wijzigingen
 
-### `src/pages/Index.tsx`
-- `SalaryProgressCard` neemt nu meer ruimte in; pas de grid aan van `grid-cols-3` naar een layout waar de salary+bonus kaart de volle breedte of 2 kolommen pakt:
-  - Regel 44: `grid grid-cols-3` → de SalaryProgressCard krijgt `col-span-2` (of de grid wordt `grid-cols-2` met PlacementsCard en GoalsCard eronder)
-  - Alternatief: SalaryProgressCard op eigen rij (volle breedte), PlacementsCard + GoalsCard op rij eronder
+### 1. `src/components/layout/AppLayout.tsx` — Nieuwe layout structuur
+
+Huidige structuur:
+```text
+┌──────────┬─────────────────────────┐
+│          │  TopBar (licht)         │
+│ Sidebar  ├─────────────────────────┤
+│ (donker) │  Content                │
+│          │                         │
+└──────────┴─────────────────────────┘
+```
+
+Nieuwe structuur:
+```text
+┌──────────┬─────────────────────────┐
+│  Logo    │  DarkTopBar (donker)    │
+├──────────┤╭────────────────────────┤
+│ Sidebar  ││ Content (afgerond LB)  │
+│ (donker) ││                        │
+└──────────┘╰────────────────────────┘
+```
+
+- Verander van `flex` (zij-aan-zij) naar een grid/flex met een donkere header-rij bovenaan
+- De sidebar en donkere topbalk delen dezelfde donkere achtergrondkleur (`--sidebar-background`)
+- Het content-panel krijgt `rounded-tl-2xl` (of `rounded-tl-xl`) en een lichte achtergrond, waardoor de "interne afronding" ontstaat zoals in het referentie-design
+- De hele rechterkolom (topbar + content) zit in een container met donkere achtergrond, met daarbinnen het lichte content-panel dat de afgeronde hoek maakt
+
+### 2. `src/components/dashboard/TopBar.tsx` — Donkere topbalk
+
+- Verwijder de zoekbalk (Search + Input)
+- Verwijder de periodeselector (P1-P13 knoppen)
+- Achtergrond wordt donker (`bg-sidebar` / sidebar kleuren)
+- Tekst wordt licht (`text-sidebar-foreground`)
+- Voeg een slot/children prop toe zodat pagina's hun eigen acties (zoals "TV Modus") in de balk kunnen plaatsen
+- Alternatief: maak de TopBar een simpele donkere balk die via React context of Outlet context acties ontvangt
+
+### 3. `src/components/tv/TVDashboardLayout.tsx` — TV Modus knop verhuizen
+
+- De "TV Modus" knop wordt verplaatst naar de donkere topbalk (via de TopBar children/slot)
+- In non-fullscreen modus rendert TVDashboardLayout de TV Modus knop als onderdeel van de topbalk in plaats van in de content-area
+- In fullscreen modus blijft het huidige gedrag behouden
+
+### 4. `src/components/dashboard/Sidebar.tsx` — Logo-gebied aanpassen
+
+- Het logo-gedeelte bovenaan de sidebar blijft, maar de hoogte moet matchen met de nieuwe donkere topbalk (bijv. beide `h-14`)
+- Dit zorgt voor visuele uitlijning tussen sidebar-logo en topbalk
+
+### 5. `src/index.css` — Eventuele utility classes
+
+- Voeg indien nodig een `rounded-tl-2xl` variant toe of gebruik bestaande Tailwind classes voor de binnenafronding
 
 ## Bestanden
 
 | Bestand | Wijziging |
 |---|---|
-| `src/components/dashboard/SalaryProgressCard.tsx` | Twee panelen naast elkaar, geen toggle |
-| `src/pages/Index.tsx` | Grid layout aanpassen voor bredere kaart |
+| `src/components/layout/AppLayout.tsx` | Nieuwe layout: donkere wrapper, content met afgeronde hoek |
+| `src/components/dashboard/TopBar.tsx` | Strip tot donkere balk, verwijder zoek + periodes, voeg children slot toe |
+| `src/components/dashboard/Sidebar.tsx` | Logo-hoogte afstemmen op topbalk |
+| `src/components/tv/TVDashboardLayout.tsx` | TV Modus knop via topbalk renderen (non-fullscreen) |
+| `src/index.css` | Eventuele styling aanpassingen |
 
