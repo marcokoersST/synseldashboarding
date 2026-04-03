@@ -64,7 +64,7 @@ const navItems: NavItem[] = [
   },
   { 
     icon: LayoutDashboard, 
-    label: "Dashboard", 
+    label: "Dashboard consultant", 
     path: "/",
     sectionLabel: "Pending feedback beta-groep & stakeholders",
     subItems: [
