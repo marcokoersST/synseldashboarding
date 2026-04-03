@@ -216,7 +216,7 @@ export function CallsStatsCard({ delay = 0 }: CardProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Phone className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold text-foreground">Gesprekken</h3>
+            <h3 className="font-semibold text-foreground">Telefonie</h3>
           </div>
           <Button
             variant="ghost" size="icon" onClick={toggle}
@@ -248,7 +248,7 @@ function CallsOverviewView({ delay }: { delay: number }) {
       {/* Big number hero */}
       <div className="text-center py-2">
         <AnimatedNumber value={total} delay={delay + 100} className="text-4xl font-bold text-foreground" />
-        <p className="text-xs text-muted-foreground mt-1">totaal gesprekken</p>
+        <p className="text-xs text-muted-foreground mt-1">totaal telefonie</p>
       </div>
 
       {/* Ratio bar */}
