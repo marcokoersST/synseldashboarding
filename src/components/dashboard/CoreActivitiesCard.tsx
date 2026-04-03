@@ -18,7 +18,7 @@ const activities = [
   },
   { 
     icon: Phone, 
-    label: "Gesprekken", 
+    label: "Telefonie", 
     value: 136, 
     data: [
       { value: 18, day: "Ma 13 jan" }, { value: 22, day: "Di 14 jan" }, { value: 16, day: "Wo 15 jan" }, { value: 25, day: "Do 16 jan" }, 

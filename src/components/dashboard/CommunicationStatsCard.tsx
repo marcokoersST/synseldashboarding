@@ -248,7 +248,7 @@ function CallsOverviewView({ delay }: { delay: number }) {
       {/* Big number hero */}
       <div className="text-center py-2">
         <AnimatedNumber value={total} delay={delay + 100} className="text-4xl font-bold text-foreground" />
-        <p className="text-xs text-muted-foreground mt-1">totaal gesprekken</p>
+        <p className="text-xs text-muted-foreground mt-1">totaal telefonie</p>
       </div>
 
       {/* Ratio bar */}

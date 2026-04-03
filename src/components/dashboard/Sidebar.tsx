@@ -73,7 +73,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: BarChart3,
-    label: "Consultant",
+    label: "Consultant sub dashboards",
     path: "/consultant/geld-bonus",
     subItems: [
       { icon: BarChart3, label: "Geld & Bonus", path: "/consultant/geld-bonus" },
