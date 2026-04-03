@@ -1,9 +1,34 @@
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
+import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { useNavigate } from "react-router-dom";
+import { Maximize2, Minimize2, TrendingUp, TrendingDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
+// ─── Detail toggle hook ───
+function useDetailToggle() {
+  const [isDetailMode, setIsDetailMode] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayMode, setDisplayMode] = useState(false);
+
+  const toggle = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      const newMode = !isDetailMode;
+      setIsDetailMode(newMode);
+      setDisplayMode(newMode);
+      setTimeout(() => setIsTransitioning(false), 120);
+    }, 300);
+  };
+
+  return { isDetailMode, isTransitioning, displayMode, toggle };
+}
+
+// ─── Chart data ───
 const LEGEND_GROUPS: Record<string, string[]> = {
   werkelijk: ["werkelijk"],
   geprojecteerd: ["geprojecteerd"],
@@ -35,6 +60,21 @@ const COLORS = {
   bestPerformer: "#ec4899",
 };
 
+// ─── Detailed mode data ───
+type FilterMode = "week" | "periode" | "custom";
+
+const candidateInvoiceData = [
+  { kandidaat: "Mark de Vries", klant: "TechCorp BV", omzet: 8400, periode: "W14", status: "Actief", vorige: 7200 },
+  { kandidaat: "Lisa Jansen", klant: "Bouwgroep NL", omzet: 6200, periode: "W14", status: "Actief", vorige: 6800 },
+  { kandidaat: "Tom Bakker", klant: "FinanceFirst", omzet: 5800, periode: "W14", status: "Actief", vorige: 5100 },
+  { kandidaat: "Sara Mol", klant: "LogiPlan BV", omzet: 4900, periode: "W14", status: "Afgerond", vorige: 4900 },
+  { kandidaat: "Pieter Smit", klant: "DataDriven NL", omzet: 4200, periode: "W14", status: "Actief", vorige: 3600 },
+  { kandidaat: "Emma de Boer", klant: "MedTech Group", omzet: 3800, periode: "W14", status: "Actief", vorige: 4100 },
+  { kandidaat: "Koen van Dijk", klant: "RetailMax BV", omzet: 2100, periode: "W14", status: "Pauze", vorige: 2100 },
+  { kandidaat: "Julia Peters", klant: "EnergieWerk", omzet: 1600, periode: "W14", status: "Actief", vorige: 0 },
+];
+
+// ─── Chart tooltip ───
 interface CustomTooltipProps {
   active?: boolean;
   payload?: any[];
@@ -96,11 +136,8 @@ function CustomTooltip({ active, payload, label, onNavigate }: CustomTooltipProp
   );
 }
 
-interface RevenueChartProps {
-  delay?: number;
-}
-
-export function RevenueChart({ delay = 0 }: RevenueChartProps) {
+// ─── Overview chart view ───
+function OverviewView({ delay }: { delay: number }) {
   const { ref, isVisible } = useAnimateOnMount({ delay: delay + 300 });
   const navigate = useNavigate();
   const [activeLine, setActiveLine] = useState<string | null>(null);
@@ -120,122 +157,213 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
   ];
 
   return (
-    <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border" onClick={() => setActiveLine(null)}>
-        <div className="flex flex-col gap-3 mb-6">
-          <div className="flex items-center justify-between">
+    <>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-6">
+        {legendItems.map((item) => (
+          <div
+            key={item.key}
+            className="flex items-center gap-1.5 cursor-pointer transition-opacity duration-300 ease-in-out"
+            style={{ opacity: !activeLine || activeLine === item.key ? 1 : 0.5 }}
+            onClick={(e) => { e.stopPropagation(); setActiveLine(activeLine === item.key ? null : item.key); }}
+          >
+            {item.swatch}
+            <span className={`text-[11px] transition-all duration-300 ${activeLine === item.key ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+              {item.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div ref={ref} className="h-64" onClick={() => setActiveLine(null)}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={{ stroke: 'hsl(var(--border))' }} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} tickFormatter={(value) => `€${value / 1000}k`} />
+            <Tooltip content={<CustomTooltip onNavigate={() => navigate("/vergelijking/1")} />} />
+            <Line type="monotone" dataKey="minimumNorm" stroke={COLORS.minimumNorm} strokeWidth={1.5} strokeDasharray={activeLine === "minimumNorm" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("minimumNorm")} style={{ transition: "stroke-opacity 300ms ease" }} />
+            <Line type="monotone" dataKey="fastLane" stroke={COLORS.fastLane} strokeWidth={1.5} strokeDasharray={activeLine === "fastLane" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("fastLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
+            <Line type="monotone" dataKey="executiveLane" stroke={COLORS.executiveLane} strokeWidth={1.5} strokeDasharray={activeLine === "executiveLane" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("executiveLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
+            <Line type="monotone" dataKey="bestPerformer" stroke={COLORS.bestPerformer} strokeWidth={2} dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("bestPerformer") }} activeDot={{ r: 5, cursor: "pointer" }} connectNulls={false} cursor="pointer" onClick={() => navigate("/vergelijking/1")} strokeOpacity={getLineOpacity("bestPerformer")} style={{ transition: "stroke-opacity 300ms ease" }} />
+            <Line type="monotone" dataKey="bestPerformerProj" stroke={COLORS.bestPerformer} strokeWidth={2} strokeDasharray={activeLine === "bestPerformer" ? "0" : "6 4"} dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("bestPerformerProj") }} activeDot={{ r: 5, cursor: "pointer" }} connectNulls={false} cursor="pointer" onClick={() => navigate("/vergelijking/1")} strokeOpacity={getLineOpacity("bestPerformerProj")} style={{ transition: "stroke-opacity 300ms ease" }} />
+            <Line type="monotone" dataKey="werkelijk" stroke="hsl(var(--teal))" strokeWidth={2.5} dot={{ fill: 'hsl(var(--teal))', strokeWidth: 0, r: 4, fillOpacity: getLineOpacity("werkelijk") }} activeDot={{ r: 6, className: "animate-pulse-subtle" }} connectNulls={false} strokeDasharray={isVisible ? "0" : "2000"} strokeDashoffset={isVisible ? "0" : "2000"} strokeOpacity={getLineOpacity("werkelijk")} style={{ transition: "stroke-dasharray 2s ease-out, stroke-dashoffset 2s ease-out, stroke-opacity 300ms ease" }} />
+            <Line type="monotone" dataKey="geprojecteerd" stroke="hsl(var(--primary))" strokeWidth={2.5} strokeDasharray={activeLine === "geprojecteerd" ? "0" : (isVisible ? "8 4" : "2000")} dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4, fillOpacity: getLineOpacity("geprojecteerd") }} activeDot={{ r: 6, className: "animate-pulse-subtle" }} connectNulls={false} strokeOpacity={getLineOpacity("geprojecteerd")} style={{ transition: "stroke-dasharray 2s ease-out 0.5s, stroke-opacity 300ms ease" }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </>
+  );
+}
+
+// ─── Detailed view ───
+function DetailedView({ delay }: { delay: number }) {
+  const [filterMode, setFilterMode] = useState<FilterMode>("week");
+  const [compareEnabled, setCompareEnabled] = useState(true);
+
+  const filterOptions: { value: FilterMode; label: string }[] = [
+    { value: "week", label: "Week" },
+    { value: "periode", label: "Periode" },
+    { value: "custom", label: "Aangepast" },
+  ];
+
+  const totalOmzet = candidateInvoiceData.reduce((sum, c) => sum + c.omzet, 0);
+  const totalVorige = candidateInvoiceData.reduce((sum, c) => sum + c.vorige, 0);
+  const totalDelta = totalOmzet - totalVorige;
+  const totalDeltaPct = totalVorige > 0 ? ((totalDelta / totalVorige) * 100) : 0;
+
+  return (
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1 bg-secondary/40 rounded-lg p-0.5">
+          {filterOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setFilterMode(opt.value)}
+              className={cn(
+                "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                filterMode === opt.value
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-muted-foreground">Vergelijking</span>
+          <button
+            onClick={() => setCompareEnabled(!compareEnabled)}
+            className={cn(
+              "relative w-8 h-4.5 rounded-full transition-colors",
+              compareEnabled ? "bg-primary" : "bg-secondary"
+            )}
+          >
+            <div className={cn(
+              "absolute top-0.5 w-3.5 h-3.5 rounded-full bg-background shadow-sm transition-transform",
+              compareEnabled ? "translate-x-4" : "translate-x-0.5"
+            )} />
+          </button>
+        </div>
+      </div>
+
+      {/* Summary */}
+      <div className="flex items-center gap-6 bg-secondary/20 rounded-lg px-4 py-3">
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Totaal gefactureerd</p>
+          <AnimatedNumber value={totalOmzet} delay={delay + 100} className="text-2xl font-bold text-foreground" prefix="€" />
+        </div>
+        {compareEnabled && (
+          <div className="flex items-center gap-2 pl-4 border-l border-border">
             <div>
-              <h3 className="text-sm font-medium text-foreground">Omzet Overzicht</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Historisch vs. Geprojecteerd</p>
+              <p className="text-[10px] text-muted-foreground">Vorige periode</p>
+              <span className="text-sm font-semibold text-muted-foreground">€{totalVorige.toLocaleString()}</span>
+            </div>
+            <div className={cn(
+              "flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full",
+              totalDelta >= 0 ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"
+            )}>
+              {totalDelta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+              {totalDeltaPct >= 0 ? "+" : ""}{totalDeltaPct.toFixed(1)}%
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Legend - interactive */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-            {legendItems.map((item) => (
-              <div
-                key={item.key}
-                className="flex items-center gap-1.5 cursor-pointer transition-opacity duration-300 ease-in-out"
-                style={{ opacity: !activeLine || activeLine === item.key ? 1 : 0.5 }}
-                onClick={(e) => { e.stopPropagation(); setActiveLine(activeLine === item.key ? null : item.key); }}
-              >
-                {item.swatch}
-                <span className={`text-[11px] transition-all duration-300 ${activeLine === item.key ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                  {item.label}
-                </span>
-              </div>
-            ))}
+      {/* Candidate table */}
+      <div className="overflow-auto rounded-lg border border-border">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="bg-secondary/30 border-b border-border">
+              <th className="text-left py-2 px-3 font-medium text-muted-foreground">Kandidaat</th>
+              <th className="text-left py-2 px-3 font-medium text-muted-foreground">Klant</th>
+              <th className="text-right py-2 px-3 font-medium text-muted-foreground">Gefactureerd</th>
+              {compareEnabled && (
+                <>
+                  <th className="text-right py-2 px-3 font-medium text-muted-foreground">Vorige</th>
+                  <th className="text-right py-2 px-3 font-medium text-muted-foreground">Δ</th>
+                </>
+              )}
+              <th className="text-center py-2 px-3 font-medium text-muted-foreground">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {candidateInvoiceData.map((row, i) => {
+              const delta = row.omzet - row.vorige;
+              const deltaPct = row.vorige > 0 ? ((delta / row.vorige) * 100) : (row.omzet > 0 ? 100 : 0);
+              return (
+                <tr key={i} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                  <td className="py-2 px-3 font-medium text-foreground">{row.kandidaat}</td>
+                  <td className="py-2 px-3 text-muted-foreground">{row.klant}</td>
+                  <td className="py-2 px-3 text-right font-semibold text-foreground tabular-nums">€{row.omzet.toLocaleString()}</td>
+                  {compareEnabled && (
+                    <>
+                      <td className="py-2 px-3 text-right text-muted-foreground tabular-nums">
+                        {row.vorige > 0 ? `€${row.vorige.toLocaleString()}` : "—"}
+                      </td>
+                      <td className="py-2 px-3 text-right">
+                        <span className={cn(
+                          "text-[10px] font-medium px-1.5 py-0.5 rounded-full tabular-nums",
+                          delta > 0 ? "bg-success/15 text-success" : delta < 0 ? "bg-destructive/15 text-destructive" : "bg-secondary text-muted-foreground"
+                        )}>
+                          {delta > 0 ? "+" : ""}{deltaPct.toFixed(0)}%
+                        </span>
+                      </td>
+                    </>
+                  )}
+                  <td className="py-2 px-3 text-center">
+                    <span className={cn(
+                      "text-[10px] font-medium px-2 py-0.5 rounded-full",
+                      row.status === "Actief" ? "bg-success/15 text-success" :
+                      row.status === "Afgerond" ? "bg-muted text-muted-foreground" :
+                      "bg-primary/15 text-primary"
+                    )}>
+                      {row.status}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main component ───
+interface RevenueChartProps {
+  delay?: number;
+}
+
+export function RevenueChart({ delay = 0 }: RevenueChartProps) {
+  const { isTransitioning, displayMode, toggle } = useDetailToggle();
+
+  return (
+    <AnimatedCard delay={delay}>
+      <div className="bg-card rounded-xl p-5 border border-border">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">Omzet Overzicht</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {displayMode ? "Facturatie per kandidaat" : "Historisch vs. Geprojecteerd"}
+            </p>
           </div>
+          <Button
+            variant="ghost" size="icon" onClick={toggle}
+            className="h-7 w-7 rounded-full bg-secondary hover:bg-secondary/80"
+            title={displayMode ? "Toon overzicht" : "Toon details"}
+          >
+            {displayMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          </Button>
         </div>
 
-        <div ref={ref} className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--border))' }}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(value) => `€${value / 1000}k`}
-              />
-              <Tooltip content={<CustomTooltip onNavigate={() => navigate("/vergelijking/1")} />} />
-
-              {/* Minimum Norm - gray dotted thin */}
-              <Line type="monotone" dataKey="minimumNorm" stroke={COLORS.minimumNorm} strokeWidth={1.5} strokeDasharray={activeLine === "minimumNorm" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("minimumNorm")} style={{ transition: "stroke-opacity 300ms ease" }} />
-
-              {/* Fast Lane - orange dotted thin */}
-              <Line type="monotone" dataKey="fastLane" stroke={COLORS.fastLane} strokeWidth={1.5} strokeDasharray={activeLine === "fastLane" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("fastLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
-
-              {/* Executive Lane - purple dotted thin */}
-              <Line type="monotone" dataKey="executiveLane" stroke={COLORS.executiveLane} strokeWidth={1.5} strokeDasharray={activeLine === "executiveLane" ? "0" : "3 4"} dot={false} activeDot={false} strokeOpacity={getLineOpacity("executiveLane")} style={{ transition: "stroke-opacity 300ms ease" }} />
-
-              {/* Best Performer actual - pink solid medium */}
-              <Line
-                type="monotone"
-                dataKey="bestPerformer"
-                stroke={COLORS.bestPerformer}
-                strokeWidth={2}
-                dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("bestPerformer") }}
-                activeDot={{ r: 5, cursor: "pointer" }}
-                connectNulls={false}
-                cursor="pointer"
-                onClick={() => navigate("/vergelijking/1")}
-                strokeOpacity={getLineOpacity("bestPerformer")}
-                style={{ transition: "stroke-opacity 300ms ease" }}
-              />
-
-              {/* Best Performer projected - pink dashed medium */}
-              <Line
-                type="monotone"
-                dataKey="bestPerformerProj"
-                stroke={COLORS.bestPerformer}
-                strokeWidth={2}
-                strokeDasharray={activeLine === "bestPerformer" ? "0" : "6 4"}
-                dot={{ fill: COLORS.bestPerformer, strokeWidth: 0, r: 3, fillOpacity: getLineOpacity("bestPerformerProj") }}
-                activeDot={{ r: 5, cursor: "pointer" }}
-                connectNulls={false}
-                cursor="pointer"
-                onClick={() => navigate("/vergelijking/1")}
-                strokeOpacity={getLineOpacity("bestPerformerProj")}
-                style={{ transition: "stroke-opacity 300ms ease" }}
-              />
-
-              {/* Werkelijk - teal solid thick */}
-              <Line
-                type="monotone"
-                dataKey="werkelijk"
-                stroke="hsl(var(--teal))"
-                strokeWidth={2.5}
-                dot={{ fill: 'hsl(var(--teal))', strokeWidth: 0, r: 4, fillOpacity: getLineOpacity("werkelijk") }}
-                activeDot={{ r: 6, className: "animate-pulse-subtle" }}
-                connectNulls={false}
-                strokeDasharray={isVisible ? "0" : "2000"}
-                strokeDashoffset={isVisible ? "0" : "2000"}
-                strokeOpacity={getLineOpacity("werkelijk")}
-                style={{ transition: "stroke-dasharray 2s ease-out, stroke-dashoffset 2s ease-out, stroke-opacity 300ms ease" }}
-              />
-
-              {/* Geprojecteerd - primary dashed thick */}
-              <Line
-                type="monotone"
-                dataKey="geprojecteerd"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2.5}
-                strokeDasharray={activeLine === "geprojecteerd" ? "0" : (isVisible ? "8 4" : "2000")}
-                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4, fillOpacity: getLineOpacity("geprojecteerd") }}
-                activeDot={{ r: 6, className: "animate-pulse-subtle" }}
-                connectNulls={false}
-                strokeOpacity={getLineOpacity("geprojecteerd")}
-                style={{ transition: "stroke-dasharray 2s ease-out 0.5s, stroke-opacity 300ms ease" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className={cn(
+          "transition-all duration-400 ease-in-out",
+          isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
+        )}>
+          {displayMode ? <DetailedView delay={delay} /> : <OverviewView delay={delay} />}
         </div>
       </div>
     </AnimatedCard>
