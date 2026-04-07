@@ -165,37 +165,39 @@ export default function InflowDashboard() {
         />
       </div>
 
-      {/* Tables + Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Tables side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Source table */}
         <Card className="border border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Inschrijvingen & Acquisitie per Bron</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Bron</TableHead>
-                  <TableHead className="text-right">Inschrijvingen</TableHead>
-                  <TableHead className="text-right">Acquisitie</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {inflowSourceData.map((s) => (
-                  <TableRow key={s.bron}>
-                    <TableCell className="font-medium">{s.bron}</TableCell>
-                    <TableCell className="text-right tabular-nums">{s.inschrijvingen}</TableCell>
-                    <TableCell className="text-right tabular-nums">{s.acquisitie}</TableCell>
+            <div className="max-h-[480px] overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3">Bron</TableHead>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right">Inschrijvingen</TableHead>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right">Acquisitie</TableHead>
                   </TableRow>
-                ))}
-                <TableRow className="bg-muted/50 font-semibold">
-                  <TableCell>Totaal</TableCell>
-                  <TableCell className="text-right tabular-nums">{sourceTotals.inschrijvingen}</TableCell>
-                  <TableCell className="text-right tabular-nums">{sourceTotals.acquisitie}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {inflowSourceData.map((s) => (
+                    <TableRow key={s.bron}>
+                      <TableCell className="font-medium py-2 px-3">{s.bron}</TableCell>
+                      <TableCell className="text-right tabular-nums py-2 px-3">{s.inschrijvingen}</TableCell>
+                      <TableCell className="text-right tabular-nums py-2 px-3">{s.acquisitie}</TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="bg-muted/50 font-semibold sticky bottom-0">
+                    <TableCell className="py-2 px-3">Totaal</TableCell>
+                    <TableCell className="text-right tabular-nums py-2 px-3">{sourceTotals.inschrijvingen}</TableCell>
+                    <TableCell className="text-right tabular-nums py-2 px-3">{sourceTotals.acquisitie}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
@@ -205,76 +207,76 @@ export default function InflowDashboard() {
             <CardTitle className="text-base">Inschrijvingen & Acquisitie per Consultant</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Consultant</TableHead>
-                  <TableHead className="text-right">Inschrijvingen</TableHead>
-                  <TableHead className="text-right">Acquisitie</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {inflowConsultantData.map((c) => (
-                  <TableRow key={c.consultant}>
-                    <TableCell className="font-medium">{c.consultant}</TableCell>
-                    <TableCell className="text-right tabular-nums">{c.inschrijvingen}</TableCell>
-                    <TableCell className="text-right tabular-nums">{c.acquisitie}</TableCell>
+            <div className="max-h-[480px] overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3">Consultant</TableHead>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right">Inschrijvingen</TableHead>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right">Acquisitie</TableHead>
                   </TableRow>
-                ))}
-                <TableRow className="bg-muted/50 font-semibold">
-                  <TableCell>Totaal</TableCell>
-                  <TableCell className="text-right tabular-nums">{consultantTotals.inschrijvingen}</TableCell>
-                  <TableCell className="text-right tabular-nums">{consultantTotals.acquisitie}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Unit bar chart — redesigned */}
-        <Card className="border border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Inschrijvingen & Acquisitie per Unit</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={340}>
-              <BarChart data={unitChartData} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="gradInschrijvingen" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="hsl(175, 60%, 45%)" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="hsl(175, 60%, 55%)" stopOpacity={1} />
-                  </linearGradient>
-                  <linearGradient id="gradAcquisitie" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="hsl(35, 80%, 55%)" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="hsl(35, 80%, 65%)" stopOpacity={1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="unit" type="category" width={110} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "var(--radius)",
-                    color: "hsl(var(--foreground))",
-                    fontSize: "12px",
-                  }}
-                />
-                <Legend
-                  wrapperStyle={{ fontSize: "12px" }}
-                />
-                <Bar dataKey="inschrijvingen" name="Inschrijvingen" fill="url(#gradInschrijvingen)" radius={[0, 6, 6, 0]} barSize={16}>
-                  <LabelList dataKey="inschrijvingen" position="right" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                </Bar>
-                <Bar dataKey="acquisitie" name="Acquisitie" fill="url(#gradAcquisitie)" radius={[0, 6, 6, 0]} barSize={16}>
-                  <LabelList dataKey="acquisitie" position="right" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+                </TableHeader>
+                <TableBody>
+                  {inflowConsultantData.map((c) => (
+                    <TableRow key={c.consultant}>
+                      <TableCell className="font-medium py-2 px-3">{c.consultant}</TableCell>
+                      <TableCell className="text-right tabular-nums py-2 px-3">{c.inschrijvingen}</TableCell>
+                      <TableCell className="text-right tabular-nums py-2 px-3">{c.acquisitie}</TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="bg-muted/50 font-semibold sticky bottom-0">
+                    <TableCell className="py-2 px-3">Totaal</TableCell>
+                    <TableCell className="text-right tabular-nums py-2 px-3">{consultantTotals.inschrijvingen}</TableCell>
+                    <TableCell className="text-right tabular-nums py-2 px-3">{consultantTotals.acquisitie}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Unit bar chart — full width, horizontal */}
+      <Card className="border border-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Inschrijvingen & Acquisitie per Unit</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={unitChartData} margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+              <defs>
+                <linearGradient id="gradInschrijvingen" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(175, 60%, 45%)" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="hsl(175, 60%, 55%)" stopOpacity={1} />
+                </linearGradient>
+                <linearGradient id="gradAcquisitie" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(35, 80%, 55%)" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="hsl(35, 80%, 65%)" stopOpacity={1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="unit" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: "var(--radius)",
+                  color: "hsl(var(--foreground))",
+                  fontSize: "12px",
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: "12px" }} />
+              <Bar dataKey="inschrijvingen" name="Inschrijvingen" fill="url(#gradInschrijvingen)" radius={[6, 6, 0, 0]} barSize={28}>
+                <LabelList dataKey="inschrijvingen" position="top" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+              </Bar>
+              <Bar dataKey="acquisitie" name="Acquisitie" fill="url(#gradAcquisitie)" radius={[6, 6, 0, 0]} barSize={28}>
+                <LabelList dataKey="acquisitie" position="top" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     </ConsultantLayout>
   );
 }
