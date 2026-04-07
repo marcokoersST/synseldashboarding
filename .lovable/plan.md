@@ -1,36 +1,30 @@
 
 
-# Plan: Inflow Dashboard layout verbeteren
+# Plan: Totaalrij altijd zichtbaar + Unit filter
 
-## Probleem
-
-De huidige layout plaatst drie kaarten (Bron-tabel, Consultant-tabel, Unit-chart) in een 3-koloms grid, waardoor alles te smal is — vooral de tabellen met lange tekst en de chart.
-
-## Nieuwe layout
+## Wijzigingen
 
 ### `src/pages/marketing/InflowDashboard.tsx`
 
-**Rij 1 — Scorecards** (ongewijzigd): 2 kolommen
+**1. Totaalrij altijd zichtbaar**
+- Verplaats de totaalrij uit de scrollbare `<Table>` container
+- Structuur wordt: scrollbare tabel-body in een `div` met `max-h` + overflow, en daaronder een apart vast "footer" element met de totaalrij — buiten de scroll-container
+- Gebruik een aparte `<table>` of `<div>` met dezelfde kolom-breedtes voor de totaalrij, zodat deze altijd zichtbaar blijft onderaan de card
 
-**Rij 2 — Tabellen naast elkaar**: `grid-cols-1 lg:grid-cols-2`
-- Bron-tabel (links, ~50%)
-- Consultant-tabel (rechts, ~50%)
-- Beide tabellen krijgen `max-h-[480px] overflow-auto` zodat ze scrollbaar zijn bij veel rijen
-- Compactere tabel-cellen: `py-2 px-3` in plaats van standaard `p-4`
-
-**Rij 3 — Unit chart volle breedte**: eigen rij, `col-span-full`
-- Wijzig van `layout="vertical"` naar `layout="horizontal"` (verticale bars) — ziet er beter uit op volle breedte
-- Vergroot hoogte van 340px naar 300px
-- Meer ruimte voor labels, bars worden breder en leesbaarder
-
-### Visuele verbeteringen
-- Tabel header sticky (`sticky top-0 bg-background z-10`) zodat kolomkoppen zichtbaar blijven bij scrollen
-- Totaalrij sticky aan onderkant (`sticky bottom-0`)
-- Consistente card padding en spacing
+**2. Unit filter toevoegen**
+- Voeg een unit multi-select filter toe in de filterbar (naast de datumpicker)
+- Beschikbare units: extraheer unieke units uit `inflowConsultantData` (Engineering, Monteurs, Operators, Trainingsunit, Early Performers)
+- Standaard: alle units geselecteerd
+- Popover met checkboxes + "Alles aan" / "Alles uit" knoppen (conform bestaand patroon in de app)
+- Wanneer unit-filter actief:
+  - Consultant-tabel: filter op geselecteerde units
+  - Unit chart: filter op geselecteerde units
+  - Bron-tabel: ongewijzigd (bronnen zijn niet unit-specifiek)
+  - Scorecards: herberekenen op basis van gefilterde consultant-data
 
 ## Bestanden
 
 | Bestand | Wijziging |
 |---|---|
-| `src/pages/marketing/InflowDashboard.tsx` | Grid layout wijzigen, tabel compact maken, chart horizontaal + volle breedte |
+| `src/pages/marketing/InflowDashboard.tsx` | Totaalrij buiten scroll plaatsen, unit filter state + popover + filtering logica |
 
