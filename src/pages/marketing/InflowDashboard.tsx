@@ -5,13 +5,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
-import { CalendarIcon, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { CalendarIcon, TrendingUp, TrendingDown, Minus, Filter } from "lucide-react";
 import { format, startOfWeek, differenceInDays, subDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LabelList } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from "recharts";
 import {
   inflowSourceData,
   inflowConsultantData,
@@ -42,7 +43,7 @@ function getPreviousPeriod(range: DateRange): { from: Date; to: Date } | null {
   };
 }
 
-// ─── Scorecard (always comparing) ───
+// ─── Scorecard ───
 
 interface ScorecardProps {
   title: string;
@@ -90,9 +91,56 @@ function Scorecard({ title, current, previous }: ScorecardProps) {
   );
 }
 
+// ─── Fixed total footer ───
+
+function TotalFooter({ label, values }: { label: string; values: number[] }) {
+  return (
+    <div className="border-t bg-muted/50 px-3 py-2 flex font-semibold text-sm">
+      <span className="flex-1">{label}</span>
+      {values.map((v, i) => (
+        <span key={i} className="w-28 text-right tabular-nums">{v}</span>
+      ))}
+    </div>
+  );
+}
+
 export default function InflowDashboard() {
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultRange);
   const previousPeriod = useMemo(() => getPreviousPeriod(dateRange), [dateRange]);
+
+  // Unit filter
+  const allUnits = useMemo(() => {
+    const set = new Set(inflowConsultantData.map((c) => c.unit));
+    return Array.from(set).sort();
+  }, []);
+  const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set(allUnits));
+
+  const toggleUnit = (unit: string) => {
+    setSelectedUnits((prev) => {
+      const next = new Set(prev);
+      if (next.has(unit)) next.delete(unit);
+      else next.add(unit);
+      return next;
+    });
+  };
+
+  // Filtered data
+  const filteredConsultants = useMemo(
+    () => inflowConsultantData.filter((c) => selectedUnits.has(c.unit)),
+    [selectedUnits]
+  );
+
+  const consultantTotals = useMemo(() => {
+    return filteredConsultants.reduce(
+      (acc, c) => ({
+        inschrijvingen: acc.inschrijvingen + c.inschrijvingen,
+        acquisitie: acc.acquisitie + c.acquisitie,
+        prevInschrijvingen: acc.prevInschrijvingen + c.prevInschrijvingen,
+        prevAcquisitie: acc.prevAcquisitie + c.prevAcquisitie,
+      }),
+      { inschrijvingen: 0, acquisitie: 0, prevInschrijvingen: 0, prevAcquisitie: 0 }
+    );
+  }, [filteredConsultants]);
 
   const sourceTotals = useMemo(() => {
     return inflowSourceData.reduce(
@@ -104,20 +152,16 @@ export default function InflowDashboard() {
     );
   }, []);
 
-  const consultantTotals = useMemo(() => {
-    return inflowConsultantData.reduce(
-      (acc, c) => ({
-        inschrijvingen: acc.inschrijvingen + c.inschrijvingen,
-        acquisitie: acc.acquisitie + c.acquisitie,
-      }),
-      { inschrijvingen: 0, acquisitie: 0 }
-    );
-  }, []);
+  const unitChartData = useMemo(() => aggregateByUnit(filteredConsultants), [filteredConsultants]);
 
-  const unitChartData = useMemo(() => aggregateByUnit(inflowConsultantData), []);
+  const totalInschrijvingen = consultantTotals.inschrijvingen;
+  const prevTotalInschrijvingen = consultantTotals.prevInschrijvingen;
 
-  const totalInschrijvingen = sourceTotals.inschrijvingen;
-  const prevTotalInschrijvingen = inflowSourceData.reduce((a, s) => a + s.prevInschrijvingen, 0);
+  const unitFilterLabel = selectedUnits.size === allUnits.length
+    ? "Alle units"
+    : selectedUnits.size === 0
+      ? "Geen units"
+      : `${selectedUnits.size} unit${selectedUnits.size > 1 ? "s" : ""}`;
 
   return (
     <ConsultantLayout title="Inflow Dashboard" subtitle="Marketing overzicht van inschrijvingen en acquisities">
@@ -144,6 +188,40 @@ export default function InflowDashboard() {
           </PopoverContent>
         </Popover>
 
+        {/* Unit filter */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="justify-start text-left font-normal">
+              <Filter className="mr-2 h-4 w-4" />
+              {unitFilterLabel}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-3" align="start">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Units</span>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setSelectedUnits(new Set(allUnits))}>
+                  Alles aan
+                </Button>
+                <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setSelectedUnits(new Set())}>
+                  Alles uit
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {allUnits.map((unit) => (
+                <label key={unit} className="flex items-center gap-2 cursor-pointer text-sm">
+                  <Checkbox
+                    checked={selectedUnits.has(unit)}
+                    onCheckedChange={() => toggleUnit(unit)}
+                  />
+                  {unit}
+                </label>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+
         {previousPeriod && (
           <Badge variant="secondary" className="text-xs">
             vs {format(previousPeriod.from, "d MMM", { locale: nl })} – {format(previousPeriod.to, "d MMM", { locale: nl })}
@@ -151,7 +229,7 @@ export default function InflowDashboard() {
         )}
       </div>
 
-      {/* Scorecards — always show comparison */}
+      {/* Scorecards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <Scorecard
           title="Inschrijvingen"
@@ -168,75 +246,67 @@ export default function InflowDashboard() {
       {/* Tables side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Source table */}
-        <Card className="border border-border">
+        <Card className="border border-border flex flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Inschrijvingen & Acquisitie per Bron</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="max-h-[480px] overflow-auto">
+          <CardContent className="p-0 flex flex-col flex-1">
+            <div className="max-h-[400px] overflow-auto flex-1">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky top-0 bg-background z-10 py-2 px-3">Bron</TableHead>
-                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right">Inschrijvingen</TableHead>
-                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right">Acquisitie</TableHead>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right w-28">Inschrijvingen</TableHead>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right w-28">Acquisitie</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {inflowSourceData.map((s) => (
                     <TableRow key={s.bron}>
                       <TableCell className="font-medium py-2 px-3">{s.bron}</TableCell>
-                      <TableCell className="text-right tabular-nums py-2 px-3">{s.inschrijvingen}</TableCell>
-                      <TableCell className="text-right tabular-nums py-2 px-3">{s.acquisitie}</TableCell>
+                      <TableCell className="text-right tabular-nums py-2 px-3 w-28">{s.inschrijvingen}</TableCell>
+                      <TableCell className="text-right tabular-nums py-2 px-3 w-28">{s.acquisitie}</TableCell>
                     </TableRow>
                   ))}
-                  <TableRow className="bg-muted/50 font-semibold sticky bottom-0">
-                    <TableCell className="py-2 px-3">Totaal</TableCell>
-                    <TableCell className="text-right tabular-nums py-2 px-3">{sourceTotals.inschrijvingen}</TableCell>
-                    <TableCell className="text-right tabular-nums py-2 px-3">{sourceTotals.acquisitie}</TableCell>
-                  </TableRow>
                 </TableBody>
               </Table>
             </div>
+            <TotalFooter label="Totaal" values={[sourceTotals.inschrijvingen, sourceTotals.acquisitie]} />
           </CardContent>
         </Card>
 
         {/* Consultant table */}
-        <Card className="border border-border">
+        <Card className="border border-border flex flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Inschrijvingen & Acquisitie per Consultant</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="max-h-[480px] overflow-auto">
+          <CardContent className="p-0 flex flex-col flex-1">
+            <div className="max-h-[400px] overflow-auto flex-1">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky top-0 bg-background z-10 py-2 px-3">Consultant</TableHead>
-                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right">Inschrijvingen</TableHead>
-                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right">Acquisitie</TableHead>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right w-28">Inschrijvingen</TableHead>
+                    <TableHead className="sticky top-0 bg-background z-10 py-2 px-3 text-right w-28">Acquisitie</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {inflowConsultantData.map((c) => (
+                  {filteredConsultants.map((c) => (
                     <TableRow key={c.consultant}>
                       <TableCell className="font-medium py-2 px-3">{c.consultant}</TableCell>
-                      <TableCell className="text-right tabular-nums py-2 px-3">{c.inschrijvingen}</TableCell>
-                      <TableCell className="text-right tabular-nums py-2 px-3">{c.acquisitie}</TableCell>
+                      <TableCell className="text-right tabular-nums py-2 px-3 w-28">{c.inschrijvingen}</TableCell>
+                      <TableCell className="text-right tabular-nums py-2 px-3 w-28">{c.acquisitie}</TableCell>
                     </TableRow>
                   ))}
-                  <TableRow className="bg-muted/50 font-semibold sticky bottom-0">
-                    <TableCell className="py-2 px-3">Totaal</TableCell>
-                    <TableCell className="text-right tabular-nums py-2 px-3">{consultantTotals.inschrijvingen}</TableCell>
-                    <TableCell className="text-right tabular-nums py-2 px-3">{consultantTotals.acquisitie}</TableCell>
-                  </TableRow>
                 </TableBody>
               </Table>
             </div>
+            <TotalFooter label="Totaal" values={[consultantTotals.inschrijvingen, consultantTotals.acquisitie]} />
           </CardContent>
         </Card>
       </div>
 
-      {/* Unit bar chart — full width, horizontal */}
+      {/* Unit bar chart — full width */}
       <Card className="border border-border">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Inschrijvingen & Acquisitie per Unit</CardTitle>
