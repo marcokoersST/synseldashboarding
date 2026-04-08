@@ -138,13 +138,8 @@ const navItems: NavItem[] = [
   },
   {
     icon: Megaphone,
-    label: "Marketing Dashboards",
+    label: "Marketing Hub",
     path: "/marketing",
-    subItems: [
-      { icon: TrendingUp, label: "Inflow", path: "/marketing/inflow" },
-      { icon: ClipboardCheck, label: "Inschrijvingen", path: "/marketing/inschrijvingen" },
-      { icon: Filter, label: "Reverse Matching", path: "/marketing/vacature-aanvraag-funnel" },
-    ]
   },
   {
     icon: BarChart3,
