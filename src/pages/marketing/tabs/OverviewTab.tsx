@@ -58,12 +58,13 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     const totalSpend = pc.spend + jb.spend + ps.spend;
     const cpr = totalRegistrations > 0 ? totalSpend / totalRegistrations : 0;
     const rmVolume = reverseMatchingSteps[0]?.volume ?? 0;
-    return [
+    const items: { label: string; value: number; previous: number; tab: string; format?: string; invertDelta?: boolean }[] = [
       { label: "Conversions", value: totalConversions, previous: previousPeriodValue(totalConversions), tab: "paid-channels" },
       { label: "Registrations", value: totalRegistrations, previous: previousPeriodValue(totalRegistrations), tab: "paid-channels" },
-      { label: "Cost per Registration", value: cpr, previous: previousPeriodValue(Math.round(cpr)), format: "currency" as const, tab: "paid-channels", invertDelta: true },
+      { label: "Cost per Registration", value: cpr, previous: previousPeriodValue(Math.round(cpr)), format: "currency", tab: "paid-channels", invertDelta: true },
       { label: "Reverse Matching", value: rmVolume, previous: previousPeriodValue(rmVolume), tab: "reverse-matching" },
     ];
+    return items;
   }, []);
 
   // Fastest rising CPR
