@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, Minus, Filter } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Filter, ArrowUpDown } from "lucide-react";
 import { differenceInDays, subDays, format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -18,12 +18,9 @@ import {
 } from "@/data/marketingInflowData";
 import type { DateRange } from "react-day-picker";
 
-interface Props { dateRange: DateRange; }
-
-function getPreviousPeriod(range: DateRange): { from: Date; to: Date } | null {
-  if (!range.from || !range.to) return null;
-  const dayCount = differenceInDays(range.to, range.from) + 1;
-  return { from: subDays(range.from, dayCount), to: subDays(range.from, 1) };
+interface Props {
+  dateRange: DateRange;
+  compareRange: DateRange | null;
 }
 
 interface ScorecardProps { title: string; current: number; previous: number; }
@@ -74,14 +71,24 @@ function TotalFooter({ label, values }: { label: string; values: number[] }) {
   );
 }
 
-const InflowTab = ({ dateRange }: Props) => {
-  const previousPeriod = useMemo(() => getPreviousPeriod(dateRange), [dateRange]);
+type SortKey = "name" | "inschrijvingen" | "acquisitie";
+
+const InflowTab = ({ dateRange, compareRange }: Props) => {
+  const previousPeriod = useMemo(() => {
+    if (!dateRange.from || !dateRange.to) return null;
+    const dayCount = differenceInDays(dateRange.to, dateRange.from) + 1;
+    return { from: subDays(dateRange.from, dayCount), to: subDays(dateRange.from, 1) };
+  }, [dateRange]);
 
   const allUnits = useMemo(() => {
     const set = new Set(inflowConsultantData.map((c) => c.unit));
     return Array.from(set).sort();
   }, []);
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set(allUnits));
+  const [sourceSortKey, setSourceSortKey] = useState<SortKey>("inschrijvingen");
+  const [sourceSortDir, setSourceSortDir] = useState<"asc" | "desc">("desc");
+  const [consultantSortKey, setConsultantSortKey] = useState<SortKey>("inschrijvingen");
+  const [consultantSortDir, setConsultantSortDir] = useState<"asc" | "desc">("desc");
 
   const toggleUnit = (unit: string) => {
     setSelectedUnits((prev) => {
@@ -95,6 +102,22 @@ const InflowTab = ({ dateRange }: Props) => {
     () => inflowConsultantData.filter((c) => selectedUnits.has(c.unit)),
     [selectedUnits]
   );
+
+  const sortedSources = useMemo(() => {
+    const data = [...inflowSourceData];
+    return data.sort((a, b) => {
+      if (sourceSortKey === "name") return sourceSortDir === "asc" ? a.bron.localeCompare(b.bron) : b.bron.localeCompare(a.bron);
+      return sourceSortDir === "asc" ? a[sourceSortKey] - b[sourceSortKey] : b[sourceSortKey] - a[sourceSortKey];
+    });
+  }, [sourceSortKey, sourceSortDir]);
+
+  const sortedConsultants = useMemo(() => {
+    const data = [...filteredConsultants];
+    return data.sort((a, b) => {
+      if (consultantSortKey === "name") return consultantSortDir === "asc" ? a.consultant.localeCompare(b.consultant) : b.consultant.localeCompare(a.consultant);
+      return consultantSortDir === "asc" ? a[consultantSortKey] - b[consultantSortKey] : b[consultantSortKey] - a[consultantSortKey];
+    });
+  }, [filteredConsultants, consultantSortKey, consultantSortDir]);
 
   const consultantTotals = useMemo(() => {
     return filteredConsultants.reduce(
@@ -117,15 +140,19 @@ const InflowTab = ({ dateRange }: Props) => {
 
   const unitChartData = useMemo(() => aggregateByUnit(filteredConsultants), [filteredConsultants]);
 
-  const unitFilterLabel = selectedUnits.size === allUnits.length
-    ? "Alle units"
-    : selectedUnits.size === 0
-      ? "Geen units"
-      : `${selectedUnits.size} unit${selectedUnits.size > 1 ? "s" : ""}`;
+  const unitFilterLabel = selectedUnits.size === allUnits.length ? "Alle units" : selectedUnits.size === 0 ? "Geen units" : `${selectedUnits.size} unit${selectedUnits.size > 1 ? "s" : ""}`;
+
+  const toggleSourceSort = (key: SortKey) => {
+    if (sourceSortKey === key) setSourceSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSourceSortKey(key); setSourceSortDir("desc"); }
+  };
+  const toggleConsultantSort = (key: SortKey) => {
+    if (consultantSortKey === key) setConsultantSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setConsultantSortKey(key); setConsultantSortDir("desc"); }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Filter */}
       <div className="flex flex-wrap items-center gap-4">
         <Popover>
           <PopoverTrigger asChild>
@@ -160,13 +187,11 @@ const InflowTab = ({ dateRange }: Props) => {
         )}
       </div>
 
-      {/* Scorecards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Scorecard title="Inschrijvingen" current={consultantTotals.inschrijvingen} previous={consultantTotals.prevInschrijvingen} />
         <Scorecard title="Heractiveringen" current={inflowHeractiveringen.current} previous={inflowHeractiveringen.previous} />
       </div>
 
-      {/* Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border border-border flex flex-col">
           <CardHeader className="pb-3"><CardTitle className="text-base">Per Bron</CardTitle></CardHeader>
@@ -175,13 +200,19 @@ const InflowTab = ({ dateRange }: Props) => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-left font-medium text-muted-foreground">Bron</th>
-                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-right font-medium text-muted-foreground w-28">Inschrijvingen</th>
-                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-right font-medium text-muted-foreground w-28">Acquisitie</th>
+                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-left font-medium text-muted-foreground cursor-pointer" onClick={() => toggleSourceSort("name")}>
+                      <div className="flex items-center gap-1">Bron <ArrowUpDown className={`h-3 w-3 ${sourceSortKey === "name" ? "text-primary" : "text-muted-foreground"}`} /></div>
+                    </th>
+                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-right font-medium text-muted-foreground w-28 cursor-pointer" onClick={() => toggleSourceSort("inschrijvingen")}>
+                      <div className="flex items-center justify-end gap-1">Inschrijvingen <ArrowUpDown className={`h-3 w-3 ${sourceSortKey === "inschrijvingen" ? "text-primary" : "text-muted-foreground"}`} /></div>
+                    </th>
+                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-right font-medium text-muted-foreground w-28 cursor-pointer" onClick={() => toggleSourceSort("acquisitie")}>
+                      <div className="flex items-center justify-end gap-1">Acquisitie <ArrowUpDown className={`h-3 w-3 ${sourceSortKey === "acquisitie" ? "text-primary" : "text-muted-foreground"}`} /></div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {inflowSourceData.map((s) => (
+                  {sortedSources.map((s) => (
                     <tr key={s.bron} className="border-b hover:bg-muted/50">
                       <td className="font-medium py-2 px-3">{s.bron}</td>
                       <td className="text-right tabular-nums py-2 px-3 w-28">{s.inschrijvingen}</td>
@@ -202,13 +233,19 @@ const InflowTab = ({ dateRange }: Props) => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-left font-medium text-muted-foreground">Consultant</th>
-                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-right font-medium text-muted-foreground w-28">Inschrijvingen</th>
-                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-right font-medium text-muted-foreground w-28">Acquisitie</th>
+                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-left font-medium text-muted-foreground cursor-pointer" onClick={() => toggleConsultantSort("name")}>
+                      <div className="flex items-center gap-1">Consultant <ArrowUpDown className={`h-3 w-3 ${consultantSortKey === "name" ? "text-primary" : "text-muted-foreground"}`} /></div>
+                    </th>
+                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-right font-medium text-muted-foreground w-28 cursor-pointer" onClick={() => toggleConsultantSort("inschrijvingen")}>
+                      <div className="flex items-center justify-end gap-1">Inschrijvingen <ArrowUpDown className={`h-3 w-3 ${consultantSortKey === "inschrijvingen" ? "text-primary" : "text-muted-foreground"}`} /></div>
+                    </th>
+                    <th className="sticky top-0 bg-background z-10 py-2 px-3 text-right font-medium text-muted-foreground w-28 cursor-pointer" onClick={() => toggleConsultantSort("acquisitie")}>
+                      <div className="flex items-center justify-end gap-1">Acquisitie <ArrowUpDown className={`h-3 w-3 ${consultantSortKey === "acquisitie" ? "text-primary" : "text-muted-foreground"}`} /></div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredConsultants.map((c) => (
+                  {sortedConsultants.map((c) => (
                     <tr key={c.consultant} className="border-b hover:bg-muted/50">
                       <td className="font-medium py-2 px-3">{c.consultant}</td>
                       <td className="text-right tabular-nums py-2 px-3 w-28">{c.inschrijvingen}</td>
@@ -223,7 +260,6 @@ const InflowTab = ({ dateRange }: Props) => {
         </Card>
       </div>
 
-      {/* Unit chart */}
       <Card className="border border-border">
         <CardHeader className="pb-3"><CardTitle className="text-base">Per Unit</CardTitle></CardHeader>
         <CardContent>
