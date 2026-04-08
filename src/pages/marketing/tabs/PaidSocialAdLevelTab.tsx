@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronDown, ChevronRight, TrendingUp, TrendingDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { adLevelData, aggregateByUnit, totals as calcTotals, formatCurrency, previousPeriodValue, deltaPercent } from "@/data/marketingHubData";
@@ -76,58 +75,64 @@ const PaidSocialAdLevelTab = ({ dateRange }: Props) => {
         <CardHeader className="pb-3"><CardTitle className="text-base">Ad Types per platform</CardTitle></CardHeader>
         <CardContent className="p-0">
           <div className="max-h-[480px] overflow-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="sticky top-0 bg-background z-10">Ad Type / Platform</TableHead>
-                  <TableHead className="sticky top-0 bg-background z-10">Conversions</TableHead>
-                  <TableHead className="sticky top-0 bg-background z-10">Registrations</TableHead>
-                  <TableHead className="sticky top-0 bg-background z-10">Spend</TableHead>
-                  <TableHead className="sticky top-0 bg-background z-10">CPR</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <table className="w-full caption-bottom text-sm table-fixed">
+              <thead className="[&_tr]:border-b">
+                <tr className="border-b transition-colors">
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[28%]">Ad Type / Platform</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[18%]">Conversions</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[18%]">Registrations</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[18%]">Spend</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[18%]">CPR</th>
+                </tr>
+              </thead>
+              <tbody className="[&_tr:last-child]:border-0">
                 {grouped.map((parent) => {
                   const isOpen = expanded.has(parent.adType);
                   const cpr = parent.registrations > 0 ? parent.spend / parent.registrations : 0;
                   return (
-                    <>
-                      <TableRow key={parent.adType} className="cursor-pointer hover:bg-muted/50" onClick={() => toggle(parent.adType)}>
-                        <TableCell className="font-semibold">
+                    <React.Fragment key={parent.adType}>
+                      <tr className="border-b transition-colors cursor-pointer hover:bg-muted/50" onClick={() => toggle(parent.adType)}>
+                        <td className="p-4 align-middle font-semibold w-[28%]">
                           <div className="flex items-center gap-1">
                             {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                             {parent.adType}
                           </div>
-                        </TableCell>
-                        <TableCell className="font-semibold">{parent.conversions.toLocaleString("nl-NL")}</TableCell>
-                        <TableCell className="font-semibold">{parent.registrations.toLocaleString("nl-NL")}</TableCell>
-                        <TableCell className="font-semibold">{formatCurrency(parent.spend)}</TableCell>
-                        <TableCell className="font-semibold">{formatCurrency(Math.round(cpr))}</TableCell>
-                      </TableRow>
+                        </td>
+                        <td className="p-4 align-middle font-semibold w-[18%]">{parent.conversions.toLocaleString("nl-NL")}</td>
+                        <td className="p-4 align-middle font-semibold w-[18%]">{parent.registrations.toLocaleString("nl-NL")}</td>
+                        <td className="p-4 align-middle font-semibold w-[18%]">{formatCurrency(parent.spend)}</td>
+                        <td className="p-4 align-middle font-semibold w-[18%]">{formatCurrency(Math.round(cpr))}</td>
+                      </tr>
                       {isOpen && parent.children.map((child) => {
                         const childCpr = child.registrations > 0 ? child.spend / child.registrations : 0;
                         return (
-                          <TableRow key={`${parent.adType}-${child.platform}`} className="bg-muted/20">
-                            <TableCell className="pl-10 text-muted-foreground">{child.platform}</TableCell>
-                            <TableCell>{child.conversions.toLocaleString("nl-NL")}</TableCell>
-                            <TableCell>{child.registrations.toLocaleString("nl-NL")}</TableCell>
-                            <TableCell>{formatCurrency(child.spend)}</TableCell>
-                            <TableCell>{formatCurrency(Math.round(childCpr))}</TableCell>
-                          </TableRow>
+                          <tr key={`${parent.adType}-${child.platform}`} className="border-b transition-colors bg-muted/20">
+                            <td className="p-4 pl-10 align-middle text-muted-foreground w-[28%]">{child.platform}</td>
+                            <td className="p-4 align-middle w-[18%]">{child.conversions.toLocaleString("nl-NL")}</td>
+                            <td className="p-4 align-middle w-[18%]">{child.registrations.toLocaleString("nl-NL")}</td>
+                            <td className="p-4 align-middle w-[18%]">{formatCurrency(child.spend)}</td>
+                            <td className="p-4 align-middle w-[18%]">{formatCurrency(Math.round(childCpr))}</td>
+                          </tr>
                         );
                       })}
-                    </>
+                    </React.Fragment>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
-          <div className="border-t bg-muted/30 px-4 py-3 flex text-sm font-bold">
-            <span className="w-[28%]">Totaal</span>
-            <span className="w-[18%]">{grand.conversions.toLocaleString("nl-NL")}</span>
-            <span className="w-[18%]">{grand.registrations.toLocaleString("nl-NL")}</span>
-            <span className="w-[18%]">{formatCurrency(grand.spend)}</span>
-            <span className="w-[18%]">{formatCurrency(Math.round(grandCpr))}</span>
+          <div className="border-t bg-muted/30">
+            <table className="w-full text-sm table-fixed">
+              <tbody>
+                <tr className="font-bold">
+                  <td className="p-4 w-[28%]">Totaal</td>
+                  <td className="p-4 w-[18%]">{grand.conversions.toLocaleString("nl-NL")}</td>
+                  <td className="p-4 w-[18%]">{grand.registrations.toLocaleString("nl-NL")}</td>
+                  <td className="p-4 w-[18%]">{formatCurrency(grand.spend)}</td>
+                  <td className="p-4 w-[18%]">{formatCurrency(Math.round(grandCpr))}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>
@@ -138,7 +143,7 @@ const PaidSocialAdLevelTab = ({ dateRange }: Props) => {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={unitChart} layout="vertical" margin={{ left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" />
+              <XAxis type="number" domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.3)]} />
               <YAxis type="category" dataKey="unit" width={100} />
               <Tooltip />
               <Legend />
