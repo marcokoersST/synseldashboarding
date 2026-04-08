@@ -62,6 +62,7 @@ const PeterJanOmzetDashboard = lazy(() => import("./pages/peter-jan/OmzetDashboa
 
 // Marketing dashboards
 const MarketingHub = lazy(() => import("./pages/marketing/MarketingHub"));
+const MarketingVacatureFunnel = lazy(() => import("./pages/marketing/VacatureFunnelMonitor"));
 const CorporateRecruitmentInflow = lazy(() => import("./pages/corporate-recruitment/InflowDashboard"));
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
