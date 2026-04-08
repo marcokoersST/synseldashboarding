@@ -40,11 +40,12 @@ const PaidChannelsTab = ({ dateRange }: Props) => {
     const prev = { conversions: previousPeriodValue(grand.conversions), registrations: previousPeriodValue(grand.registrations) };
     const cpr = grand.registrations > 0 ? grand.spend / grand.registrations : 0;
     const prevCpr = prev.registrations > 0 ? previousPeriodValue(grand.spend) / prev.registrations : 0;
-    return [
+    const items: { label: string; value: number; delta: number | null; format?: "currency"; invertDelta?: boolean }[] = [
       { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
       { label: "Registrations", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
-      { label: "Cost per Registration", value: cpr, delta: deltaPercent(cpr, prevCpr), format: "currency" as const, invertDelta: true },
+      { label: "Cost per Registration", value: cpr, delta: deltaPercent(cpr, prevCpr), format: "currency", invertDelta: true },
     ];
+    return items;
   }, [grand]);
 
   const toggleSort = (key: SortKey) => {

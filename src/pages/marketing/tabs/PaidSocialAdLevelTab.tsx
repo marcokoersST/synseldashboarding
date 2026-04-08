@@ -34,11 +34,12 @@ const PaidSocialAdLevelTab = ({ dateRange }: Props) => {
   const kpis = useMemo(() => {
     const prev = { conversions: previousPeriodValue(grand.conversions), registrations: previousPeriodValue(grand.registrations) };
     const prevCpr = prev.registrations > 0 ? previousPeriodValue(grand.spend) / prev.registrations : 0;
-    return [
+    const items: { label: string; value: number; delta: number | null; format?: "currency"; invertDelta?: boolean }[] = [
       { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
       { label: "Registrations", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
-      { label: "CPR", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency" as const, invertDelta: true },
+      { label: "CPR", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency", invertDelta: true },
     ];
+    return items;
   }, [grand, grandCpr]);
 
   const toggle = (adType: string) => {
