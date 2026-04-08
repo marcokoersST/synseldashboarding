@@ -1,52 +1,101 @@
 
 
-# Plan: Tabel/chart fixes + Inflow als tab in Marketing Hub
+# Plan: Marketing Hub Updates — Briefing Implementatie
 
-## 1. Sticky headers & totaalrij alignment — alle 4 detail-tabs
+## Overzicht
+
+Zeven samenhangende verbeteringen aan de Marketing Hub: geavanceerd datumfilter met vergelijking, Overview-tab herstructurering, CPR-highlight, conversie-toggle in tabellen, sorteerbare kolommen, en consistentie over alle tabs.
+
+## 1. Geavanceerd datumfilter met vergelijking
+
+**Bestand:** `src/pages/marketing/MarketingHub.tsx`
+
+- Vervang de huidige simpele date range picker door een uitgebreide filter-component
+- **Preset knoppen**: Today, Yesterday, Last 7/14/30 days, This week, Previous week, This month, Previous month, Maximum
+- **Custom range**: kalender met maand/jaar-navigatie (bestaande Calendar component)
+- **Compare toggle**: schakelaar "Vergelijken" — default = vorige periode van gelijke lengte, optioneel custom vergelijkingsperiode
+- State: `dateRange`, `compareEnabled`, `compareRange` (berekend of custom)
+- Alle tabs ontvangen `dateRange` + `compareRange | null` als props
+- `compareRange` wordt doorgegeven zodat elke tab delta's kan berekenen
+
+**Nieuw bestand:** `src/components/marketing/DateFilterPanel.tsx`
+- Popover met presets links, kalender rechts
+- Compare sectie onderaan met toggle + optionele custom range
+- Apply/Cancel knoppen
+
+## 2. Overview Tab — Channel Breakdown vervangen door Inflow
+
+**Bestand:** `src/pages/marketing/tabs/OverviewTab.tsx`
+
+- Verwijder de "Kanaal Breakdown" card
+- Voeg in plaats daarvan de Inflow-componenten toe: Scorecards (Registrations, Reactivations), Per source tabel, Per consultant tabel, Per unit chart
+- Hergebruik logica uit `InflowTab.tsx` maar als compactere cards
+- Voeg unit filter toe die alleen de inflow-gerelateerde tiles beïnvloedt (KPI's en Unit Verdeling blijven ongewijzigd)
+- Behoud bestaande KPI-kaarten bovenaan + Unit Verdeling + Highlights
+
+## 3. Highlights Widget — "Fastest Rising CPR"
+
+**Bestand:** `src/pages/marketing/tabs/OverviewTab.tsx`
+
+- Vervang "Top ad type" highlight door "Snelst stijgende CPR"
+- Bereken per bron/platform de CPR-stijging vs vorige periode
+- Toon altijd in rood (bg-red-500/10, text-red-700)
+- Maak klikbaar → navigeert naar relevante tab
+
+## 4. "Show Conversion" toggle in tabellen
 
 **Bestanden:** `PaidChannelsTab.tsx`, `JobboardsTab.tsx`, `PaidSocialTab.tsx`, `PaidSocialAdLevelTab.tsx`
 
-Alle vier tabs krijgen dezelfde aanpassing:
-- **Headers**: al sticky (z-10), maar de `Table` component wraps in een eigen `overflow-auto` div — de buitenste `max-h` div moet de enige scroll-container zijn. Verwijder de dubbele overflow wrapper door `className="w-full"` ipv `overflow-auto` op de `Table` wrapper.
-- **Totaalrij**: Gebruik een `<table>` met dezelfde kolombreedtes (`table-fixed`) in de footer-div zodat kolommen exact uitlijnen met de tabel erboven. Geef elke kolom een vaste `w-[20%]` (PaidChannels, 5 kolommen) of `w-[20%]` / aangepaste breedtes voor de hiërarchische tabs.
+- Voeg een Switch/toggle "Show conversion" toe rechtsboven elke tabel-card
+- Default: uit
+- Wanneer aan: voeg 2 extra kolommen toe tussen Registrations en Spend:
+  - **CPR** (Spend / Registrations)
+  - **Cost per Conversion** (Spend / Conversions)
+- Kolombreedtes passen zich aan (van 5 naar 7 kolommen: w-[20%] → w-[14.3%])
+- Totaalrij volgt dezelfde kolom-uitbreiding
+- Animatie: kolommen verschijnen/verdwijnen met transition
 
-## 2. Bar charts — meer lucht (Y-as domein)
+## 5. Sorteerbare kolommen in alle tabellen
 
-**Bestanden:** Dezelfde 4 tab-bestanden
+**Bestanden:** Alle 4 detail-tabs + `InflowTab.tsx`
 
-Probleem: de `XAxis` (type="number") neemt automatisch het dichtstbijzijnde mooie getal als max, waardoor de grafiek "vol" lijkt.
+- PaidChannelsTab heeft al sorting — patroon kopiëren naar overige tabs
+- Jobboards: sorteer parent-rijen, children volgen hun parent
+- Paid Social: idem hiërarchisch
+- Ad Level: idem
+- Inflow source/consultant tabellen: sorteerbaar maken
+- Visueel: ArrowUpDown icoon bij elke kolomheader, actieve kolom gemarkeerd
 
-Oplossing: voeg `domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.3)]}` toe aan de `XAxis` component. Dit geeft ~30% extra ruimte boven de hoogste waarde, zodat de bars niet tot het plafond reiken.
+## 6. Comparison logic in alle tabs
 
-## 3. Inflow Dashboard als nieuwe tab in Marketing Hub
+**Bestanden:** Alle tab-bestanden + `marketingHubData.ts`
 
-### `src/pages/marketing/MarketingHub.tsx`
-- Voeg tab `{ id: "inflow", label: "Inflow" }` toe aan de tabs array (tussen Overview en Paid Channels)
-- Import en render `InflowTab` component
-- Update `TabId` type
+- Voeg `compareRange` prop toe aan alle tab-interfaces
+- KPI-kaarten: toon delta % (groen positief, rood negatief) gebaseerd op compareRange
+- Tabellen: optionele vergelijkingskolom per metric (huidige waarde + delta)
+- Charts: wanneer comparison actief, toon vergelijkingsperiode als lichtere/gestreepte bars naast huidige
+- `marketingHubData.ts`: voeg helper toe die data filtert op dateRange en compareRange
 
-### `src/pages/marketing/tabs/InflowTab.tsx` (nieuw)
-- Verplaats de kernlogica uit `InflowDashboard.tsx` (scorecards, bron-tabel, consultant-tabel, unit chart, unit filter) naar een tab-component
-- Ontvangt `dateRange` als prop (ipv eigen date picker)
-- Behoudt unit filter, tabel-layout, sticky totaalrijen
+## 7. Consistentie
 
-### `src/pages/marketing/tabs/OverviewTab.tsx`
-- Voeg een "Inflow" rij toe aan de `categoryBreakdown` sectie met totaal inschrijvingen + acquisities uit `inflowSourceData`
-- Klikbaar → opent inflow tab via `onTabChange("inflow")`
-- Voeg een KPI kaart "Inschrijvingen" toe
-
-### `src/App.tsx`
-- Route `/marketing/inflow` blijft mappen naar `MarketingHub` (al zo)
+- Alle tabs gebruiken dezelfde KPI-card structuur (3 cards bovenaan: Conversions, Registrations, CPR)
+- Alle tabs respecteren dateRange + compareRange
+- Sorting-gedrag uniform: eerste klik desc, tweede asc
+- Percentage changes altijd groen (positief) / rood (negatief)
+- Filters persistent bij tab-wissel (state leeft in MarketingHub)
 
 ## Bestanden overzicht
 
-| Bestand | Wijziging |
+| Bestand | Actie |
 |---|---|
-| `src/pages/marketing/tabs/PaidChannelsTab.tsx` | Fix table overflow, align totaalrij, chart domain |
-| `src/pages/marketing/tabs/JobboardsTab.tsx` | Idem |
-| `src/pages/marketing/tabs/PaidSocialTab.tsx` | Idem |
-| `src/pages/marketing/tabs/PaidSocialAdLevelTab.tsx` | Idem |
-| `src/pages/marketing/tabs/InflowTab.tsx` | Nieuw — inflow als tab-component |
-| `src/pages/marketing/tabs/OverviewTab.tsx` | Inflow integreren in overview |
-| `src/pages/marketing/MarketingHub.tsx` | Inflow tab toevoegen |
+| `src/components/marketing/DateFilterPanel.tsx` | Nieuw — geavanceerde datumfilter met presets + compare |
+| `src/pages/marketing/MarketingHub.tsx` | Compare state, nieuwe filter integreren, props doorsturen |
+| `src/pages/marketing/tabs/OverviewTab.tsx` | Channel Breakdown → Inflow tiles, CPR highlight, unit filter |
+| `src/pages/marketing/tabs/PaidChannelsTab.tsx` | Conversion toggle, compareRange support |
+| `src/pages/marketing/tabs/JobboardsTab.tsx` | Sorting, conversion toggle, compareRange support |
+| `src/pages/marketing/tabs/PaidSocialTab.tsx` | Sorting, conversion toggle, compareRange support |
+| `src/pages/marketing/tabs/PaidSocialAdLevelTab.tsx` | Sorting, conversion toggle, compareRange support |
+| `src/pages/marketing/tabs/InflowTab.tsx` | Sorting, compareRange support |
+| `src/pages/marketing/tabs/ReverseMatchingTab.tsx` | compareRange support |
+| `src/data/marketingHubData.ts` | Compare helpers, CPR-stijging berekening |
 
