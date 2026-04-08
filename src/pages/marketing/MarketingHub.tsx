@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
 
 import OverviewTab from "./tabs/OverviewTab";
+import InflowTab from "./tabs/InflowTab";
 import PaidChannelsTab from "./tabs/PaidChannelsTab";
 import JobboardsTab from "./tabs/JobboardsTab";
 import PaidSocialTab from "./tabs/PaidSocialTab";
@@ -18,6 +19,7 @@ import ReverseMatchingTab from "./tabs/ReverseMatchingTab";
 
 const tabs = [
   { id: "overview", label: "Overview" },
+  { id: "inflow", label: "Inflow" },
   { id: "paid-channels", label: "Paid Channels" },
   { id: "jobboards", label: "Jobboards" },
   { id: "paid-social", label: "Paid Social" },
@@ -46,6 +48,7 @@ const MarketingHub = () => {
     const props = { dateRange, onTabChange: setActiveTab };
     switch (activeTab) {
       case "overview": return <OverviewTab {...props} />;
+      case "inflow": return <InflowTab dateRange={dateRange} />;
       case "paid-channels": return <PaidChannelsTab dateRange={dateRange} />;
       case "jobboards": return <JobboardsTab dateRange={dateRange} />;
       case "paid-social": return <PaidSocialTab dateRange={dateRange} />;

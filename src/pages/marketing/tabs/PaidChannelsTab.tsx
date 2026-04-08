@@ -57,7 +57,6 @@ const PaidChannelsTab = ({ dateRange }: Props) => {
 
   return (
     <div className="space-y-6">
-      {/* KPI cards */}
       <div className="grid grid-cols-3 gap-4">
         {kpis.map((kpi) => {
           const isPos = kpi.invertDelta ? (kpi.delta !== null && kpi.delta < 0) : (kpi.delta !== null && kpi.delta > 0);
@@ -78,56 +77,59 @@ const PaidChannelsTab = ({ dateRange }: Props) => {
         })}
       </div>
 
-      {/* Table */}
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">Paid Channels per bron</CardTitle></CardHeader>
         <CardContent className="p-0">
           <div className="max-h-[420px] overflow-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
+            <table className="w-full caption-bottom text-sm table-fixed">
+              <thead className="[&_tr]:border-b">
+                <tr className="border-b transition-colors">
                   {(["source", "conversions", "registrations", "spend", "cpr"] as SortKey[]).map((key) => (
-                    <TableHead key={key} className="cursor-pointer select-none sticky top-0 bg-background z-10" onClick={() => toggleSort(key)}>
+                    <th key={key} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer select-none sticky top-0 bg-background z-10 w-[20%]" onClick={() => toggleSort(key)}>
                       <div className="flex items-center gap-1">
                         {{ source: "Bron", conversions: "Conversions", registrations: "Registrations", spend: "Spend", cpr: "CPR" }[key]}
                         <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
                       </div>
-                    </TableHead>
+                    </th>
                   ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+                </tr>
+              </thead>
+              <tbody className="[&_tr:last-child]:border-0">
                 {rows.map((row) => (
-                  <TableRow key={row.source}>
-                    <TableCell className="font-medium">{row.source}</TableCell>
-                    <TableCell>{row.conversions.toLocaleString("nl-NL")}</TableCell>
-                    <TableCell>{row.registrations.toLocaleString("nl-NL")}</TableCell>
-                    <TableCell>{formatCurrency(row.spend)}</TableCell>
-                    <TableCell>{formatCurrency(Math.round(row.cpr))}</TableCell>
-                  </TableRow>
+                  <tr key={row.source} className="border-b transition-colors hover:bg-muted/50">
+                    <td className="p-4 align-middle font-medium w-[20%]">{row.source}</td>
+                    <td className="p-4 align-middle w-[20%]">{row.conversions.toLocaleString("nl-NL")}</td>
+                    <td className="p-4 align-middle w-[20%]">{row.registrations.toLocaleString("nl-NL")}</td>
+                    <td className="p-4 align-middle w-[20%]">{formatCurrency(row.spend)}</td>
+                    <td className="p-4 align-middle w-[20%]">{formatCurrency(Math.round(row.cpr))}</td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
-          {/* Fixed total row */}
-          <div className="border-t bg-muted/30 px-4 py-3 flex text-sm font-bold">
-            <span className="w-[20%]">Totaal</span>
-            <span className="w-[20%]">{grand.conversions.toLocaleString("nl-NL")}</span>
-            <span className="w-[20%]">{grand.registrations.toLocaleString("nl-NL")}</span>
-            <span className="w-[20%]">{formatCurrency(grand.spend)}</span>
-            <span className="w-[20%]">{formatCurrency(Math.round(grandCpr))}</span>
+          <div className="border-t bg-muted/30">
+            <table className="w-full text-sm table-fixed">
+              <tbody>
+                <tr className="font-bold">
+                  <td className="p-4 w-[20%]">Totaal</td>
+                  <td className="p-4 w-[20%]">{grand.conversions.toLocaleString("nl-NL")}</td>
+                  <td className="p-4 w-[20%]">{grand.registrations.toLocaleString("nl-NL")}</td>
+                  <td className="p-4 w-[20%]">{formatCurrency(grand.spend)}</td>
+                  <td className="p-4 w-[20%]">{formatCurrency(Math.round(grandCpr))}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>
 
-      {/* Unit chart */}
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">Per Unit</CardTitle></CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={unitChart} layout="vertical" margin={{ left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" />
+              <XAxis type="number" domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.3)]} />
               <YAxis type="category" dataKey="unit" width={100} />
               <Tooltip />
               <Legend />
