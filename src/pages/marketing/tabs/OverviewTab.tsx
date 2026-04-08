@@ -12,6 +12,7 @@ import {
   previousPeriodValue,
   deltaPercent,
 } from "@/data/marketingHubData";
+import { inflowSourceData } from "@/data/marketingInflowData";
 import type { DateRange } from "react-day-picker";
 
 interface Props {
@@ -43,7 +44,12 @@ const OverviewTab = ({ dateRange, onTabChange }: Props) => {
     const pc = totals(paidChannelData);
     const jb = totals(jobboardData);
     const ps = totals(paidSocialData);
+    const inflowTotals = inflowSourceData.reduce((acc, s) => ({
+      inschrijvingen: acc.inschrijvingen + s.inschrijvingen,
+      acquisitie: acc.acquisitie + s.acquisitie,
+    }), { inschrijvingen: 0, acquisitie: 0 });
     return [
+      { label: "Inflow", registrations: inflowTotals.inschrijvingen, conversions: inflowTotals.acquisitie, spend: 0, tab: "inflow" },
       { label: "Paid Channels", registrations: pc.registrations, conversions: pc.conversions, spend: pc.spend, tab: "paid-channels" },
       { label: "Jobboards", registrations: jb.registrations, conversions: jb.conversions, spend: jb.spend, tab: "jobboards" },
       { label: "Paid Social", registrations: ps.registrations, conversions: ps.conversions, spend: ps.spend, tab: "paid-social" },
