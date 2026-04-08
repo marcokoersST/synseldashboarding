@@ -61,10 +61,8 @@ const PeterJanOmzetDashboard = lazy(() => import("./pages/peter-jan/OmzetDashboa
 // AcquisitieConversie merged into ManagerSalesFunnel
 
 // Marketing dashboards
-const MarketingInschrijvingen = lazy(() => import("./pages/marketing/InschrijvingenDashboard"));
+const MarketingHub = lazy(() => import("./pages/marketing/MarketingHub"));
 const MarketingVacatureFunnel = lazy(() => import("./pages/marketing/VacatureFunnelMonitor"));
-const MarketingInflow = lazy(() => import("./pages/marketing/InflowDashboard"));
-const VacatureAanvraagFunnel = lazy(() => import("./pages/marketing/VacatureAanvraagFunnel"));
 const CorporateRecruitmentInflow = lazy(() => import("./pages/corporate-recruitment/InflowDashboard"));
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
@@ -136,11 +134,11 @@ const App = () => (
               <Route path="/peter-jan/sales-flow" element={<PeterJanSalesFlow />} />
               <Route path="/peter-jan/acquisitie-funnel" element={<PeterJanAcquisitieFunnel />} />
               <Route path="/peter-jan/omzet-dashboard" element={<PeterJanOmzetDashboard />} />
-              <Route path="/marketing" element={<MarketingInschrijvingen />} />
-              <Route path="/marketing/inschrijvingen" element={<MarketingInschrijvingen />} />
-              <Route path="/marketing/inflow" element={<MarketingInflow />} />
+              <Route path="/marketing" element={<MarketingHub />} />
+              <Route path="/marketing/inflow" element={<MarketingHub />} />
+              <Route path="/marketing/inschrijvingen" element={<MarketingHub />} />
+              <Route path="/marketing/vacature-aanvraag-funnel" element={<MarketingHub />} />
               <Route path="/marketing/vacature-funnel" element={<MarketingVacatureFunnel />} />
-              <Route path="/marketing/vacature-aanvraag-funnel" element={<VacatureAanvraagFunnel />} />
               <Route path="/corporate-recruitment/inflow" element={<CorporateRecruitmentInflow />} />
               <Route path="/marco/productiviteit" element={<ProductiviteitDashboard />} />
             </Route>
