@@ -1,14 +1,23 @@
 import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, ChevronRight, TrendingUp, TrendingDown } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ChevronDown, ChevronRight, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { paidSocialData, aggregateByUnit, totals as calcTotals, formatCurrency, previousPeriodValue, deltaPercent } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 
-interface Props { dateRange: DateRange; }
+interface Props {
+  dateRange: DateRange;
+  compareRange: DateRange | null;
+}
 
-const PaidSocialTab = ({ dateRange }: Props) => {
+type SortKey = "name" | "conversions" | "registrations" | "spend" | "cpr";
+
+const PaidSocialTab = ({ dateRange, compareRange }: Props) => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [sortKey, setSortKey] = useState<SortKey>("registrations");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [showConversion, setShowConversion] = useState(false);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof paidSocialData>();
@@ -17,36 +26,45 @@ const PaidSocialTab = ({ dateRange }: Props) => {
       arr.push(row);
       map.set(row.platform, arr);
     }
-    return Array.from(map.entries()).map(([platform, children]) => ({
+    const parents = Array.from(map.entries()).map(([platform, children]) => ({
       platform,
       conversions: children.reduce((s, c) => s + c.conversions, 0),
       registrations: children.reduce((s, c) => s + c.registrations, 0),
       spend: children.reduce((s, c) => s + c.spend, 0),
+      cpr: 0,
       children,
     }));
-  }, []);
+    parents.forEach(p => { p.cpr = p.registrations > 0 ? p.spend / p.registrations : 0; });
+    return parents.sort((a, b) => {
+      const av = sortKey === "name" ? a.platform : a[sortKey] ?? 0;
+      const bv = sortKey === "name" ? b.platform : b[sortKey] ?? 0;
+      if (typeof av === "string" && typeof bv === "string") return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+      return sortDir === "asc" ? (av as number) - (bv as number) : (bv as number) - (av as number);
+    });
+  }, [sortKey, sortDir]);
 
   const grand = useMemo(() => calcTotals(paidSocialData), []);
   const unitChart = useMemo(() => aggregateByUnit(paidSocialData), []);
   const grandCpr = grand.registrations > 0 ? grand.spend / grand.registrations : 0;
+  const grandCpc = grand.conversions > 0 ? grand.spend / grand.conversions : 0;
 
   const kpis = useMemo(() => {
     const prev = { conversions: previousPeriodValue(grand.conversions), registrations: previousPeriodValue(grand.registrations) };
     const prevCpr = prev.registrations > 0 ? previousPeriodValue(grand.spend) / prev.registrations : 0;
-    const items: { label: string; value: number; delta: number | null; format?: "currency"; invertDelta?: boolean }[] = [
+    return [
       { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
       { label: "Registrations", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
-      { label: "CPR", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency", invertDelta: true },
+      { label: "CPR", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency" as const, invertDelta: true },
     ];
-    return items;
   }, [grand, grandCpr]);
 
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortDir("desc"); }
+  };
+
   const toggle = (platform: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      next.has(platform) ? next.delete(platform) : next.add(platform);
-      return next;
-    });
+    setExpanded(prev => { const n = new Set(prev); n.has(platform) ? n.delete(platform) : n.add(platform); return n; });
   };
 
   return (
@@ -72,46 +90,65 @@ const PaidSocialTab = ({ dateRange }: Props) => {
       </div>
 
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Paid Social per platform</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Paid Social per platform</CardTitle>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+            <Switch checked={showConversion} onCheckedChange={setShowConversion} />
+            Show conversion
+          </label>
+        </CardHeader>
         <CardContent className="p-0">
           <div className="max-h-[480px] overflow-auto">
             <table className="w-full caption-bottom text-sm table-fixed">
               <thead className="[&_tr]:border-b">
                 <tr className="border-b transition-colors">
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[28%]">Platform / Segment</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[18%]">Conversions</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[18%]">Registrations</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[18%]">Spend</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10 w-[18%]">CPR</th>
+                  {[
+                    { label: "Platform / Segment", key: "name" as SortKey },
+                    { label: "Conversions", key: "conversions" as SortKey },
+                    { label: "Registrations", key: "registrations" as SortKey },
+                    ...(showConversion ? [{ label: "CPR", key: "cpr" as SortKey }, { label: "Cost/Conv.", key: "cpr" as SortKey }] : []),
+                    { label: "Spend", key: "spend" as SortKey },
+                  ].map((col) => (
+                    <th key={col.label} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer select-none sticky top-0 bg-background z-10" onClick={() => toggleSort(col.key)}>
+                      <div className="flex items-center gap-1">
+                        {col.label}
+                        <ArrowUpDown className={`h-3 w-3 ${sortKey === col.key ? "text-primary" : "text-muted-foreground"}`} />
+                      </div>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
                 {grouped.map((parent) => {
                   const isOpen = expanded.has(parent.platform);
                   const cpr = parent.registrations > 0 ? parent.spend / parent.registrations : 0;
+                  const cpc = parent.conversions > 0 ? parent.spend / parent.conversions : 0;
                   return (
                     <React.Fragment key={parent.platform}>
                       <tr className="border-b transition-colors cursor-pointer hover:bg-muted/50" onClick={() => toggle(parent.platform)}>
-                        <td className="p-4 align-middle font-semibold w-[28%]">
+                        <td className="p-4 align-middle font-semibold">
                           <div className="flex items-center gap-1">
                             {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                             {parent.platform}
                           </div>
                         </td>
-                        <td className="p-4 align-middle font-semibold w-[18%]">{parent.conversions.toLocaleString("nl-NL")}</td>
-                        <td className="p-4 align-middle font-semibold w-[18%]">{parent.registrations.toLocaleString("nl-NL")}</td>
-                        <td className="p-4 align-middle font-semibold w-[18%]">{formatCurrency(parent.spend)}</td>
-                        <td className="p-4 align-middle font-semibold w-[18%]">{formatCurrency(Math.round(cpr))}</td>
+                        <td className="p-4 align-middle font-semibold">{parent.conversions.toLocaleString("nl-NL")}</td>
+                        <td className="p-4 align-middle font-semibold">{parent.registrations.toLocaleString("nl-NL")}</td>
+                        {showConversion && <td className="p-4 align-middle font-semibold">{formatCurrency(Math.round(cpr))}</td>}
+                        {showConversion && <td className="p-4 align-middle font-semibold">{formatCurrency(Math.round(cpc))}</td>}
+                        <td className="p-4 align-middle font-semibold">{formatCurrency(parent.spend)}</td>
                       </tr>
                       {isOpen && parent.children.map((child) => {
                         const childCpr = child.registrations > 0 ? child.spend / child.registrations : 0;
+                        const childCpc = child.conversions > 0 ? child.spend / child.conversions : 0;
                         return (
                           <tr key={`${parent.platform}-${child.segment}`} className="border-b transition-colors bg-muted/20">
-                            <td className="p-4 pl-10 align-middle text-muted-foreground w-[28%]">{child.segment}</td>
-                            <td className="p-4 align-middle w-[18%]">{child.conversions.toLocaleString("nl-NL")}</td>
-                            <td className="p-4 align-middle w-[18%]">{child.registrations.toLocaleString("nl-NL")}</td>
-                            <td className="p-4 align-middle w-[18%]">{formatCurrency(child.spend)}</td>
-                            <td className="p-4 align-middle w-[18%]">{formatCurrency(Math.round(childCpr))}</td>
+                            <td className="p-4 pl-10 align-middle text-muted-foreground">{child.segment}</td>
+                            <td className="p-4 align-middle">{child.conversions.toLocaleString("nl-NL")}</td>
+                            <td className="p-4 align-middle">{child.registrations.toLocaleString("nl-NL")}</td>
+                            {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(childCpr))}</td>}
+                            {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(childCpc))}</td>}
+                            <td className="p-4 align-middle">{formatCurrency(child.spend)}</td>
                           </tr>
                         );
                       })}
@@ -125,11 +162,12 @@ const PaidSocialTab = ({ dateRange }: Props) => {
             <table className="w-full text-sm table-fixed">
               <tbody>
                 <tr className="font-bold">
-                  <td className="p-4 w-[28%]">Totaal</td>
-                  <td className="p-4 w-[18%]">{grand.conversions.toLocaleString("nl-NL")}</td>
-                  <td className="p-4 w-[18%]">{grand.registrations.toLocaleString("nl-NL")}</td>
-                  <td className="p-4 w-[18%]">{formatCurrency(grand.spend)}</td>
-                  <td className="p-4 w-[18%]">{formatCurrency(Math.round(grandCpr))}</td>
+                  <td className="p-4">Totaal</td>
+                  <td className="p-4">{grand.conversions.toLocaleString("nl-NL")}</td>
+                  <td className="p-4">{grand.registrations.toLocaleString("nl-NL")}</td>
+                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpr))}</td>}
+                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpc))}</td>}
+                  <td className="p-4">{formatCurrency(grand.spend)}</td>
                 </tr>
               </tbody>
             </table>

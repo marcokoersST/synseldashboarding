@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowUpDown } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowUpDown, TrendingUp, TrendingDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import {
   paidChannelData,
@@ -13,21 +13,27 @@ import {
   deltaPercent,
 } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
-import { TrendingUp, TrendingDown } from "lucide-react";
 
-interface Props { dateRange: DateRange; }
+interface Props {
+  dateRange: DateRange;
+  compareRange: DateRange | null;
+}
 
-type SortKey = "source" | "conversions" | "registrations" | "spend" | "cpr";
+type SortKey = "source" | "conversions" | "registrations" | "spend" | "cpr" | "cpc";
 
-const PaidChannelsTab = ({ dateRange }: Props) => {
+const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
   const [sortKey, setSortKey] = useState<SortKey>("registrations");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [showConversion, setShowConversion] = useState(false);
 
   const rows = useMemo(() => {
-    const agg = aggregatePaidChannels(paidChannelData);
+    const agg = aggregatePaidChannels(paidChannelData).map(r => ({
+      ...r,
+      cpc: r.conversions > 0 ? r.spend / r.conversions : 0,
+    }));
     return agg.sort((a, b) => {
-      const av = a[sortKey] ?? 0;
-      const bv = b[sortKey] ?? 0;
+      const av = a[sortKey as keyof typeof a] ?? 0;
+      const bv = b[sortKey as keyof typeof b] ?? 0;
       if (typeof av === "string" && typeof bv === "string") return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
       return sortDir === "asc" ? (av as number) - (bv as number) : (bv as number) - (av as number);
     });
@@ -35,25 +41,38 @@ const PaidChannelsTab = ({ dateRange }: Props) => {
 
   const grand = useMemo(() => calcTotals(paidChannelData), []);
   const unitChart = useMemo(() => aggregateByUnit(paidChannelData), []);
+  const grandCpr = grand.registrations > 0 ? grand.spend / grand.registrations : 0;
+  const grandCpc = grand.conversions > 0 ? grand.spend / grand.conversions : 0;
 
   const kpis = useMemo(() => {
     const prev = { conversions: previousPeriodValue(grand.conversions), registrations: previousPeriodValue(grand.registrations) };
-    const cpr = grand.registrations > 0 ? grand.spend / grand.registrations : 0;
+    const cpr = grandCpr;
     const prevCpr = prev.registrations > 0 ? previousPeriodValue(grand.spend) / prev.registrations : 0;
-    const items: { label: string; value: number; delta: number | null; format?: "currency"; invertDelta?: boolean }[] = [
+    return [
       { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
       { label: "Registrations", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
-      { label: "Cost per Registration", value: cpr, delta: deltaPercent(cpr, prevCpr), format: "currency", invertDelta: true },
+      { label: "Cost per Registration", value: cpr, delta: deltaPercent(cpr, prevCpr), format: "currency" as const, invertDelta: true },
     ];
-    return items;
-  }, [grand]);
+  }, [grand, grandCpr]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
     else { setSortKey(key); setSortDir("desc"); }
   };
 
-  const grandCpr = grand.registrations > 0 ? grand.spend / grand.registrations : 0;
+  const colW = showConversion ? "w-[14.3%]" : "w-[20%]";
+  const firstColW = showConversion ? "w-[14.3%]" : "w-[20%]";
+
+  type ColDef = { key: SortKey; label: string; show: boolean };
+  const columns: ColDef[] = [
+    { key: "source", label: "Bron", show: true },
+    { key: "conversions", label: "Conversions", show: true },
+    { key: "registrations", label: "Registrations", show: true },
+    { key: "cpr", label: "CPR", show: showConversion },
+    { key: "cpc", label: "Cost/Conv.", show: showConversion },
+    { key: "spend", label: "Spend", show: true },
+  ];
+  const visibleCols = columns.filter(c => c.show);
 
   return (
     <div className="space-y-6">
@@ -78,17 +97,23 @@ const PaidChannelsTab = ({ dateRange }: Props) => {
       </div>
 
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Paid Channels per bron</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Paid Channels per bron</CardTitle>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+            <Switch checked={showConversion} onCheckedChange={setShowConversion} />
+            Show conversion
+          </label>
+        </CardHeader>
         <CardContent className="p-0">
           <div className="max-h-[420px] overflow-auto">
             <table className="w-full caption-bottom text-sm table-fixed">
               <thead className="[&_tr]:border-b">
                 <tr className="border-b transition-colors">
-                  {(["source", "conversions", "registrations", "spend", "cpr"] as SortKey[]).map((key) => (
-                    <th key={key} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer select-none sticky top-0 bg-background z-10 w-[20%]" onClick={() => toggleSort(key)}>
+                  {visibleCols.map((col) => (
+                    <th key={col.key} className={`h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer select-none sticky top-0 bg-background z-10`} onClick={() => toggleSort(col.key)}>
                       <div className="flex items-center gap-1">
-                        {{ source: "Bron", conversions: "Conversions", registrations: "Registrations", spend: "Spend", cpr: "CPR" }[key]}
-                        <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                        {col.label}
+                        <ArrowUpDown className={`h-3 w-3 ${sortKey === col.key ? "text-primary" : "text-muted-foreground"}`} />
                       </div>
                     </th>
                   ))}
@@ -97,11 +122,12 @@ const PaidChannelsTab = ({ dateRange }: Props) => {
               <tbody className="[&_tr:last-child]:border-0">
                 {rows.map((row) => (
                   <tr key={row.source} className="border-b transition-colors hover:bg-muted/50">
-                    <td className="p-4 align-middle font-medium w-[20%]">{row.source}</td>
-                    <td className="p-4 align-middle w-[20%]">{row.conversions.toLocaleString("nl-NL")}</td>
-                    <td className="p-4 align-middle w-[20%]">{row.registrations.toLocaleString("nl-NL")}</td>
-                    <td className="p-4 align-middle w-[20%]">{formatCurrency(row.spend)}</td>
-                    <td className="p-4 align-middle w-[20%]">{formatCurrency(Math.round(row.cpr))}</td>
+                    <td className="p-4 align-middle font-medium">{row.source}</td>
+                    <td className="p-4 align-middle">{row.conversions.toLocaleString("nl-NL")}</td>
+                    <td className="p-4 align-middle">{row.registrations.toLocaleString("nl-NL")}</td>
+                    {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(row.cpr))}</td>}
+                    {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(row.cpc))}</td>}
+                    <td className="p-4 align-middle">{formatCurrency(row.spend)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -111,11 +137,12 @@ const PaidChannelsTab = ({ dateRange }: Props) => {
             <table className="w-full text-sm table-fixed">
               <tbody>
                 <tr className="font-bold">
-                  <td className="p-4 w-[20%]">Totaal</td>
-                  <td className="p-4 w-[20%]">{grand.conversions.toLocaleString("nl-NL")}</td>
-                  <td className="p-4 w-[20%]">{grand.registrations.toLocaleString("nl-NL")}</td>
-                  <td className="p-4 w-[20%]">{formatCurrency(grand.spend)}</td>
-                  <td className="p-4 w-[20%]">{formatCurrency(Math.round(grandCpr))}</td>
+                  <td className="p-4">Totaal</td>
+                  <td className="p-4">{grand.conversions.toLocaleString("nl-NL")}</td>
+                  <td className="p-4">{grand.registrations.toLocaleString("nl-NL")}</td>
+                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpr))}</td>}
+                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpc))}</td>}
+                  <td className="p-4">{formatCurrency(grand.spend)}</td>
                 </tr>
               </tbody>
             </table>
