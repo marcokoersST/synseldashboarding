@@ -72,18 +72,19 @@ interface CandidateRecord {
   kandidaat: string;
   klant: string;
   status: string;
-  data: Record<string, number>; // key = "W12"|"W13"|"W14"|"W15"|"P4"|"P5"|"P6"
+  marge: number; // percentage e.g. 0.18 = 18%
+  data: Record<string, number>;
 }
 
 const candidates: CandidateRecord[] = [
-  { kandidaat: "Mark de Vries", klant: "TechCorp BV", status: "Actief", data: { W12: 6800, W13: 7200, W14: 8400, W15: 8900, P4: 28000, P5: 32000, P6: 35000 } },
-  { kandidaat: "Lisa Jansen", klant: "Bouwgroep NL", status: "Actief", data: { W12: 6200, W13: 6800, W14: 6200, W15: 6500, P4: 24000, P5: 26000, P6: 27500 } },
-  { kandidaat: "Tom Bakker", klant: "FinanceFirst", status: "Actief", data: { W12: 4800, W13: 5100, W14: 5800, W15: 6200, P4: 18000, P5: 21000, P6: 23000 } },
-  { kandidaat: "Sara Mol", klant: "LogiPlan BV", status: "Afgerond", data: { W12: 4500, W13: 4900, W14: 4900, W15: 4900, P4: 16000, P5: 18000, P6: 19500 } },
-  { kandidaat: "Pieter Smit", klant: "DataDriven NL", status: "Actief", data: { W12: 3200, W13: 3600, W14: 4200, W15: 4800, P4: 12000, P5: 15000, P6: 17000 } },
-  { kandidaat: "Emma de Boer", klant: "MedTech Group", status: "Actief", data: { W12: 3800, W13: 4100, W14: 3800, W15: 3500, P4: 14000, P5: 15500, P6: 14800 } },
-  { kandidaat: "Koen van Dijk", klant: "RetailMax BV", status: "Pauze", data: { W12: 2000, W13: 2100, W14: 2100, W15: 2100, P4: 8000, P5: 8500, P6: 8500 } },
-  { kandidaat: "Julia Peters", klant: "EnergieWerk", status: "Actief", data: { W12: 0, W13: 0, W14: 1600, W15: 2200, P4: 0, P5: 3000, P6: 5500 } },
+  { kandidaat: "Mark de Vries", klant: "TechCorp BV", status: "Actief", marge: 0.22, data: { W12: 6800, W13: 7200, W14: 8400, W15: 8900, P4: 28000, P5: 32000, P6: 35000 } },
+  { kandidaat: "Lisa Jansen", klant: "Bouwgroep NL", status: "Actief", marge: 0.18, data: { W12: 6200, W13: 6800, W14: 6200, W15: 6500, P4: 24000, P5: 26000, P6: 27500 } },
+  { kandidaat: "Tom Bakker", klant: "FinanceFirst", status: "Actief", marge: 0.20, data: { W12: 4800, W13: 5100, W14: 5800, W15: 6200, P4: 18000, P5: 21000, P6: 23000 } },
+  { kandidaat: "Sara Mol", klant: "LogiPlan BV", status: "Afgerond", marge: 0.15, data: { W12: 4500, W13: 4900, W14: 4900, W15: 4900, P4: 16000, P5: 18000, P6: 19500 } },
+  { kandidaat: "Pieter Smit", klant: "DataDriven NL", status: "Actief", marge: 0.25, data: { W12: 3200, W13: 3600, W14: 4200, W15: 4800, P4: 12000, P5: 15000, P6: 17000 } },
+  { kandidaat: "Emma de Boer", klant: "MedTech Group", status: "Actief", marge: 0.19, data: { W12: 3800, W13: 4100, W14: 3800, W15: 3500, P4: 14000, P5: 15500, P6: 14800 } },
+  { kandidaat: "Koen van Dijk", klant: "RetailMax BV", status: "Pauze", marge: 0.16, data: { W12: 2000, W13: 2100, W14: 2100, W15: 2100, P4: 8000, P5: 8500, P6: 8500 } },
+  { kandidaat: "Julia Peters", klant: "EnergieWerk", status: "Actief", marge: 0.23, data: { W12: 0, W13: 0, W14: 1600, W15: 2200, P4: 0, P5: 3000, P6: 5500 } },
 ];
 
 const availableWeeks = ["W12", "W13", "W14", "W15"];
