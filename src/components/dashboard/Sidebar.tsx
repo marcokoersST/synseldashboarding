@@ -100,11 +100,20 @@ const navItems: NavItem[] = [
   { 
     icon: Briefcase, 
     label: "Manager Dashboard", 
-    path: "/manager-dashboard",
+    path: "/manager-dashboard/overzicht-v2",
     subItems: [
-      { icon: Briefcase, label: "Overzicht", path: "/manager-dashboard" },
-      { icon: Eye, label: "Overzicht V2", path: "/manager-dashboard/overzicht-v2" },
+      { icon: Eye, label: "Overzicht", path: "/manager-dashboard/overzicht-v2" },
+      { icon: Briefcase, label: "Overzicht Final", path: "/manager-dashboard/overzicht-final" },
       { icon: TrendingUp, label: "Acquisitie Conversie", path: "/manager-dashboard/acquisitie-conversie" },
+    ]
+  },
+  {
+    icon: Briefcase,
+    label: "Archived",
+    path: "/manager-dashboard",
+    sectionLabel: "Archived",
+    subItems: [
+      { icon: Briefcase, label: "Overzicht manager dashboard oud", path: "/manager-dashboard" },
     ]
   },
   {

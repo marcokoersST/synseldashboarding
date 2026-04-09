@@ -68,6 +68,7 @@ const CorporateRecruitmentInflow = lazy(() => import("./pages/corporate-recruitm
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
 const TVRanglijstenGrafiek = lazy(() => import("./pages/TVRanglijstenGrafiek"));
 const ManagerOverzichtV2 = lazy(() => import("./pages/manager/OverzichtV2"));
+const ManagerOverzichtFinal = lazy(() => import("./pages/manager/OverzichtFinal"));
 const ProductiviteitDashboard = lazy(() => import("./pages/marco/ProductiviteitDashboard"));
 
 const queryClient = new QueryClient();
@@ -88,6 +89,7 @@ const App = () => (
               <Route path="/vergelijking/:memberId" element={<Vergelijking />} />
               <Route path="/manager-dashboard" element={<ManagerDashboard />} />
               <Route path="/manager-dashboard/overzicht-v2" element={<ManagerOverzichtV2 />} />
+              <Route path="/manager-dashboard/overzicht-final" element={<ManagerOverzichtFinal />} />
               {/* AcquisitieConversie route removed - merged into Sales Funnel */}
               <Route path="/super-admin" element={<SuperAdminDashboard />} />
               <Route path="/super-admin/emulate" element={<SuperAdminEmulate />} />
