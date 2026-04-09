@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { ChevronDown, ChevronRight, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { paidSocialData, aggregateByUnit, totals as calcTotals, formatCurrency, previousPeriodValue, deltaPercent } from "@/data/marketingHubData";
+import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
+import { paidSocialData, aggregateByUnit, totals as calcTotals, formatCurrency, deltaPercent } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 
 interface Props {
@@ -47,17 +48,22 @@ const PaidSocialTab = ({ dateRange, compareRange }: Props) => {
   const unitChart = useMemo(() => aggregateByUnit(paidSocialData), []);
   const grandCpr = grand.registrations > 0 ? grand.spend / grand.registrations : 0;
   const grandCpc = grand.conversions > 0 ? grand.spend / grand.conversions : 0;
+  const compareText = getCompareDisplayText(compareRange);
 
   const kpis = useMemo(() => {
-    const prev = { conversions: previousPeriodValue(grand.conversions), registrations: previousPeriodValue(grand.registrations) };
-    const prevCpr = prev.registrations > 0 ? previousPeriodValue(grand.spend) / prev.registrations : 0;
+    const prev = {
+      conversions: getComparisonValue(grand.conversions, { dateRange, compareRange, seed: "paid-social-conversions" }),
+      registrations: getComparisonValue(grand.registrations, { dateRange, compareRange, seed: "paid-social-registrations" }),
+      spend: getComparisonValue(grand.spend, { dateRange, compareRange, seed: "paid-social-spend" }),
+    };
+    const prevCpr = prev.registrations > 0 ? prev.spend / prev.registrations : 0;
     const items: { label: string; value: number; delta: number | null; format?: string; invertDelta?: boolean }[] = [
       { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
       { label: "Registrations", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
       { label: "CPR", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency", invertDelta: true },
     ];
     return items;
-  }, [grand, grandCpr]);
+  }, [dateRange, compareRange, grand, grandCpr]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -82,6 +88,7 @@ const PaidSocialTab = ({ dateRange, compareRange }: Props) => {
                   <div className={`flex items-center gap-1 mt-1 text-xs ${isPos ? "text-emerald-600" : "text-red-500"}`}>
                     {isPos ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     <span>{kpi.delta > 0 ? "+" : ""}{kpi.delta.toFixed(1)}%</span>
+                    <span className="text-muted-foreground ml-1">{compareText}</span>
                   </div>
                 )}
               </CardContent>

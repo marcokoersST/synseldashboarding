@@ -9,6 +9,7 @@ import { TrendingUp, TrendingDown, Minus, Filter, ArrowUpDown } from "lucide-rea
 import { differenceInDays, subDays, format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { formatDateRangeLabel, getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from "recharts";
 import {
   inflowSourceData,
@@ -23,9 +24,9 @@ interface Props {
   compareRange: DateRange | null;
 }
 
-interface ScorecardProps { title: string; current: number; previous: number; }
+interface ScorecardProps { title: string; current: number; previous: number; compareText: string; }
 
-function Scorecard({ title, current, previous }: ScorecardProps) {
+function Scorecard({ title, current, previous, compareText }: ScorecardProps) {
   const max = Math.max(current, previous, 1);
   const progressValue = (current / max) * 100;
   const delta = current - previous;
@@ -52,7 +53,7 @@ function Scorecard({ title, current, previous }: ScorecardProps) {
             <span className={cn("font-medium", delta > 0 && "text-primary", delta < 0 && "text-destructive", delta === 0 && "text-muted-foreground")}>
               {delta > 0 ? "+" : ""}{delta} ({deltaPercent}%)
             </span>
-            <span className="text-muted-foreground">vs vorige periode ({previous})</span>
+            <span className="text-muted-foreground">{compareText} ({previous})</span>
           </div>
         </div>
       </CardContent>
@@ -79,6 +80,8 @@ const InflowTab = ({ dateRange, compareRange }: Props) => {
     const dayCount = differenceInDays(dateRange.to, dateRange.from) + 1;
     return { from: subDays(dateRange.from, dayCount), to: subDays(dateRange.from, 1) };
   }, [dateRange]);
+  const compareText = getCompareDisplayText(compareRange);
+  const activeCompareRange = compareRange ?? previousPeriod;
 
   const allUnits = useMemo(() => {
     const set = new Set(inflowConsultantData.map((c) => c.unit));
@@ -139,6 +142,14 @@ const InflowTab = ({ dateRange, compareRange }: Props) => {
   }, []);
 
   const unitChartData = useMemo(() => aggregateByUnit(filteredConsultants), [filteredConsultants]);
+  const previousInschrijvingen = useMemo(
+    () => getComparisonValue(consultantTotals.inschrijvingen, { dateRange, compareRange, seed: "inflow-registrations" }),
+    [consultantTotals.inschrijvingen, dateRange, compareRange],
+  );
+  const previousHeractiveringen = useMemo(
+    () => getComparisonValue(inflowHeractiveringen.current, { dateRange, compareRange, seed: "inflow-heractiveringen" }),
+    [dateRange, compareRange],
+  );
 
   const unitFilterLabel = selectedUnits.size === allUnits.length ? "Alle units" : selectedUnits.size === 0 ? "Geen units" : `${selectedUnits.size} unit${selectedUnits.size > 1 ? "s" : ""}`;
 
@@ -180,16 +191,16 @@ const InflowTab = ({ dateRange, compareRange }: Props) => {
           </PopoverContent>
         </Popover>
 
-        {previousPeriod && (
+        {activeCompareRange && (
           <Badge variant="secondary" className="text-xs">
-            vs {format(previousPeriod.from, "d MMM", { locale: nl })} – {format(previousPeriod.to, "d MMM", { locale: nl })}
+            vs {formatDateRangeLabel(activeCompareRange)}
           </Badge>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Scorecard title="Inschrijvingen" current={consultantTotals.inschrijvingen} previous={consultantTotals.prevInschrijvingen} />
-        <Scorecard title="Heractiveringen" current={inflowHeractiveringen.current} previous={inflowHeractiveringen.previous} />
+        <Scorecard title="Inschrijvingen" current={consultantTotals.inschrijvingen} previous={previousInschrijvingen} compareText={compareText} />
+        <Scorecard title="Heractiveringen" current={inflowHeractiveringen.current} previous={previousHeractiveringen} compareText={compareText} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
