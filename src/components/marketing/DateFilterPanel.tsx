@@ -138,6 +138,7 @@ const DateFilterPanel = ({
         <div className="flex">
           {/* Presets column */}
           <div className="border-r border-border p-4 w-[200px]">
+            <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Periode</p>
             <RadioGroup
               value={activePreset}
               onValueChange={(val) => applyPreset(val as PresetId)}
