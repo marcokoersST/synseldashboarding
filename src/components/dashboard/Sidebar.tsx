@@ -108,18 +108,15 @@ const navItems: NavItem[] = [
     ]
   },
   {
-    icon: Briefcase,
-    label: "Archived",
-    path: "/manager-dashboard",
-    sectionLabel: "Archived",
-    subItems: [
-      { icon: Briefcase, label: "Overzicht manager dashboard oud", path: "/manager-dashboard" },
-    ]
+    icon: Megaphone,
+    label: "Marketing Hub",
+    path: "/marketing",
   },
   {
     icon: ClipboardCheck,
     label: "Dashboards Hendrik",
     path: "/hendrik/overzicht",
+    sectionLabel: "Concepts",
     subItems: [
       { icon: ClipboardCheck, label: "Kwaliteitsoverzicht", path: "/hendrik/overzicht" },
       { icon: Mail, label: "Mail & Voorstellen", path: "/hendrik/mail-voorstellen" },
@@ -144,11 +141,6 @@ const navItems: NavItem[] = [
       { icon: TrendingUp, label: "Sales Flow Dashboards", path: "/peter-jan/sales-flow" },
       { icon: Filter, label: "Acquisitie Funnel", path: "/peter-jan/acquisitie-funnel" },
     ]
-  },
-  {
-    icon: Megaphone,
-    label: "Marketing Hub",
-    path: "/marketing",
   },
   {
     icon: BarChart3,
@@ -187,6 +179,15 @@ const navItems: NavItem[] = [
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
       { icon: Monitor, label: "Heatmap", path: "/tv/heatmap" },
       { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
+    ]
+  },
+  {
+    icon: Briefcase,
+    label: "Archived",
+    path: "/manager-dashboard",
+    sectionLabel: "Archived",
+    subItems: [
+      { icon: Briefcase, label: "Overzicht manager dashboard oud", path: "/manager-dashboard" },
     ]
   },
 ];
