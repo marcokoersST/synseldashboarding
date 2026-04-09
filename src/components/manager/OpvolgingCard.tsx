@@ -313,7 +313,12 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
                   <td className="py-2 px-3 text-sm tabular-nums text-muted-foreground">{record.id.replace("DEAL-", "")}</td>
                   <td className="py-2 px-3 text-sm text-muted-foreground">{format(record.lastModified, "d MMM yyyy", { locale: nl })}</td>
                   <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
-                    <a href="#" className="text-primary text-xs underline hover:no-underline">Profiel</a>
+                    <a href="#" className="inline-flex items-center justify-center w-6 h-6 rounded bg-[#0066FF]/10 hover:bg-[#0066FF]/20 transition-colors" title="Open in Recruit CRM">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <rect width="24" height="24" rx="4" fill="#0066FF"/>
+                        <text x="12" y="17" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold" fontFamily="Arial, sans-serif">R</text>
+                      </svg>
+                    </a>
                   </td>
                 </tr>
               );
