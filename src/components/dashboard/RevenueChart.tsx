@@ -298,7 +298,7 @@ function DetailedView({ delay }: { delay: number }) {
             <div className="flex items-center gap-1.5">
               <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="h-8 w-36 text-xs" />
               <span className="text-xs text-muted-foreground">—</span>
-              <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="h-8 w-32 text-xs" />
+              <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="h-8 w-36 text-xs" />
             </div>
           )}
         </div>
