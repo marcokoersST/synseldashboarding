@@ -211,10 +211,15 @@ function OverviewView({ delay }: { delay: number }) {
   );
 }
 
-// ─── Detailed view ───
+type FilterMode = "week" | "periode" | "custom";
+
 function DetailedView({ delay }: { delay: number }) {
   const [filterMode, setFilterMode] = useState<FilterMode>("week");
   const [compareEnabled, setCompareEnabled] = useState(true);
+  const [selectedWeek, setSelectedWeek] = useState("W14");
+  const [selectedPeriode, setSelectedPeriode] = useState("P5");
+  const [customFrom, setCustomFrom] = useState("2026-03-01");
+  const [customTo, setCustomTo] = useState("2026-03-31");
 
   const filterOptions: { value: FilterMode; label: string }[] = [
     { value: "week", label: "Week" },
@@ -222,31 +227,82 @@ function DetailedView({ delay }: { delay: number }) {
     { value: "custom", label: "Aangepast" },
   ];
 
-  const totalOmzet = candidateInvoiceData.reduce((sum, c) => sum + c.omzet, 0);
-  const totalVorige = candidateInvoiceData.reduce((sum, c) => sum + c.vorige, 0);
+  const currentKey = filterMode === "week" ? selectedWeek : filterMode === "periode" ? selectedPeriode : null;
+  const previousKey = filterMode === "week"
+    ? getPreviousKey(selectedWeek, availableWeeks)
+    : filterMode === "periode"
+      ? getPreviousKey(selectedPeriode, availablePeriodes)
+      : null;
+
+  const tableData = useMemo(() => {
+    return candidates.map((c) => {
+      const omzet = currentKey ? (c.data[currentKey] ?? 0) : c.data["W14"];
+      const vorige = previousKey ? (c.data[previousKey] ?? 0) : 0;
+      return { ...c, omzet, vorige };
+    });
+  }, [currentKey, previousKey]);
+
+  const totalOmzet = tableData.reduce((s, c) => s + c.omzet, 0);
+  const totalVorige = tableData.reduce((s, c) => s + c.vorige, 0);
   const totalDelta = totalOmzet - totalVorige;
   const totalDeltaPct = totalVorige > 0 ? ((totalDelta / totalVorige) * 100) : 0;
 
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-1 bg-secondary/40 rounded-lg p-0.5">
-          {filterOptions.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setFilterMode(opt.value)}
-              className={cn(
-                "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-                filterMode === opt.value
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-secondary/40 rounded-lg p-0.5">
+            {filterOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setFilterMode(opt.value)}
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                  filterMode === opt.value
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Dropdown per mode */}
+          {filterMode === "week" && (
+            <Select value={selectedWeek} onValueChange={setSelectedWeek}>
+              <SelectTrigger className="h-8 w-24 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableWeeks.map((w) => (
+                  <SelectItem key={w} value={w}>{w}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {filterMode === "periode" && (
+            <Select value={selectedPeriode} onValueChange={setSelectedPeriode}>
+              <SelectTrigger className="h-8 w-24 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availablePeriodes.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {filterMode === "custom" && (
+            <div className="flex items-center gap-1.5">
+              <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="h-8 w-32 text-xs" />
+              <span className="text-xs text-muted-foreground">—</span>
+              <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="h-8 w-32 text-xs" />
+            </div>
+          )}
         </div>
+
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-muted-foreground">Vergelijking</span>
           <button
@@ -264,16 +320,23 @@ function DetailedView({ delay }: { delay: number }) {
         </div>
       </div>
 
+      {/* Compare label */}
+      {compareEnabled && previousKey && (
+        <p className="text-[10px] text-muted-foreground">
+          Vergelijking: {currentKey} t.o.v. {previousKey}
+        </p>
+      )}
+
       {/* Summary */}
       <div className="flex items-center gap-6 bg-secondary/20 rounded-lg px-4 py-3">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Totaal gefactureerd</p>
           <AnimatedNumber value={totalOmzet} delay={delay + 100} className="text-2xl font-bold text-foreground" prefix="€" />
         </div>
-        {compareEnabled && (
+        {compareEnabled && previousKey && (
           <div className="flex items-center gap-2 pl-4 border-l border-border">
             <div>
-              <p className="text-[10px] text-muted-foreground">Vorige periode</p>
+              <p className="text-[10px] text-muted-foreground">Vorige ({previousKey})</p>
               <span className="text-sm font-semibold text-muted-foreground">€{totalVorige.toLocaleString()}</span>
             </div>
             <div className={cn(
@@ -295,9 +358,9 @@ function DetailedView({ delay }: { delay: number }) {
               <th className="text-left py-2 px-3 font-medium text-muted-foreground">Kandidaat</th>
               <th className="text-left py-2 px-3 font-medium text-muted-foreground">Klant</th>
               <th className="text-right py-2 px-3 font-medium text-muted-foreground">Gefactureerd</th>
-              {compareEnabled && (
+              {compareEnabled && previousKey && (
                 <>
-                  <th className="text-right py-2 px-3 font-medium text-muted-foreground">Vorige</th>
+                  <th className="text-right py-2 px-3 font-medium text-muted-foreground">Vorige ({previousKey})</th>
                   <th className="text-right py-2 px-3 font-medium text-muted-foreground">Δ</th>
                 </>
               )}
@@ -305,7 +368,7 @@ function DetailedView({ delay }: { delay: number }) {
             </tr>
           </thead>
           <tbody>
-            {candidateInvoiceData.map((row, i) => {
+            {tableData.map((row, i) => {
               const delta = row.omzet - row.vorige;
               const deltaPct = row.vorige > 0 ? ((delta / row.vorige) * 100) : (row.omzet > 0 ? 100 : 0);
               return (
@@ -313,7 +376,7 @@ function DetailedView({ delay }: { delay: number }) {
                   <td className="py-2 px-3 font-medium text-foreground">{row.kandidaat}</td>
                   <td className="py-2 px-3 text-muted-foreground">{row.klant}</td>
                   <td className="py-2 px-3 text-right font-semibold text-foreground tabular-nums">€{row.omzet.toLocaleString()}</td>
-                  {compareEnabled && (
+                  {compareEnabled && previousKey && (
                     <>
                       <td className="py-2 px-3 text-right text-muted-foreground tabular-nums">
                         {row.vorige > 0 ? `€${row.vorige.toLocaleString()}` : "—"}
