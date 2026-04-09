@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
@@ -6,6 +6,8 @@ import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { useNavigate } from "react-router-dom";
 import { Maximize2, Minimize2, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 // ─── Detail toggle hook ───
