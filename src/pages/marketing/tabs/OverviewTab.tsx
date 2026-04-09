@@ -32,6 +32,7 @@ import type { DateRange } from "react-day-picker";
 interface Props {
   dateRange: DateRange;
   compareRange: DateRange | null;
+  deltaMode?: string;
   onTabChange: (tab: any) => void;
 }
 
