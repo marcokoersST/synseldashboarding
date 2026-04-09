@@ -1,44 +1,34 @@
 
 
-# Plan: DateFilterPanel upgraden naar referentie-design
+# Plan: Tabel-deltas bij vergelijking + "t.a.v." tekst fix
 
-## Wat verandert
+## 1. Scorecard tekst: "vs" → "t.a.v."
 
-De huidige DateFilterPanel wordt visueel en functioneel aangepast om overeen te komen met het referentiebeeld. De kernfunctionaliteit (presets, kalender, vergelijking) is al aanwezig — dit is primair een UI-herstructurering.
+**Bestand:** `src/lib/marketingCompare.ts`
 
-## Wijzigingen in `src/components/marketing/DateFilterPanel.tsx`
+- In `getCompareDisplayText`: wijzig `vs` naar `t.a.v.`
+- Dit werkt automatisch door in alle tabs (scorecards + overal waar `compareText` wordt getoond)
 
-### Presets
-- Voeg ontbrekende presets toe: **"Vandaag en gisteren"** en **"Afgelopen 28 dagen"** (tussen 14 en 30)
-- Voeg **"Aangepast"** preset toe onderaan (selecteert custom modus, geen actie op kalender)
-- Vervang huidige knoppen door **radio buttons** (visueel als cirkel/bullet, één actief tegelijk)
-- Actieve preset krijgt filled radio indicator ipv achtergrondkleur
+## 2. Vergelijkingspercentages in tabelrijen
 
-### Vergelijkingssectie
-- Vervang Switch door **checkbox** met label "Vergelijken"
-- Wanneer vergelijken aan:
-  - **Rij 1**: Radio + dropdown preset (bijv. "Afgelopen 30 dagen") + datum labels `9 maart 2026 - 7 april 2026`
-  - **Rij 2**: Radio + dropdown "Aangepast" + datum labels
-  - Gebruiker kiest tussen standaard periode of custom via radio selectie
-- Voeg **"Overlap data"** toggle toe (filled circle indicator) — puur visuele state, doorsturen als prop voor toekomstig gebruik in charts
+Wanneer `compareRange` actief is, tonen alle numerieke tabelcellen een delta-percentage onder de huidige waarde.
 
-### Footer
-- Voeg tekst toe: `Datums worden weergegeven in Amsterdam`
-- Rename knoppen: "Annuleren" (blijft) + "Bijwerken" (was "Toepassen")
+**Bestanden:** `PaidChannelsTab.tsx`, `JobboardsTab.tsx`, `PaidSocialTab.tsx`, `PaidSocialAdLevelTab.tsx`
 
-### Props uitbreiding
-- Voeg `overlapData` + `onOverlapDataChange` toe aan interface (optioneel, default false)
-
-## Visuele aanpassingen
-- Presets: radio circles links van labels
-- Vergelijkings-rij: horizontale layout met dropdown + datum-tekst
-- Compactere spacing conform referentie
-- Kalender styling ongewijzigd (al correct met 2 maanden + today ring)
+Per tab:
+- Bereken voor elke rij een vergelijkingswaarde per metric (conversions, registrations, spend) via `getComparisonValue` met een seed per rij (bijv. `paid-channels-{source}-conversions`)
+- Wanneer `compareRange !== null`: toon onder elk getal een klein `<span>` met de delta in % — groen (positief) of rood (negatief), met TrendingUp/Down icoon
+- Wanneer `compareRange === null`: geen delta's tonen (huidige gedrag)
+- Totaalrij: ook delta's tonen op basis van de grand totals (al berekend in kpis)
+- Layout per cel: getal bovenaan, daaronder een compact `text-xs` regeltje met `+X.X%` of `-X.X%` in kleur
 
 ## Bestanden
 
 | Bestand | Wijziging |
 |---|---|
-| `src/components/marketing/DateFilterPanel.tsx` | UI herstructurering: radio presets, checkbox vergelijken, overlap toggle, dropdown compare, footer tekst |
-| `src/pages/marketing/MarketingHub.tsx` | Optioneel: overlap state toevoegen (kan later) |
+| `src/lib/marketingCompare.ts` | `vs` → `t.a.v.` in `getCompareDisplayText` |
+| `src/pages/marketing/tabs/PaidChannelsTab.tsx` | Per-rij delta berekening + weergave |
+| `src/pages/marketing/tabs/JobboardsTab.tsx` | Idem |
+| `src/pages/marketing/tabs/PaidSocialTab.tsx` | Idem |
+| `src/pages/marketing/tabs/PaidSocialAdLevelTab.tsx` | Idem |
 
