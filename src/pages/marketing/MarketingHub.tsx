@@ -5,7 +5,6 @@ import type { DeltaMode } from "@/components/marketing/DeltaCell";
 
 import DateFilterPanel from "@/components/marketing/DateFilterPanel";
 import OverviewTab from "./tabs/OverviewTab";
-import InflowTab from "./tabs/InflowTab";
 import PaidChannelsTab from "./tabs/PaidChannelsTab";
 import JobboardsTab from "./tabs/JobboardsTab";
 import PaidSocialTab from "./tabs/PaidSocialTab";
@@ -15,7 +14,6 @@ import { cn } from "@/lib/utils";
 
 const tabs = [
   { id: "overview", label: "Overview" },
-  { id: "inflow", label: "Inflow" },
   { id: "paid-channels", label: "Paid Channels" },
   { id: "jobboards", label: "Jobboards" },
   { id: "paid-social", label: "Paid Social" },
@@ -52,7 +50,6 @@ const MarketingHub = () => {
     const sharedProps = { dateRange, compareRange: effectiveCompareRange, deltaMode };
     switch (activeTab) {
       case "overview": return <OverviewTab {...sharedProps} onTabChange={setActiveTab} />;
-      case "inflow": return <InflowTab {...sharedProps} />;
       case "paid-channels": return <PaidChannelsTab {...sharedProps} />;
       case "jobboards": return <JobboardsTab {...sharedProps} />;
       case "paid-social": return <PaidSocialTab {...sharedProps} />;
