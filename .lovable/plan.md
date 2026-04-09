@@ -1,34 +1,37 @@
 
 
-# Plan: Week/Periode selector dropdowns + vergelijkingsmodus in Omzet Overzicht
-
-## Wat verandert
-
-De DetailedView in `src/components/dashboard/RevenueChart.tsx` krijgt:
-
-1. **Dropdown per filtermodus** — na het kiezen van Week/Periode/Aangepast verschijnt een dropdown waarmee de specifieke week of periode geselecteerd wordt (bijv. "W14", "W13" of "P5", "P4")
-2. **Vergelijkingsperiode** — wanneer vergelijking actief is, wordt automatisch de vorige week/periode als vergelijking getoond. De data in de tabel past zich aan op basis van de geselecteerde periode.
+# Plan: Omzet Overzicht Detail — UI redesign + vergelijking + Potentiële marge
 
 ## Wijzigingen in `src/components/dashboard/RevenueChart.tsx`
 
-### Nieuwe data
-- Extend `candidateInvoiceData` met meerdere weken/periodes per kandidaat, zodat bij wisseling van week/periode de juiste data getoond wordt
-- Dummy data voor W12-W15 en P4-P6
+### 1. Week/Periode selector visueel verbeteren
+- Actieve tab krijgt een gekleurde achtergrond (primary tint) i.p.v. plain wit
+- Inactieve tabs krijgen subtiele hover-states
 
-### DetailedView UI
-- Na de modus-tabs (Week | Periode | Aangepast): een `<Select>` dropdown met beschikbare weken (W12–W15) of periodes (P4–P6)
-- Bij "Aangepast": toon twee date inputs (van/tot) — eenvoudige placeholder, geen kalender nodig
-- State: `selectedWeek`, `selectedPeriode`
-- Vergelijkingsrij past automatisch aan: bij W14 vergelijkt met W13, bij P5 met P4
+### 2. Kalender/datumselectie redesign (Aangepast modus)
+- Vervang de standaard `<Input type="date">` door een date range picker met `Popover` + `Calendar` component (al aanwezig in het project)
+- Twee velden tonen de geselecteerde datums, klik opent een kalender-popover
+- Lettertype wordt `text-xs font-medium` consistent met het design system
+- Kalender toont 2 maanden naast elkaar met "Clear" en "Today" knoppen
 
-### Tabel
-- Data wordt gefilterd op geselecteerde week/periode
-- "Vorige" kolom toont data van de voorgaande week/periode
-- Totalen en delta's herberekenen op basis van selectie
+### 3. Vergelijkknop werkend maken
+- De toggle is al functioneel (state `compareEnabled`), maar bij "Aangepast" modus werkt vergelijking niet (geen `previousKey`). Fix: bereken een vergelijkingsperiode voor custom range (zelfde lengte, direct voorafgaand)
+- Custom mode: toon ook vergelijkingsdata in de tabel
+
+### 4. Vergelijkingsperiode selecteerbaar maken
+- Wanneer vergelijking actief is, toon een extra `<Select>` dropdown naast de toggle waarmee de gebruiker de vergelijkingsperiode kiest (bijv. bij W14: keuze uit W12, W13; bij P5: keuze uit P4)
+- Bij "Aangepast": toon een tweede date range picker voor de vergelijkingsperiode
+- Verwijder de automatische "vorige periode" logica — gebruiker kiest zelf
+
+### 5. Kolom "Potentiële marge" toevoegen aan tabel
+- Nieuwe kolom na "Gefactureerd" met dummy margewaarden per kandidaat
+- Voeg `marge` veld toe aan `CandidateRecord` (bijv. percentage 15-25%)
+- Toon als `€X.XXX` (berekend als `omzet * margePercentage`)
+- Bij vergelijking: toon ook marge-delta
 
 ## Bestanden
 
 | Bestand | Wijziging |
 |---|---|
-| `src/components/dashboard/RevenueChart.tsx` | Dropdown selectors per modus, multi-week/periode dummy data, dynamische filtering |
+| `src/components/dashboard/RevenueChart.tsx` | Alle 5 punten: selector styling, kalender popover, vergelijkingsselector, marge kolom |
 
