@@ -3,7 +3,7 @@ import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Maximize2, Minimize2, Search, ArrowUpDown, ArrowRight, ArrowUp, ArrowDown } from "lucide-react";
+import { Maximize2, Minimize2, Search, ArrowUpDown, ArrowRight, ArrowUp, ArrowDown, Mail, Phone, Handshake, Presentation, PhoneCall } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dealRecords, dealStageCounts, dealStages, type DealRecord } from "@/data/managerOperationalData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -54,6 +54,37 @@ const stageColors: Record<string, string> = {
   "3.4": "bg-success/15 text-success border-success/30",
 };
 
+const categories = ["A+", "A", "B"] as const;
+function getCandidateCategory(record: DealRecord): string {
+  const hash = record.candidateName.charCodeAt(0) + record.candidateName.charCodeAt(record.candidateName.length - 1);
+  return categories[hash % 3];
+}
+
+const categoryColors: Record<string, string> = {
+  "A+": "text-primary font-bold",
+  "A": "text-accent font-medium",
+  "B": "text-muted-foreground",
+};
+
+// Dummy detail data per candidate
+function getCandidateDetail(record: DealRecord) {
+  const seed = record.id.charCodeAt(record.id.length - 1);
+  return {
+    emailsSent: 2 + (seed % 5),
+    emailsReceived: 1 + (seed % 3),
+    calls: 3 + (seed % 8),
+    deals: 1 + (seed % 3),
+    presentations: seed % 4,
+    acquisitionCalls: 2 + (seed % 6),
+    notes: [
+      { date: "8 apr 2026 14:30", text: "Kandidaat is enthousiast over de rol. Wacht op feedback van hiring manager." },
+      { date: "6 apr 2026 10:15", text: "Telefonisch contact gehad, beschikbaar per direct." },
+      { date: "3 apr 2026 16:45", text: "CV doorgestuurd naar opdrachtgever." },
+      { date: "1 apr 2026 09:00", text: "Eerste intake gesprek gevoerd, goede match op technische skills." },
+    ].slice(0, 2 + (seed % 3)),
+  };
+}
+
 // ─── Overview: flowchart scorecards ───
 
 function OpvolgingOverview({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
@@ -88,7 +119,7 @@ function OpvolgingOverview({ delay, selectedUnit }: { delay: number; selectedUni
 
 // ─── Detail ───
 
-type SortKey = "dealStage" | "candidateName" | "consultantName" | "id" | "lastModified";
+type SortKey = "dealStage" | "candidateName" | "category" | "consultantName" | "id" | "lastModified";
 
 function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const [search, setSearch] = useState("");
@@ -123,6 +154,7 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
       switch (sortKey) {
         case "dealStage": cmp = a.dealStage.localeCompare(b.dealStage); break;
         case "candidateName": cmp = a.candidateName.localeCompare(b.candidateName); break;
+        case "category": cmp = getCandidateCategory(a).localeCompare(getCandidateCategory(b)); break;
         case "consultantName": cmp = a.consultantName.localeCompare(b.consultantName); break;
         case "id": cmp = a.id.localeCompare(b.id); break;
         case "lastModified": cmp = a.lastModified.getTime() - b.lastModified.getTime(); break;
@@ -145,6 +177,7 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
   const columns: { key: SortKey; label: string }[] = [
     { key: "dealStage", label: "Stage" },
     { key: "candidateName", label: "Kandidaat" },
+    { key: "category", label: "Categorie" },
     { key: "consultantName", label: "Consultant" },
     { key: "id", label: "Deal ID" },
     { key: "lastModified", label: "Laatste aanpassing" },
@@ -218,6 +251,7 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
               const isHighlighted = consultantFilter !== "all" && record.consultantName === consultantFilter;
               const isFaded = consultantFilter !== "all" && record.consultantName !== consultantFilter;
               const isSelected = selectedRecord === record.id;
+              const cat = getCandidateCategory(record);
 
               return (
                 <tr
@@ -238,6 +272,7 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
                     </span>
                   </td>
                   <td className="py-2 px-3 text-sm font-medium text-foreground">{record.candidateName}</td>
+                  <td className={cn("py-2 px-3 text-sm", categoryColors[cat])}>{cat}</td>
                   <td className="py-2 px-3 text-sm text-muted-foreground">{record.consultantName}</td>
                   <td className="py-2 px-3 text-sm tabular-nums text-muted-foreground">{record.id.replace("DEAL-", "")}</td>
                   <td className="py-2 px-3 text-sm text-muted-foreground">{format(record.lastModified, "d MMM yyyy", { locale: nl })}</td>
@@ -251,80 +286,104 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
         </table>
       </div>
 
-      {/* Detail panel below table */}
-      {selectedRecord && (() => {
+      {/* Detail panel OR matrix — detail replaces matrix */}
+      {selectedRecord ? (() => {
         const record = filtered.find(r => r.id === selectedRecord);
         if (!record) return null;
+        const detail = getCandidateDetail(record);
+        const cat = getCandidateCategory(record);
         return (
-          <div className="bg-muted/10 border border-primary/10 rounded-lg px-4 py-4 space-y-3">
+          <div className="bg-muted/10 border border-primary/10 rounded-lg px-4 py-4 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-foreground">Detail: {record.candidateName}</h4>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs font-semibold text-foreground">Detail: {record.candidateName}</h4>
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full border", categoryColors[cat])}>{cat}</span>
+              </div>
               <button onClick={() => setSelectedRecord(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-lg bg-card border border-border/30 p-3">
-                <p className="text-[10px] text-muted-foreground mb-1">Laatste notities</p>
-                <p className="text-xs text-foreground">Kandidaat is enthousiast over de rol. Wacht op feedback van hiring manager.</p>
+
+            {/* 5 Scorecards */}
+            <div className="grid grid-cols-5 gap-3">
+              <div className="rounded-lg bg-card border border-border/30 p-3 text-center">
+                <Mail className="h-4 w-4 text-primary mx-auto mb-1" />
+                <p className="text-lg font-bold text-foreground">{detail.emailsSent}</p>
+                <p className="text-[10px] text-muted-foreground">e-mails verzonden</p>
+                <p className="text-[10px] text-primary mt-0.5">{detail.emailsReceived} reacties ontvangen</p>
               </div>
-              <div className="rounded-lg bg-card border border-border/30 p-3">
-                <p className="text-[10px] text-muted-foreground mb-1">E-mails</p>
-                <p className="text-sm font-semibold text-foreground">3 verzonden, 2 ontvangen</p>
-                <p className="text-[10px] text-muted-foreground mt-1">Laatste: 2 dagen geleden</p>
+              <div className="rounded-lg bg-card border border-border/30 p-3 text-center">
+                <Phone className="h-4 w-4 text-primary mx-auto mb-1" />
+                <p className="text-lg font-bold text-foreground">{detail.calls}</p>
+                <p className="text-[10px] text-muted-foreground">outbound calls</p>
               </div>
-              <div className="rounded-lg bg-card border border-border/30 p-3">
-                <p className="text-[10px] text-muted-foreground mb-1">Deals & Presentaties</p>
-                <p className="text-xs text-foreground">2 deals · 4x voorgesteld · 6 acquisitie-calls</p>
+              <div className="rounded-lg bg-card border border-border/30 p-3 text-center">
+                <Handshake className="h-4 w-4 text-primary mx-auto mb-1" />
+                <p className="text-lg font-bold text-foreground">{detail.deals}</p>
+                <p className="text-[10px] text-muted-foreground">deals aangemaakt</p>
+              </div>
+              <div className="rounded-lg bg-card border border-border/30 p-3 text-center">
+                <Presentation className="h-4 w-4 text-primary mx-auto mb-1" />
+                <p className="text-lg font-bold text-foreground">{detail.presentations}</p>
+                <p className="text-[10px] text-muted-foreground">presentaties</p>
+              </div>
+              <div className="rounded-lg bg-card border border-border/30 p-3 text-center">
+                <PhoneCall className="h-4 w-4 text-primary mx-auto mb-1" />
+                <p className="text-lg font-bold text-foreground">{detail.acquisitionCalls}</p>
+                <p className="text-[10px] text-muted-foreground">acquisitiecalls</p>
               </div>
             </div>
-            <div className="rounded-lg bg-card border border-border/30 p-3">
-              <p className="text-[10px] text-muted-foreground mb-1">Procedure zichtbaarheid</p>
-              <div className="flex items-center gap-4 text-xs">
-                <span className="text-foreground">Stage: <strong>{record.dealStage}</strong></span>
-                <span className="text-muted-foreground">Consultant: {record.consultantName}</span>
-                <span className="text-muted-foreground">Laatste wijziging: {format(record.lastModified, "d MMM yyyy", { locale: nl })}</span>
+
+            {/* Scrollable notes */}
+            <div>
+              <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Notities</p>
+              <div className="max-h-[120px] overflow-y-auto space-y-2 pr-1">
+                {detail.notes.map((note, i) => (
+                  <div key={i} className="rounded-lg bg-card border border-border/30 p-2.5">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">{note.date}</p>
+                    <p className="text-xs text-foreground">{note.text}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         );
-      })()}
-
-
-      {/* Consultant x Stage matrix */}
-      <div className="border-t border-border pt-3">
-        <h4 className="text-xs font-medium text-muted-foreground mb-2">Per consultant per stage</h4>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Consultant</th>
-                {dealStages.map(s => (
-                  <th key={s.code} className="text-center py-1.5 px-2 font-medium text-muted-foreground">{s.code}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {matrix.map(row => (
-                <tr key={row.name} className={cn(
-                  "border-b border-border/50 hover:bg-secondary/20",
-                  consultantFilter !== "all" && row.name !== consultantFilter && "opacity-30"
-                )}>
-                  <td className="py-1.5 px-2 font-medium text-foreground">{row.name}</td>
+      })() : (
+        /* Consultant x Stage matrix — shown when no detail is selected */
+        <div className="border-t border-border pt-3">
+          <h4 className="text-xs font-medium text-muted-foreground mb-2">Per consultant per stage</h4>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Consultant</th>
                   {dealStages.map(s => (
-                    <td key={s.code} className="text-center py-1.5 px-2 tabular-nums">
-                      <span className={cn(
-                        "inline-block min-w-[20px] rounded-md px-1 py-0.5",
-                        (row[s.code] as number) > 0 ? stageColors[s.code] : "text-muted-foreground/40"
-                      )}>
-                        {row[s.code] as number}
-                      </span>
-                    </td>
+                    <th key={s.code} className="text-center py-1.5 px-2 font-medium text-muted-foreground">{s.code}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {matrix.map(row => (
+                  <tr key={row.name} className={cn(
+                    "border-b border-border/50 hover:bg-secondary/20",
+                    consultantFilter !== "all" && row.name !== consultantFilter && "opacity-30"
+                  )}>
+                    <td className="py-1.5 px-2 font-medium text-foreground">{row.name}</td>
+                    {dealStages.map(s => (
+                      <td key={s.code} className="text-center py-1.5 px-2 tabular-nums">
+                        <span className={cn(
+                          "inline-block min-w-[20px] rounded-md px-1 py-0.5",
+                          (row[s.code] as number) > 0 ? stageColors[s.code] : "text-muted-foreground/40"
+                        )}>
+                          {row[s.code] as number}
+                        </span>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
