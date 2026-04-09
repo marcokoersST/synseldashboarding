@@ -1,34 +1,24 @@
 
 
-# Plan: Tabel-deltas bij vergelijking + "t.a.v." tekst fix
+# Plan: Delta-percentages uitlijnen onder de data
 
-## 1. Scorecard tekst: "vs" → "t.a.v."
+## Probleem
 
-**Bestand:** `src/lib/marketingCompare.ts`
+De delta-percentages gebruiken `justify-center` met `w-full`, waardoor ze gecentreerd worden over de volledige celbreedte in plaats van links uitgelijnd direct onder het getal — zoals in het referentiebeeld.
 
-- In `getCompareDisplayText`: wijzig `vs` naar `t.a.v.`
-- Dit werkt automatisch door in alle tabs (scorecards + overal waar `compareText` wordt getoond)
+## Wijziging
 
-## 2. Vergelijkingspercentages in tabelrijen
+**Bestand:** `src/components/marketing/DeltaCell.tsx`
 
-Wanneer `compareRange` actief is, tonen alle numerieke tabelcellen een delta-percentage onder de huidige waarde.
+- Verwijder `w-full` en `justify-center` van de delta-span
+- Gebruik `items-start` op zowel container als delta-span, zodat het percentage links uitgelijnd start direct onder het getal
+- Behoud `flex items-center gap-0.5` voor het icoon+tekst naast elkaar
 
-**Bestanden:** `PaidChannelsTab.tsx`, `JobboardsTab.tsx`, `PaidSocialTab.tsx`, `PaidSocialAdLevelTab.tsx`
-
-Per tab:
-- Bereken voor elke rij een vergelijkingswaarde per metric (conversions, registrations, spend) via `getComparisonValue` met een seed per rij (bijv. `paid-channels-{source}-conversions`)
-- Wanneer `compareRange !== null`: toon onder elk getal een klein `<span>` met de delta in % — groen (positief) of rood (negatief), met TrendingUp/Down icoon
-- Wanneer `compareRange === null`: geen delta's tonen (huidige gedrag)
-- Totaalrij: ook delta's tonen op basis van de grand totals (al berekend in kpis)
-- Layout per cel: getal bovenaan, daaronder een compact `text-xs` regeltje met `+X.X%` of `-X.X%` in kleur
+Resultaat: het percentage staat direct onder en links uitgelijnd met het getal erboven, exact zoals het referentiebeeld.
 
 ## Bestanden
 
 | Bestand | Wijziging |
 |---|---|
-| `src/lib/marketingCompare.ts` | `vs` → `t.a.v.` in `getCompareDisplayText` |
-| `src/pages/marketing/tabs/PaidChannelsTab.tsx` | Per-rij delta berekening + weergave |
-| `src/pages/marketing/tabs/JobboardsTab.tsx` | Idem |
-| `src/pages/marketing/tabs/PaidSocialTab.tsx` | Idem |
-| `src/pages/marketing/tabs/PaidSocialAdLevelTab.tsx` | Idem |
+| `src/components/marketing/DeltaCell.tsx` | Delta-span uitlijning fix: verwijder `w-full justify-center`, gebruik `items-center` alleen |
 
