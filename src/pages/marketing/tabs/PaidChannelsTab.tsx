@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { ArrowUpDown, TrendingUp, TrendingDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
+import DeltaCell from "@/components/marketing/DeltaCell";
 import {
   paidChannelData,
   aggregatePaidChannels,
@@ -66,9 +67,6 @@ const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
     else { setSortKey(key); setSortDir("desc"); }
   };
 
-  const colW = showConversion ? "w-[14.3%]" : "w-[20%]";
-  const firstColW = showConversion ? "w-[14.3%]" : "w-[20%]";
-
   type ColDef = { key: SortKey; label: string; show: boolean };
   const columns: ColDef[] = [
     { key: "source", label: "Bron", show: true },
@@ -79,6 +77,10 @@ const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
     { key: "spend", label: "Spend", show: true },
   ];
   const visibleCols = columns.filter(c => c.show);
+
+  const dc = (value: number, seed: string, format?: "number" | "currency", invertDelta?: boolean) => (
+    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} />
+  );
 
   return (
     <div className="space-y-6">
@@ -117,7 +119,7 @@ const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
               <thead className="[&_tr]:border-b">
                 <tr className="border-b transition-colors">
                   {visibleCols.map((col) => (
-                    <th key={col.key} className={`h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer select-none sticky top-0 bg-background z-10`} onClick={() => toggleSort(col.key)}>
+                    <th key={col.key} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer select-none sticky top-0 bg-background z-10" onClick={() => toggleSort(col.key)}>
                       <div className="flex items-center gap-1">
                         {col.label}
                         <ArrowUpDown className={`h-3 w-3 ${sortKey === col.key ? "text-primary" : "text-muted-foreground"}`} />
@@ -130,11 +132,11 @@ const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
                 {rows.map((row) => (
                   <tr key={row.source} className="border-b transition-colors hover:bg-muted/50">
                     <td className="p-4 align-middle font-medium">{row.source}</td>
-                    <td className="p-4 align-middle">{row.conversions.toLocaleString("nl-NL")}</td>
-                    <td className="p-4 align-middle">{row.registrations.toLocaleString("nl-NL")}</td>
-                    {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(row.cpr))}</td>}
-                    {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(row.cpc))}</td>}
-                    <td className="p-4 align-middle">{formatCurrency(row.spend)}</td>
+                    <td className="p-4 align-middle">{dc(row.conversions, `pc-${row.source}-conv`)}</td>
+                    <td className="p-4 align-middle">{dc(row.registrations, `pc-${row.source}-reg`)}</td>
+                    {showConversion && <td className="p-4 align-middle">{dc(row.cpr, `pc-${row.source}-cpr`, "currency", true)}</td>}
+                    {showConversion && <td className="p-4 align-middle">{dc(row.cpc, `pc-${row.source}-cpc`, "currency", true)}</td>}
+                    <td className="p-4 align-middle">{dc(row.spend, `pc-${row.source}-spend`, "currency")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -145,11 +147,11 @@ const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
               <tbody>
                 <tr className="font-bold">
                   <td className="p-4">Totaal</td>
-                  <td className="p-4">{grand.conversions.toLocaleString("nl-NL")}</td>
-                  <td className="p-4">{grand.registrations.toLocaleString("nl-NL")}</td>
-                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpr))}</td>}
-                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpc))}</td>}
-                  <td className="p-4">{formatCurrency(grand.spend)}</td>
+                  <td className="p-4">{dc(grand.conversions, "pc-total-conv")}</td>
+                  <td className="p-4">{dc(grand.registrations, "pc-total-reg")}</td>
+                  {showConversion && <td className="p-4">{dc(grandCpr, "pc-total-cpr", "currency", true)}</td>}
+                  {showConversion && <td className="p-4">{dc(grandCpc, "pc-total-cpc", "currency", true)}</td>}
+                  <td className="p-4">{dc(grand.spend, "pc-total-spend", "currency")}</td>
                 </tr>
               </tbody>
             </table>

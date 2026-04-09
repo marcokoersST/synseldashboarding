@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { ChevronDown, ChevronRight, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
+import DeltaCell from "@/components/marketing/DeltaCell";
 import { adLevelData, aggregateByUnit, totals as calcTotals, formatCurrency, deltaPercent } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 
@@ -74,6 +75,10 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange }: Props) => {
     setExpanded(prev => { const n = new Set(prev); n.has(adType) ? n.delete(adType) : n.add(adType); return n; });
   };
 
+  const dc = (value: number, seed: string, format?: "number" | "currency", invertDelta?: boolean) => (
+    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} />
+  );
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
@@ -140,11 +145,11 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange }: Props) => {
                             {parent.adType}
                           </div>
                         </td>
-                        <td className="p-4 align-middle font-semibold">{parent.conversions.toLocaleString("nl-NL")}</td>
-                        <td className="p-4 align-middle font-semibold">{parent.registrations.toLocaleString("nl-NL")}</td>
-                        {showConversion && <td className="p-4 align-middle font-semibold">{formatCurrency(Math.round(cpr))}</td>}
-                        {showConversion && <td className="p-4 align-middle font-semibold">{formatCurrency(Math.round(cpc))}</td>}
-                        <td className="p-4 align-middle font-semibold">{formatCurrency(parent.spend)}</td>
+                        <td className="p-4 align-middle font-semibold">{dc(parent.conversions, `al-${parent.adType}-conv`)}</td>
+                        <td className="p-4 align-middle font-semibold">{dc(parent.registrations, `al-${parent.adType}-reg`)}</td>
+                        {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpr, `al-${parent.adType}-cpr`, "currency", true)}</td>}
+                        {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpc, `al-${parent.adType}-cpc`, "currency", true)}</td>}
+                        <td className="p-4 align-middle font-semibold">{dc(parent.spend, `al-${parent.adType}-spend`, "currency")}</td>
                       </tr>
                       {isOpen && parent.children.map((child) => {
                         const childCpr = child.registrations > 0 ? child.spend / child.registrations : 0;
@@ -152,11 +157,11 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange }: Props) => {
                         return (
                           <tr key={`${parent.adType}-${child.platform}`} className="border-b transition-colors bg-muted/20">
                             <td className="p-4 pl-10 align-middle text-muted-foreground">{child.platform}</td>
-                            <td className="p-4 align-middle">{child.conversions.toLocaleString("nl-NL")}</td>
-                            <td className="p-4 align-middle">{child.registrations.toLocaleString("nl-NL")}</td>
-                            {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(childCpr))}</td>}
-                            {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(childCpc))}</td>}
-                            <td className="p-4 align-middle">{formatCurrency(child.spend)}</td>
+                            <td className="p-4 align-middle">{dc(child.conversions, `al-${parent.adType}-${child.platform}-conv`)}</td>
+                            <td className="p-4 align-middle">{dc(child.registrations, `al-${parent.adType}-${child.platform}-reg`)}</td>
+                            {showConversion && <td className="p-4 align-middle">{dc(childCpr, `al-${parent.adType}-${child.platform}-cpr`, "currency", true)}</td>}
+                            {showConversion && <td className="p-4 align-middle">{dc(childCpc, `al-${parent.adType}-${child.platform}-cpc`, "currency", true)}</td>}
+                            <td className="p-4 align-middle">{dc(child.spend, `al-${parent.adType}-${child.platform}-spend`, "currency")}</td>
                           </tr>
                         );
                       })}
@@ -171,11 +176,11 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange }: Props) => {
               <tbody>
                 <tr className="font-bold">
                   <td className="p-4">Totaal</td>
-                  <td className="p-4">{grand.conversions.toLocaleString("nl-NL")}</td>
-                  <td className="p-4">{grand.registrations.toLocaleString("nl-NL")}</td>
-                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpr))}</td>}
-                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpc))}</td>}
-                  <td className="p-4">{formatCurrency(grand.spend)}</td>
+                  <td className="p-4">{dc(grand.conversions, "al-total-conv")}</td>
+                  <td className="p-4">{dc(grand.registrations, "al-total-reg")}</td>
+                  {showConversion && <td className="p-4">{dc(grandCpr, "al-total-cpr", "currency", true)}</td>}
+                  {showConversion && <td className="p-4">{dc(grandCpc, "al-total-cpc", "currency", true)}</td>}
+                  <td className="p-4">{dc(grand.spend, "al-total-spend", "currency")}</td>
                 </tr>
               </tbody>
             </table>
