@@ -4,11 +4,15 @@ import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { useNavigate } from "react-router-dom";
-import { Maximize2, Minimize2, TrendingUp, TrendingDown } from "lucide-react";
+import { Maximize2, Minimize2, TrendingUp, TrendingDown, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
+import type { DateRange } from "react-day-picker";
 
 // ─── Detail toggle hook ───
 function useDetailToggle() {
