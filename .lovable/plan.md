@@ -1,37 +1,60 @@
 
 
-# Plan: Omzet Overzicht Detail — UI redesign + vergelijking + Potentiële marge
+# Plan: Sales Funnel, Opvolging & Omzet Overzicht updates
 
-## Wijzigingen in `src/components/dashboard/RevenueChart.tsx`
+## 1. Sales Funnel — detail table (`SalesFunnelV2.tsx`)
 
-### 1. Week/Periode selector visueel verbeteren
-- Actieve tab krijgt een gekleurde achtergrond (primary tint) i.p.v. plain wit
-- Inactieve tabs krijgen subtiele hover-states
+### Add "Dealsluiters" column
+- Add `dealsluiters` field to `ConsultantFunnelDataV2` interface in `managerOperationalDataV2.ts` (random 0-7)
+- Add column header "Dealsluiters" in the upper detail table after the funnel steps, before "Drop"
+- Display the value per consultant row
 
-### 2. Kalender/datumselectie redesign (Aangepast modus)
-- Vervang de standaard `<Input type="date">` door een date range picker met `Popover` + `Calendar` component (al aanwezig in het project)
-- Twee velden tonen de geselecteerde datums, klik opent een kalender-popover
-- Lettertype wordt `text-xs font-medium` consistent met het design system
-- Kalender toont 2 maanden naast elkaar met "Clear" en "Today" knoppen
+### Replace "Profiel" with Recruit CRM icon
+- In the candidate detail sub-table (below main table), replace the `<a>Profiel</a>` text link with a small Recruit CRM brand icon/logo
+- Keep column header as "Profiel" but replace cell content with the icon (a small SVG or image)
+- Use an inline SVG representation of the Recruit CRM logo (blue "R" badge)
 
-### 3. Vergelijkknop werkend maken
-- De toggle is al functioneel (state `compareEnabled`), maar bij "Aangepast" modus werkt vergelijking niet (geen `previousKey`). Fix: bereken een vergelijkingsperiode voor custom range (zelfde lengte, direct voorafgaand)
-- Custom mode: toon ook vergelijkingsdata in de tabel
+## 2. Opvolging — redesign notities (`OpvolgingCard.tsx`)
 
-### 4. Vergelijkingsperiode selecteerbaar maken
-- Wanneer vergelijking actief is, toon een extra `<Select>` dropdown naast de toggle waarmee de gebruiker de vergelijkingsperiode kiest (bijv. bij W14: keuze uit W12, W13; bij P5: keuze uit P4)
-- Bij "Aangepast": toon een tweede date range picker voor de vergelijkingsperiode
-- Verwijder de automatische "vorige periode" logica — gebruiker kiest zelf
+Based on the reference screenshot, notities should look like activity-feed cards with:
+- A colored category badge at top (e.g. "ACQ | Commerciële informatie" in orange)
+- A title/subject line (bold, truncated)
+- Metadata row with date, company, contact person, and creator
+- Body text with key content highlighted in different colors
+- Bordered card layout with subtle left-border accent color
 
-### 5. Kolom "Potentiële marge" toevoegen aan tabel
-- Nieuwe kolom na "Gefactureerd" met dummy margewaarden per kandidaat
-- Voeg `marge` veld toe aan `CandidateRecord` (bijv. percentage 15-25%)
-- Toon als `€X.XXX` (berekend als `omzet * margePercentage`)
-- Bij vergelijking: toon ook marge-delta
+Replace the current simple note boxes in the detail panel with this richer card format. Each note gets:
+- `type` badge (colored: ACQ=orange, INT=blue, etc.)
+- `subject` line
+- `body` with colored highlights
+- Footer with timestamp, company, contact, creator metadata
+
+Update dummy note data in `getCandidateDetail()` to include these fields.
+
+## 3. Omzet Overzicht — detail table (`RevenueChartV2.tsx` + `managerRevenueDetailData.ts`)
+
+### Replace "R&S" with "W&S"
+- In `managerRevenueDetailData.ts`: change type union from `"detachering" | "R&S"` to `"Detavast" | "W&S" | "Marge Fac"`
+- Update data generation to use these three types
+- In `RevenueChartV2.tsx`: update label "Detachering / R&S" to use new types, update badge colors
+
+### Add "Deal" column
+- Add `dealId` field to `SecondmentRecord` (e.g. "DEAL-1042")
+- Add "Deal" column header in the detail table
+- Display deal ID per row
+
+### Change looptijd units to hours
+- Change `contractedMonths` to `contractedHours` in the interface
+- Update data: generate values like 720, 1200, 1600 etc.
+- Display as `Xh` instead of `Xm` in the table
 
 ## Bestanden
 
 | Bestand | Wijziging |
 |---|---|
-| `src/components/dashboard/RevenueChart.tsx` | Alle 5 punten: selector styling, kalender popover, vergelijkingsselector, marge kolom |
+| `src/data/managerOperationalDataV2.ts` | Add `dealsluiters` to interface + data |
+| `src/components/manager/v2/SalesFunnelV2.tsx` | Dealsluiters column + Recruit CRM icon |
+| `src/components/manager/OpvolgingCard.tsx` | Redesign notities to activity-feed cards |
+| `src/data/managerRevenueDetailData.ts` | R&S→W&S, add Marge Fac type, dealId, hours |
+| `src/components/manager/v2/RevenueChartV2.tsx` | Updated labels, Deal column, hours display |
 
