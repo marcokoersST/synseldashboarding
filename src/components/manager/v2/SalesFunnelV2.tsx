@@ -199,6 +199,9 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                   <SortIcon k={step.key as SortKey} />
                 </th>
               ))}
+              <th className="text-center py-2 px-1.5 font-medium text-muted-foreground border-l border-border/30 whitespace-nowrap">
+                <div className="text-[10px]">Dealsluiters</div>
+              </th>
               <th className="text-center py-2 px-2 font-medium text-muted-foreground cursor-pointer border-l border-border/30 whitespace-nowrap"
                 onClick={() => toggleSort("biggestDrop")}>
                 <div className="flex items-center gap-1 justify-center">
@@ -242,6 +245,9 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                       </td>
                     );
                   })}
+                  <td className="text-center py-2 px-1.5 tabular-nums font-semibold border-l border-border/30">
+                    {row.dealsluiters}
+                  </td>
                   <td className={cn(
                     "text-center py-2 px-2 border-l border-border/30",
                     drop.convPct < 40 ? "text-destructive" : drop.convPct < 60 ? "text-amber-500" : "text-muted-foreground"
@@ -296,7 +302,12 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                         ) : "–"}
                       </td>
                       <td className="py-1.5 px-2 text-center">
-                        <a href="#" className="text-primary text-[10px] underline hover:no-underline">Profiel</a>
+                        <a href="#" className="inline-flex items-center justify-center w-6 h-6 rounded bg-[#0066FF]/10 hover:bg-[#0066FF]/20 transition-colors" title="Open in Recruit CRM">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <rect width="24" height="24" rx="4" fill="#0066FF"/>
+                            <text x="12" y="17" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold" fontFamily="Arial, sans-serif">R</text>
+                          </svg>
+                        </a>
                       </td>
                     </tr>
                   ))}
