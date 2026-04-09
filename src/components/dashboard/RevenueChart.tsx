@@ -4,11 +4,15 @@ import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { useNavigate } from "react-router-dom";
-import { Maximize2, Minimize2, TrendingUp, TrendingDown } from "lucide-react";
+import { Maximize2, Minimize2, TrendingUp, TrendingDown, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
+import type { DateRange } from "react-day-picker";
 
 // ─── Detail toggle hook ───
 function useDetailToggle() {
@@ -68,18 +72,19 @@ interface CandidateRecord {
   kandidaat: string;
   klant: string;
   status: string;
-  data: Record<string, number>; // key = "W12"|"W13"|"W14"|"W15"|"P4"|"P5"|"P6"
+  marge: number; // percentage e.g. 0.18 = 18%
+  data: Record<string, number>;
 }
 
 const candidates: CandidateRecord[] = [
-  { kandidaat: "Mark de Vries", klant: "TechCorp BV", status: "Actief", data: { W12: 6800, W13: 7200, W14: 8400, W15: 8900, P4: 28000, P5: 32000, P6: 35000 } },
-  { kandidaat: "Lisa Jansen", klant: "Bouwgroep NL", status: "Actief", data: { W12: 6200, W13: 6800, W14: 6200, W15: 6500, P4: 24000, P5: 26000, P6: 27500 } },
-  { kandidaat: "Tom Bakker", klant: "FinanceFirst", status: "Actief", data: { W12: 4800, W13: 5100, W14: 5800, W15: 6200, P4: 18000, P5: 21000, P6: 23000 } },
-  { kandidaat: "Sara Mol", klant: "LogiPlan BV", status: "Afgerond", data: { W12: 4500, W13: 4900, W14: 4900, W15: 4900, P4: 16000, P5: 18000, P6: 19500 } },
-  { kandidaat: "Pieter Smit", klant: "DataDriven NL", status: "Actief", data: { W12: 3200, W13: 3600, W14: 4200, W15: 4800, P4: 12000, P5: 15000, P6: 17000 } },
-  { kandidaat: "Emma de Boer", klant: "MedTech Group", status: "Actief", data: { W12: 3800, W13: 4100, W14: 3800, W15: 3500, P4: 14000, P5: 15500, P6: 14800 } },
-  { kandidaat: "Koen van Dijk", klant: "RetailMax BV", status: "Pauze", data: { W12: 2000, W13: 2100, W14: 2100, W15: 2100, P4: 8000, P5: 8500, P6: 8500 } },
-  { kandidaat: "Julia Peters", klant: "EnergieWerk", status: "Actief", data: { W12: 0, W13: 0, W14: 1600, W15: 2200, P4: 0, P5: 3000, P6: 5500 } },
+  { kandidaat: "Mark de Vries", klant: "TechCorp BV", status: "Actief", marge: 0.22, data: { W12: 6800, W13: 7200, W14: 8400, W15: 8900, P4: 28000, P5: 32000, P6: 35000 } },
+  { kandidaat: "Lisa Jansen", klant: "Bouwgroep NL", status: "Actief", marge: 0.18, data: { W12: 6200, W13: 6800, W14: 6200, W15: 6500, P4: 24000, P5: 26000, P6: 27500 } },
+  { kandidaat: "Tom Bakker", klant: "FinanceFirst", status: "Actief", marge: 0.20, data: { W12: 4800, W13: 5100, W14: 5800, W15: 6200, P4: 18000, P5: 21000, P6: 23000 } },
+  { kandidaat: "Sara Mol", klant: "LogiPlan BV", status: "Afgerond", marge: 0.15, data: { W12: 4500, W13: 4900, W14: 4900, W15: 4900, P4: 16000, P5: 18000, P6: 19500 } },
+  { kandidaat: "Pieter Smit", klant: "DataDriven NL", status: "Actief", marge: 0.25, data: { W12: 3200, W13: 3600, W14: 4200, W15: 4800, P4: 12000, P5: 15000, P6: 17000 } },
+  { kandidaat: "Emma de Boer", klant: "MedTech Group", status: "Actief", marge: 0.19, data: { W12: 3800, W13: 4100, W14: 3800, W15: 3500, P4: 14000, P5: 15500, P6: 14800 } },
+  { kandidaat: "Koen van Dijk", klant: "RetailMax BV", status: "Pauze", marge: 0.16, data: { W12: 2000, W13: 2100, W14: 2100, W15: 2100, P4: 8000, P5: 8500, P6: 8500 } },
+  { kandidaat: "Julia Peters", klant: "EnergieWerk", status: "Actief", marge: 0.23, data: { W12: 0, W13: 0, W14: 1600, W15: 2200, P4: 0, P5: 3000, P6: 5500 } },
 ];
 
 const availableWeeks = ["W12", "W13", "W14", "W15"];
@@ -213,13 +218,51 @@ function OverviewView({ delay }: { delay: number }) {
 
 type FilterMode = "week" | "periode" | "custom";
 
+function DateRangePicker({ dateRange, onDateRangeChange, label }: {
+  dateRange: DateRange | undefined;
+  onDateRangeChange: (range: DateRange | undefined) => void;
+  label: string;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className={cn("h-8 text-xs font-medium gap-1.5 px-3", !dateRange?.from && "text-muted-foreground")}>
+          <CalendarIcon className="h-3.5 w-3.5" />
+          {dateRange?.from ? (
+            dateRange.to ? (
+              `${format(dateRange.from, "d MMM", { locale: nl })} – ${format(dateRange.to, "d MMM yyyy", { locale: nl })}`
+            ) : format(dateRange.from, "d MMM yyyy", { locale: nl })
+          ) : label}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="range"
+          selected={dateRange}
+          onSelect={onDateRangeChange}
+          numberOfMonths={2}
+          className="p-3 pointer-events-auto"
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function DetailedView({ delay }: { delay: number }) {
   const [filterMode, setFilterMode] = useState<FilterMode>("week");
-  const [compareEnabled, setCompareEnabled] = useState(true);
+  const [compareEnabled, setCompareEnabled] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState("W14");
   const [selectedPeriode, setSelectedPeriode] = useState("P5");
-  const [customFrom, setCustomFrom] = useState("2026-03-01");
-  const [customTo, setCustomTo] = useState("2026-03-31");
+  const [customRange, setCustomRange] = useState<DateRange | undefined>({
+    from: new Date(2026, 2, 1),
+    to: new Date(2026, 2, 31),
+  });
+  const [compareWeek, setCompareWeek] = useState("W13");
+  const [comparePeriode, setComparePeriode] = useState("P4");
+  const [compareRange, setCompareRange] = useState<DateRange | undefined>({
+    from: new Date(2026, 1, 1),
+    to: new Date(2026, 1, 28),
+  });
 
   const filterOptions: { value: FilterMode; label: string }[] = [
     { value: "week", label: "Week" },
@@ -228,31 +271,38 @@ function DetailedView({ delay }: { delay: number }) {
   ];
 
   const currentKey = filterMode === "week" ? selectedWeek : filterMode === "periode" ? selectedPeriode : null;
-  const previousKey = filterMode === "week"
-    ? getPreviousKey(selectedWeek, availableWeeks)
-    : filterMode === "periode"
-      ? getPreviousKey(selectedPeriode, availablePeriodes)
-      : null;
+
+  // Comparison key: user-selectable
+  const previousKey = compareEnabled
+    ? (filterMode === "week" ? compareWeek : filterMode === "periode" ? comparePeriode : null)
+    : null;
+
+  // Available compare options (exclude current selection)
+  const compareWeekOptions = availableWeeks.filter(w => w !== selectedWeek);
+  const comparePeriodeOptions = availablePeriodes.filter(p => p !== selectedPeriode);
 
   const tableData = useMemo(() => {
     return candidates.map((c) => {
       const omzet = currentKey ? (c.data[currentKey] ?? 0) : c.data["W14"];
       const vorige = previousKey ? (c.data[previousKey] ?? 0) : 0;
-      return { ...c, omzet, vorige };
+      const potMarge = Math.round(omzet * c.marge);
+      return { ...c, omzet, vorige, potMarge };
     });
   }, [currentKey, previousKey]);
 
   const totalOmzet = tableData.reduce((s, c) => s + c.omzet, 0);
   const totalVorige = tableData.reduce((s, c) => s + c.vorige, 0);
+  const totalMarge = tableData.reduce((s, c) => s + c.potMarge, 0);
   const totalDelta = totalOmzet - totalVorige;
   const totalDeltaPct = totalVorige > 0 ? ((totalDelta / totalVorige) * 100) : 0;
+  const showCompare = compareEnabled && (filterMode === "custom" || previousKey);
 
   return (
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-secondary/40 rounded-lg p-0.5">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-0.5 bg-secondary/50 rounded-lg p-0.5">
             {filterOptions.map((opt) => (
               <button
                 key={opt.value}
@@ -260,8 +310,8 @@ function DetailedView({ delay }: { delay: number }) {
                 className={cn(
                   "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                   filterMode === opt.value
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
                 )}
               >
                 {opt.label}
@@ -269,10 +319,9 @@ function DetailedView({ delay }: { delay: number }) {
             ))}
           </div>
 
-          {/* Dropdown per mode */}
           {filterMode === "week" && (
             <Select value={selectedWeek} onValueChange={setSelectedWeek}>
-              <SelectTrigger className="h-8 w-24 text-xs">
+              <SelectTrigger className="h-8 w-24 text-xs font-medium">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -284,7 +333,7 @@ function DetailedView({ delay }: { delay: number }) {
           )}
           {filterMode === "periode" && (
             <Select value={selectedPeriode} onValueChange={setSelectedPeriode}>
-              <SelectTrigger className="h-8 w-24 text-xs">
+              <SelectTrigger className="h-8 w-24 text-xs font-medium">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -295,11 +344,11 @@ function DetailedView({ delay }: { delay: number }) {
             </Select>
           )}
           {filterMode === "custom" && (
-            <div className="flex items-center gap-1.5">
-              <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="h-8 w-36 text-xs" />
-              <span className="text-xs text-muted-foreground">—</span>
-              <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="h-8 w-36 text-xs" />
-            </div>
+            <DateRangePicker
+              dateRange={customRange}
+              onDateRangeChange={setCustomRange}
+              label="Selecteer periode"
+            />
           )}
         </div>
 
@@ -320,20 +369,62 @@ function DetailedView({ delay }: { delay: number }) {
         </div>
       </div>
 
+      {/* Comparison period selector */}
+      {compareEnabled && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] text-muted-foreground">Vergelijken met:</span>
+          {filterMode === "week" && (
+            <Select value={compareWeek} onValueChange={setCompareWeek}>
+              <SelectTrigger className="h-7 w-24 text-xs font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {compareWeekOptions.map((w) => (
+                  <SelectItem key={w} value={w}>{w}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {filterMode === "periode" && (
+            <Select value={comparePeriode} onValueChange={setComparePeriode}>
+              <SelectTrigger className="h-7 w-24 text-xs font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {comparePeriodeOptions.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {filterMode === "custom" && (
+            <DateRangePicker
+              dateRange={compareRange}
+              onDateRangeChange={setCompareRange}
+              label="Vergelijkingsperiode"
+            />
+          )}
+        </div>
+      )}
+
       {/* Compare label */}
-      {compareEnabled && previousKey && (
+      {showCompare && previousKey && (
         <p className="text-[10px] text-muted-foreground">
           Vergelijking: {currentKey} t.o.v. {previousKey}
         </p>
       )}
 
       {/* Summary */}
-      <div className="flex items-center gap-6 bg-secondary/20 rounded-lg px-4 py-3">
+      <div className="flex items-center gap-6 bg-secondary/20 rounded-lg px-4 py-3 flex-wrap">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Totaal gefactureerd</p>
           <AnimatedNumber value={totalOmzet} delay={delay + 100} className="text-2xl font-bold text-foreground" prefix="€" />
         </div>
-        {compareEnabled && previousKey && (
+        <div className="pl-4 border-l border-border">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Potentiële marge</p>
+          <span className="text-lg font-bold text-foreground">€{totalMarge.toLocaleString()}</span>
+        </div>
+        {showCompare && previousKey && (
           <div className="flex items-center gap-2 pl-4 border-l border-border">
             <div>
               <p className="text-[10px] text-muted-foreground">Vorige ({previousKey})</p>
@@ -358,7 +449,8 @@ function DetailedView({ delay }: { delay: number }) {
               <th className="text-left py-2 px-3 font-medium text-muted-foreground">Kandidaat</th>
               <th className="text-left py-2 px-3 font-medium text-muted-foreground">Klant</th>
               <th className="text-right py-2 px-3 font-medium text-muted-foreground">Gefactureerd</th>
-              {compareEnabled && previousKey && (
+              <th className="text-right py-2 px-3 font-medium text-muted-foreground">Pot. marge</th>
+              {showCompare && previousKey && (
                 <>
                   <th className="text-right py-2 px-3 font-medium text-muted-foreground">Vorige ({previousKey})</th>
                   <th className="text-right py-2 px-3 font-medium text-muted-foreground">Δ</th>
@@ -376,7 +468,8 @@ function DetailedView({ delay }: { delay: number }) {
                   <td className="py-2 px-3 font-medium text-foreground">{row.kandidaat}</td>
                   <td className="py-2 px-3 text-muted-foreground">{row.klant}</td>
                   <td className="py-2 px-3 text-right font-semibold text-foreground tabular-nums">€{row.omzet.toLocaleString()}</td>
-                  {compareEnabled && previousKey && (
+                  <td className="py-2 px-3 text-right text-foreground tabular-nums">€{row.potMarge.toLocaleString()}</td>
+                  {showCompare && previousKey && (
                     <>
                       <td className="py-2 px-3 text-right text-muted-foreground tabular-nums">
                         {row.vorige > 0 ? `€${row.vorige.toLocaleString()}` : "—"}
