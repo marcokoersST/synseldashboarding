@@ -1,16 +1,23 @@
 import { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
-import { CalendarX2, ChevronDown, ChevronRight } from "lucide-react";
+import { CalendarX2, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { placementAttritionData } from "@/data/managerPerformanceDataV2";
+import { attritionProjectionData } from "@/data/managerRevenueDetailData";
 
 export function PlacementAttritionCard({ delay = 0 }: { delay?: number }) {
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
 
-  const totalStoppers = placementAttritionData.reduce((s, p) => s + p.stoppersCount, 0);
-  const totalImpact = placementAttritionData.reduce((s, p) => s + p.revenueImpact, 0);
-  const highAttritionThreshold = 3;
+  const totalStoppers = attritionProjectionData.reduce((s, p) => s + p.expectedAttrition, 0);
+  const totalImpact = attritionProjectionData.reduce((s, p) => s + p.revenueLoss, 0);
+
+  const chartData = attritionProjectionData.map(d => ({
+    period: d.period,
+    attrition: d.expectedAttrition,
+    revenueLoss: d.revenueLoss,
+  }));
+
+  const selectedDetail = attritionProjectionData.find(d => d.period === selectedPeriod);
 
   return (
     <AnimatedCard delay={delay}>
@@ -20,66 +27,88 @@ export function PlacementAttritionCard({ delay = 0 }: { delay?: number }) {
           <div>
             <h3 className="text-sm font-medium text-foreground">Verwachte Afvallers</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {totalStoppers} stoppers — €{totalImpact.toFixed(0)}k omzetrisico
+              {totalStoppers} verwachte stoppers — €{totalImpact.toFixed(0)}k omzetrisico
             </p>
           </div>
         </div>
 
-        {/* Bar chart */}
-        <div className="h-36 mb-4">
+        {/* Line chart */}
+        <div className="h-40 mb-4">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={placementAttritionData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+            <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="period" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={v => `€${v}k`} />
+              <YAxis yAxisId="left" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={v => `€${v}k`} />
               <Tooltip
                 contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
-                formatter={(value: number) => [`€${value}k`, "Omzetrisico"]}
+                formatter={(value: number, name: string) => [name === "attrition" ? value : `€${value}k`, name === "attrition" ? "Stoppers" : "Omzetrisico"]}
               />
-              <Bar dataKey="revenueImpact" radius={[4, 4, 0, 0]}>
-                {placementAttritionData.map((entry, idx) => (
-                  <Cell key={idx} fill={entry.stoppersCount >= highAttritionThreshold ? "hsl(var(--destructive))" : "hsl(var(--primary) / 0.6)"} />
-                ))}
-              </Bar>
-            </BarChart>
+              <Line yAxisId="left" type="monotone" dataKey="attrition" stroke="hsl(var(--destructive))" strokeWidth={2} dot={{ fill: "hsl(var(--destructive))", r: 4 }} />
+              <Line yAxisId="right" type="monotone" dataKey="revenueLoss" stroke="hsl(var(--primary))" strokeWidth={2} strokeDasharray="4 4" dot={{ fill: "hsl(var(--primary))", r: 3 }} />
+            </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Period details */}
-        <div className="space-y-1">
-          {placementAttritionData.map(period => {
-            const isHigh = period.stoppersCount >= highAttritionThreshold;
-            const isExpanded = expanded === period.period;
-            return (
-              <div key={period.period} className={cn(
-                "rounded-lg border transition-colors",
-                isHigh ? "border-destructive/30 bg-destructive/5" : "border-border/50"
-              )}>
-                <button
-                  onClick={() => setExpanded(isExpanded ? null : period.period)}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/30 transition-colors"
-                >
-                  <span className={cn("text-xs font-semibold w-8", isHigh ? "text-destructive" : "text-foreground")}>{period.period}</span>
-                  <span className="text-xs text-muted-foreground flex-1">{period.stoppersCount} stopper{period.stoppersCount !== 1 ? "s" : ""}</span>
-                  <span className={cn("text-xs font-semibold tabular-nums", isHigh ? "text-destructive" : "text-foreground")}>-€{period.revenueImpact.toFixed(1)}k</span>
-                  {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
-                </button>
-                {isExpanded && (
-                  <div className="px-3 pb-2 space-y-1">
-                    {period.consultants.map((c, i) => (
-                      <div key={i} className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="text-foreground font-medium">{c.name}</span>
-                        <span>·</span>
-                        <span>{c.candidateName}</span>
-                        <span className="ml-auto tabular-nums font-medium text-foreground">€{c.revenue.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <div className="flex flex-wrap items-center gap-3 mb-3 text-[10px]">
+          <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-destructive rounded-full" /> Stoppers</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-primary rounded-full" style={{ background: "repeating-linear-gradient(90deg, hsl(var(--primary)) 0 3px, transparent 3px 6px)" }} /> Omzetrisico</span>
         </div>
+
+        {/* Period table */}
+        <div className="overflow-auto rounded border border-border/30">
+          <table className="w-full text-xs">
+            <thead className="bg-card">
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-3 font-medium text-muted-foreground">Periode</th>
+                <th className="text-center py-2 px-3 font-medium text-muted-foreground">Verwachte stoppers</th>
+                <th className="text-right py-2 px-3 font-medium text-muted-foreground">Omzetrisico</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attritionProjectionData.map(period => (
+                <tr key={period.period}
+                  className={cn(
+                    "border-b border-border/30 cursor-pointer transition-colors",
+                    selectedPeriod === period.period ? "bg-primary/5" : "hover:bg-muted/20",
+                    period.expectedAttrition >= 3 && "text-destructive"
+                  )}
+                  onClick={() => setSelectedPeriod(selectedPeriod === period.period ? null : period.period)}
+                >
+                  <td className="py-2 px-3 font-semibold">{period.period}</td>
+                  <td className="py-2 px-3 text-center tabular-nums">{period.expectedAttrition}</td>
+                  <td className="py-2 px-3 text-right tabular-nums font-semibold">-€{period.revenueLoss.toFixed(1)}k</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Detail panel */}
+        {selectedDetail && (
+          <div className="bg-muted/10 border border-primary/10 rounded-lg px-4 py-4 mt-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-semibold text-foreground">Detail: {selectedDetail.period}</h4>
+              <button onClick={() => setSelectedPeriod(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
+            </div>
+            <div className="space-y-2">
+              {selectedDetail.candidates.map((c, i) => (
+                <div key={i} className="rounded-lg bg-card border border-border/30 p-3 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-foreground">{c.candidateName}</span>
+                    <span className="text-xs font-semibold tabular-nums text-destructive">-€{c.revenue.toLocaleString()}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">Consultant: {c.consultantName}</p>
+                  <p className="text-[11px] text-muted-foreground">{c.notes}</p>
+                  <div className="flex items-start gap-1.5 mt-1">
+                    <Lightbulb className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-foreground">{c.aiAnalysis}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </AnimatedCard>
   );

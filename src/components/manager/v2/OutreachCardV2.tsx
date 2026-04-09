@@ -2,9 +2,10 @@ import { useState, useMemo } from "react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, Maximize2, Minimize2, ArrowUpDown, TrendingUp, TrendingDown } from "lucide-react";
+import { Phone, Mail, Maximize2, Minimize2, ArrowUpDown, TrendingUp, TrendingDown, Lightbulb, PhoneCall } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { consultantOutreachData, unitOutreachTotals } from "@/data/managerOperationalDataV2";
+import { outreachDetailData } from "@/data/managerOutreachDetailData";
 
 function useDetailToggle() {
   const [isDetailMode, setIsDetailMode] = useState(false);
@@ -27,6 +28,12 @@ function formatTime(totalMinutes: number) {
   const h = Math.floor(totalMinutes / 60);
   const m = totalMinutes % 60;
   return `${h}:${String(m).padStart(2, "0")}`;
+}
+
+function formatDuration(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
 }
 
 function TrendArrow({ value }: { value: number }) {
@@ -88,6 +95,7 @@ type SortKey = "consultantName" | "callsIn" | "callsOut" | "emailsSent" | "total
 function OutreachDetail({ delay, selectedUnit }: { delay: number; selectedUnit?: string }) {
   const [sortKey, setSortKey] = useState<SortKey>("totalOutreach");
   const [sortAsc, setSortAsc] = useState(false);
+  const [expandedConsultant, setExpandedConsultant] = useState<number | null>(null);
 
   const avgOutreach = useMemo(() => {
     const data = consultantOutreachData;
@@ -121,59 +129,167 @@ function OutreachDetail({ delay, selectedUnit }: { delay: number; selectedUnit?:
     { key: "qualityScore", label: "Kwaliteit" },
   ];
 
+  const detailData = outreachDetailData.find(d => d.consultantId === expandedConsultant);
+  const expandedRow = sorted.find(r => r.consultantId === expandedConsultant);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs">
-        <thead>
-          <tr className="border-b border-border">
-            {columns.map(col => (
-              <th key={col.key}
-                className="text-left py-2 px-2 font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                onClick={() => toggleSort(col.key)}>
-                <div className="flex items-center gap-1">
-                  {col.label}
-                  <ArrowUpDown className="h-3 w-3" />
-                </div>
-              </th>
-            ))}
-            <th className="text-center py-2 px-2 font-medium text-muted-foreground">Trend</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map(row => {
-            const belowAvg = row.totalOutreach < avgOutreach * 0.7;
-            return (
-              <tr key={row.consultantId} className={cn(
-                "border-b border-border/50 hover:bg-secondary/20 transition-colors",
-                belowAvg && "bg-destructive/5"
-              )}>
-                <td className="py-2 px-2 font-medium text-foreground">
-                  {row.consultantName}
-                  {belowAvg && <span className="ml-1 text-[9px] text-destructive font-bold">⚠</span>}
-                </td>
-                <td className="py-2 px-2 tabular-nums">{row.callsIn}</td>
-                <td className="py-2 px-2 tabular-nums">{row.callsOut}</td>
-                <td className="py-2 px-2 tabular-nums">{row.emailsSent}</td>
-                <td className={cn("py-2 px-2 tabular-nums font-semibold", belowAvg ? "text-destructive" : "text-foreground")}>{row.totalOutreach}</td>
-                <td className="py-2 px-2 tabular-nums">{formatTime(row.totalMinutes)}</td>
-                <td className="py-2 px-2 tabular-nums">
-                  <span className={cn("font-semibold",
-                    row.qualityScore >= 8 ? "text-success" : row.qualityScore >= 7 ? "text-foreground" : "text-destructive"
-                  )}>
-                    {row.qualityScore.toFixed(1)}
-                  </span>
-                </td>
-                <td className="py-2 px-2">
-                  <div className="flex items-center gap-2 justify-center">
-                    <TrendArrow value={row.callTrend} />
-                    <TrendArrow value={row.emailTrend} />
+    <div className="space-y-3">
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-border">
+              {columns.map(col => (
+                <th key={col.key}
+                  className="text-left py-2 px-2 font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                  onClick={() => toggleSort(col.key)}>
+                  <div className="flex items-center gap-1">
+                    {col.label}
+                    <ArrowUpDown className="h-3 w-3" />
                   </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                </th>
+              ))}
+              <th className="text-center py-2 px-2 font-medium text-muted-foreground">Trend</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map(row => {
+              const belowAvg = row.totalOutreach < avgOutreach * 0.7;
+              const isExpanded = expandedConsultant === row.consultantId;
+              return (
+                <tr key={row.consultantId} className={cn(
+                  "border-b border-border/50 hover:bg-secondary/20 transition-colors cursor-pointer",
+                  belowAvg && "bg-destructive/5",
+                  isExpanded && "bg-primary/5"
+                )}
+                  onClick={() => setExpandedConsultant(isExpanded ? null : row.consultantId)}
+                >
+                  <td className="py-2 px-2 font-medium text-foreground">
+                    {row.consultantName}
+                    {belowAvg && <span className="ml-1 text-[9px] text-destructive font-bold">⚠</span>}
+                  </td>
+                  <td className="py-2 px-2 tabular-nums">{row.callsIn}</td>
+                  <td className="py-2 px-2 tabular-nums">{row.callsOut}</td>
+                  <td className="py-2 px-2 tabular-nums">{row.emailsSent}</td>
+                  <td className={cn("py-2 px-2 tabular-nums font-semibold", belowAvg ? "text-destructive" : "text-foreground")}>{row.totalOutreach}</td>
+                  <td className="py-2 px-2 tabular-nums">{formatTime(row.totalMinutes)}</td>
+                  <td className="py-2 px-2 tabular-nums">
+                    <span className={cn("font-semibold",
+                      row.qualityScore >= 8 ? "text-success" : row.qualityScore >= 7 ? "text-foreground" : "text-destructive"
+                    )}>
+                      {row.qualityScore.toFixed(1)}
+                    </span>
+                  </td>
+                  <td className="py-2 px-2">
+                    <div className="flex items-center gap-2 justify-center">
+                      <TrendArrow value={row.callTrend} />
+                      <TrendArrow value={row.emailTrend} />
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Detail panel below table */}
+      {expandedConsultant !== null && detailData && expandedRow && (
+        <div className="bg-muted/10 border border-primary/10 rounded-lg px-4 py-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold text-foreground">Detail: {expandedRow.consultantName}</h4>
+            <button onClick={() => setExpandedConsultant(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
+          </div>
+
+          {/* Trend justification */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg bg-card border border-border/30 p-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Phone className="h-3 w-3 text-primary" />
+                <p className="text-[10px] font-semibold text-muted-foreground">Call trend</p>
+                <TrendArrow value={expandedRow.callTrend} />
+              </div>
+              <p className="text-xs text-foreground">{detailData.trendJustification.callTrend}</p>
+            </div>
+            <div className="rounded-lg bg-card border border-border/30 p-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Mail className="h-3 w-3 text-teal" />
+                <p className="text-[10px] font-semibold text-muted-foreground">E-mail trend</p>
+                <TrendArrow value={expandedRow.emailTrend} />
+              </div>
+              <p className="text-xs text-foreground">{detailData.trendJustification.emailTrend}</p>
+            </div>
+          </div>
+
+          {/* Recent calls */}
+          <div>
+            <div className="flex items-center gap-1.5 mb-2">
+              <PhoneCall className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[10px] font-semibold text-muted-foreground">Laatste 10 calls · Gem. duur: {formatDuration(detailData.avgCallDuration)}</p>
+            </div>
+            <div className="overflow-auto max-h-[160px] rounded border border-border/30">
+              <table className="w-full text-[11px]">
+                <thead className="bg-card sticky top-0">
+                  <tr className="border-b border-border">
+                    <th className="text-left py-1 px-2 font-medium text-muted-foreground">Contact</th>
+                    <th className="text-center py-1 px-2 font-medium text-muted-foreground">Richting</th>
+                    <th className="text-right py-1 px-2 font-medium text-muted-foreground">Duur</th>
+                    <th className="text-left py-1 px-2 font-medium text-muted-foreground">Datum</th>
+                    <th className="text-center py-1 px-2 font-medium text-muted-foreground">Resultaat</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detailData.recentCalls.map(call => (
+                    <tr key={call.id} className="border-b border-border/20 hover:bg-muted/20">
+                      <td className="py-1 px-2 text-foreground">{call.contactName}</td>
+                      <td className="py-1 px-2 text-center">
+                        <span className={cn("text-[10px] font-medium", call.direction === "out" ? "text-primary" : "text-teal")}>
+                          {call.direction === "out" ? "↑ Uit" : "↓ In"}
+                        </span>
+                      </td>
+                      <td className="py-1 px-2 text-right tabular-nums text-foreground">{formatDuration(call.duration)}</td>
+                      <td className="py-1 px-2 text-muted-foreground">{call.date}</td>
+                      <td className="py-1 px-2 text-center">
+                        <span className={cn("text-[10px]",
+                          call.outcome === "connected" ? "text-success" : call.outcome === "voicemail" ? "text-amber-500" : "text-destructive"
+                        )}>
+                          {call.outcome === "connected" ? "Verbonden" : call.outcome === "voicemail" ? "Voicemail" : "Geen gehoor"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* AI Quality explanation */}
+          <div className="rounded-lg bg-card border border-border/30 p-3 space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Lightbulb className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[10px] font-semibold text-muted-foreground">AI Kwaliteitsanalyse — Score: {detailData.aiQualityExplanation.score}</p>
+            </div>
+            <p className="text-xs text-foreground">{detailData.aiQualityExplanation.summary}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[10px] font-semibold text-success mb-1">Sterke punten</p>
+                <ul className="space-y-0.5">
+                  {detailData.aiQualityExplanation.strengths.map((s, i) => (
+                    <li key={i} className="text-[11px] text-foreground">✓ {s}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold text-destructive mb-1">Verbeterpunten</p>
+                <ul className="space-y-0.5">
+                  {detailData.aiQualityExplanation.weaknesses.map((w, i) => (
+                    <li key={i} className="text-[11px] text-foreground">✗ {w}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
