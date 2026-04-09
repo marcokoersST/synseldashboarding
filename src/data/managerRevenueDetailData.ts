@@ -8,8 +8,9 @@ export interface SecondmentRecord {
   startDate: string;
   endDate: string;
   monthlyRevenue: number;
-  contractedMonths: number;
-  type: "detachering" | "R&S";
+  contractedHours: number;
+  type: "Detavast" | "W&S" | "Marge Fac";
+  dealId: string;
 }
 
 export interface ConsultantRevenueDetail {
@@ -24,6 +25,8 @@ export interface ConsultantRevenueDetail {
 }
 
 const companies = ["Shell", "ASML", "Philips", "ING", "KPN", "Rabobank", "Unilever", "Heineken"];
+
+const typeOptions: SecondmentRecord["type"][] = ["Detavast", "W&S", "Marge Fac"];
 
 export const consultantRevenueDetailData: ConsultantRevenueDetail[] = myTeamConsultants.map((c, ci) => {
   const detCount = 2 + Math.floor(Math.random() * 4);
@@ -43,8 +46,9 @@ export const consultantRevenueDetailData: ConsultantRevenueDetail[] = myTeamCons
       startDate: `${1 + i} jan 2026`,
       endDate: i < detCount ? `${1 + i} jul 2026` : "–",
       monthlyRevenue: 8 + Math.floor(Math.random() * 12),
-      contractedMonths: i < detCount ? 6 + Math.floor(Math.random() * 6) : 0,
-      type: (i < detCount ? "detachering" : "R&S") as "detachering" | "R&S",
+      contractedHours: i < detCount ? 720 + Math.floor(Math.random() * 960) : 0,
+      type: typeOptions[(ci + i) % typeOptions.length],
+      dealId: `DEAL-${1000 + ci * 10 + i}`,
     })),
   };
 });

@@ -30,6 +30,7 @@ export interface ConsultantFunnelDataV2 {
   gesprekken: number;
   vervolg: number;
   plaatsingen: number;
+  dealsluiters: number;
   // Previous period for trend comparison
   prevToegewezen: number;
   prevInschrijvingen: number;
@@ -43,17 +44,17 @@ export interface ConsultantFunnelDataV2 {
 }
 
 const funnelBase = [
-  { toegewezen: 120, inschrijvingen: 65, acquisities: 51, voorstellen: 48, intakes: 44, uitnodiging: 32, gesprekken: 23, vervolg: 11, plaatsingen: 5,
+  { toegewezen: 120, inschrijvingen: 65, acquisities: 51, voorstellen: 48, intakes: 44, uitnodiging: 32, gesprekken: 23, vervolg: 11, plaatsingen: 5, dealsluiters: 3,
     prevToegewezen: 115, prevInschrijvingen: 62, prevAcquisities: 50, prevVoorstellen: 46, prevIntakes: 45, prevUitnodiging: 34, prevGesprekken: 25, prevVervolg: 12, prevPlaatsingen: 6 },
-  { toegewezen: 98, inschrijvingen: 52, acquisities: 40, voorstellen: 36, intakes: 32, uitnodiging: 26, gesprekken: 18, vervolg: 8, plaatsingen: 4,
+  { toegewezen: 98, inschrijvingen: 52, acquisities: 40, voorstellen: 36, intakes: 32, uitnodiging: 26, gesprekken: 18, vervolg: 8, plaatsingen: 4, dealsluiters: 5,
     prevToegewezen: 102, prevInschrijvingen: 55, prevAcquisities: 44, prevVoorstellen: 40, prevIntakes: 36, prevUitnodiging: 28, prevGesprekken: 20, prevVervolg: 9, prevPlaatsingen: 4 },
-  { toegewezen: 85, inschrijvingen: 48, acquisities: 38, voorstellen: 36, intakes: 34, uitnodiging: 24, gesprekken: 17, vervolg: 9, plaatsingen: 4,
+  { toegewezen: 85, inschrijvingen: 48, acquisities: 38, voorstellen: 36, intakes: 34, uitnodiging: 24, gesprekken: 17, vervolg: 9, plaatsingen: 4, dealsluiters: 2,
     prevToegewezen: 90, prevInschrijvingen: 50, prevAcquisities: 42, prevVoorstellen: 40, prevIntakes: 38, prevUitnodiging: 28, prevGesprekken: 20, prevVervolg: 10, prevPlaatsingen: 5 },
-  { toegewezen: 110, inschrijvingen: 60, acquisities: 48, voorstellen: 44, intakes: 40, uitnodiging: 30, gesprekken: 22, vervolg: 10, plaatsingen: 5,
+  { toegewezen: 110, inschrijvingen: 60, acquisities: 48, voorstellen: 44, intakes: 40, uitnodiging: 30, gesprekken: 22, vervolg: 10, plaatsingen: 5, dealsluiters: 7,
     prevToegewezen: 108, prevInschrijvingen: 58, prevAcquisities: 46, prevVoorstellen: 42, prevIntakes: 39, prevUitnodiging: 29, prevGesprekken: 21, prevVervolg: 10, prevPlaatsingen: 5 },
-  { toegewezen: 72, inschrijvingen: 38, acquisities: 29, voorstellen: 24, intakes: 18, uitnodiging: 18, gesprekken: 13, vervolg: 5, plaatsingen: 2,
+  { toegewezen: 72, inschrijvingen: 38, acquisities: 29, voorstellen: 24, intakes: 18, uitnodiging: 18, gesprekken: 13, vervolg: 5, plaatsingen: 2, dealsluiters: 1,
     prevToegewezen: 80, prevInschrijvingen: 42, prevAcquisities: 35, prevVoorstellen: 28, prevIntakes: 25, prevUitnodiging: 22, prevGesprekken: 16, prevVervolg: 7, prevPlaatsingen: 3 },
-  { toegewezen: 55, inschrijvingen: 28, acquisities: 20, voorstellen: 16, intakes: 12, uitnodiging: 12, gesprekken: 8, vervolg: 3, plaatsingen: 1,
+  { toegewezen: 55, inschrijvingen: 28, acquisities: 20, voorstellen: 16, intakes: 12, uitnodiging: 12, gesprekken: 8, vervolg: 3, plaatsingen: 1, dealsluiters: 0,
     prevToegewezen: 60, prevInschrijvingen: 32, prevAcquisities: 24, prevVoorstellen: 20, prevIntakes: 16, prevUitnodiging: 14, prevGesprekken: 10, prevVervolg: 4, prevPlaatsingen: 2 },
 ];
 
