@@ -208,6 +208,7 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
                   </div>
                 </th>
               ))}
+              <th className="text-center py-2 px-3 font-medium text-muted-foreground text-xs">Profiel</th>
             </tr>
           </thead>
           <tbody>
@@ -215,17 +216,20 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
               const ageClass = getRowAgeClass(record.lastModified);
               const isHighlighted = consultantFilter !== "all" && record.consultantName === consultantFilter;
               const isFaded = consultantFilter !== "all" && record.consultantName !== consultantFilter;
+              const isSelected = selectedRecord === record.id;
 
               return (
                 <tr
                   key={record.id}
                   className={cn(
-                    "border-b border-border/50 transition-all",
+                    "border-b border-border/50 transition-all cursor-pointer",
                     ageClass,
                     isHighlighted && "ring-1 ring-primary/20",
                     isFaded && "opacity-30",
-                    !isFaded && "hover:bg-muted/30"
+                    isSelected && "bg-primary/5",
+                    !isFaded && !isSelected && "hover:bg-muted/30"
                   )}
+                  onClick={() => setSelectedRecord(isSelected ? null : record.id)}
                 >
                   <td className="py-2 px-3">
                     <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full border", stageColors[record.dealStage])}>
@@ -236,12 +240,53 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
                   <td className="py-2 px-3 text-sm text-muted-foreground">{record.consultantName}</td>
                   <td className="py-2 px-3 text-sm tabular-nums text-muted-foreground">{record.id.replace("DEAL-", "")}</td>
                   <td className="py-2 px-3 text-sm text-muted-foreground">{format(record.lastModified, "d MMM yyyy", { locale: nl })}</td>
+                  <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
+                    <a href="#" className="text-primary text-xs underline hover:no-underline">Profiel</a>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      {/* Detail panel below table */}
+      {selectedRecord && (() => {
+        const record = filtered.find(r => r.id === selectedRecord);
+        if (!record) return null;
+        return (
+          <div className="bg-muted/10 border border-primary/10 rounded-lg px-4 py-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-semibold text-foreground">Detail: {record.candidateName}</h4>
+              <button onClick={() => setSelectedRecord(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-lg bg-card border border-border/30 p-3">
+                <p className="text-[10px] text-muted-foreground mb-1">Laatste notities</p>
+                <p className="text-xs text-foreground">Kandidaat is enthousiast over de rol. Wacht op feedback van hiring manager.</p>
+              </div>
+              <div className="rounded-lg bg-card border border-border/30 p-3">
+                <p className="text-[10px] text-muted-foreground mb-1">E-mails</p>
+                <p className="text-sm font-semibold text-foreground">3 verzonden, 2 ontvangen</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Laatste: 2 dagen geleden</p>
+              </div>
+              <div className="rounded-lg bg-card border border-border/30 p-3">
+                <p className="text-[10px] text-muted-foreground mb-1">Deals & Presentaties</p>
+                <p className="text-xs text-foreground">2 deals · 4x voorgesteld · 6 acquisitie-calls</p>
+              </div>
+            </div>
+            <div className="rounded-lg bg-card border border-border/30 p-3">
+              <p className="text-[10px] text-muted-foreground mb-1">Procedure zichtbaarheid</p>
+              <div className="flex items-center gap-4 text-xs">
+                <span className="text-foreground">Stage: <strong>{record.dealStage}</strong></span>
+                <span className="text-muted-foreground">Consultant: {record.consultantName}</span>
+                <span className="text-muted-foreground">Laatste wijziging: {format(record.lastModified, "d MMM yyyy", { locale: nl })}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
 
       {/* Consultant x Stage matrix */}
       <div className="border-t border-border pt-3">
