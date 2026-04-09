@@ -1,75 +1,34 @@
 
 
-# Plan: Manager Dashboard — Feedback Round 2
+# Plan: Week/Periode selector dropdowns + vergelijkingsmodus in Omzet Overzicht
 
-## 1. Merge Overzicht Final sections into Overzicht V2
+## Wat verandert
 
-**Bestand:** `src/pages/manager/OverzichtV2.tsx`
+De DetailedView in `src/components/dashboard/RevenueChart.tsx` krijgt:
 
-Replace the current "Performance & Kwaliteit" section content (just `PerformanceCardV2` + `ManagerGoalsCard`) with the richer version from Overzicht Final:
-- Add `InterventionHeatmap` above the Performance grid
-- Keep `PerformanceCardV2` + `ManagerGoalsCard` grid
+1. **Dropdown per filtermodus** — na het kiezen van Week/Periode/Aangepast verschijnt een dropdown waarmee de specifieke week of periode geselecteerd wordt (bijv. "W14", "W13" of "P5", "P4")
+2. **Vergelijkingsperiode** — wanneer vergelijking actief is, wordt automatisch de vorige week/periode als vergelijking getoond. De data in de tabel past zich aan op basis van de geselecteerde periode.
 
-Replace the current "Omzet & Prognose" section content (`RevenueChartV2` + `PlacementAttritionCard` + `ManagerPlacementsCard`) with the Final version:
-- `RevenueChartV2` (with zoom slider)
-- `PlacementAttritionCard` (line chart version)
-- `ActiveSecondmentsCard`
+## Wijzigingen in `src/components/dashboard/RevenueChart.tsx`
 
-Add missing imports: `InterventionHeatmap`, `ActiveSecondmentsCard`. Remove `ManagerPlacementsCard` import.
+### Nieuwe data
+- Extend `candidateInvoiceData` met meerdere weken/periodes per kandidaat, zodat bij wisseling van week/periode de juiste data getoond wordt
+- Dummy data voor W12-W15 en P4-P6
 
-## 2. Sidebar: archive Acquisitie Conversie + Overzicht Final
+### DetailedView UI
+- Na de modus-tabs (Week | Periode | Aangepast): een `<Select>` dropdown met beschikbare weken (W12–W15) of periodes (P4–P6)
+- Bij "Aangepast": toon twee date inputs (van/tot) — eenvoudige placeholder, geen kalender nodig
+- State: `selectedWeek`, `selectedPeriode`
+- Vergelijkingsrij past automatisch aan: bij W14 vergelijkt met W13, bij P5 met P4
 
-**Bestand:** `src/components/dashboard/Sidebar.tsx`
-
-- Remove "Overzicht Final" and "Acquisitie Conversie" from Manager Dashboard sub-items
-- Add both to the Archived section sub-items:
-  - `{ label: "Overzicht Final", path: "/manager-dashboard/overzicht-final" }`
-  - `{ label: "Acquisitie Conversie", path: "/manager-dashboard/acquisitie-conversie" }`
-
-Manager Dashboard sub-items becomes just: `[{ label: "Overzicht", path: "/manager-dashboard/overzicht-v2" }]`
-
-## 3. Sales Funnel — remove Profiel from top table
-
-**Bestand:** `src/components/manager/v2/SalesFunnelV2.tsx`
-
-- Remove the "Profiel" column header (`<th>`) from the top-level consultant table
-- Remove the "Profiel" `<td>` cell from each consultant row
-- Keep the "Profiel" column in the detail panel's candidate subtable (already there)
-
-## 4. Follow-up tile — Kandidaatcategorie column + scorecards + notes + detail behavior
-
-**Bestand:** `src/components/manager/OpvolgingCard.tsx`
-
-### 4.1 Upper table: add Kandidaatcategorie column
-- Add a "Categorie" column after "Kandidaat" with values A+, A, or B (dummy: assign based on index/hash)
-- Keep "Profiel" column (already present)
-
-### 4.2 Detail panel: replace grid blocks with scorecards
-Replace the current 3-column grid with 5 compact scorecards in a row:
-- **Email**: total sent + secondary "X reacties ontvangen"
-- **Telefonie**: outbound calls count only
-- **Deals**: number of deals created
-- **Presentatie**: number of deals where candidate was presented
-- **Acquisitiecalls**: number of acquisition calls made
-
-Use dummy data per candidate. No duplicate KPI overlap.
-
-### 4.3 Notes: scrollable full history
-Replace the single "Laatste notities" text with a scrollable container (`max-h-[120px] overflow-y-auto`) showing multiple dummy notes with timestamps.
-
-### 4.4 Remove "Procedure zichtbaarheid" section entirely
-
-### 4.5 Detail mode behavior
-Currently the detail panel appears between the upper table and the consultant×stage matrix. Change so that when a candidate is clicked:
-- The consultant×stage matrix is **hidden** (replaced by the detail panel)
-- When the detail is closed, the matrix returns
+### Tabel
+- Data wordt gefilterd op geselecteerde week/periode
+- "Vorige" kolom toont data van de voorgaande week/periode
+- Totalen en delta's herberekenen op basis van selectie
 
 ## Bestanden
 
 | Bestand | Wijziging |
 |---|---|
-| `src/pages/manager/OverzichtV2.tsx` | Merge Final sections (heatmap, attrition line chart, active secondments) |
-| `src/components/dashboard/Sidebar.tsx` | Move Overzicht Final + Acquisitie Conversie to Archived |
-| `src/components/manager/v2/SalesFunnelV2.tsx` | Remove Profiel from top table |
-| `src/components/manager/OpvolgingCard.tsx` | Kandidaatcategorie, scorecards, scrollable notes, remove procedure, detail replaces matrix |
+| `src/components/dashboard/RevenueChart.tsx` | Dropdown selectors per modus, multi-week/periode dummy data, dynamische filtering |
 
