@@ -206,9 +206,6 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                 </div>
                 <SortIcon k="biggestDrop" />
               </th>
-              <th className="text-center py-2 px-2 font-medium text-muted-foreground border-l border-border/30 whitespace-nowrap">
-                Profiel
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -251,9 +248,6 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
                   )}>
                     <div className="text-[10px] font-medium">{drop.stepLabel}</div>
                     <div className="text-[11px] font-bold">{drop.convPct}%</div>
-                  </td>
-                  <td className="text-center py-2 px-2 border-l border-border/30" onClick={e => e.stopPropagation()}>
-                    <a href="#" className="text-primary text-[10px] underline hover:no-underline">Profiel</a>
                   </td>
                 </tr>
               );
