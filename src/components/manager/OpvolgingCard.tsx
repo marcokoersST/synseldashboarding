@@ -77,10 +77,46 @@ function getCandidateDetail(record: DealRecord) {
     presentations: seed % 4,
     acquisitionCalls: 2 + (seed % 6),
     notes: [
-      { date: "8 apr 2026 14:30", text: "Kandidaat is enthousiast over de rol. Wacht op feedback van hiring manager." },
-      { date: "6 apr 2026 10:15", text: "Telefonisch contact gehad, beschikbaar per direct." },
-      { date: "3 apr 2026 16:45", text: "CV doorgestuurd naar opdrachtgever." },
-      { date: "1 apr 2026 09:00", text: "Eerste intake gesprek gevoerd, goede match op technische skills." },
+      {
+        date: "8 apr 2026 14:30",
+        type: "ACQ" as const,
+        typeLabel: "ACQ | Commerciële informatie",
+        subject: "Eerste contact met hiring manager over nieuwe vacature",
+        text: "Kandidaat is enthousiast over de rol. Wacht op feedback van hiring manager. Salarisindicatie besproken en akkoord.",
+        company: "Shell Nederland",
+        contact: "P. Hendriks",
+        creator: "L. de Vries",
+      },
+      {
+        date: "6 apr 2026 10:15",
+        type: "INT" as const,
+        typeLabel: "INT | Telefonisch contact",
+        subject: "Beschikbaarheid en motivatie check",
+        text: "Telefonisch contact gehad, beschikbaar per direct. Motivatie is hoog, zoekt uitdaging in technische omgeving.",
+        company: "Shell Nederland",
+        contact: "P. Hendriks",
+        creator: "M. Bakker",
+      },
+      {
+        date: "3 apr 2026 16:45",
+        type: "DOC" as const,
+        typeLabel: "DOC | Documentatie",
+        subject: "CV doorgestuurd naar opdrachtgever",
+        text: "CV doorgestuurd naar opdrachtgever. Referenties gecheckt — positief. Verwacht reactie binnen 3 werkdagen.",
+        company: "Shell Nederland",
+        contact: "S. Mol",
+        creator: "L. de Vries",
+      },
+      {
+        date: "1 apr 2026 09:00",
+        type: "EVAL" as const,
+        typeLabel: "EVAL | Evaluatie",
+        subject: "Eerste intake gesprek gevoerd",
+        text: "Eerste intake gesprek gevoerd, goede match op technische skills. Aandachtspunt: reistijd naar kantoor.",
+        company: "Shell Nederland",
+        contact: "E. de Groot",
+        creator: "L. de Vries",
+      },
     ].slice(0, 2 + (seed % 3)),
   };
 }
@@ -332,16 +368,40 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
               </div>
             </div>
 
-            {/* Scrollable notes */}
+            {/* Scrollable notes — activity feed cards */}
             <div>
               <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Notities</p>
-              <div className="max-h-[120px] overflow-y-auto space-y-2 pr-1">
-                {detail.notes.map((note, i) => (
-                  <div key={i} className="rounded-lg bg-card border border-border/30 p-2.5">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">{note.date}</p>
-                    <p className="text-xs text-foreground">{note.text}</p>
-                  </div>
-                ))}
+              <div className="max-h-[200px] overflow-y-auto space-y-2.5 pr-1">
+                {detail.notes.map((note, i) => {
+                  const typeColor = note.type === "ACQ" ? "border-l-amber-500 bg-amber-500/5"
+                    : note.type === "INT" ? "border-l-blue-500 bg-blue-500/5"
+                    : note.type === "DOC" ? "border-l-violet-500 bg-violet-500/5"
+                    : "border-l-emerald-500 bg-emerald-500/5";
+                  const badgeColor = note.type === "ACQ" ? "bg-amber-500/15 text-amber-600"
+                    : note.type === "INT" ? "bg-blue-500/15 text-blue-600"
+                    : note.type === "DOC" ? "bg-violet-500/15 text-violet-600"
+                    : "bg-emerald-500/15 text-emerald-600";
+                  return (
+                    <div key={i} className={cn("rounded-lg border border-border/30 border-l-[3px] p-3", typeColor)}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded", badgeColor)}>
+                          {note.typeLabel}
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-foreground truncate mb-1">{note.subject}</p>
+                      <p className="text-[11px] text-foreground/80 leading-relaxed">{note.text}</p>
+                      <div className="flex items-center gap-3 mt-2 text-[9px] text-muted-foreground">
+                        <span>{note.date}</span>
+                        <span>•</span>
+                        <span>{note.company}</span>
+                        <span>•</span>
+                        <span>{note.contact}</span>
+                        <span>•</span>
+                        <span className="font-medium">{note.creator}</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
