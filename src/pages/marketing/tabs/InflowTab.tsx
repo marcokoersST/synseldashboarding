@@ -22,6 +22,7 @@ import type { DateRange } from "react-day-picker";
 interface Props {
   dateRange: DateRange;
   compareRange: DateRange | null;
+  deltaMode?: string;
 }
 
 interface ScorecardProps { title: string; current: number; previous: number; compareText: string; }

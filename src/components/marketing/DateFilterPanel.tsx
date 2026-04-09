@@ -11,6 +11,7 @@ import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { areDateRangesEqual, formatDateRangeLabel } from "@/lib/marketingCompare";
 import type { DateRange } from "react-day-picker";
+import type { DeltaMode } from "@/components/marketing/DeltaCell";
 
 interface DateFilterPanelProps {
   dateRange: DateRange;
@@ -19,6 +20,8 @@ interface DateFilterPanelProps {
   onCompareEnabledChange: (enabled: boolean) => void;
   compareRange: DateRange | null;
   onCompareRangeChange: (range: DateRange | null) => void;
+  deltaMode: DeltaMode;
+  onDeltaModeChange: (mode: DeltaMode) => void;
 }
 
 const today = new Date();
@@ -71,6 +74,8 @@ const DateFilterPanel = ({
   onCompareEnabledChange,
   compareRange,
   onCompareRangeChange,
+  deltaMode,
+  onDeltaModeChange,
 }: DateFilterPanelProps) => {
   const [open, setOpen] = useState(false);
   const [tempRange, setTempRange] = useState<DateRange>(dateRange);
@@ -296,6 +301,35 @@ const DateFilterPanel = ({
                       )}
                     />
                     <span className="text-sm text-muted-foreground">Overlap data</span>
+                  </div>
+
+                  {/* Delta mode toggle */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="text-sm text-muted-foreground">Weergave</span>
+                    <div className="inline-flex rounded-md border border-border overflow-hidden">
+                      <button
+                        onClick={() => onDeltaModeChange("percent")}
+                        className={cn(
+                          "px-2.5 py-1 text-xs font-medium transition-colors",
+                          deltaMode === "percent"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-accent"
+                        )}
+                      >
+                        %
+                      </button>
+                      <button
+                        onClick={() => onDeltaModeChange("absolute")}
+                        className={cn(
+                          "px-2.5 py-1 text-xs font-medium transition-colors border-l border-border",
+                          deltaMode === "absolute"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-accent"
+                        )}
+                      >
+                        #
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

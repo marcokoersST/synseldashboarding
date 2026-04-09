@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { getISOWeek, getYear, startOfWeek, differenceInDays, subDays } from "date-fns";
 import type { DateRange } from "react-day-picker";
+import type { DeltaMode } from "@/components/marketing/DeltaCell";
 
 import DateFilterPanel from "@/components/marketing/DateFilterPanel";
 import OverviewTab from "./tabs/OverviewTab";
@@ -38,6 +39,7 @@ const MarketingHub = () => {
   const [dateRange, setDateRange] = useState<DateRange>({ from: monday, to: today });
   const [compareEnabled, setCompareEnabled] = useState(false);
   const [compareRange, setCompareRange] = useState<DateRange | null>(null);
+  const [deltaMode, setDeltaMode] = useState<DeltaMode>("percent");
 
   const weekLabel = useMemo(() => {
     if (!dateRange.from) return "";
@@ -47,7 +49,7 @@ const MarketingHub = () => {
   const effectiveCompareRange = compareEnabled ? (compareRange ?? getDefaultCompareRange(dateRange)) : null;
 
   const renderTab = () => {
-    const sharedProps = { dateRange, compareRange: effectiveCompareRange };
+    const sharedProps = { dateRange, compareRange: effectiveCompareRange, deltaMode };
     switch (activeTab) {
       case "overview": return <OverviewTab {...sharedProps} onTabChange={setActiveTab} />;
       case "inflow": return <InflowTab {...sharedProps} />;
@@ -74,6 +76,8 @@ const MarketingHub = () => {
           onCompareEnabledChange={setCompareEnabled}
           compareRange={compareRange}
           onCompareRangeChange={setCompareRange}
+          deltaMode={deltaMode}
+          onDeltaModeChange={setDeltaMode}
         />
       </div>
 
