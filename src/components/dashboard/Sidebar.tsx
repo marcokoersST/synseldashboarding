@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
     icon: ListOrdered, 
     label: "Ranglijsten", 
     path: "/tv/ranglijsten",
-    sectionLabel: "Pending feedback beta-groep & stakeholders",
+    sectionLabel: "Ready for development",
   },
   { 
     icon: BarChart3, 
@@ -66,6 +66,7 @@ const navItems: NavItem[] = [
     icon: LayoutDashboard, 
     label: "Dashboard consultant", 
     path: "/",
+    sectionLabel: "Pending feedback beta-groep & stakeholders",
     subItems: [
       { icon: GitCompare, label: "Vergelijking", path: "/vergelijking" }
     ]
