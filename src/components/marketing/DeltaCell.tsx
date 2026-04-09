@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { getComparisonValue, type ComparisonValueOptions } from "@/lib/marketingCompare";
+import { getComparisonValue } from "@/lib/marketingCompare";
 import { deltaPercent, formatCurrency } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 

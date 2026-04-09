@@ -46,7 +46,7 @@ function normalizedHash(value: string): number {
   return hashString(value) / 4294967295;
 }
 
-interface ComparisonValueOptions {
+export interface ComparisonValueOptions {
   dateRange: DateRange;
   compareRange?: DateRange | null;
   seed: string;
