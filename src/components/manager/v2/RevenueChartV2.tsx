@@ -206,7 +206,7 @@ function RevenueDetailV2({ delay, selectedUnit }: { delay: number; selectedUnit?
             </div>
             <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
               <p className="text-lg font-bold text-foreground">{detailData.detacheringCount} / {detailData.rsCount}</p>
-              <p className="text-[10px] text-muted-foreground">Detachering / R&S</p>
+              <p className="text-[10px] text-muted-foreground">Detavast / W&S</p>
             </div>
             <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
               <p className={cn("text-lg font-bold", detailData.performanceRatio >= 80 ? "text-success" : detailData.performanceRatio >= 60 ? "text-foreground" : "text-destructive")}>
@@ -222,6 +222,7 @@ function RevenueDetailV2({ delay, selectedUnit }: { delay: number; selectedUnit?
                   <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Kandidaat</th>
                   <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Bedrijf</th>
                   <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Type</th>
+                  <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Deal</th>
                   <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">€/mnd</th>
                   <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Looptijd</th>
                   <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Start</th>
@@ -235,11 +236,12 @@ function RevenueDetailV2({ delay, selectedUnit }: { delay: number; selectedUnit?
                     <td className="py-1.5 px-2 text-muted-foreground">{s.company}</td>
                     <td className="py-1.5 px-2 text-center">
                       <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full",
-                        s.type === "detachering" ? "bg-primary/10 text-primary" : "bg-teal/10 text-teal"
+                        s.type === "Detavast" ? "bg-primary/10 text-primary" : s.type === "W&S" ? "bg-teal/10 text-teal" : "bg-amber-500/10 text-amber-600"
                       )}>{s.type}</span>
                     </td>
+                    <td className="py-1.5 px-2 text-center tabular-nums text-muted-foreground text-[10px]">{s.dealId}</td>
                     <td className="py-1.5 px-2 text-right tabular-nums font-semibold">€{s.monthlyRevenue}k</td>
-                    <td className="py-1.5 px-2 text-center tabular-nums">{s.contractedMonths > 0 ? `${s.contractedMonths}m` : "–"}</td>
+                    <td className="py-1.5 px-2 text-center tabular-nums">{s.contractedHours > 0 ? `${s.contractedHours}h` : "–"}</td>
                     <td className="py-1.5 px-2 text-muted-foreground">{s.startDate}</td>
                     <td className="py-1.5 px-2 text-muted-foreground">{s.endDate}</td>
                   </tr>
