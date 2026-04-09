@@ -103,8 +103,6 @@ const navItems: NavItem[] = [
     path: "/manager-dashboard/overzicht-v2",
     subItems: [
       { icon: Eye, label: "Overzicht", path: "/manager-dashboard/overzicht-v2" },
-      { icon: Briefcase, label: "Overzicht Final", path: "/manager-dashboard/overzicht-final" },
-      { icon: TrendingUp, label: "Acquisitie Conversie", path: "/manager-dashboard/acquisitie-conversie" },
     ]
   },
   {
@@ -188,6 +186,8 @@ const navItems: NavItem[] = [
     sectionLabel: "Archived",
     subItems: [
       { icon: Briefcase, label: "Overzicht manager dashboard oud", path: "/manager-dashboard" },
+      { icon: Briefcase, label: "Overzicht Final", path: "/manager-dashboard/overzicht-final" },
+      { icon: TrendingUp, label: "Acquisitie Conversie", path: "/manager-dashboard/acquisitie-conversie" },
     ]
   },
 ];

@@ -6,9 +6,10 @@ import { OutreachCardV2 } from "@/components/manager/v2/OutreachCardV2";
 import { PerformanceCardV2 } from "@/components/manager/v2/PerformanceCardV2";
 import { RevenueChartV2 } from "@/components/manager/v2/RevenueChartV2";
 import { PlacementAttritionCard } from "@/components/manager/v2/PlacementAttritionCard";
+import { InterventionHeatmap } from "@/components/manager/v2/InterventionHeatmap";
+import { ActiveSecondmentsCard } from "@/components/manager/v2/ActiveSecondmentsCard";
 import { OpvolgingCard } from "@/components/manager/OpvolgingCard";
 import { ManagerGoalsCard } from "@/components/manager/ManagerGoalsCard";
-import { ManagerPlacementsCard } from "@/components/manager/ManagerPlacementsCard";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -181,14 +182,17 @@ export default function OverzichtV2() {
         </>
       ),
       content: () => (
-        <div className="grid grid-cols-3 gap-5">
-          <div className="col-span-2">
-            <PerformanceCardV2 delay={250} selectedUnit={selectedUnit} />
+        <>
+          <InterventionHeatmap delay={240} selectedUnit={selectedUnit} />
+          <div className="grid grid-cols-3 gap-5 mt-5">
+            <div className="col-span-2">
+              <PerformanceCardV2 delay={250} selectedUnit={selectedUnit} />
+            </div>
+            <div className="col-span-1">
+              <ManagerGoalsCard delay={300} selectedUnit={selectedUnit} />
+            </div>
           </div>
-          <div className="col-span-1">
-            <ManagerGoalsCard delay={300} selectedUnit={selectedUnit} />
-          </div>
-        </div>
+        </>
       ),
     },
     {
@@ -210,9 +214,8 @@ export default function OverzichtV2() {
           <div className="mb-5">
             <PlacementAttritionCard delay={375} />
           </div>
-          {/* Plaatsingen full width — leaderboard removed */}
           <div>
-            <ManagerPlacementsCard delay={400} selectedUnit={selectedUnit} />
+            <ActiveSecondmentsCard delay={400} selectedUnit={selectedUnit} />
           </div>
         </>
       ),
