@@ -5,17 +5,19 @@ import { ChevronDown, ChevronRight, TrendingUp, TrendingDown, ArrowUpDown } from
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import DeltaCell from "@/components/marketing/DeltaCell";
+import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import { jobboardData, aggregateByUnit, totals as calcTotals, formatCurrency, deltaPercent } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 
 interface Props {
   dateRange: DateRange;
   compareRange: DateRange | null;
+  deltaMode?: DeltaMode;
 }
 
 type SortKey = "name" | "conversions" | "registrations" | "spend" | "cpr";
 
-const JobboardsTab = ({ dateRange, compareRange }: Props) => {
+const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props) => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>("registrations");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -86,7 +88,7 @@ const JobboardsTab = ({ dateRange, compareRange }: Props) => {
   const visCols = colHeaders.filter(c => c.show);
 
   const dc = (value: number, seed: string, format?: "number" | "currency", invertDelta?: boolean) => (
-    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} />
+    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} />
   );
 
   return (

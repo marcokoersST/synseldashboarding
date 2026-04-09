@@ -5,6 +5,7 @@ import { ArrowUpDown, TrendingUp, TrendingDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import DeltaCell from "@/components/marketing/DeltaCell";
+import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import {
   paidChannelData,
   aggregatePaidChannels,
@@ -18,11 +19,12 @@ import type { DateRange } from "react-day-picker";
 interface Props {
   dateRange: DateRange;
   compareRange: DateRange | null;
+  deltaMode?: DeltaMode;
 }
 
 type SortKey = "source" | "conversions" | "registrations" | "spend" | "cpr" | "cpc";
 
-const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
+const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props) => {
   const [sortKey, setSortKey] = useState<SortKey>("registrations");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [showConversion, setShowConversion] = useState(false);
@@ -79,7 +81,7 @@ const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
   const visibleCols = columns.filter(c => c.show);
 
   const dc = (value: number, seed: string, format?: "number" | "currency", invertDelta?: boolean) => (
-    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} />
+    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} />
   );
 
   return (
