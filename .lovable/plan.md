@@ -1,24 +1,41 @@
 
 
-# Plan: Delta-percentages uitlijnen onder de data
+# Plan: Toggle percentage / absoluut in vergelijkingsmodus
 
-## Probleem
+## Overzicht
 
-De delta-percentages gebruiken `justify-center` met `w-full`, waardoor ze gecentreerd worden over de volledige celbreedte in plaats van links uitgelijnd direct onder het getal — zoals in het referentiebeeld.
+Een toggle in het DateFilterPanel (binnen de vergelijkingssectie) waarmee de gebruiker kiest tussen percentages (`+5.8%`) of absolute waarden (`+1`) als delta-weergave in tabellen.
 
-## Wijziging
+## Wijzigingen
 
-**Bestand:** `src/components/marketing/DeltaCell.tsx`
+### 1. `src/pages/marketing/MarketingHub.tsx`
+- Nieuwe state: `deltaMode: "percent" | "absolute"` (default `"percent"`)
+- Doorgeven aan `DateFilterPanel` en alle tabs via `sharedProps`
 
-- Verwijder `w-full` en `justify-center` van de delta-span
-- Gebruik `items-start` op zowel container als delta-span, zodat het percentage links uitgelijnd start direct onder het getal
-- Behoud `flex items-center gap-0.5` voor het icoon+tekst naast elkaar
+### 2. `src/components/marketing/DateFilterPanel.tsx`
+- Props uitbreiden met `deltaMode` en `onDeltaModeChange`
+- Binnen de vergelijkingssectie (onder "Overlap data"): een toggle-rij toevoegen met label "Weergave" en twee knoppen/toggle: `%` en `#` (of "Absoluut")
+- Styling: compacte segmented button, vergelijkbaar met bestaande compare-opties
 
-Resultaat: het percentage staat direct onder en links uitgelijnd met het getal erboven, exact zoals het referentiebeeld.
+### 3. `src/components/marketing/DeltaCell.tsx`
+- Props uitbreiden met `deltaMode?: "percent" | "absolute"`
+- Bij `"percent"` (default): huidige weergave (`+5.8%`)
+- Bij `"absolute"`: toon het verschil als absoluut getal (`+12` of `-3`), zelfde kleuring en iconen
+- Berekening: `absoluteDelta = value - prev`
+
+### 4. Alle tabs die DeltaCell gebruiken
+- `PaidChannelsTab`, `JobboardsTab`, `PaidSocialTab`, `PaidSocialAdLevelTab`
+- `deltaMode` prop doorgeven aan elke `DeltaCell`
 
 ## Bestanden
 
 | Bestand | Wijziging |
 |---|---|
-| `src/components/marketing/DeltaCell.tsx` | Delta-span uitlijning fix: verwijder `w-full justify-center`, gebruik `items-center` alleen |
+| `src/pages/marketing/MarketingHub.tsx` | `deltaMode` state + doorgeven |
+| `src/components/marketing/DateFilterPanel.tsx` | Toggle UI toevoegen |
+| `src/components/marketing/DeltaCell.tsx` | Absoluut-modus ondersteunen |
+| `src/pages/marketing/tabs/PaidChannelsTab.tsx` | `deltaMode` prop doorgeven |
+| `src/pages/marketing/tabs/JobboardsTab.tsx` | Idem |
+| `src/pages/marketing/tabs/PaidSocialTab.tsx` | Idem |
+| `src/pages/marketing/tabs/PaidSocialAdLevelTab.tsx` | Idem |
 
