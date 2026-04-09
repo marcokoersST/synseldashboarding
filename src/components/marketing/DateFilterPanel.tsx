@@ -11,6 +11,7 @@ import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { areDateRangesEqual, formatDateRangeLabel } from "@/lib/marketingCompare";
 import type { DateRange } from "react-day-picker";
+import type { DeltaMode } from "@/components/marketing/DeltaCell";
 
 interface DateFilterPanelProps {
   dateRange: DateRange;
@@ -19,6 +20,8 @@ interface DateFilterPanelProps {
   onCompareEnabledChange: (enabled: boolean) => void;
   compareRange: DateRange | null;
   onCompareRangeChange: (range: DateRange | null) => void;
+  deltaMode: DeltaMode;
+  onDeltaModeChange: (mode: DeltaMode) => void;
 }
 
 const today = new Date();
