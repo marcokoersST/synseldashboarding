@@ -9,6 +9,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subWeeks, subMonths, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { areDateRangesEqual, formatDateRangeLabel } from "@/lib/marketingCompare";
 import type { DateRange } from "react-day-picker";
 
 interface DateFilterPanelProps {
@@ -82,10 +83,11 @@ const DateFilterPanel = ({
 
   const handleOpen = (isOpen: boolean) => {
     if (isOpen) {
+      const defaultCompareRange = getDefaultCompareRange(dateRange);
       setTempRange(dateRange);
       setTempCompare(compareEnabled);
-      setTempCompareRange(compareRange);
-      setCompareMode(compareRange ? "previous" : "previous");
+      setTempCompareRange(compareRange ?? defaultCompareRange);
+      setCompareMode(compareRange && !areDateRangesEqual(compareRange, defaultCompareRange) ? "custom" : "previous");
     }
     setOpen(isOpen);
   };
@@ -104,9 +106,15 @@ const DateFilterPanel = ({
   };
 
   const handleApply = () => {
+    const resolvedCompareRange = !tempCompare
+      ? null
+      : compareMode === "custom" && tempCompareRange?.from && tempCompareRange?.to
+        ? tempCompareRange
+        : getDefaultCompareRange(tempRange);
+
     onDateRangeChange(tempRange);
     onCompareEnabledChange(tempCompare);
-    onCompareRangeChange(tempCompare ? (tempCompareRange ?? getDefaultCompareRange(tempRange)) : null);
+    onCompareRangeChange(resolvedCompareRange);
     setOpen(false);
   };
 
@@ -114,9 +122,18 @@ const DateFilterPanel = ({
 
   const displayLabel = useMemo(() => {
     if (!dateRange.from) return "Selecteer periode";
-    if (dateRange.to) return `${format(dateRange.from, "d MMM", { locale: nl })} – ${format(dateRange.to, "d MMM yyyy", { locale: nl })}`;
-    return format(dateRange.from, "d MMM yyyy", { locale: nl });
+    return formatDateRangeLabel(dateRange);
   }, [dateRange]);
+
+  const appliedCompareRange = useMemo(() => {
+    if (!compareEnabled) return null;
+    return compareRange ?? getDefaultCompareRange(dateRange);
+  }, [compareEnabled, compareRange, dateRange]);
+
+  const compareDisplayLabel = useMemo(
+    () => (appliedCompareRange ? formatDateRangeLabel(appliedCompareRange) : ""),
+    [appliedCompareRange],
+  );
 
   const formatRange = (r: DateRange | null) => {
     if (!r?.from || !r?.to) return "";
@@ -128,10 +145,14 @@ const DateFilterPanel = ({
   return (
     <Popover open={open} onOpenChange={handleOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className={cn("justify-start text-left font-normal w-[280px]", !dateRange.from && "text-muted-foreground")}>
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {displayLabel}
-          {compareEnabled && <span className="ml-2 text-xs text-primary font-semibold">vs</span>}
+        <Button variant="outline" className={cn("h-auto min-h-10 w-full justify-start text-left font-normal sm:w-[340px]", !dateRange.from && "text-muted-foreground")}>
+          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+          <span className="flex min-w-0 flex-col items-start">
+            <span className="truncate">{displayLabel}</span>
+            {compareEnabled && compareDisplayLabel && (
+              <span className="truncate text-xs font-semibold text-primary">vs {compareDisplayLabel}</span>
+            )}
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="end" side="bottom">

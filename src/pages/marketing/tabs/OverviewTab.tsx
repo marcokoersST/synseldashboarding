@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { TrendingUp, TrendingDown, ArrowRight, Filter, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from "recharts";
+import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import {
   paidChannelData,
   jobboardData,
@@ -34,7 +35,7 @@ interface Props {
   onTabChange: (tab: any) => void;
 }
 
-function DeltaBadge({ current, previous, invert }: { current: number; previous: number; invert?: boolean }) {
+function DeltaBadge({ current, previous, compareLabel, invert }: { current: number; previous: number; compareLabel: string; invert?: boolean }) {
   const d = deltaPercent(current, previous);
   if (d === null) return null;
   const isPositive = invert ? d < 0 : d > 0;
@@ -42,12 +43,14 @@ function DeltaBadge({ current, previous, invert }: { current: number; previous: 
     <div className={cn("flex items-center gap-1 mt-1 text-xs", isPositive ? "text-emerald-600" : "text-red-500")}>
       {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
       <span>{d > 0 ? "+" : ""}{d.toFixed(1)}%</span>
-      <span className="text-muted-foreground ml-1">vs vorige periode</span>
+      <span className="text-muted-foreground ml-1">{compareLabel}</span>
     </div>
   );
 }
 
 const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
+  const compareLabel = getCompareDisplayText(compareRange);
+
   // KPIs
   const kpis = useMemo(() => {
     const pc = totals(paidChannelData);
@@ -56,16 +59,21 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     const totalConversions = pc.conversions + jb.conversions + ps.conversions;
     const totalRegistrations = pc.registrations + jb.registrations + ps.registrations;
     const totalSpend = pc.spend + jb.spend + ps.spend;
+    const previousConversions = getComparisonValue(totalConversions, { dateRange, compareRange, seed: "overview-conversions" });
+    const previousRegistrations = getComparisonValue(totalRegistrations, { dateRange, compareRange, seed: "overview-registrations" });
+    const previousSpend = getComparisonValue(totalSpend, { dateRange, compareRange, seed: "overview-spend" });
     const cpr = totalRegistrations > 0 ? totalSpend / totalRegistrations : 0;
+    const previousCpr = previousRegistrations > 0 ? previousSpend / previousRegistrations : 0;
     const rmVolume = reverseMatchingSteps[0]?.volume ?? 0;
+    const previousReverseMatching = getComparisonValue(rmVolume, { dateRange, compareRange, seed: "overview-reverse-matching" });
     const items: { label: string; value: number; previous: number; tab: string; format?: string; invertDelta?: boolean }[] = [
-      { label: "Conversions", value: totalConversions, previous: previousPeriodValue(totalConversions), tab: "paid-channels" },
-      { label: "Registrations", value: totalRegistrations, previous: previousPeriodValue(totalRegistrations), tab: "paid-channels" },
-      { label: "Cost per Registration", value: cpr, previous: previousPeriodValue(Math.round(cpr)), format: "currency", tab: "paid-channels", invertDelta: true },
-      { label: "Reverse Matching", value: rmVolume, previous: previousPeriodValue(rmVolume), tab: "reverse-matching" },
+      { label: "Conversions", value: totalConversions, previous: previousConversions, tab: "paid-channels" },
+      { label: "Registrations", value: totalRegistrations, previous: previousRegistrations, tab: "paid-channels" },
+      { label: "Cost per Registration", value: cpr, previous: previousCpr, format: "currency", tab: "paid-channels", invertDelta: true },
+      { label: "Reverse Matching", value: rmVolume, previous: previousReverseMatching, tab: "reverse-matching" },
     ];
     return items;
-  }, []);
+  }, [dateRange, compareRange]);
 
   // Fastest rising CPR
   const fastestRisingCPR = useMemo(() => {
@@ -73,29 +81,14 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     let worst = { source: "-", currentCpr: 0, previousCpr: 0, rise: 0 };
     for (const row of agg) {
       const currentCpr = row.registrations > 0 ? row.spend / row.registrations : 0;
-      const previousCpr = previousPeriodValue(Math.round(currentCpr));
+      const previousRegistrations = getComparisonValue(row.registrations, { dateRange, compareRange, seed: `${row.source}-overview-registrations` });
+      const previousSpend = getComparisonValue(row.spend, { dateRange, compareRange, seed: `${row.source}-overview-spend` });
+      const previousCpr = previousRegistrations > 0 ? previousSpend / previousRegistrations : 0;
       const rise = previousCpr > 0 ? ((currentCpr - previousCpr) / previousCpr) * 100 : 0;
       if (rise > worst.rise) worst = { source: row.source, currentCpr, previousCpr, rise };
     }
     return worst;
-  }, []);
-
-  // Category breakdown
-  const categoryBreakdown = useMemo(() => {
-    const pc = totals(paidChannelData);
-    const jb = totals(jobboardData);
-    const ps = totals(paidSocialData);
-    const inflowTotals = inflowSourceData.reduce((acc, s) => ({
-      inschrijvingen: acc.inschrijvingen + s.inschrijvingen,
-      acquisitie: acc.acquisitie + s.acquisitie,
-    }), { inschrijvingen: 0, acquisitie: 0 });
-    return [
-      { label: "Inflow", registrations: inflowTotals.inschrijvingen, conversions: inflowTotals.acquisitie, spend: 0, tab: "inflow" },
-      { label: "Paid Channels", registrations: pc.registrations, conversions: pc.conversions, spend: pc.spend, tab: "paid-channels" },
-      { label: "Jobboards", registrations: jb.registrations, conversions: jb.conversions, spend: jb.spend, tab: "jobboards" },
-      { label: "Paid Social", registrations: ps.registrations, conversions: ps.conversions, spend: ps.spend, tab: "paid-social" },
-    ];
-  }, []);
+  }, [dateRange, compareRange]);
 
   // Inflow data for inline display
   const allUnits = useMemo(() => {
@@ -114,6 +107,14 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
   ), [filteredConsultants]);
   const sourceTotals = useMemo(() => inflowSourceData.reduce((acc, s) => ({ inschrijvingen: acc.inschrijvingen + s.inschrijvingen, acquisitie: acc.acquisitie + s.acquisitie }), { inschrijvingen: 0, acquisitie: 0 }), []);
   const unitChartData = useMemo(() => aggregateByUnit(filteredConsultants), [filteredConsultants]);
+  const previousInflowRegistrations = useMemo(
+    () => getComparisonValue(consultantTotals.inschrijvingen, { dateRange, compareRange, seed: "overview-inflow-registrations" }),
+    [consultantTotals.inschrijvingen, dateRange, compareRange],
+  );
+  const previousHeractiveringen = useMemo(
+    () => getComparisonValue(inflowHeractiveringen.current, { dateRange, compareRange, seed: "overview-heractiveringen" }),
+    [dateRange, compareRange],
+  );
 
   // Unit distribution
   const unitDistribution = useMemo(() => {
@@ -158,7 +159,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
               <p className="text-2xl font-bold text-foreground">
                 {kpi.format === "currency" ? formatCurrency(Math.round(kpi.value)) : kpi.value.toLocaleString("nl-NL")}
               </p>
-              <DeltaBadge current={kpi.value} previous={kpi.previous} invert={kpi.invertDelta} />
+              <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} invert={kpi.invertDelta} />
             </CardContent>
           </Card>
         ))}
@@ -201,14 +202,14 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
           <CardContent className="p-5">
             <p className="text-xs font-medium text-muted-foreground mb-1">Inschrijvingen</p>
             <p className="text-2xl font-bold">{consultantTotals.inschrijvingen}</p>
-            <DeltaBadge current={consultantTotals.inschrijvingen} previous={consultantTotals.prevInschrijvingen} />
+            <DeltaBadge current={consultantTotals.inschrijvingen} previous={previousInflowRegistrations} compareLabel={compareLabel} />
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-medium text-muted-foreground mb-1">Heractiveringen</p>
             <p className="text-2xl font-bold">{inflowHeractiveringen.current}</p>
-            <DeltaBadge current={inflowHeractiveringen.current} previous={inflowHeractiveringen.previous} />
+            <DeltaBadge current={inflowHeractiveringen.current} previous={previousHeractiveringen} compareLabel={compareLabel} />
           </CardContent>
         </Card>
       </div>
@@ -300,69 +301,35 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
         </CardContent>
       </Card>
 
-      {/* Category breakdown + Highlights */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Category breakdown */}
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base">Kanaal Overzicht</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {categoryBreakdown.map((cat) => (
-                <div key={cat.label} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => onTabChange(cat.tab)}>
-                  <span className="font-medium text-sm">{cat.label}</span>
-                  <div className="flex items-center gap-6 text-sm">
-                    <div className="text-right">
-                      <span className="text-muted-foreground text-xs">Reg.</span>
-                      <p className="font-semibold">{cat.registrations.toLocaleString("nl-NL")}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-muted-foreground text-xs">Conv.</span>
-                      <p className="font-semibold">{cat.conversions.toLocaleString("nl-NL")}</p>
-                    </div>
-                    {cat.spend > 0 && (
-                      <div className="text-right">
-                        <span className="text-muted-foreground text-xs">Spend</span>
-                        <p className="font-semibold">{formatCurrency(cat.spend)}</p>
-                      </div>
-                    )}
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </div>
-              ))}
+      {/* Highlights */}
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">Highlights</CardTitle></CardHeader>
+        <CardContent>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between p-2 rounded bg-emerald-500/10">
+              <span className="text-muted-foreground">Best performing source</span>
+              <span className="font-semibold text-emerald-700">{highlights.bestSource} ({highlights.bestSourceVolume})</span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Highlights */}
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base">Highlights</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between p-2 rounded bg-emerald-500/10">
-                <span className="text-muted-foreground">Best performing source</span>
-                <span className="font-semibold text-emerald-700">{highlights.bestSource} ({highlights.bestSourceVolume})</span>
-              </div>
-              <div className="flex justify-between p-2 rounded bg-blue-500/10">
-                <span className="text-muted-foreground">Laagste CPR</span>
-                <span className="font-semibold text-blue-700">{highlights.lowestCPR}</span>
-              </div>
-              <div
-                className="flex justify-between items-center p-2 rounded bg-red-500/10 cursor-pointer hover:bg-red-500/20 transition-colors"
-                onClick={() => onTabChange("paid-channels")}
-              >
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
-                  Snelst stijgende CPR
-                </span>
-                <span className="font-semibold text-red-700">
-                  {fastestRisingCPR.source} (+{fastestRisingCPR.rise.toFixed(1)}%)
-                  <ArrowRight className="inline h-3 w-3 ml-1" />
-                </span>
-              </div>
+            <div className="flex justify-between p-2 rounded bg-blue-500/10">
+              <span className="text-muted-foreground">Laagste CPR</span>
+              <span className="font-semibold text-blue-700">{highlights.lowestCPR}</span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div
+              className="flex justify-between items-center p-2 rounded bg-red-500/10 cursor-pointer hover:bg-red-500/20 transition-colors"
+              onClick={() => onTabChange("paid-channels")}
+            >
+              <span className="text-muted-foreground flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+                Snelst stijgende CPR
+              </span>
+              <span className="font-semibold text-red-700">
+                {fastestRisingCPR.source} (+{fastestRisingCPR.rise.toFixed(1)}%)
+                <ArrowRight className="inline h-3 w-3 ml-1" />
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Unit distribution */}
       <Card>

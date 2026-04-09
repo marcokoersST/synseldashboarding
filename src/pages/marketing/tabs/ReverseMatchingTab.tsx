@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { reverseMatchingSteps, previousPeriodValue, deltaPercent } from "@/data/marketingHubData";
+import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
+import { reverseMatchingSteps, deltaPercent } from "@/data/marketingHubData";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import type { DateRange } from "react-day-picker";
 
@@ -20,6 +21,7 @@ const COLORS = [
 
 const ReverseMatchingTab = ({ dateRange, compareRange }: Props) => {
   const steps = reverseMatchingSteps;
+  const compareText = getCompareDisplayText(compareRange);
 
   const conversions = useMemo(() => {
     return steps.map((step, i) => {
@@ -36,12 +38,14 @@ const ReverseMatchingTab = ({ dateRange, compareRange }: Props) => {
   const kpis = useMemo(() => {
     const instroom = steps[0]?.volume ?? 0;
     const geplaatst = steps[steps.length - 1]?.volume ?? 0;
+    const previousInstroom = getComparisonValue(instroom, { dateRange, compareRange, seed: "reverse-matching-instroom" });
+    const previousGeplaatst = getComparisonValue(geplaatst, { dateRange, compareRange, seed: "reverse-matching-geplaatst" });
     return [
-      { label: "Instroom", value: instroom, delta: deltaPercent(instroom, previousPeriodValue(instroom)) },
-      { label: "Geplaatst", value: geplaatst, delta: deltaPercent(geplaatst, previousPeriodValue(geplaatst)) },
+      { label: "Instroom", value: instroom, delta: deltaPercent(instroom, previousInstroom) },
+      { label: "Geplaatst", value: geplaatst, delta: deltaPercent(geplaatst, previousGeplaatst) },
       { label: "Totale conversie", value: totalConversion ? parseFloat(totalConversion) : 0, delta: null, suffix: "%" },
     ];
-  }, [steps, totalConversion]);
+  }, [steps, totalConversion, dateRange, compareRange]);
 
   return (
     <div className="space-y-6">
@@ -57,6 +61,7 @@ const ReverseMatchingTab = ({ dateRange, compareRange }: Props) => {
                   <div className={`flex items-center gap-1 mt-1 text-xs ${isPos ? "text-emerald-600" : "text-red-500"}`}>
                     {isPos ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     <span>{kpi.delta > 0 ? "+" : ""}{kpi.delta.toFixed(1)}%</span>
+                    <span className="text-muted-foreground ml-1">{compareText}</span>
                   </div>
                 )}
               </CardContent>

@@ -3,13 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { ArrowUpDown, TrendingUp, TrendingDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import {
   paidChannelData,
   aggregatePaidChannels,
   aggregateByUnit,
   totals as calcTotals,
   formatCurrency,
-  previousPeriodValue,
   deltaPercent,
 } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
@@ -43,18 +43,23 @@ const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
   const unitChart = useMemo(() => aggregateByUnit(paidChannelData), []);
   const grandCpr = grand.registrations > 0 ? grand.spend / grand.registrations : 0;
   const grandCpc = grand.conversions > 0 ? grand.spend / grand.conversions : 0;
+  const compareText = getCompareDisplayText(compareRange);
 
   const kpis = useMemo(() => {
-    const prev = { conversions: previousPeriodValue(grand.conversions), registrations: previousPeriodValue(grand.registrations) };
+    const prev = {
+      conversions: getComparisonValue(grand.conversions, { dateRange, compareRange, seed: "paid-channels-conversions" }),
+      registrations: getComparisonValue(grand.registrations, { dateRange, compareRange, seed: "paid-channels-registrations" }),
+      spend: getComparisonValue(grand.spend, { dateRange, compareRange, seed: "paid-channels-spend" }),
+    };
     const cpr = grandCpr;
-    const prevCpr = prev.registrations > 0 ? previousPeriodValue(grand.spend) / prev.registrations : 0;
+    const prevCpr = prev.registrations > 0 ? prev.spend / prev.registrations : 0;
     const items: { label: string; value: number; delta: number | null; format?: string; invertDelta?: boolean }[] = [
       { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
       { label: "Registrations", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
       { label: "Cost per Registration", value: cpr, delta: deltaPercent(cpr, prevCpr), format: "currency", invertDelta: true },
     ];
     return items;
-  }, [grand, grandCpr]);
+  }, [dateRange, compareRange, grand, grandCpr]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -89,6 +94,7 @@ const PaidChannelsTab = ({ dateRange, compareRange }: Props) => {
                   <div className={`flex items-center gap-1 mt-1 text-xs ${isPos ? "text-emerald-600" : "text-red-500"}`}>
                     {isPos ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     <span>{kpi.delta > 0 ? "+" : ""}{kpi.delta.toFixed(1)}%</span>
+                    <span className="text-muted-foreground ml-1">{compareText}</span>
                   </div>
                 )}
               </CardContent>
