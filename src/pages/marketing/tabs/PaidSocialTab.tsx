@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { ChevronDown, ChevronRight, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
+import DeltaCell from "@/components/marketing/DeltaCell";
 import { paidSocialData, aggregateByUnit, totals as calcTotals, formatCurrency, deltaPercent } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 
@@ -74,6 +75,10 @@ const PaidSocialTab = ({ dateRange, compareRange }: Props) => {
     setExpanded(prev => { const n = new Set(prev); n.has(platform) ? n.delete(platform) : n.add(platform); return n; });
   };
 
+  const dc = (value: number, seed: string, format?: "number" | "currency", invertDelta?: boolean) => (
+    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} />
+  );
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
@@ -140,11 +145,11 @@ const PaidSocialTab = ({ dateRange, compareRange }: Props) => {
                             {parent.platform}
                           </div>
                         </td>
-                        <td className="p-4 align-middle font-semibold">{parent.conversions.toLocaleString("nl-NL")}</td>
-                        <td className="p-4 align-middle font-semibold">{parent.registrations.toLocaleString("nl-NL")}</td>
-                        {showConversion && <td className="p-4 align-middle font-semibold">{formatCurrency(Math.round(cpr))}</td>}
-                        {showConversion && <td className="p-4 align-middle font-semibold">{formatCurrency(Math.round(cpc))}</td>}
-                        <td className="p-4 align-middle font-semibold">{formatCurrency(parent.spend)}</td>
+                        <td className="p-4 align-middle font-semibold">{dc(parent.conversions, `ps-${parent.platform}-conv`)}</td>
+                        <td className="p-4 align-middle font-semibold">{dc(parent.registrations, `ps-${parent.platform}-reg`)}</td>
+                        {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpr, `ps-${parent.platform}-cpr`, "currency", true)}</td>}
+                        {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpc, `ps-${parent.platform}-cpc`, "currency", true)}</td>}
+                        <td className="p-4 align-middle font-semibold">{dc(parent.spend, `ps-${parent.platform}-spend`, "currency")}</td>
                       </tr>
                       {isOpen && parent.children.map((child) => {
                         const childCpr = child.registrations > 0 ? child.spend / child.registrations : 0;
@@ -152,11 +157,11 @@ const PaidSocialTab = ({ dateRange, compareRange }: Props) => {
                         return (
                           <tr key={`${parent.platform}-${child.segment}`} className="border-b transition-colors bg-muted/20">
                             <td className="p-4 pl-10 align-middle text-muted-foreground">{child.segment}</td>
-                            <td className="p-4 align-middle">{child.conversions.toLocaleString("nl-NL")}</td>
-                            <td className="p-4 align-middle">{child.registrations.toLocaleString("nl-NL")}</td>
-                            {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(childCpr))}</td>}
-                            {showConversion && <td className="p-4 align-middle">{formatCurrency(Math.round(childCpc))}</td>}
-                            <td className="p-4 align-middle">{formatCurrency(child.spend)}</td>
+                            <td className="p-4 align-middle">{dc(child.conversions, `ps-${parent.platform}-${child.segment}-conv`)}</td>
+                            <td className="p-4 align-middle">{dc(child.registrations, `ps-${parent.platform}-${child.segment}-reg`)}</td>
+                            {showConversion && <td className="p-4 align-middle">{dc(childCpr, `ps-${parent.platform}-${child.segment}-cpr`, "currency", true)}</td>}
+                            {showConversion && <td className="p-4 align-middle">{dc(childCpc, `ps-${parent.platform}-${child.segment}-cpc`, "currency", true)}</td>}
+                            <td className="p-4 align-middle">{dc(child.spend, `ps-${parent.platform}-${child.segment}-spend`, "currency")}</td>
                           </tr>
                         );
                       })}
@@ -171,11 +176,11 @@ const PaidSocialTab = ({ dateRange, compareRange }: Props) => {
               <tbody>
                 <tr className="font-bold">
                   <td className="p-4">Totaal</td>
-                  <td className="p-4">{grand.conversions.toLocaleString("nl-NL")}</td>
-                  <td className="p-4">{grand.registrations.toLocaleString("nl-NL")}</td>
-                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpr))}</td>}
-                  {showConversion && <td className="p-4">{formatCurrency(Math.round(grandCpc))}</td>}
-                  <td className="p-4">{formatCurrency(grand.spend)}</td>
+                  <td className="p-4">{dc(grand.conversions, "ps-total-conv")}</td>
+                  <td className="p-4">{dc(grand.registrations, "ps-total-reg")}</td>
+                  {showConversion && <td className="p-4">{dc(grandCpr, "ps-total-cpr", "currency", true)}</td>}
+                  {showConversion && <td className="p-4">{dc(grandCpc, "ps-total-cpc", "currency", true)}</td>}
+                  <td className="p-4">{dc(grand.spend, "ps-total-spend", "currency")}</td>
                 </tr>
               </tbody>
             </table>

@@ -30,7 +30,7 @@ export function formatDateRangeLabel(range: DateRange | null | undefined): strin
 }
 
 export function getCompareDisplayText(range: DateRange | null | undefined): string {
-  return range?.from && range?.to ? `vs ${formatDateRangeLabel(range)}` : "vs vorige periode";
+  return range?.from && range?.to ? `t.a.v. ${formatDateRangeLabel(range)}` : "t.a.v. vorige periode";
 }
 
 function hashString(value: string): number {
@@ -46,7 +46,7 @@ function normalizedHash(value: string): number {
   return hashString(value) / 4294967295;
 }
 
-interface ComparisonValueOptions {
+export interface ComparisonValueOptions {
   dateRange: DateRange;
   compareRange?: DateRange | null;
   seed: string;
