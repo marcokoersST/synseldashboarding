@@ -96,6 +96,7 @@ function OpvolgingDetail({ delay, selectedUnit }: { delay: number; selectedUnit?
   const [consultantFilter, setConsultantFilter] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("dealStage");
   const [sortAsc, setSortAsc] = useState(true);
+  const [selectedRecord, setSelectedRecord] = useState<string | null>(null);
 
   const baseRecords = useMemo(() => {
     if (!selectedUnit || selectedUnit === "all") return dealRecords;
