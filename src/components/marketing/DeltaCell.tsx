@@ -27,7 +27,7 @@ const DeltaCell = ({ value, dateRange, compareRange, seed, format = "number", in
   return (
     <div className="flex flex-col items-start">
       <span>{formatted}</span>
-      <span className={`flex items-center justify-center gap-0.5 text-[11px] leading-tight w-full ${isPos ? "text-emerald-600" : "text-red-500"}`}>
+      <span className={`flex items-center gap-0.5 text-[11px] leading-tight ${isPos ? "text-emerald-600" : "text-red-500"}`}>
         {isPos ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
         {delta > 0 ? "+" : ""}{delta.toFixed(1)}%
       </span>
