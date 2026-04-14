@@ -40,20 +40,20 @@ const LEGEND_GROUPS: Record<string, string[]> = {
   bestPerformer: ["bestPerformer", "bestPerformerProj"],
 };
 
-const periodStats: Record<number, { totaal: number; actief: number; afvallers: number; afvallerType: 'gestopt' | 'komend' | 'verwacht' }> = {
-  1: { totaal: 8, actief: 2, afvallers: 0, afvallerType: 'gestopt' },
-  2: { totaal: 12, actief: 1, afvallers: 1, afvallerType: 'gestopt' },
-  3: { totaal: 16, actief: 3, afvallers: 0, afvallerType: 'gestopt' },
-  4: { totaal: 19, actief: 2, afvallers: 1, afvallerType: 'gestopt' },
-  5: { totaal: 23, actief: 4, afvallers: 1, afvallerType: 'gestopt' },
-  6: { totaal: 28, actief: 5, afvallers: 2, afvallerType: 'komend' },
-  7: { totaal: 31, actief: 6, afvallers: 1, afvallerType: 'verwacht' },
-  8: { totaal: 33, actief: 5, afvallers: 3, afvallerType: 'verwacht' },
-  9: { totaal: 36, actief: 7, afvallers: 1, afvallerType: 'verwacht' },
-  10: { totaal: 38, actief: 6, afvallers: 2, afvallerType: 'verwacht' },
-  11: { totaal: 41, actief: 8, afvallers: 1, afvallerType: 'verwacht' },
-  12: { totaal: 43, actief: 7, afvallers: 2, afvallerType: 'verwacht' },
-  13: { totaal: 46, actief: 9, afvallers: 1, afvallerType: 'verwacht' },
+const periodStats: Record<number, { totaal: number; actief: number; starters: number; afvallers: number; afvallerType: 'gestopt' | 'komend' | 'verwacht' }> = {
+  1: { totaal: 8, actief: 2, starters: 1, afvallers: 0, afvallerType: 'gestopt' },
+  2: { totaal: 12, actief: 1, starters: 2, afvallers: 1, afvallerType: 'gestopt' },
+  3: { totaal: 16, actief: 3, starters: 3, afvallers: 0, afvallerType: 'gestopt' },
+  4: { totaal: 19, actief: 2, starters: 1, afvallers: 1, afvallerType: 'gestopt' },
+  5: { totaal: 23, actief: 4, starters: 2, afvallers: 1, afvallerType: 'gestopt' },
+  6: { totaal: 28, actief: 5, starters: 3, afvallers: 2, afvallerType: 'komend' },
+  7: { totaal: 31, actief: 6, starters: 2, afvallers: 1, afvallerType: 'verwacht' },
+  8: { totaal: 33, actief: 5, starters: 1, afvallers: 3, afvallerType: 'verwacht' },
+  9: { totaal: 36, actief: 7, starters: 4, afvallers: 1, afvallerType: 'verwacht' },
+  10: { totaal: 38, actief: 6, starters: 2, afvallers: 2, afvallerType: 'verwacht' },
+  11: { totaal: 41, actief: 8, starters: 3, afvallers: 1, afvallerType: 'verwacht' },
+  12: { totaal: 43, actief: 7, starters: 1, afvallers: 2, afvallerType: 'verwacht' },
+  13: { totaal: 46, actief: 9, starters: 2, afvallers: 1, afvallerType: 'verwacht' },
 };
 
 // Mock candidates
@@ -180,7 +180,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
   const legendItems = [
     { key: "werkelijk", label: "Werkelijk", swatch: <div className="w-3.5 h-[2.5px] rounded-full" style={{ backgroundColor: 'hsl(var(--teal))' }} /> },
     { key: "prognose", label: "Prognose", swatch: <div className="w-3.5 h-[2.5px] rounded-full" style={{ background: 'repeating-linear-gradient(90deg, hsl(var(--teal)) 0 3px, transparent 3px 6px)' }} /> },
-    { key: "minimumNorm", label: "Min. Norm", swatch: <div className="w-3.5 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.minimumNorm} 0 2px, transparent 2px 5px)` }} /> },
+    { key: "minimumNorm", label: "Core Lane", swatch: <div className="w-3.5 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.minimumNorm} 0 2px, transparent 2px 5px)` }} /> },
     { key: "fastLane", label: "Fast Lane", swatch: <div className="w-3.5 h-[1.5px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, ${COLORS.fastLane} 0 2px, transparent 2px 5px)` }} /> },
     { key: "bestPerformer", label: "Best Perf.", swatch: <div className="w-3.5 h-[2px] rounded-full" style={{ backgroundColor: COLORS.bestPerformer }} /> },
   ];
@@ -235,15 +235,19 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
         <div className="flex items-end gap-6 mb-4">
           <div>
             <AnimatedNumber value={stats.totaal} delay={delay + 300} className="text-3xl font-bold text-foreground" />
-            <p className="text-xs text-muted-foreground mt-0.5">Totaal</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Plaatsingen</p>
+          </div>
+          <div>
+            <AnimatedNumber value={stats.starters} delay={delay + 350} className="text-xl font-semibold text-primary" />
+            <p className="text-xs text-muted-foreground mt-0.5">Starters</p>
           </div>
           <div>
             <AnimatedNumber value={stats.actief} delay={delay + 400} className="text-xl font-semibold text-teal" />
-            <p className="text-xs text-muted-foreground mt-0.5">Actief</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Gedetacheerden</p>
           </div>
           <div>
             <AnimatedNumber value={stats.afvallers} delay={delay + 500} className="text-xl font-semibold text-destructive" />
-            <p className="text-xs text-muted-foreground mt-0.5">Komende afvallers</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{selectedPeriod !== 6 ? 'Afvallers deze periode' : 'Afvallers'}</p>
           </div>
         </div>
 
@@ -311,7 +315,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                   {endingSoonCandidates.length > 0 && (
                     <>
                       <div className="border-t border-border my-2" />
-                      <h4 className="text-xs font-medium text-destructive mb-2">Komende afvallers</h4>
+                      <h4 className="text-xs font-medium text-destructive mb-2">{selectedPeriod !== 6 ? 'Afvallers deze periode' : 'Afvallers'}</h4>
                       {endingSoonCandidates.map((candidate) => (
                         <div key={candidate.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-destructive/5 hover:bg-destructive/10 transition-colors">
                           <div className="min-w-0 flex-1">
@@ -399,7 +403,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                   </h4>
                   {[
                     { label: activeData.historical != null ? "Werkelijk" : "Prognose", value: activeData.historical ?? activeData.projected, color: "hsl(var(--teal))" },
-                    { label: "Min. Norm", value: activeData.minimumNorm, color: COLORS.minimumNorm },
+                    { label: "Core Lane", value: activeData.minimumNorm, color: COLORS.minimumNorm },
                     { label: "Fast Lane", value: activeData.fastLane, color: COLORS.fastLane },
                     { label: "Best Performer", value: activeData.bestPerformer ?? activeData.bestPerformerProj, color: COLORS.bestPerformer },
                   ].filter(item => item.value != null).map((item) => {
@@ -434,7 +438,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
                       <div key={item.label} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/30">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                          <span className="text-xs text-muted-foreground">{item.label}</span>
+                          <span className="text-xs text-muted-foreground">{item.label === "Minimum Norm" ? "Core Lane" : item.label}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-foreground">{item.theirs}</span>
