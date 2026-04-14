@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Input } from "@/components/ui/input";
+
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
@@ -72,29 +72,25 @@ const COLORS = {
 interface CandidateRecord {
   kandidaat: string;
   klant: string;
-  status: string;
-  marge: number; // percentage e.g. 0.18 = 18%
+  soortPlaatsing: "Detavast" | "W&S" | "Marge Fac";
+  potMarge: "Actief" | "Afgerond" | "Afgevallen";
   data: Record<string, number>;
 }
 
 const candidates: CandidateRecord[] = [
-  { kandidaat: "Mark de Vries", klant: "TechCorp BV", status: "Actief", marge: 0.22, data: { W12: 6800, W13: 7200, W14: 8400, W15: 8900, P4: 28000, P5: 32000, P6: 35000 } },
-  { kandidaat: "Lisa Jansen", klant: "Bouwgroep NL", status: "Actief", marge: 0.18, data: { W12: 6200, W13: 6800, W14: 6200, W15: 6500, P4: 24000, P5: 26000, P6: 27500 } },
-  { kandidaat: "Tom Bakker", klant: "FinanceFirst", status: "Actief", marge: 0.20, data: { W12: 4800, W13: 5100, W14: 5800, W15: 6200, P4: 18000, P5: 21000, P6: 23000 } },
-  { kandidaat: "Sara Mol", klant: "LogiPlan BV", status: "Afgerond", marge: 0.15, data: { W12: 4500, W13: 4900, W14: 4900, W15: 4900, P4: 16000, P5: 18000, P6: 19500 } },
-  { kandidaat: "Pieter Smit", klant: "DataDriven NL", status: "Actief", marge: 0.25, data: { W12: 3200, W13: 3600, W14: 4200, W15: 4800, P4: 12000, P5: 15000, P6: 17000 } },
-  { kandidaat: "Emma de Boer", klant: "MedTech Group", status: "Actief", marge: 0.19, data: { W12: 3800, W13: 4100, W14: 3800, W15: 3500, P4: 14000, P5: 15500, P6: 14800 } },
-  { kandidaat: "Koen van Dijk", klant: "RetailMax BV", status: "Pauze", marge: 0.16, data: { W12: 2000, W13: 2100, W14: 2100, W15: 2100, P4: 8000, P5: 8500, P6: 8500 } },
-  { kandidaat: "Julia Peters", klant: "EnergieWerk", status: "Actief", marge: 0.23, data: { W12: 0, W13: 0, W14: 1600, W15: 2200, P4: 0, P5: 3000, P6: 5500 } },
+  { kandidaat: "Mark de Vries", klant: "TechCorp BV", soortPlaatsing: "Detavast", potMarge: "Actief", data: { W12: 6800, W13: 7200, W14: 8400, W15: 8900, P4: 28000, P5: 32000, P6: 35000 } },
+  { kandidaat: "Lisa Jansen", klant: "Bouwgroep NL", soortPlaatsing: "W&S", potMarge: "Actief", data: { W12: 6200, W13: 6800, W14: 6200, W15: 6500, P4: 24000, P5: 26000, P6: 27500 } },
+  { kandidaat: "Tom Bakker", klant: "FinanceFirst", soortPlaatsing: "Detavast", potMarge: "Actief", data: { W12: 4800, W13: 5100, W14: 5800, W15: 6200, P4: 18000, P5: 21000, P6: 23000 } },
+  { kandidaat: "Sara Mol", klant: "LogiPlan BV", soortPlaatsing: "Marge Fac", potMarge: "Afgerond", data: { W12: 4500, W13: 4900, W14: 4900, W15: 4900, P4: 16000, P5: 18000, P6: 19500 } },
+  { kandidaat: "Pieter Smit", klant: "DataDriven NL", soortPlaatsing: "W&S", potMarge: "Actief", data: { W12: 3200, W13: 3600, W14: 4200, W15: 4800, P4: 12000, P5: 15000, P6: 17000 } },
+  { kandidaat: "Emma de Boer", klant: "MedTech Group", soortPlaatsing: "Detavast", potMarge: "Afgevallen", data: { W12: 3800, W13: 4100, W14: 3800, W15: 3500, P4: 14000, P5: 15500, P6: 14800 } },
+  { kandidaat: "Koen van Dijk", klant: "RetailMax BV", soortPlaatsing: "Marge Fac", potMarge: "Afgerond", data: { W12: 2000, W13: 2100, W14: 2100, W15: 2100, P4: 8000, P5: 8500, P6: 8500 } },
+  { kandidaat: "Julia Peters", klant: "EnergieWerk", soortPlaatsing: "W&S", potMarge: "Actief", data: { W12: 0, W13: 0, W14: 1600, W15: 2200, P4: 0, P5: 3000, P6: 5500 } },
 ];
 
 const availableWeeks = ["W12", "W13", "W14", "W15"];
 const availablePeriodes = ["P4", "P5", "P6"];
 
-function getPreviousKey(key: string, list: string[]): string | null {
-  const idx = list.indexOf(key);
-  return idx > 0 ? list[idx - 1] : null;
-}
 
 // ─── Chart tooltip ───
 interface CustomTooltipProps {
@@ -286,14 +282,12 @@ function DetailedView({ delay }: { delay: number }) {
     return candidates.map((c) => {
       const omzet = currentKey ? (c.data[currentKey] ?? 0) : c.data["W14"];
       const vorige = previousKey ? (c.data[previousKey] ?? 0) : 0;
-      const potMarge = Math.round(omzet * c.marge);
-      return { ...c, omzet, vorige, potMarge };
+      return { ...c, omzet, vorige };
     });
   }, [currentKey, previousKey]);
 
   const totalOmzet = tableData.reduce((s, c) => s + c.omzet, 0);
   const totalVorige = tableData.reduce((s, c) => s + c.vorige, 0);
-  const totalMarge = tableData.reduce((s, c) => s + c.potMarge, 0);
   const totalDelta = totalOmzet - totalVorige;
   const totalDeltaPct = totalVorige > 0 ? ((totalDelta / totalVorige) * 100) : 0;
   const showCompare = compareEnabled && (filterMode === "custom" || previousKey);
@@ -421,10 +415,6 @@ function DetailedView({ delay }: { delay: number }) {
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Totaal gefactureerd</p>
           <AnimatedNumber value={totalOmzet} delay={delay + 100} className="text-2xl font-bold text-foreground" prefix="€" />
         </div>
-        <div className="pl-4 border-l border-border">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Potentiële marge</p>
-          <span className="text-lg font-bold text-foreground">€{totalMarge.toLocaleString()}</span>
-        </div>
         {showCompare && previousKey && (
           <div className="flex items-center gap-2 pl-4 border-l border-border">
             <div>
@@ -442,65 +432,110 @@ function DetailedView({ delay }: { delay: number }) {
         )}
       </div>
 
-      {/* Candidate table */}
-      <div className="overflow-auto rounded-lg border border-border">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="bg-secondary/30 border-b border-border">
-              <th className="text-left py-2 px-3 font-medium text-muted-foreground">Kandidaat</th>
-              <th className="text-left py-2 px-3 font-medium text-muted-foreground">Klant</th>
-              <th className="text-right py-2 px-3 font-medium text-muted-foreground">Gefactureerd</th>
-              <th className="text-right py-2 px-3 font-medium text-muted-foreground">Pot. marge</th>
-              {showCompare && previousKey && (
-                <>
-                  <th className="text-right py-2 px-3 font-medium text-muted-foreground">Vorige ({previousKey})</th>
-                  <th className="text-right py-2 px-3 font-medium text-muted-foreground">Δ</th>
-                </>
-              )}
-              <th className="text-center py-2 px-3 font-medium text-muted-foreground">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tableData.map((row, i) => {
-              const delta = row.omzet - row.vorige;
-              const deltaPct = row.vorige > 0 ? ((delta / row.vorige) * 100) : (row.omzet > 0 ? 100 : 0);
-              return (
+      {showCompare && previousKey ? (
+        /* Side-by-side comparison */
+        <div className="flex gap-4">
+          {[
+            { label: currentKey || "Huidig", dataKey: "omzet" as const },
+            { label: previousKey, dataKey: "vorige" as const },
+          ].map((side) => (
+            <div key={side.label} className="flex-1 overflow-auto rounded-lg border border-border">
+              <div className="bg-secondary/40 px-3 py-1.5 border-b border-border">
+                <span className="text-[11px] font-semibold text-foreground">{side.label}</span>
+              </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-secondary/30 border-b border-border">
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Kandidaat</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Klant</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Soort</th>
+                    <th className="text-right py-2 px-3 font-medium text-muted-foreground">Gefactureerd</th>
+                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">Pot. marge</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tableData.map((row, i) => {
+                    const value = side.dataKey === "omzet" ? row.omzet : row.vorige;
+                    return (
+                      <tr key={i} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                        <td className="py-2 px-3 font-medium text-foreground">{row.kandidaat}</td>
+                        <td className="py-2 px-3 text-muted-foreground">{row.klant}</td>
+                        <td className="py-2 px-3">
+                          <span className={cn(
+                            "text-[10px] font-medium px-2 py-0.5 rounded-full",
+                            row.soortPlaatsing === "Detavast" ? "bg-primary/15 text-primary" :
+                            row.soortPlaatsing === "W&S" ? "bg-amber-500/15 text-amber-600" :
+                            "bg-violet-500/15 text-violet-600"
+                          )}>
+                            {row.soortPlaatsing}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-right font-semibold text-foreground tabular-nums">
+                          {value > 0 ? `€${value.toLocaleString()}` : "—"}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <span className={cn(
+                            "text-[10px] font-medium px-2 py-0.5 rounded-full",
+                            row.potMarge === "Actief" ? "bg-success/15 text-success" :
+                            row.potMarge === "Afgerond" ? "bg-muted text-muted-foreground" :
+                            "bg-destructive/15 text-destructive"
+                          )}>
+                            {row.potMarge}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* Single table */
+        <div className="overflow-auto rounded-lg border border-border">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-secondary/30 border-b border-border">
+                <th className="text-left py-2 px-3 font-medium text-muted-foreground">Kandidaat</th>
+                <th className="text-left py-2 px-3 font-medium text-muted-foreground">Klant</th>
+                <th className="text-left py-2 px-3 font-medium text-muted-foreground">Soort</th>
+                <th className="text-right py-2 px-3 font-medium text-muted-foreground">Gefactureerd</th>
+                <th className="text-center py-2 px-3 font-medium text-muted-foreground">Pot. marge</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableData.map((row, i) => (
                 <tr key={i} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
                   <td className="py-2 px-3 font-medium text-foreground">{row.kandidaat}</td>
                   <td className="py-2 px-3 text-muted-foreground">{row.klant}</td>
+                  <td className="py-2 px-3">
+                    <span className={cn(
+                      "text-[10px] font-medium px-2 py-0.5 rounded-full",
+                      row.soortPlaatsing === "Detavast" ? "bg-primary/15 text-primary" :
+                      row.soortPlaatsing === "W&S" ? "bg-amber-500/15 text-amber-600" :
+                      "bg-violet-500/15 text-violet-600"
+                    )}>
+                      {row.soortPlaatsing}
+                    </span>
+                  </td>
                   <td className="py-2 px-3 text-right font-semibold text-foreground tabular-nums">€{row.omzet.toLocaleString()}</td>
-                  <td className="py-2 px-3 text-right text-foreground tabular-nums">€{row.potMarge.toLocaleString()}</td>
-                  {showCompare && previousKey && (
-                    <>
-                      <td className="py-2 px-3 text-right text-muted-foreground tabular-nums">
-                        {row.vorige > 0 ? `€${row.vorige.toLocaleString()}` : "—"}
-                      </td>
-                      <td className="py-2 px-3 text-right">
-                        <span className={cn(
-                          "text-[10px] font-medium px-1.5 py-0.5 rounded-full tabular-nums",
-                          delta > 0 ? "bg-success/15 text-success" : delta < 0 ? "bg-destructive/15 text-destructive" : "bg-secondary text-muted-foreground"
-                        )}>
-                          {delta > 0 ? "+" : ""}{deltaPct.toFixed(0)}%
-                        </span>
-                      </td>
-                    </>
-                  )}
                   <td className="py-2 px-3 text-center">
                     <span className={cn(
                       "text-[10px] font-medium px-2 py-0.5 rounded-full",
-                      row.status === "Actief" ? "bg-success/15 text-success" :
-                      row.status === "Afgerond" ? "bg-muted text-muted-foreground" :
-                      "bg-primary/15 text-primary"
+                      row.potMarge === "Actief" ? "bg-success/15 text-success" :
+                      row.potMarge === "Afgerond" ? "bg-muted text-muted-foreground" :
+                      "bg-destructive/15 text-destructive"
                     )}>
-                      {row.status}
+                      {row.potMarge}
                     </span>
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
