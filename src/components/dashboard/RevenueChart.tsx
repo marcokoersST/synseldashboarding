@@ -286,8 +286,7 @@ function DetailedView({ delay }: { delay: number }) {
     return candidates.map((c) => {
       const omzet = currentKey ? (c.data[currentKey] ?? 0) : c.data["W14"];
       const vorige = previousKey ? (c.data[previousKey] ?? 0) : 0;
-      const potMarge = Math.round(omzet * c.marge);
-      return { ...c, omzet, vorige, potMarge };
+      return { ...c, omzet, vorige };
     });
   }, [currentKey, previousKey]);
 
