@@ -1,60 +1,50 @@
 
 
-# Plan: Sales Funnel, Opvolging & Omzet Overzicht updates
+# Plan: PlacementsCard + RevenueChart updates on Consultant Dashboard
 
-## 1. Sales Funnel — detail table (`SalesFunnelV2.tsx`)
+## 1. PlacementsCard (`src/components/dashboard/PlacementsCard.tsx`)
 
-### Add "Dealsluiters" column
-- Add `dealsluiters` field to `ConsultantFunnelDataV2` interface in `managerOperationalDataV2.ts` (random 0-7)
-- Add column header "Dealsluiters" in the upper detail table after the funnel steps, before "Drop"
-- Display the value per consultant row
+### Label changes
+- "Totaal" → "Plaatsingen"
+- "Actief" → "Gedetacheerden"
+- "Komende afvallers" → "Afvallers" (in stats section and candidate list header)
+- "Min. Norm" → "Core Lane" (in legend and detail info area, line `183` and `402`/`437`)
 
-### Replace "Profiel" with Recruit CRM icon
-- In the candidate detail sub-table (below main table), replace the `<a>Profiel</a>` text link with a small Recruit CRM brand icon/logo
-- Keep column header as "Profiel" but replace cell content with the icon (a small SVG or image)
-- Use an inline SVG representation of the Recruit CRM logo (blue "R" badge)
+### Add "Starters" metric
+- Add `starters` field to `periodStats` (values 1-4 per period)
+- Display between "Plaatsingen" and "Gedetacheerden" in the stats row (line ~235-248)
+- Style: teal or blue color, same size as Gedetacheerden
 
-## 2. Opvolging — redesign notities (`OpvolgingCard.tsx`)
+### Dynamic "Afvallers" label for historical periods
+- When `selectedPeriod` is historical (not current period 6), change "Afvallers" label to "Afvallers deze periode"
+- Applies to both the stats label (line 246) and the candidate list section header (line 314)
 
-Based on the reference screenshot, notities should look like activity-feed cards with:
-- A colored category badge at top (e.g. "ACQ | Commerciële informatie" in orange)
-- A title/subject line (bold, truncated)
-- Metadata row with date, company, contact person, and creator
-- Body text with key content highlighted in different colors
-- Bordered card layout with subtle left-border accent color
+## 2. RevenueChart DetailedView (`src/components/dashboard/RevenueChart.tsx`)
 
-Replace the current simple note boxes in the detail panel with this richer card format. Each note gets:
-- `type` badge (colored: ACQ=orange, INT=blue, etc.)
-- `subject` line
-- `body` with colored highlights
-- Footer with timestamp, company, contact, creator metadata
+### Add "Soort plaatsing" column
+- Add `soortPlaatsing` field to `CandidateRecord` with values: `"Detavast" | "W&S" | "Marge Fac"`
+- Add mock data to each candidate
+- Add column in table between "Klant" and "Gefactureerd" with colored badge
 
-Update dummy note data in `getCandidateDetail()` to include these fields.
+### Change "Pot. marge" to status categories
+- Replace the margin percentage calculation with a status field
+- Available categories: `"Actief" | "Afgerond" | "Afgevallen"`
+- Rename column to "Pot. marge" (keep name), show as colored badge
+- Update `CandidateRecord`: replace numeric `marge` with `potMarge: string` status field
+- Remove the summary "Potentiële marge" total from the header (no longer numeric)
 
-## 3. Omzet Overzicht — detail table (`RevenueChartV2.tsx` + `managerRevenueDetailData.ts`)
+### Add side-by-side comparison mode
+- When "Vergelijking" is enabled, instead of adding columns to the existing table, render two tables side by side:
+  - Left table: current period data (shrinks to ~50% width)
+  - Right table: comparison period data (same structure, ~50% width)
+- Use a `flex` layout with `gap-4` between the two tables
+- Each table gets a small header label showing the period (e.g., "W14" / "W13")
+- Remove the inline delta columns from the current approach
 
-### Replace "R&S" with "W&S"
-- In `managerRevenueDetailData.ts`: change type union from `"detachering" | "R&S"` to `"Detavast" | "W&S" | "Marge Fac"`
-- Update data generation to use these three types
-- In `RevenueChartV2.tsx`: update label "Detachering / R&S" to use new types, update badge colors
+## Files changed
 
-### Add "Deal" column
-- Add `dealId` field to `SecondmentRecord` (e.g. "DEAL-1042")
-- Add "Deal" column header in the detail table
-- Display deal ID per row
-
-### Change looptijd units to hours
-- Change `contractedMonths` to `contractedHours` in the interface
-- Update data: generate values like 720, 1200, 1600 etc.
-- Display as `Xh` instead of `Xm` in the table
-
-## Bestanden
-
-| Bestand | Wijziging |
+| File | Changes |
 |---|---|
-| `src/data/managerOperationalDataV2.ts` | Add `dealsluiters` to interface + data |
-| `src/components/manager/v2/SalesFunnelV2.tsx` | Dealsluiters column + Recruit CRM icon |
-| `src/components/manager/OpvolgingCard.tsx` | Redesign notities to activity-feed cards |
-| `src/data/managerRevenueDetailData.ts` | R&S→W&S, add Marge Fac type, dealId, hours |
-| `src/components/manager/v2/RevenueChartV2.tsx` | Updated labels, Deal column, hours display |
+| `src/components/dashboard/PlacementsCard.tsx` | Label renames, add starters, dynamic afvallers text, Core Lane |
+| `src/components/dashboard/RevenueChart.tsx` | Soort plaatsing column, pot. marge categories, side-by-side comparison |
 
