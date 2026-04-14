@@ -146,6 +146,7 @@ export const adLevelData: AdLevelRow[] = [
 ];
 
 export const reverseMatchingSteps: ReverseMatchingRow[] = [
+  { step: "Benaderd", volume: 480 },
   { step: "Vacature Aanvraag", volume: 312 },
   { step: "Voorgesteld", volume: 234 },
   { step: "Op Gesprek", volume: 156 },
