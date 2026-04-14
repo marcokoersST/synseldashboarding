@@ -169,7 +169,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
   const currentTotal = selectedDataPoint?.historical ?? selectedDataPoint?.projected ?? 0;
 
   const versusItems = [
-    { label: "Minimum Norm", yours: currentTotal, theirs: selectedDataPoint?.minimumNorm ?? 0, color: COLORS.minimumNorm },
+    { label: "Core Lane", yours: currentTotal, theirs: selectedDataPoint?.minimumNorm ?? 0, color: COLORS.minimumNorm },
     { label: "Fast Lane", yours: currentTotal, theirs: selectedDataPoint?.fastLane ?? 0, color: COLORS.fastLane },
     { label: "Best Performer", yours: currentTotal, theirs: selectedDataPoint?.bestPerformer ?? selectedDataPoint?.bestPerformerProj ?? 0, color: COLORS.bestPerformer },
   ];
