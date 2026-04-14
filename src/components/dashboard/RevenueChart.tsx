@@ -289,7 +289,6 @@ function DetailedView({ delay }: { delay: number }) {
   const totalOmzet = tableData.reduce((s, c) => s + c.omzet, 0);
   const totalVorige = tableData.reduce((s, c) => s + c.vorige, 0);
   const totalDelta = totalOmzet - totalVorige;
-  const totalDelta = totalOmzet - totalVorige;
   const totalDeltaPct = totalVorige > 0 ? ((totalDelta / totalVorige) * 100) : 0;
   const showCompare = compareEnabled && (filterMode === "custom" || previousKey);
 
@@ -433,65 +432,110 @@ function DetailedView({ delay }: { delay: number }) {
         )}
       </div>
 
-      {/* Candidate table */}
-      <div className="overflow-auto rounded-lg border border-border">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="bg-secondary/30 border-b border-border">
-              <th className="text-left py-2 px-3 font-medium text-muted-foreground">Kandidaat</th>
-              <th className="text-left py-2 px-3 font-medium text-muted-foreground">Klant</th>
-              <th className="text-right py-2 px-3 font-medium text-muted-foreground">Gefactureerd</th>
-              <th className="text-right py-2 px-3 font-medium text-muted-foreground">Pot. marge</th>
-              {showCompare && previousKey && (
-                <>
-                  <th className="text-right py-2 px-3 font-medium text-muted-foreground">Vorige ({previousKey})</th>
-                  <th className="text-right py-2 px-3 font-medium text-muted-foreground">Δ</th>
-                </>
-              )}
-              <th className="text-center py-2 px-3 font-medium text-muted-foreground">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tableData.map((row, i) => {
-              const delta = row.omzet - row.vorige;
-              const deltaPct = row.vorige > 0 ? ((delta / row.vorige) * 100) : (row.omzet > 0 ? 100 : 0);
-              return (
+      {showCompare && previousKey ? (
+        /* Side-by-side comparison */
+        <div className="flex gap-4">
+          {[
+            { label: currentKey || "Huidig", dataKey: "omzet" as const },
+            { label: previousKey, dataKey: "vorige" as const },
+          ].map((side) => (
+            <div key={side.label} className="flex-1 overflow-auto rounded-lg border border-border">
+              <div className="bg-secondary/40 px-3 py-1.5 border-b border-border">
+                <span className="text-[11px] font-semibold text-foreground">{side.label}</span>
+              </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-secondary/30 border-b border-border">
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Kandidaat</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Klant</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Soort</th>
+                    <th className="text-right py-2 px-3 font-medium text-muted-foreground">Gefactureerd</th>
+                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">Pot. marge</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tableData.map((row, i) => {
+                    const value = side.dataKey === "omzet" ? row.omzet : row.vorige;
+                    return (
+                      <tr key={i} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                        <td className="py-2 px-3 font-medium text-foreground">{row.kandidaat}</td>
+                        <td className="py-2 px-3 text-muted-foreground">{row.klant}</td>
+                        <td className="py-2 px-3">
+                          <span className={cn(
+                            "text-[10px] font-medium px-2 py-0.5 rounded-full",
+                            row.soortPlaatsing === "Detavast" ? "bg-primary/15 text-primary" :
+                            row.soortPlaatsing === "W&S" ? "bg-amber-500/15 text-amber-600" :
+                            "bg-violet-500/15 text-violet-600"
+                          )}>
+                            {row.soortPlaatsing}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-right font-semibold text-foreground tabular-nums">
+                          {value > 0 ? `€${value.toLocaleString()}` : "—"}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <span className={cn(
+                            "text-[10px] font-medium px-2 py-0.5 rounded-full",
+                            row.potMarge === "Actief" ? "bg-success/15 text-success" :
+                            row.potMarge === "Afgerond" ? "bg-muted text-muted-foreground" :
+                            "bg-destructive/15 text-destructive"
+                          )}>
+                            {row.potMarge}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* Single table */
+        <div className="overflow-auto rounded-lg border border-border">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-secondary/30 border-b border-border">
+                <th className="text-left py-2 px-3 font-medium text-muted-foreground">Kandidaat</th>
+                <th className="text-left py-2 px-3 font-medium text-muted-foreground">Klant</th>
+                <th className="text-left py-2 px-3 font-medium text-muted-foreground">Soort</th>
+                <th className="text-right py-2 px-3 font-medium text-muted-foreground">Gefactureerd</th>
+                <th className="text-center py-2 px-3 font-medium text-muted-foreground">Pot. marge</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableData.map((row, i) => (
                 <tr key={i} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
                   <td className="py-2 px-3 font-medium text-foreground">{row.kandidaat}</td>
                   <td className="py-2 px-3 text-muted-foreground">{row.klant}</td>
+                  <td className="py-2 px-3">
+                    <span className={cn(
+                      "text-[10px] font-medium px-2 py-0.5 rounded-full",
+                      row.soortPlaatsing === "Detavast" ? "bg-primary/15 text-primary" :
+                      row.soortPlaatsing === "W&S" ? "bg-amber-500/15 text-amber-600" :
+                      "bg-violet-500/15 text-violet-600"
+                    )}>
+                      {row.soortPlaatsing}
+                    </span>
+                  </td>
                   <td className="py-2 px-3 text-right font-semibold text-foreground tabular-nums">€{row.omzet.toLocaleString()}</td>
-                  <td className="py-2 px-3 text-right text-foreground tabular-nums">€{row.potMarge.toLocaleString()}</td>
-                  {showCompare && previousKey && (
-                    <>
-                      <td className="py-2 px-3 text-right text-muted-foreground tabular-nums">
-                        {row.vorige > 0 ? `€${row.vorige.toLocaleString()}` : "—"}
-                      </td>
-                      <td className="py-2 px-3 text-right">
-                        <span className={cn(
-                          "text-[10px] font-medium px-1.5 py-0.5 rounded-full tabular-nums",
-                          delta > 0 ? "bg-success/15 text-success" : delta < 0 ? "bg-destructive/15 text-destructive" : "bg-secondary text-muted-foreground"
-                        )}>
-                          {delta > 0 ? "+" : ""}{deltaPct.toFixed(0)}%
-                        </span>
-                      </td>
-                    </>
-                  )}
                   <td className="py-2 px-3 text-center">
                     <span className={cn(
                       "text-[10px] font-medium px-2 py-0.5 rounded-full",
-                      row.status === "Actief" ? "bg-success/15 text-success" :
-                      row.status === "Afgerond" ? "bg-muted text-muted-foreground" :
-                      "bg-primary/15 text-primary"
+                      row.potMarge === "Actief" ? "bg-success/15 text-success" :
+                      row.potMarge === "Afgerond" ? "bg-muted text-muted-foreground" :
+                      "bg-destructive/15 text-destructive"
                     )}>
-                      {row.status}
+                      {row.potMarge}
                     </span>
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
