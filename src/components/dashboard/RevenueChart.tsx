@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Input } from "@/components/ui/input";
+
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
@@ -91,10 +91,6 @@ const candidates: CandidateRecord[] = [
 const availableWeeks = ["W12", "W13", "W14", "W15"];
 const availablePeriodes = ["P4", "P5", "P6"];
 
-function getPreviousKey(key: string, list: string[]): string | null {
-  const idx = list.indexOf(key);
-  return idx > 0 ? list[idx - 1] : null;
-}
 
 // ─── Chart tooltip ───
 interface CustomTooltipProps {
@@ -292,7 +288,7 @@ function DetailedView({ delay }: { delay: number }) {
 
   const totalOmzet = tableData.reduce((s, c) => s + c.omzet, 0);
   const totalVorige = tableData.reduce((s, c) => s + c.vorige, 0);
-  const totalMarge = tableData.reduce((s, c) => s + c.potMarge, 0);
+  const totalDelta = totalOmzet - totalVorige;
   const totalDelta = totalOmzet - totalVorige;
   const totalDeltaPct = totalVorige > 0 ? ((totalDelta / totalVorige) * 100) : 0;
   const showCompare = compareEnabled && (filterMode === "custom" || previousKey);
@@ -419,10 +415,6 @@ function DetailedView({ delay }: { delay: number }) {
         <div>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Totaal gefactureerd</p>
           <AnimatedNumber value={totalOmzet} delay={delay + 100} className="text-2xl font-bold text-foreground" prefix="€" />
-        </div>
-        <div className="pl-4 border-l border-border">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Potentiële marge</p>
-          <span className="text-lg font-bold text-foreground">€{totalMarge.toLocaleString()}</span>
         </div>
         {showCompare && previousKey && (
           <div className="flex items-center gap-2 pl-4 border-l border-border">
