@@ -20,6 +20,7 @@ import {
   previousPeriodValue,
   deltaPercent,
   aggregatePaidChannels,
+  MARKETING_COLORS,
 } from "@/data/marketingHubData";
 import {
   inflowSourceData,
@@ -291,10 +292,10 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
               <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.3)]} />
               <Tooltip />
               <Legend wrapperStyle={{ fontSize: "12px" }} />
-              <Bar dataKey="inschrijvingen" name="Inschrijvingen" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} barSize={28}>
+              <Bar dataKey="inschrijvingen" name="Inschrijvingen" fill={MARKETING_COLORS[0]} radius={[6, 6, 0, 0]} barSize={28}>
                 <LabelList dataKey="inschrijvingen" position="top" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
               </Bar>
-              <Bar dataKey="acquisitie" name="Acquisitie" fill="hsl(var(--primary) / 0.5)" radius={[6, 6, 0, 0]} barSize={28}>
+              <Bar dataKey="acquisitie" name="Acquisitie" fill={MARKETING_COLORS[1]} radius={[6, 6, 0, 0]} barSize={28}>
                 <LabelList dataKey="acquisitie" position="top" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
               </Bar>
             </BarChart>

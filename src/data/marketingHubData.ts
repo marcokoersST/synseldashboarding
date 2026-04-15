@@ -47,7 +47,18 @@ export interface AdLevelRow {
 export interface ReverseMatchingRow {
   step: string;
   volume: number;
+  units?: { unit: string; volume: number }[];
 }
+
+// High-contrast color palette for Marketing Hub charts
+export const MARKETING_COLORS = [
+  "#B8860B", // dark gold
+  "#0E7C6B", // teal
+  "#2563EB", // blue
+  "#E85D04", // orange
+  "#7C3AED", // violet
+  "#DC2626", // red
+];
 
 // ──────────────────── Demo data ────────────────────
 
@@ -146,12 +157,12 @@ export const adLevelData: AdLevelRow[] = [
 ];
 
 export const reverseMatchingSteps: ReverseMatchingRow[] = [
-  { step: "Benaderd", volume: 480 },
-  { step: "Vacature Aanvraag", volume: 312 },
-  { step: "Voorgesteld", volume: 234 },
-  { step: "Op Gesprek", volume: 156 },
-  { step: "2e Gesprek", volume: 89 },
-  { step: "Geplaatst", volume: 52 },
+  { step: "Benaderd", volume: 480, units: [{ unit: "Operators", volume: 210 }, { unit: "Monteurs", volume: 165 }, { unit: "Engineering", volume: 105 }] },
+  { step: "Vacature Aanvraag", volume: 312, units: [{ unit: "Operators", volume: 138 }, { unit: "Monteurs", volume: 104 }, { unit: "Engineering", volume: 70 }] },
+  { step: "Voorgesteld", volume: 234, units: [{ unit: "Operators", volume: 102 }, { unit: "Monteurs", volume: 78 }, { unit: "Engineering", volume: 54 }] },
+  { step: "Op Gesprek", volume: 156, units: [{ unit: "Operators", volume: 68 }, { unit: "Monteurs", volume: 52 }, { unit: "Engineering", volume: 36 }] },
+  { step: "2e Gesprek", volume: 89, units: [{ unit: "Operators", volume: 39 }, { unit: "Monteurs", volume: 30 }, { unit: "Engineering", volume: 20 }] },
+  { step: "Geplaatst", volume: 52, units: [{ unit: "Operators", volume: 23 }, { unit: "Monteurs", volume: 17 }, { unit: "Engineering", volume: 12 }] },
 ];
 
 // ──────────────────── Aggregation helpers ────────────────────
