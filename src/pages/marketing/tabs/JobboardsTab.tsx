@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import DeltaCell from "@/components/marketing/DeltaCell";
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
-import { jobboardData, aggregateByUnit, totals as calcTotals, formatCurrency, deltaPercent } from "@/data/marketingHubData";
+import { jobboardData, aggregateByUnit, totals as calcTotals, formatCurrency, deltaPercent, MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 
 interface Props {
@@ -204,8 +204,8 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
               <YAxis type="category" dataKey="unit" width={100} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="registrations" name="Registrations" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-              <Bar dataKey="acquisitions" name="Acquisitions" fill="hsl(var(--primary) / 0.5)" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="registrations" name="Registrations" fill={MARKETING_COLORS[0]} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="acquisitions" name="Acquisitions" fill={MARKETING_COLORS[1]} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

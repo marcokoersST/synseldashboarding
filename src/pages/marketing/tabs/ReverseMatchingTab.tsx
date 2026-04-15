@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronDown, ChevronRight } from "lucide-react";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
-import { reverseMatchingSteps, deltaPercent } from "@/data/marketingHubData";
+import { reverseMatchingSteps, deltaPercent, MARKETING_COLORS } from "@/data/marketingHubData";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import type { DateRange } from "react-day-picker";
 
@@ -12,17 +12,14 @@ interface Props {
   deltaMode?: string;
 }
 
-const COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--primary) / 0.8)",
-  "hsl(var(--primary) / 0.6)",
-  "hsl(var(--primary) / 0.4)",
-  "hsl(var(--primary) / 0.25)",
-];
-
 const ReverseMatchingTab = ({ dateRange, compareRange }: Props) => {
   const steps = reverseMatchingSteps;
   const compareText = getCompareDisplayText(compareRange);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  const toggle = (step: string) => {
+    setExpanded(prev => { const n = new Set(prev); n.has(step) ? n.delete(step) : n.add(step); return n; });
+  };
 
   const conversions = useMemo(() => {
     return steps.map((step, i) => {
@@ -83,13 +80,41 @@ const ReverseMatchingTab = ({ dateRange, compareRange }: Props) => {
               </tr>
             </thead>
             <tbody>
-              {conversions.map((row) => (
-                <tr key={row.step} className="border-b hover:bg-muted/50">
-                  <td className="p-4 font-medium">{row.step}</td>
-                  <td className="p-4">{row.volume.toLocaleString("nl-NL")}</td>
-                  <td className="p-4">{row.conversionPct ? `${row.conversionPct}%` : "–"}</td>
-                </tr>
-              ))}
+              {conversions.map((row, i) => {
+                const isOpen = expanded.has(row.step);
+                const hasUnits = row.units && row.units.length > 0;
+                return (
+                  <React.Fragment key={row.step}>
+                    <tr
+                      className={`border-b hover:bg-muted/50 ${hasUnits ? "cursor-pointer" : ""}`}
+                      onClick={() => hasUnits && toggle(row.step)}
+                    >
+                      <td className="p-4 font-medium">
+                        <div className="flex items-center gap-1">
+                          {hasUnits && (isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />)}
+                          {row.step}
+                        </div>
+                      </td>
+                      <td className="p-4">{row.volume.toLocaleString("nl-NL")}</td>
+                      <td className="p-4">{row.conversionPct ? `${row.conversionPct}%` : "–"}</td>
+                    </tr>
+                    {isOpen && row.units?.map((unit) => {
+                      const prevStep = i > 0 ? steps[i - 1] : null;
+                      const prevUnitVolume = prevStep?.units?.find(u => u.unit === unit.unit)?.volume;
+                      const unitConv = prevUnitVolume && prevUnitVolume > 0
+                        ? ((unit.volume / prevUnitVolume) * 100).toFixed(1)
+                        : null;
+                      return (
+                        <tr key={`${row.step}-${unit.unit}`} className="border-b bg-muted/20">
+                          <td className="p-4 pl-10 text-muted-foreground">{unit.unit}</td>
+                          <td className="p-4">{unit.volume.toLocaleString("nl-NL")}</td>
+                          <td className="p-4">{unitConv ? `${unitConv}%` : "–"}</td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </CardContent>
@@ -106,7 +131,7 @@ const ReverseMatchingTab = ({ dateRange, compareRange }: Props) => {
               <Tooltip />
               <Bar dataKey="volume" name="Volume" radius={[4, 4, 0, 0]}>
                 {steps.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  <Cell key={i} fill={MARKETING_COLORS[i % MARKETING_COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
