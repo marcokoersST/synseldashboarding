@@ -75,8 +75,8 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
     { key: "source", label: "Bron", show: true },
     { key: "conversions", label: "Conversions", show: true },
     { key: "registrations", label: "Inschrijven", show: true },
-    { key: "cpr", label: "CPR", show: showConversion },
-    { key: "cpc", label: "Cost/Conv.", show: showConversion },
+    { key: "cpr", label: "CPA", show: showConversion },
+    { key: "cpc", label: "Cost/Inschrijven.", show: showConversion },
     { key: "spend", label: "Spend", show: true },
   ];
   const visibleCols = columns.filter(c => c.show);
