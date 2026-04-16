@@ -62,8 +62,8 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
     const prevCpr = prev.registrations > 0 ? prev.spend / prev.registrations : 0;
     const items: { label: string; value: number; delta: number | null; format?: string; invertDelta?: boolean }[] = [
       { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
-      { label: "Registrations", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
-      { label: "CPR", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency", invertDelta: true },
+      { label: "Inschrijven", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
+      { label: "Cost per Inschrijving", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency", invertDelta: true },
     ];
     return items;
   }, [dateRange, compareRange, grand, grandCpr]);
@@ -78,11 +78,11 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
   };
 
   const colHeaders: { key: SortKey; label: string; show: boolean }[] = [
-    { key: "name", label: "Jobboard / Categorie", show: true },
+    { key: "name", label: "Bron / Campaign", show: true },
     { key: "conversions", label: "Conversions", show: true },
-    { key: "registrations", label: "Registrations", show: true },
-    { key: "cpr", label: "CPR", show: showConversion },
-    { key: "cpr", label: "Cost/Conv.", show: showConversion },
+    { key: "registrations", label: "Inschrijven", show: true },
+    { key: "cpr", label: "CPA", show: showConversion },
+    { key: "cpr", label: "Cost/Inschrijven.", show: showConversion },
     { key: "spend", label: "Spend", show: true },
   ];
   const visCols = colHeaders.filter(c => c.show);
@@ -116,7 +116,7 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
 
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Jobboards per categorie</CardTitle>
+          <CardTitle className="text-base">Jobboards / Bron</CardTitle>
           <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
             <Switch checked={showConversion} onCheckedChange={setShowConversion} />
             Show conversion
@@ -204,8 +204,8 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
               <YAxis type="category" dataKey="unit" width={100} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="registrations" name="Registrations" fill={MARKETING_COLORS[0]} radius={[0, 4, 4, 0]} />
-              <Bar dataKey="acquisitions" name="Acquisitions" fill={MARKETING_COLORS[1]} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="registrations" name="Inschrijven" fill={MARKETING_COLORS[0]} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="acquisitions" name="Cost per Inschrijving" fill={MARKETING_COLORS[1]} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
