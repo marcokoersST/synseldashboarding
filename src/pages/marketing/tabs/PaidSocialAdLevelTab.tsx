@@ -62,8 +62,8 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
     const prevCpr = prev.registrations > 0 ? prev.spend / prev.registrations : 0;
     const items: { label: string; value: number; delta: number | null; format?: string; invertDelta?: boolean }[] = [
       { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
-      { label: "Registrations", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
-      { label: "CPR", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency", invertDelta: true },
+      { label: "Inschrijven", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
+      { label: "Cost per Inschrijving", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency", invertDelta: true },
     ];
     return items;
   }, [dateRange, compareRange, grand, grandCpr]);
@@ -106,7 +106,7 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
 
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Ad Types per platform</CardTitle>
+          <CardTitle className="text-base">Pail Social / Ad</CardTitle>
           <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
             <Switch checked={showConversion} onCheckedChange={setShowConversion} />
             Show conversion
@@ -118,10 +118,10 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
               <thead className="[&_tr]:border-b">
                 <tr className="border-b transition-colors">
                   {[
-                    { label: "Ad Type / Platform", key: "name" as SortKey },
+                    { label: "Ad / Bron", key: "name" as SortKey },
                     { label: "Conversions", key: "conversions" as SortKey },
-                    { label: "Registrations", key: "registrations" as SortKey },
-                    ...(showConversion ? [{ label: "CPR", key: "cpr" as SortKey }, { label: "Cost/Conv.", key: "cpr" as SortKey }] : []),
+                    { label: "Inschrijven", key: "registrations" as SortKey },
+                    ...(showConversion ? [{ label: "CPA", key: "cpr" as SortKey }, { label: "Cost/Inschrijven", key: "cpr" as SortKey }] : []),
                     { label: "Spend", key: "spend" as SortKey },
                   ].map((col) => (
                     <th key={col.label} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer select-none sticky top-0 bg-background z-10" onClick={() => toggleSort(col.key)}>
@@ -200,7 +200,7 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
               <YAxis type="category" dataKey="unit" width={100} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="registrations" name="Registrations" fill={MARKETING_COLORS[0]} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="registrations" name="Cost per Inschrijving" fill={MARKETING_COLORS[0]} radius={[0, 4, 4, 0]} />
               <Bar dataKey="acquisitions" name="Acquisitions" fill={MARKETING_COLORS[1]} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
