@@ -1,54 +1,44 @@
 
 
-# Plan: Marketing Hub — Higher-contrast colors + Reverse Matching expandable rows
+# Plan: Per Unit / Per Functiegroep toggle + Progress bars on KPI cards
 
-## 1. Higher-contrast color palette for Marketing Hub charts
+## Overview
+Two changes across 4 tabs (Paid Channels, Jobboards, Paid Social, Paid Social Ad Level):
+1. Add a toggle on the bottom chart card to switch between "Per Unit" and "Per Functiegroep" views
+2. Add a progress bar to each of the 3 KPI metric cards showing how far current values are vs. previous period
 
-Currently all charts use `hsl(var(--primary))` with opacity variants (0.8, 0.6, 0.4, 0.25), resulting in low contrast between bars/series. Replace with a distinct multi-hue palette that still connects to the existing warm/teal brand tones.
+## 1. Data layer (`src/data/marketingHubData.ts`)
 
-### New palette (used across all Marketing tabs)
-Create a shared `MARKETING_COLORS` constant in `src/data/marketingHubData.ts`:
+- Add a new `aggregateByFunctiegroep` helper that groups data by the segment/category field instead of unit. Each dataset already has this: `category` (jobboards), `segment` (paid social, ad level). For paid channels, derive from source mapping or use a "functiegroep" field.
+- Add a `functiegroep` field to `PaidChannelRow` data (values: "Monteur", "Engineer", "Operator" — derived from existing unit mapping since paid channels don't have a category/segment).
+- Extend `previousPeriodValue` to be usable for progress bar calculations.
 
-```
-#B8860B  (dark gold — primary brand tone)
-#0E7C6B  (teal — existing accent family)
-#2563EB  (blue — high contrast complement)
-#E85D04  (orange — warm accent)
-#7C3AED  (violet — distinct step)
-#DC2626  (red — final step / alert)
-```
+## 2. KPI cards with progress bars (all 4 tabs)
 
-Apply in:
-- `ReverseMatchingTab.tsx` — replace `COLORS` array for funnel bars
-- `PaidChannelsTab.tsx` — chart bar fills
-- `JobboardsTab.tsx` — chart bar fills  
-- `PaidSocialTab.tsx` — chart bar fills
-- `OverviewTab.tsx` — any inline chart colors
+In each tab's KPI card section, add below the delta text:
+- A thin progress bar (h-1.5) showing `current / (current + |delta_amount|)` ratio — visually representing how current period compares to previous
+- Use emerald for positive trend, red for negative
+- The bar shows percentage of current vs previous (e.g., if current is 120 and previous was 100, bar fills to ~83% capacity with label)
+- Add small text beneath: e.g., "85% van vorige week"
 
-## 2. Reverse Matching — expandable per-unit rows
+Implementation: use a simple `<div>` progress bar (no need for Radix Progress), colored with the same trend color.
 
-Add fold-out rows to the funnel table (same pattern as Jobboards):
+## 3. Per Unit / Per Functiegroep toggle (all 4 tabs)
 
-### Data changes (`marketingHubData.ts`)
-- Extend `ReverseMatchingRow` interface: add optional `units` array with `{ unit: string; volume: number }[]`
-- Add per-unit breakdown data to each step (Operators, Monteurs, Engineering)
-
-### Component changes (`ReverseMatchingTab.tsx`)
-- Add `expanded` state (`Set<string>`) tracking which steps are open
-- Add chevron icon (ChevronDown/ChevronRight) to step name column
-- On click, toggle expanded state
-- When expanded, render child rows (indented, muted background) showing per-unit volumes and step-to-step conversions
-- Follow exact same pattern as `JobboardsTab.tsx` (Fragment wrapper, toggle function, bg-muted/20 child rows, pl-10 indent)
+In each tab's bottom chart card:
+- Add state: `const [chartView, setChartView] = useState<"unit" | "functiegroep">("unit")`
+- Add toggle buttons (two small pills/buttons) in the CardHeader next to the title
+- When "Per Unit" is selected: show current `aggregateByUnit` data (Operators, Monteurs, Engineering)
+- When "Per Functiegroep" is selected: show `aggregateByFunctiegroep` data (Monteur, Engineer, Operator, General, etc.)
+- Chart structure stays the same, only the data changes
 
 ## Files changed
 
 | File | Changes |
 |---|---|
-| `src/data/marketingHubData.ts` | Add `MARKETING_COLORS`, extend `ReverseMatchingRow` with unit breakdown data |
-| `src/pages/marketing/tabs/ReverseMatchingTab.tsx` | Use new colors, add expandable per-unit rows |
-| `src/pages/marketing/tabs/PaidChannelsTab.tsx` | Use new color palette for charts |
-| `src/pages/marketing/tabs/JobboardsTab.tsx` | Use new color palette for charts |
-| `src/pages/marketing/tabs/PaidSocialTab.tsx` | Use new color palette for charts |
-| `src/pages/marketing/tabs/PaidSocialAdLevelTab.tsx` | Use new color palette for charts |
-| `src/pages/marketing/tabs/OverviewTab.tsx` | Use new color palette for charts |
+| `src/data/marketingHubData.ts` | Add `aggregateByFunctiegroep` helper for each data type |
+| `src/pages/marketing/tabs/PaidChannelsTab.tsx` | Add chartView toggle + progress bars on KPI cards |
+| `src/pages/marketing/tabs/JobboardsTab.tsx` | Add chartView toggle + progress bars on KPI cards |
+| `src/pages/marketing/tabs/PaidSocialTab.tsx` | Add chartView toggle + progress bars on KPI cards |
+| `src/pages/marketing/tabs/PaidSocialAdLevelTab.tsx` | Add chartView toggle + progress bars on KPI cards |
 
