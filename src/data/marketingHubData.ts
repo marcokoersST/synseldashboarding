@@ -15,6 +15,7 @@ export interface PaidChannelRow {
   registrations: number;
   spend: number;
   unit: "Operators" | "Monteurs" | "Engineering";
+  functiegroep: string;
 }
 
 export interface JobboardRow {
@@ -42,6 +43,7 @@ export interface AdLevelRow {
   registrations: number;
   spend: number;
   unit: "Operators" | "Monteurs" | "Engineering";
+  functiegroep: string;
 }
 
 export interface ReverseMatchingRow {
