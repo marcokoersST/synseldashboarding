@@ -62,8 +62,8 @@ const PaidSocialTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props
     const prevCpr = prev.registrations > 0 ? prev.spend / prev.registrations : 0;
     const items: { label: string; value: number; delta: number | null; format?: string; invertDelta?: boolean }[] = [
       { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
-      { label: "Registrations", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
-      { label: "CPR", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency", invertDelta: true },
+      { label: "Inschrijven", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
+      { label: "Cost per Inschrijving", value: grandCpr, delta: deltaPercent(grandCpr, prevCpr), format: "currency", invertDelta: true },
     ];
     return items;
   }, [dateRange, compareRange, grand, grandCpr]);
