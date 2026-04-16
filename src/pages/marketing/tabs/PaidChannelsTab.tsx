@@ -10,6 +10,7 @@ import {
   paidChannelData,
   aggregatePaidChannels,
   aggregateByUnit,
+  aggregateByFunctiegroep,
   totals as calcTotals,
   formatCurrency,
   deltaPercent,
@@ -29,6 +30,7 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
   const [sortKey, setSortKey] = useState<SortKey>("registrations");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [showConversion, setShowConversion] = useState(false);
+  const [chartView, setChartView] = useState<"unit" | "functiegroep">("unit");
 
   const rows = useMemo(() => {
     const agg = aggregatePaidChannels(paidChannelData).map(r => ({
@@ -45,6 +47,7 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
 
   const grand = useMemo(() => calcTotals(paidChannelData), []);
   const unitChart = useMemo(() => aggregateByUnit(paidChannelData), []);
+  const fgChart = useMemo(() => aggregateByFunctiegroep(paidChannelData), []);
   const grandCpr = grand.registrations > 0 ? grand.spend / grand.registrations : 0;
   const grandCpc = grand.conversions > 0 ? grand.spend / grand.conversions : 0;
   const compareText = getCompareDisplayText(compareRange);
@@ -57,10 +60,10 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
     };
     const cpr = grandCpr;
     const prevCpr = prev.registrations > 0 ? prev.spend / prev.registrations : 0;
-    const items: { label: string; value: number; delta: number | null; format?: string; invertDelta?: boolean }[] = [
-      { label: "Conversions", value: grand.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
-      { label: "Inschrijven", value: grand.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
-      { label: "Cost per Inschrijving", value: cpr, delta: deltaPercent(cpr, prevCpr), format: "currency", invertDelta: true },
+    const items: { label: string; value: number; prevValue: number; delta: number | null; format?: string; invertDelta?: boolean }[] = [
+      { label: "Conversions", value: grand.conversions, prevValue: prev.conversions, delta: deltaPercent(grand.conversions, prev.conversions) },
+      { label: "Inschrijven", value: grand.registrations, prevValue: prev.registrations, delta: deltaPercent(grand.registrations, prev.registrations) },
+      { label: "Cost per Inschrijving", value: cpr, prevValue: prevCpr, delta: deltaPercent(cpr, prevCpr), format: "currency", invertDelta: true },
     ];
     return items;
   }, [dateRange, compareRange, grand, grandCpr]);
@@ -85,11 +88,15 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
     <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} />
   );
 
+  const chartData = chartView === "unit" ? unitChart : fgChart;
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
         {kpis.map((kpi) => {
           const isPos = kpi.invertDelta ? (kpi.delta !== null && kpi.delta < 0) : (kpi.delta !== null && kpi.delta > 0);
+          const ratio = kpi.prevValue > 0 ? Math.min((kpi.value / kpi.prevValue) * 100, 150) : 100;
+          const ratioLabel = kpi.prevValue > 0 ? Math.round((kpi.value / kpi.prevValue) * 100) : 100;
           return (
             <Card key={kpi.label}>
               <CardContent className="p-5">
@@ -102,6 +109,15 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
                     <span className="text-muted-foreground ml-1">{compareText}</span>
                   </div>
                 )}
+                <div className="mt-2">
+                  <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${isPos ? "bg-emerald-500" : "bg-red-400"}`}
+                      style={{ width: `${Math.min(ratio / 1.5 * 100 / 100, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{ratioLabel}% van vorige week</p>
+                </div>
               </CardContent>
             </Card>
           );
@@ -163,10 +179,16 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
       </Card>
 
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Per Unit</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">{chartView === "unit" ? "Per Unit" : "Per Functiegroep"}</CardTitle>
+          <div className="flex gap-1">
+            <button onClick={() => setChartView("unit")} className={`px-3 py-1 text-xs rounded-full transition-colors ${chartView === "unit" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>Per Unit</button>
+            <button onClick={() => setChartView("functiegroep")} className={`px-3 py-1 text-xs rounded-full transition-colors ${chartView === "functiegroep" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>Per Functiegroep</button>
+          </div>
+        </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={unitChart} layout="vertical" margin={{ left: 20 }}>
+            <BarChart data={chartData} layout="vertical" margin={{ left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.3)]} />
               <YAxis type="category" dataKey="unit" width={100} />
