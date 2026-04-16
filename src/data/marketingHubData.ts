@@ -15,6 +15,7 @@ export interface PaidChannelRow {
   registrations: number;
   spend: number;
   unit: "Operators" | "Monteurs" | "Engineering";
+  functiegroep: string;
 }
 
 export interface JobboardRow {
@@ -42,6 +43,7 @@ export interface AdLevelRow {
   registrations: number;
   spend: number;
   unit: "Operators" | "Monteurs" | "Engineering";
+  functiegroep: string;
 }
 
 export interface ReverseMatchingRow {
@@ -62,31 +64,37 @@ export const MARKETING_COLORS = [
 
 // ──────────────────── Demo data ────────────────────
 
+const unitToFG: Record<string, string> = {
+  Operators: "Operator",
+  Monteurs: "Monteur",
+  Engineering: "Engineer",
+};
+
 export const paidChannelData: PaidChannelRow[] = [
-  { source: "Indeed", conversions: 142, registrations: 98, spend: 4200, unit: "Operators" },
-  { source: "Indeed", conversions: 118, registrations: 82, spend: 3600, unit: "Monteurs" },
-  { source: "Indeed", conversions: 67, registrations: 45, spend: 2100, unit: "Engineering" },
-  { source: "Werkzoeken.nl", conversions: 89, registrations: 61, spend: 2800, unit: "Operators" },
-  { source: "Werkzoeken.nl", conversions: 72, registrations: 48, spend: 2200, unit: "Monteurs" },
-  { source: "Werkzoeken.nl", conversions: 34, registrations: 22, spend: 1400, unit: "Engineering" },
-  { source: "Technicus.nl", conversions: 45, registrations: 31, spend: 1500, unit: "Engineering" },
-  { source: "Technicus.nl", conversions: 28, registrations: 18, spend: 900, unit: "Monteurs" },
-  { source: "Technicus.nl", conversions: 15, registrations: 10, spend: 600, unit: "Operators" },
-  { source: "Jobster", conversions: 52, registrations: 36, spend: 1800, unit: "Operators" },
-  { source: "Jobster", conversions: 38, registrations: 25, spend: 1300, unit: "Monteurs" },
-  { source: "Jobster", conversions: 21, registrations: 14, spend: 800, unit: "Engineering" },
-  { source: "Meta", conversions: 96, registrations: 64, spend: 3200, unit: "Operators" },
-  { source: "Meta", conversions: 78, registrations: 52, spend: 2600, unit: "Monteurs" },
-  { source: "Meta", conversions: 43, registrations: 28, spend: 1600, unit: "Engineering" },
-  { source: "Google Ads", conversions: 110, registrations: 74, spend: 3800, unit: "Operators" },
-  { source: "Google Ads", conversions: 85, registrations: 56, spend: 2900, unit: "Monteurs" },
-  { source: "Google Ads", conversions: 55, registrations: 37, spend: 2000, unit: "Engineering" },
-  { source: "TikTok", conversions: 64, registrations: 42, spend: 2100, unit: "Operators" },
-  { source: "TikTok", conversions: 48, registrations: 31, spend: 1600, unit: "Monteurs" },
-  { source: "TikTok", conversions: 22, registrations: 14, spend: 900, unit: "Engineering" },
-  { source: "Bing", conversions: 31, registrations: 20, spend: 1100, unit: "Operators" },
-  { source: "Bing", conversions: 24, registrations: 15, spend: 850, unit: "Monteurs" },
-  { source: "Bing", conversions: 12, registrations: 8, spend: 500, unit: "Engineering" },
+  { source: "Indeed", conversions: 142, registrations: 98, spend: 4200, unit: "Operators", functiegroep: "Operator" },
+  { source: "Indeed", conversions: 118, registrations: 82, spend: 3600, unit: "Monteurs", functiegroep: "Monteur" },
+  { source: "Indeed", conversions: 67, registrations: 45, spend: 2100, unit: "Engineering", functiegroep: "Engineer" },
+  { source: "Werkzoeken.nl", conversions: 89, registrations: 61, spend: 2800, unit: "Operators", functiegroep: "Operator" },
+  { source: "Werkzoeken.nl", conversions: 72, registrations: 48, spend: 2200, unit: "Monteurs", functiegroep: "Monteur" },
+  { source: "Werkzoeken.nl", conversions: 34, registrations: 22, spend: 1400, unit: "Engineering", functiegroep: "Engineer" },
+  { source: "Technicus.nl", conversions: 45, registrations: 31, spend: 1500, unit: "Engineering", functiegroep: "Engineer" },
+  { source: "Technicus.nl", conversions: 28, registrations: 18, spend: 900, unit: "Monteurs", functiegroep: "Monteur" },
+  { source: "Technicus.nl", conversions: 15, registrations: 10, spend: 600, unit: "Operators", functiegroep: "Operator" },
+  { source: "Jobster", conversions: 52, registrations: 36, spend: 1800, unit: "Operators", functiegroep: "Operator" },
+  { source: "Jobster", conversions: 38, registrations: 25, spend: 1300, unit: "Monteurs", functiegroep: "Monteur" },
+  { source: "Jobster", conversions: 21, registrations: 14, spend: 800, unit: "Engineering", functiegroep: "Engineer" },
+  { source: "Meta", conversions: 96, registrations: 64, spend: 3200, unit: "Operators", functiegroep: "Operator" },
+  { source: "Meta", conversions: 78, registrations: 52, spend: 2600, unit: "Monteurs", functiegroep: "Monteur" },
+  { source: "Meta", conversions: 43, registrations: 28, spend: 1600, unit: "Engineering", functiegroep: "Engineer" },
+  { source: "Google Ads", conversions: 110, registrations: 74, spend: 3800, unit: "Operators", functiegroep: "Operator" },
+  { source: "Google Ads", conversions: 85, registrations: 56, spend: 2900, unit: "Monteurs", functiegroep: "Monteur" },
+  { source: "Google Ads", conversions: 55, registrations: 37, spend: 2000, unit: "Engineering", functiegroep: "Engineer" },
+  { source: "TikTok", conversions: 64, registrations: 42, spend: 2100, unit: "Operators", functiegroep: "Operator" },
+  { source: "TikTok", conversions: 48, registrations: 31, spend: 1600, unit: "Monteurs", functiegroep: "Monteur" },
+  { source: "TikTok", conversions: 22, registrations: 14, spend: 900, unit: "Engineering", functiegroep: "Engineer" },
+  { source: "Bing", conversions: 31, registrations: 20, spend: 1100, unit: "Operators", functiegroep: "Operator" },
+  { source: "Bing", conversions: 24, registrations: 15, spend: 850, unit: "Monteurs", functiegroep: "Monteur" },
+  { source: "Bing", conversions: 12, registrations: 8, spend: 500, unit: "Engineering", functiegroep: "Engineer" },
 ];
 
 export const jobboardData: JobboardRow[] = [
@@ -135,25 +143,25 @@ export const paidSocialData: PaidSocialRow[] = [
 
 export const adLevelData: AdLevelRow[] = [
   // Go Video
-  { adType: "Go Video", platform: "Facebook", conversions: 62, registrations: 41, spend: 2100, unit: "Operators" },
-  { adType: "Go Video", platform: "Google Ads", conversions: 48, registrations: 32, spend: 1600, unit: "Monteurs" },
-  { adType: "Go Video", platform: "TikTok", conversions: 55, registrations: 36, spend: 1800, unit: "Operators" },
-  { adType: "Go Video", platform: "Bing", conversions: 18, registrations: 12, spend: 650, unit: "Engineering" },
+  { adType: "Go Video", platform: "Facebook", conversions: 62, registrations: 41, spend: 2100, unit: "Operators", functiegroep: "Operator" },
+  { adType: "Go Video", platform: "Google Ads", conversions: 48, registrations: 32, spend: 1600, unit: "Monteurs", functiegroep: "Monteur" },
+  { adType: "Go Video", platform: "TikTok", conversions: 55, registrations: 36, spend: 1800, unit: "Operators", functiegroep: "Operator" },
+  { adType: "Go Video", platform: "Bing", conversions: 18, registrations: 12, spend: 650, unit: "Engineering", functiegroep: "Engineer" },
   // Go Static
-  { adType: "Go Static", platform: "Facebook", conversions: 38, registrations: 25, spend: 1300, unit: "Monteurs" },
-  { adType: "Go Static", platform: "Google Ads", conversions: 52, registrations: 35, spend: 1800, unit: "Operators" },
-  { adType: "Go Static", platform: "TikTok", conversions: 22, registrations: 14, spend: 700, unit: "Engineering" },
-  { adType: "Go Static", platform: "Bing", conversions: 14, registrations: 9, spend: 450, unit: "Monteurs" },
+  { adType: "Go Static", platform: "Facebook", conversions: 38, registrations: 25, spend: 1300, unit: "Monteurs", functiegroep: "Monteur" },
+  { adType: "Go Static", platform: "Google Ads", conversions: 52, registrations: 35, spend: 1800, unit: "Operators", functiegroep: "Operator" },
+  { adType: "Go Static", platform: "TikTok", conversions: 22, registrations: 14, spend: 700, unit: "Engineering", functiegroep: "Engineer" },
+  { adType: "Go Static", platform: "Bing", conversions: 14, registrations: 9, spend: 450, unit: "Monteurs", functiegroep: "Monteur" },
   // Frame Animation Static
-  { adType: "Frame Animation Static", platform: "Facebook", conversions: 28, registrations: 18, spend: 900, unit: "Engineering" },
-  { adType: "Frame Animation Static", platform: "Google Ads", conversions: 35, registrations: 23, spend: 1200, unit: "Operators" },
-  { adType: "Frame Animation Static", platform: "TikTok", conversions: 15, registrations: 10, spend: 500, unit: "Monteurs" },
-  { adType: "Frame Animation Static", platform: "Bing", conversions: 8, registrations: 5, spend: 300, unit: "Engineering" },
+  { adType: "Frame Animation Static", platform: "Facebook", conversions: 28, registrations: 18, spend: 900, unit: "Engineering", functiegroep: "Engineer" },
+  { adType: "Frame Animation Static", platform: "Google Ads", conversions: 35, registrations: 23, spend: 1200, unit: "Operators", functiegroep: "Operator" },
+  { adType: "Frame Animation Static", platform: "TikTok", conversions: 15, registrations: 10, spend: 500, unit: "Monteurs", functiegroep: "Monteur" },
+  { adType: "Frame Animation Static", platform: "Bing", conversions: 8, registrations: 5, spend: 300, unit: "Engineering", functiegroep: "Engineer" },
   // Frame Animation Video
-  { adType: "Frame Animation Video", platform: "Facebook", conversions: 45, registrations: 30, spend: 1500, unit: "Operators" },
-  { adType: "Frame Animation Video", platform: "Google Ads", conversions: 38, registrations: 25, spend: 1300, unit: "Monteurs" },
-  { adType: "Frame Animation Video", platform: "TikTok", conversions: 32, registrations: 21, spend: 1100, unit: "Engineering" },
-  { adType: "Frame Animation Video", platform: "Bing", conversions: 12, registrations: 8, spend: 400, unit: "Operators" },
+  { adType: "Frame Animation Video", platform: "Facebook", conversions: 45, registrations: 30, spend: 1500, unit: "Operators", functiegroep: "Operator" },
+  { adType: "Frame Animation Video", platform: "Google Ads", conversions: 38, registrations: 25, spend: 1300, unit: "Monteurs", functiegroep: "Monteur" },
+  { adType: "Frame Animation Video", platform: "TikTok", conversions: 32, registrations: 21, spend: 1100, unit: "Engineering", functiegroep: "Engineer" },
+  { adType: "Frame Animation Video", platform: "Bing", conversions: 12, registrations: 8, spend: 400, unit: "Operators", functiegroep: "Operator" },
 ];
 
 export const reverseMatchingSteps: ReverseMatchingRow[] = [
@@ -190,6 +198,19 @@ export function aggregateByUnit(data: { unit: string; registrations: number; con
     existing.registrations += row.registrations;
     existing.acquisitions += row.conversions;
     grouped.set(row.unit, existing);
+  }
+  return Array.from(grouped.entries()).map(([unit, vals]) => ({ unit, ...vals }));
+}
+
+/** Aggregate by functiegroep field (paid channels, ad level) or segment/category */
+export function aggregateByFunctiegroep(data: { functiegroep?: string; segment?: string; category?: string; registrations: number; conversions: number }[]) {
+  const grouped = new Map<string, { registrations: number; acquisitions: number }>();
+  for (const row of data) {
+    const key = (row as any).functiegroep || (row as any).segment || (row as any).category || "Overig";
+    const existing = grouped.get(key) || { registrations: 0, acquisitions: 0 };
+    existing.registrations += row.registrations;
+    existing.acquisitions += row.conversions;
+    grouped.set(key, existing);
   }
   return Array.from(grouped.entries()).map(([unit, vals]) => ({ unit, ...vals }));
 }
