@@ -338,7 +338,7 @@ export function CohortChart({
           const onEnter = (e: React.MouseEvent) => {
             const rect = wrapperRef.current?.getBoundingClientRect();
             setExitHover({
-              id: p.id,
+              id: String(p.id),
               name: p.name,
               date: p.exitDate,
               balance: p.balance,
