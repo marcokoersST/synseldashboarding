@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, RotateCcw, Hand, Play, LogOut } from "lucide-react";
 import { FilterSummary } from "./FilterSummary";
 import { makeSplitScale } from "./splitScale";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface CohortChartProps {
   filterUnits: string[];
@@ -158,11 +159,17 @@ export function CohortChart({
   const animTimers = useRef<number[]>([]);
   const animRafRef = useRef<number | null>(null);
 
-  // Exit marker hover tooltip
+  // Exit marker hover/focus tooltip
   const [exitHover, setExitHover] = useState<
     | { id: string; name: string; date: Date; balance: number; x: number; y: number }
     | null
   >(null);
+
+  // Hover-highlight state for line emphasis
+  const [hoveredLine, setHoveredLine] = useState<number | null>(null);
+
+  // Reduced-motion preference
+  const prefersReducedMotion = useReducedMotion();
 
   // Hard-reset every line path: cancel transitions, hide instantly via dashoffset.
   const resetLinePaths = useCallback(() => {
