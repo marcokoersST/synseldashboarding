@@ -175,6 +175,12 @@ export function CohortChart({
   const [animTick, setAnimTick] = useState(0); // forces re-render during draw
   const animTimers = useRef<number[]>([]);
 
+  // Exit marker hover tooltip
+  const [exitHover, setExitHover] = useState<
+    | { id: string; name: string; date: Date; balance: number; x: number; y: number }
+    | null
+  >(null);
+
   const startAnimation = useCallback(() => {
     // Clear pending timers
     animTimers.current.forEach((t) => window.clearTimeout(t));
