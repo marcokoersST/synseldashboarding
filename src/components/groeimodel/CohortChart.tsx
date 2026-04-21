@@ -174,6 +174,7 @@ export function CohortChart({
   const [animPhase, setAnimPhase] = useState<AnimPhase>("intro-zoom");
   const [animTick, setAnimTick] = useState(0); // forces re-render during draw
   const animTimers = useRef<number[]>([]);
+  const animRafRef = useRef<number | null>(null);
 
   // Exit marker hover tooltip
   const [exitHover, setExitHover] = useState<
@@ -181,20 +182,49 @@ export function CohortChart({
     | null
   >(null);
 
+  // Hard-reset every line path: cancel transitions, hide instantly via dashoffset.
+  const resetLinePaths = useCallback(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const paths = wrapper.querySelectorAll<SVGPathElement>(".recharts-line-curve");
+    paths.forEach((path) => {
+      try {
+        const len = path.getTotalLength() || 1;
+        path.style.transition = "none";
+        path.style.strokeDasharray = `${len}`;
+        path.style.strokeDashoffset = `${len}`;
+        // Force reflow so the "hidden" state is committed before the next transition.
+        void path.getBoundingClientRect();
+      } catch {
+        // ignore
+      }
+    });
+  }, []);
+
   const startAnimation = useCallback(() => {
-    // Clear pending timers
+    // 1. Cancel anything in flight
     animTimers.current.forEach((t) => window.clearTimeout(t));
     animTimers.current = [];
+    if (animRafRef.current !== null) {
+      cancelAnimationFrame(animRafRef.current);
+      animRafRef.current = null;
+    }
+    setExitHover(null);
+
+    // 2. Reset to phase 1 + zoomed-in domain + hide lines immediately
     setAnimPhase("intro-zoom");
     setDomain([0, Math.min(maxMonths - 1, breakEvenMaxMonth + 2)]);
+    // Hide lines now AND on next frame (covers the case where new paths haven't mounted yet)
+    resetLinePaths();
+    requestAnimationFrame(() => resetLinePaths());
 
+    // 3. Phase progression
     const t1 = window.setTimeout(() => {
       setAnimPhase("drawing");
-      setAnimTick((t) => t + 1);
+      setAnimTick((t) => t + 1); // re-trigger the draw effect even if phase was already "drawing"
     }, 400);
     const t2 = window.setTimeout(() => {
       setAnimPhase("zoom-out");
-      // Animate domain expansion via RAF
       const startTime = performance.now();
       const startMax = Math.min(maxMonths - 1, breakEvenMaxMonth + 2);
       const endMax = maxMonths - 1;
@@ -203,15 +233,19 @@ export function CohortChart({
         const t = Math.min(1, (now - startTime) / duration);
         const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
         setDomain([0, startMax + (endMax - startMax) * eased]);
-        if (t < 1) requestAnimationFrame(tick);
+        if (t < 1) {
+          animRafRef.current = requestAnimationFrame(tick);
+        } else {
+          animRafRef.current = null;
+        }
       };
-      requestAnimationFrame(tick);
+      animRafRef.current = requestAnimationFrame(tick);
     }, 2200);
     const t3 = window.setTimeout(() => {
       setAnimPhase("done");
     }, 3300);
     animTimers.current.push(t1, t2, t3);
-  }, [maxMonths, breakEvenMaxMonth]);
+  }, [maxMonths, breakEvenMaxMonth, resetLinePaths]);
 
   // Trigger intro animation on mount and whenever filtered set changes meaningfully
   useEffect(() => {
