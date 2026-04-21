@@ -16,10 +16,11 @@ export interface ConsultantLifecycle {
 export interface BreakEvenResult {
   breakEvenMonth: number | null; // null = not yet reached
   startupCost: number; // cumulative loss until break-even (positive number)
-  cumulativeSeries: { month: number; balance: number; revenue: number; cost: number }[];
+  cumulativeSeries: { month: number; balance: number; revenue: number; cost: number; isExit?: boolean; postExit?: boolean }[];
   totalMonths: number;
   currentBalance: number;
   profitSinceBreakEven: number;
+  exitMonth: number | null;
 }
 
 // Cost basis: gross monthly salary × employer load factor
@@ -164,13 +165,40 @@ export function computeBreakEven(lc: ConsultantLifecycle): BreakEvenResult {
   const profitSinceBreakEven =
     breakEvenMonth !== null ? cumulative + startupCost : 0;
 
+  let exitMonth: number | null = null;
+
+  // Post-exit decline: if consultant has endDate, append trailing months where
+  // running margins fade out (mirror of the rise) and balance gradually decreases.
+  if (lc.endDate) {
+    exitMonth = lc.monthlyMargin.length - 1;
+    if (series[exitMonth]) series[exitMonth].isExit = true;
+
+    // Take the last N months as reference for the down-ramp magnitude.
+    const N = Math.min(9, lc.monthlyMargin.length);
+    const tail = lc.monthlyMargin.slice(-N);
+    const peak = tail.reduce((a, b) => a + b, 0) / Math.max(1, tail.length);
+
+    for (let k = 1; k <= N; k++) {
+      // Mirror of S-curve rise: revenue inflow fades, but residual obligations
+      // and lost run-rate cause cumulative balance to gently decline.
+      const fade = Math.cos((k / N) * (Math.PI / 2)); // 1 → 0
+      const noise = (seededRandom(lc.id * 53 + k) - 0.5) * 0.3;
+      // Net negative monthly delta — same magnitude shape as the rise, mirrored
+      const delta = -peak * (1 - fade) * (1 + noise);
+      cumulative += delta;
+      const m = exitMonth + k;
+      series.push({ month: m, balance: cumulative, revenue: 0, cost: Math.round(-delta), postExit: true });
+    }
+  }
+
   return {
     breakEvenMonth,
     startupCost,
     cumulativeSeries: series,
-    totalMonths: lc.monthlyMargin.length,
+    totalMonths: series.length,
     currentBalance: cumulative,
     profitSinceBreakEven,
+    exitMonth,
   };
 }
 
