@@ -29,7 +29,6 @@ export default function Groeimodel() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [unitsOpen, setUnitsOpen] = useState(false);
   const [filterYears, setFilterYears] = useState<number[]>([]);
-  const [yearsOpen, setYearsOpen] = useState(false);
   const [filterPeriodRange, setFilterPeriodRange] = useState<[number, number]>([1, 13]);
   const [periodOpen, setPeriodOpen] = useState(false);
 
