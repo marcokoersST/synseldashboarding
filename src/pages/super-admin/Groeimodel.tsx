@@ -391,9 +391,13 @@ Filter scope: Year + Period (P1–P13) on start date, Unit, Status.`}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{avgBreakEven} <span className="text-base font-normal text-muted-foreground">maanden</span></div>
+              <div className="text-2xl font-bold">
+                {avgBreakEven} <span className="text-base font-normal text-muted-foreground">maanden</span>
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Over alle consultants die break-even hebben bereikt
+                {breakEvenSpread
+                  ? `Spreiding M${breakEvenSpread.min} – M${breakEvenSpread.max}`
+                  : "Nog geen consultants in deze selectie hebben break-even bereikt"}
               </p>
               <FilterSummary {...filterProps} className="mt-2" />
               <DevNote
@@ -458,12 +462,29 @@ company), the consultant is excluded.`}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-success">{roi.toFixed(2)}×</div>
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="inline-flex items-center gap-1.5 cursor-help">
+                      <span className="text-2xl font-bold text-success">{roi.toFixed(2)}×</span>
+                      <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs text-xs leading-relaxed">
+                    <div className="font-semibold mb-1">ROI berekening</div>
+                    <div>
+                      {roi.toFixed(2)}× = <span className="font-medium">{formatEuro(totalProfitSinceBE)}</span> winst
+                      sinds break-even / <span className="font-medium">{formatEuro(totalStartup)}</span> opstartinvestering.
+                    </div>
+                    <div className="mt-1.5 text-muted-foreground">
+                      Let op: telt alleen niet-geamortiseerde opstartkosten van consultants in deze selectie.
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <p className="text-xs text-muted-foreground mt-1">
                 Winst na break-even / opstartinvestering
               </p>
-              <FilterSummary {...filterProps} className="mt-2" />
-              <DevNote
                 story={<><strong>As a user (C-level)</strong>, I want to see the multiple of return that the consultant cohort generated relative to the capital invested in their startup phase, <strong>so that</strong> I can judge whether our hiring + ramp-up model is financially healthy at portfolio level.</>}
                 logic={`Compare what the team has earned AFTER break-even against
 what we invested BEFORE break-even.
