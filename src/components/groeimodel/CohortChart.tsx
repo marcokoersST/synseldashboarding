@@ -116,14 +116,15 @@ export function CohortChart({
     const breakEvenMaxMonth = breakEvenPoints.length
       ? Math.max(...breakEvenPoints.map((p) => p.month))
       : Math.min(maxMonths - 1, 12);
-    const exitPoints = consultants
-      .filter((c) => c.exitMonth !== null)
-      .map((c) => ({
-        id: c.id,
-        name: c.name,
-        color: c.color,
-        month: c.exitMonth as number,
-        balance: c.series[c.exitMonth as number]?.balance ?? 0,
+    const exitPoints = filtered
+      .filter(({ result }) => result.exitMonth !== null)
+      .map(({ lifecycle, result }) => ({
+        id: lifecycle.id,
+        name: lifecycle.name,
+        color: lifecycle.unitColor,
+        month: result.exitMonth as number,
+        balance: result.cumulativeSeries[result.exitMonth as number]?.balance ?? 0,
+        exitDate: lifecycle.endDate as Date,
       }));
     return { data, consultants, minBal, maxBal, maxMonths, breakEvenPoints, exitPoints, breakEvenMaxMonth };
   }, [filtered]);
