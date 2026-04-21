@@ -124,6 +124,8 @@ export const consultantLifecycles: ConsultantLifecycle[] = allAdminConsultants.m
   const unitName = dept?.name ?? c.unit;
   const unitColor = dept?.color ?? "hsl(var(--primary))";
 
+  const archetype = pickArchetype(c.id, c.revenue);
+
   return {
     id: c.id,
     name: c.name,
@@ -133,8 +135,8 @@ export const consultantLifecycles: ConsultantLifecycle[] = allAdminConsultants.m
     avatar: c.avatar,
     startDate,
     endDate,
-    monthlyCost: roleMonthlyCost(c.role),
-    monthlyMargin: generateMonthlyMargin(c.revenue, activeMonths),
+    monthlyCost: roleMonthlyCost(c.role, c.id),
+    monthlyMargin: buildMarginCurve(c.id, archetype, activeMonths),
   };
 });
 
