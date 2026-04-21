@@ -485,6 +485,8 @@ company), the consultant is excluded.`}
               <p className="text-xs text-muted-foreground mt-1">
                 Winst na break-even / opstartinvestering
               </p>
+              <FilterSummary {...filterProps} className="mt-2" />
+              <DevNote
                 story={<><strong>As a user (C-level)</strong>, I want to see the multiple of return that the consultant cohort generated relative to the capital invested in their startup phase, <strong>so that</strong> I can judge whether our hiring + ramp-up model is financially healthy at portfolio level.</>}
                 logic={`Compare what the team has earned AFTER break-even against
 what we invested BEFORE break-even.
