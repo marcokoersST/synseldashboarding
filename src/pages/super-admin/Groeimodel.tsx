@@ -20,6 +20,7 @@ import {
 import { departments } from "@/data/adminData";
 import { Sprout, Clock, TrendingUp, Coins, Filter as FilterIcon, ChevronDown } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 type StatusFilter = "all" | "active" | "terminated";
 
