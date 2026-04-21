@@ -28,7 +28,8 @@ import {
    Smile,
    LineChart,
    Megaphone,
-   Building2
+   Building2,
+   Sprout
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -164,6 +165,7 @@ const navItems: NavItem[] = [
       { icon: BarChart3, label: "Overzicht", path: "/super-admin" },
       { icon: Eye, label: "User Emulatie", path: "/super-admin/emulate" },
       { icon: LineChart, label: "C-Level Dashboard", path: "/super-admin/c-level" },
+      { icon: Sprout, label: "Synsel Groeimodel", path: "/super-admin/groeimodel" },
     ]
   },
   {
