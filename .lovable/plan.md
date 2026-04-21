@@ -1,57 +1,67 @@
 
 
-# Plan: Convert DevNote inline blocks to red popup buttons
+# Plan: Year/Period filter + visual polish for the Synsel Groeimodel dashboard
 
-Replace the current inline "For the development team" blocks on the Groeimodel dashboard with a small red button that opens a popup containing the same explanation, simplified for a business analyst (not a developer).
+Drie samenhangende verbeteringen aan `/super-admin/groeimodel`: een tijdsperiode-filter (jaren + perioderange), een opvallend geanimeerd break-even punt met zoom & pan op de cohortgrafiek, en een "actief filter"-uitleg in elke tegel.
 
-## Changes to `src/components/groeimodel/DevNote.tsx`
+## 1. Tijdsperiode-filter (rechtsboven naast Unit / Status)
 
-Refactor the component into a popup-based pattern using the existing `Popover` UI primitive (`src/components/ui/popover.tsx`) and `Button`.
+Twee popovers in dezelfde stijl als de Unit-popover (`Alles aan/uit` mini-toggles, checkbox-lijst — consistent met de bestaande pattern).
 
-**New trigger:** A small red button positioned at the bottom-right of each tile.
-- Style: `variant="destructive"` or custom red bg (`bg-red-600 hover:bg-red-700 text-white`), `size="sm"`, with an `Info` icon
-- Label: "Dev info"
-- Position: `absolute bottom-3 right-3` (parent tiles get `relative` positioning) — or rendered inline at the bottom-right of the card content
+**Popover A — Jaren (multi-select)**
+- Lijst van beschikbare cohort-jaren afgeleid uit `consultantLifecycles` (`startDate.getFullYear()`), gesorteerd
+- Checkboxes met `Alles aan / uit`
+- Trigger toont `Jaar` of `Jaar (2)` als er een keuze is
 
-**Popup content (PopoverContent, ~`w-96`):**
-1. Title: "For the development team"
-2. Warning line in red/bold: **"⚠ Delete this button after development"**
-3. **User story** — the existing "As a user… so that…" sentence
-4. **Logic** — replaced with a visual formula block (monospace, indented, multi-line ASCII-style), explaining the calculation in plain business-analyst terms. No code identifiers, no file names, no function names.
+**Popover B — Periodes (range)**
+- Header: twee `Select` dropdowns "Van P1 → Tot P13" (1–13)
+- Compact, aligns met de bestaande popover-stijl
 
-**Removed:** the `source` prop entirely (no more "Data source:" line).
+**Filterlogica (`Groeimodel.tsx`):**
+- Een consultant matcht als `startDate.getFullYear()` in de gekozen jaren zit (of jaren leeg = alles) **én** de periode-index van zijn `startDate` binnen de gekozen periode-range valt (period = `Math.floor(month/ (12/13))` benadering, of simpele 1–13 mapping op kalendermaand).
+- Filter wordt doorgegeven aan `CohortChart`, de tabel en `BreakEvenHistogram`. Bestaande `filterUnits` + `filterStatus` blijven werken (gecombineerd).
 
-## New props shape
+## 2. CohortChart — break-even punt + zoom & pan
 
-```ts
-interface DevNoteProps {
-  story: ReactNode;       // user story
-  logic: ReactNode;       // visual formula / plain-language explanation
-}
-```
+**A. Geanimeerd, duidelijk break-even punt**
+- Vervang de generieke `ReferenceLine y={0}` door een styled break-even baseline:
+  - Volle gouden/primaire lijn over volle breedte (`stroke-width 2`)
+  - Tekstlabel **links binnen de plot area** (niet rechts buiten de tegel — dat is de huidige bug uit de screenshot) met chip-stijl achtergrond zodat het altijd leesbaar binnen de tegel valt
+- Per consultant: een **pulserende cirkel** op het exacte break-even punt (eerste maand waar balance ≥ 0). Geïmplementeerd via een custom `<Customized>`-layer of een `Scatter` series met een SVG `<circle>` waaraan een CSS `animate-ping`/keyframe-pulse wordt gehangen (twee gestapelde circles: een statische gevulde dot + een ring die schaalt+vervaagt op loop). Kleur = unit-kleur. Hover = consultantnaam + maand.
 
-The `source` prop is removed. All existing call sites that pass `source={...}` need that prop deleted.
+**B. Zoom & pan**
+- Toolbar boven het chart: `Zoom in`, `Zoom uit`, `Reset`, en een toggle `Pan` (handje-icoon, lucide `Hand`).
+- Zoom-state: `[xMin, xMax]` op de X-as (maanden). Stapgrootte: −25% per zoom-in, gecentreerd rond het midden van het zichtbare venster.
+- Pan: wanneer pan-modus actief is → cursor wordt `cursor-grab`/`cursor-grabbing`. `onMouseDown` op de chart-wrapper start drag; tijdens drag wordt `[xMin, xMax]` met dezelfde delta verschoven (delta in maanden = `pixels / pixelsPerMonth`). Implementatie via gewone `onMouseDown/Move/Up` op de wrapper — Recharts ondersteunt geen native pan, dus het venster wordt extern bijgehouden en als `domain` op de `XAxis` doorgegeven.
+- Buiten pan-modus blijft de tooltip/hover gewoon werken.
 
-## Visual formula style
+**C. Layout-fix**
+- `margin.right` van de chart vergroten zodat labels binnen de tegel blijven; tegelhoogte naar `h-[520px]` voor meer ademruimte.
 
-Instead of inline code references like `Σ profitSinceBreakEven / Σ startupCost`, use a clear visual block. Example for Cohort ROI:
+## 3. "Actief filter"-uitleg in elke tegel
+
+Elke tegel (4 KPI's, CohortChart, tabel, BreakEvenHistogram, Opstartkosten per unit) krijgt onder de titel/boven de inhoud een kleine `FilterSummary`-strip:
 
 ```text
-                Total profit earned after break-even
-   ROI  =  ─────────────────────────────────────────
-                Total money invested during startup
+Toont: Jaar 2024, 2025  ·  P1–P6  ·  Unit: Engineering, Sales  ·  Status: Actief
 ```
 
-Rendered inside a `<pre className="bg-muted/50 p-3 rounded text-[11px] leading-snug font-mono">` block so the alignment stays clean. Each tile gets its own simple, business-friendly formula (fractions, sums, conditionals written out in words like "If balance < 0, add to startup cost").
+- Compacte rij met `text-xs text-muted-foreground` en kleine pill-badges per actief filter
+- Wanneer geen filter actief is: "Toont: alle consultants"
+- Renders via een nieuwe lichte component `FilterSummary` die de huidige filter-state als props krijgt
 
-## Files changed
+Dit maakt voor iedere tegel direct zichtbaar dat — bijvoorbeeld bij keuze "jaar 2025" — de cohortgrafiek alleen consultants toont die in 2025 zijn gestart, etc.
 
-| File | Change |
+## Bestanden
+
+| Bestand | Wijziging |
 |---|---|
-| `src/components/groeimodel/DevNote.tsx` | Rewrite as red button + Popover; drop `source` prop; render `logic` inside a styled `<pre>` formula block; add the "Delete this button after development" warning |
-| `src/components/groeimodel/CohortChart.tsx` | Remove `source={…}` prop; rewrite `logic` as visual formula |
-| `src/components/groeimodel/BreakEvenHistogram.tsx` | Same: remove `source`, rewrite `logic` visually |
-| `src/pages/super-admin/Groeimodel.tsx` | Same on every `<DevNote>` call site (4 KPI cards + table + per-unit chart); ensure parent tile containers have `relative` so the absolute-positioned button anchors correctly |
+| `src/pages/super-admin/Groeimodel.tsx` | Twee nieuwe popovers (Jaar, Periode-range); state `filterYears: number[]`, `filterPeriodRange: [number, number]`; `filteredRows` uitbreiden; `FilterSummary` in elke tegel renderen; filters doorgeven aan CohortChart en BreakEvenHistogram |
+| `src/components/groeimodel/CohortChart.tsx` | Filter-props uitbreiden (`filterYears`, `filterPeriodRange`); zoom/pan state + toolbar; X-axis `domain={[xMin, xMax]}`; geanimeerd break-even punt per consultant via custom SVG-layer; FilterSummary boven chart |
+| `src/components/groeimodel/BreakEvenHistogram.tsx` | Filter-props ontvangen en histogram herbereken op basis van gefilterde set; FilterSummary boven chart |
+| `src/components/groeimodel/FilterSummary.tsx` | **Nieuw** — kleine pill-strip die actieve filters samenvat |
+| `src/data/groeimodelData.ts` | Helper `getBreakEvenDistributionFor(rows)` toevoegen zodat het histogram met een gefilterde set kan worden aangeroepen; helper `getAvailableCohortYears()` |
+| `src/index.css` | Keyframe `pulse-ring` (scale 1→2.4, opacity 1→0) voor het break-even pulspunt |
 
-No data layer changes, no new dependencies — `Popover` and `Button` already exist in the project.
+Geen nieuwe dependencies — `Popover`, `Select`, `Checkbox`, `Button` en lucide-iconen (`Hand`, `ZoomIn`, `ZoomOut`, `RotateCcw`, `CalendarRange`) zijn al beschikbaar.
 
