@@ -263,6 +263,9 @@ export function getBreakEvenDistribution() {
 export function getAvailableCohortYears(): number[] {
   const years = new Set<number>();
   for (const lc of consultantLifecycles) years.add(lc.startDate.getFullYear());
+  // Always include 2025 and 2026 even if no consultants started in those years yet
+  years.add(2025);
+  years.add(2026);
   return Array.from(years).sort((a, b) => a - b);
 }
 
