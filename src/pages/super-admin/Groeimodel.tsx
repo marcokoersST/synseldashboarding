@@ -388,7 +388,12 @@ Reading the result:
             </div>
           </CardHeader>
           <CardContent>
-            <CohortChart filterUnits={filterUnits} filterStatus={statusFilter} />
+            <CohortChart
+              filterUnits={filterUnits}
+              filterStatus={statusFilter}
+              filterYears={filterYears}
+              filterPeriodRange={filterPeriodRange}
+            />
           </CardContent>
         </Card>
       </AnimatedCard>
@@ -501,7 +506,12 @@ visually consistent across the dashboard.`}
               <CardDescription>Aantal consultants per break-even venster</CardDescription>
             </CardHeader>
             <CardContent>
-              <BreakEvenHistogram />
+              <BreakEvenHistogram
+                filterUnits={filterUnits}
+                filterStatus={statusFilter}
+                filterYears={filterYears}
+                filterPeriodRange={filterPeriodRange}
+              />
             </CardContent>
           </Card>
         </AnimatedCard>
