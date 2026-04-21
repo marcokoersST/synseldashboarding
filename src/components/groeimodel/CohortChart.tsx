@@ -15,10 +15,10 @@ import {
   formatEuro,
   monthToPeriod,
 } from "@/data/groeimodelData";
-import { useMemo, useRef, useState, useCallback } from "react";
+import { useMemo, useRef, useState, useCallback, useEffect } from "react";
 import { DevNote } from "./DevNote";
 import { Button } from "@/components/ui/button";
-import { ZoomIn, ZoomOut, RotateCcw, Hand } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, Hand, Play, LogOut } from "lucide-react";
 import { FilterSummary } from "./FilterSummary";
 
 interface CohortChartProps {
@@ -26,6 +26,29 @@ interface CohortChartProps {
   filterStatus: "all" | "active" | "terminated";
   filterYears: number[];
   filterPeriodRange: [number, number];
+}
+
+type AnimPhase = "intro-zoom" | "drawing" | "zoom-out" | "done";
+
+// Split-scale: lower 45% of plot covers [yMin, 0], upper 55% covers [0, yMax]
+function makeSplitScale(yMin: number, yMax: number) {
+  // We map real value -> "display value" in a synthetic linear domain [-100, 100].
+  // 0 always maps to display=0 (the boundary).
+  // negatives stretched (1 unit of negative real space takes more display space).
+  // We keep ratio 45/55 by setting display ranges accordingly.
+  const negSpan = Math.max(1, Math.abs(yMin));
+  const posSpan = Math.max(1, yMax);
+  const NEG_DISPLAY = 45;
+  const POS_DISPLAY = 55;
+  const transform = (v: number): number => {
+    if (v <= 0) return -(Math.abs(v) / negSpan) * NEG_DISPLAY;
+    return (v / posSpan) * POS_DISPLAY;
+  };
+  const inverse = (d: number): number => {
+    if (d <= 0) return -((-d) / NEG_DISPLAY) * negSpan;
+    return (d / POS_DISPLAY) * posSpan;
+  };
+  return { transform, inverse, displayMin: -NEG_DISPLAY, displayMax: POS_DISPLAY };
 }
 
 export function CohortChart({
@@ -46,7 +69,7 @@ export function CohortChart({
     });
   }, [filterUnits, filterStatus, filterYears, filterPeriodRange]);
 
-  const { data, consultants, minBal, maxBal, maxMonths, breakEvenPoints } = useMemo(() => {
+  const { data, consultants, minBal, maxBal, maxMonths, breakEvenPoints, exitPoints, breakEvenMaxMonth } = useMemo(() => {
     const maxMonths = Math.max(...filtered.map((x) => x.result.totalMonths), 1);
     const consultants = filtered.map(({ lifecycle, result }) => ({
       id: lifecycle.id,
@@ -54,6 +77,7 @@ export function CohortChart({
       color: lifecycle.unitColor,
       series: result.cumulativeSeries,
       breakEvenMonth: result.breakEvenMonth,
+      exitMonth: result.exitMonth,
     }));
     const data: Record<string, number | null>[] = [];
     let minBal = 0;
@@ -63,11 +87,19 @@ export function CohortChart({
       consultants.forEach((c) => {
         const point = c.series[m];
         if (point) {
-          row[`c_${c.id}`] = point.balance;
+          // Active phase line
+          row[`c_${c.id}`] = point.postExit ? null : point.balance;
+          // Post-exit phase line (overlaps at exit month for continuity)
+          if (point.postExit || point.isExit) {
+            row[`x_${c.id}`] = point.balance;
+          } else {
+            row[`x_${c.id}`] = null;
+          }
           if (point.balance < minBal) minBal = point.balance;
           if (point.balance > maxBal) maxBal = point.balance;
         } else {
           row[`c_${c.id}`] = null;
+          row[`x_${c.id}`] = null;
         }
       });
       data.push(row);
@@ -81,18 +113,106 @@ export function CohortChart({
         month: c.breakEvenMonth as number,
         balance: c.series[c.breakEvenMonth as number]?.balance ?? 0,
       }));
-    return { data, consultants, minBal, maxBal, maxMonths, breakEvenPoints };
+    const breakEvenMaxMonth = breakEvenPoints.length
+      ? Math.max(...breakEvenPoints.map((p) => p.month))
+      : Math.min(maxMonths - 1, 12);
+    const exitPoints = consultants
+      .filter((c) => c.exitMonth !== null)
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        color: c.color,
+        month: c.exitMonth as number,
+        balance: c.series[c.exitMonth as number]?.balance ?? 0,
+      }));
+    return { data, consultants, minBal, maxBal, maxMonths, breakEvenPoints, exitPoints, breakEvenMaxMonth };
   }, [filtered]);
 
-  // Zoom & pan state — domain on x-axis, in months
+  // Split scale based on actual range with padding
+  const splitScale = useMemo(
+    () => makeSplitScale(minBal * 1.05, maxBal * 1.05),
+    [minBal, maxBal],
+  );
+
+  // Transform data through split scale
+  const transformedData = useMemo(() => {
+    return data.map((row) => {
+      const newRow: Record<string, number | null> = { month: row.month as number };
+      Object.keys(row).forEach((k) => {
+        if (k === "month") return;
+        const v = row[k];
+        newRow[k] = v == null ? null : splitScale.transform(v);
+      });
+      return newRow;
+    });
+  }, [data, splitScale]);
+
+  // Y-axis ticks: pick nice values then transform
+  const yTicks = useMemo(() => {
+    const candidates = [minBal, -50_000, -25_000, -10_000, 0, 25_000, 50_000, 100_000, 200_000, 350_000, 500_000, 750_000, 1_000_000, maxBal];
+    const inRange = candidates.filter((v) => v >= minBal * 1.05 && v <= maxBal * 1.05);
+    const unique = Array.from(new Set(inRange.map((v) => Math.round(v))));
+    return unique.sort((a, b) => a - b).map((v) => splitScale.transform(v));
+  }, [minBal, maxBal, splitScale]);
+
+  const tickToReal = useMemo(() => {
+    const map = new Map<number, number>();
+    [minBal, -50_000, -25_000, -10_000, 0, 25_000, 50_000, 100_000, 200_000, 350_000, 500_000, 750_000, 1_000_000, maxBal]
+      .filter((v) => v >= minBal * 1.05 && v <= maxBal * 1.05)
+      .forEach((v) => map.set(splitScale.transform(v), v));
+    return map;
+  }, [minBal, maxBal, splitScale]);
+
+  // Zoom & pan state
   const [domain, setDomain] = useState<[number, number]>([0, maxMonths - 1]);
   const [panMode, setPanMode] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ startX: number; startDomain: [number, number] } | null>(null);
 
-  // Reset domain when filter changes the maxMonths significantly
-  useMemo(() => {
-    setDomain([0, Math.max(1, maxMonths - 1)]);
+  // Animation state
+  const [animPhase, setAnimPhase] = useState<AnimPhase>("intro-zoom");
+  const [animTick, setAnimTick] = useState(0); // forces re-render during draw
+  const animTimers = useRef<number[]>([]);
+
+  const startAnimation = useCallback(() => {
+    // Clear pending timers
+    animTimers.current.forEach((t) => window.clearTimeout(t));
+    animTimers.current = [];
+    setAnimPhase("intro-zoom");
+    setDomain([0, Math.min(maxMonths - 1, breakEvenMaxMonth + 2)]);
+
+    const t1 = window.setTimeout(() => {
+      setAnimPhase("drawing");
+      setAnimTick((t) => t + 1);
+    }, 400);
+    const t2 = window.setTimeout(() => {
+      setAnimPhase("zoom-out");
+      // Animate domain expansion via RAF
+      const startTime = performance.now();
+      const startMax = Math.min(maxMonths - 1, breakEvenMaxMonth + 2);
+      const endMax = maxMonths - 1;
+      const duration = 1000;
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - startTime) / duration);
+        const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        setDomain([0, startMax + (endMax - startMax) * eased]);
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, 2200);
+    const t3 = window.setTimeout(() => {
+      setAnimPhase("done");
+    }, 3300);
+    animTimers.current.push(t1, t2, t3);
+  }, [maxMonths, breakEvenMaxMonth]);
+
+  // Trigger intro animation on mount and whenever filtered set changes meaningfully
+  useEffect(() => {
+    startAnimation();
+    return () => {
+      animTimers.current.forEach((t) => window.clearTimeout(t));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maxMonths]);
 
   const zoom = (factor: number) => {
@@ -139,7 +259,33 @@ export function CohortChart({
     dragRef.current = null;
   };
 
-  // Custom layer for animated break-even points using chart's internal scales
+  // Path-draw animation: apply strokeDasharray to all path elements after draw phase begins
+  useEffect(() => {
+    if (animPhase !== "drawing") return;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    // Defer to allow recharts to render paths
+    const id = window.setTimeout(() => {
+      const paths = wrapper.querySelectorAll<SVGPathElement>(".recharts-line-curve");
+      paths.forEach((path, idx) => {
+        try {
+          const len = path.getTotalLength();
+          path.style.transition = "none";
+          path.style.strokeDasharray = `${len}`;
+          path.style.strokeDashoffset = `${len}`;
+          // Force reflow
+          void path.getBoundingClientRect();
+          path.style.transition = `stroke-dashoffset 1600ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 30}ms`;
+          path.style.strokeDashoffset = "0";
+        } catch {
+          // ignore
+        }
+      });
+    }, 30);
+    return () => window.clearTimeout(id);
+  }, [animPhase, animTick]);
+
+  // Custom layer for break-even pulsing dots
   const BreakEvenDots = (props: any) => {
     const { xAxisMap, yAxisMap } = props;
     const xAxis = xAxisMap?.[Object.keys(xAxisMap || {})[0]];
@@ -147,17 +293,50 @@ export function CohortChart({
     if (!xAxis || !yAxis) return null;
     const xScale = xAxis.scale;
     const yScale = yAxis.scale;
+    const visible = animPhase === "zoom-out" || animPhase === "done";
     return (
-      <g>
+      <g style={{ opacity: visible ? 1 : 0, transition: "opacity 300ms ease-out" }}>
         {breakEvenPoints.map((p) => {
           if (p.month < domain[0] || p.month > domain[1]) return null;
           const cx = xScale(p.month);
-          const cy = yScale(p.balance);
+          const cy = yScale(splitScale.transform(p.balance));
           if (cx == null || cy == null) return null;
           return (
             <g key={p.id}>
               <circle cx={cx} cy={cy} r={5} fill={p.color} stroke="hsl(var(--background))" strokeWidth={1.5} />
               <circle cx={cx} cy={cy} r={5} fill="none" stroke={p.color} strokeWidth={2} className="pulse-ring" />
+            </g>
+          );
+        })}
+      </g>
+    );
+  };
+
+  // Custom layer for exit markers
+  const ExitMarkers = (props: any) => {
+    const { xAxisMap, yAxisMap } = props;
+    const xAxis = xAxisMap?.[Object.keys(xAxisMap || {})[0]];
+    const yAxis = yAxisMap?.[Object.keys(yAxisMap || {})[0]];
+    if (!xAxis || !yAxis) return null;
+    const xScale = xAxis.scale;
+    const yScale = yAxis.scale;
+    const visible = animPhase === "done";
+    return (
+      <g style={{ opacity: visible ? 1 : 0, transition: "opacity 400ms ease-out" }}>
+        {exitPoints.map((p) => {
+          if (p.month < domain[0] || p.month > domain[1]) return null;
+          const cx = xScale(p.month);
+          const cy = yScale(splitScale.transform(p.balance));
+          if (cx == null || cy == null) return null;
+          return (
+            <g key={p.id}>
+              <title>{`${p.name} — uit dienst`}</title>
+              <circle cx={cx} cy={cy} r={8} fill="hsl(var(--destructive))" stroke="hsl(var(--background))" strokeWidth={2} />
+              <foreignObject x={cx - 6} y={cy - 6} width={12} height={12} style={{ pointerEvents: "none" }}>
+                <div style={{ color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <LogOut size={10} />
+                </div>
+              </foreignObject>
             </g>
           );
         })}
@@ -181,6 +360,9 @@ export function CohortChart({
           Venster: M{Math.round(domain[0])} – M{Math.round(domain[1])}
         </div>
         <div className="flex items-center gap-1">
+          <Button variant="outline" size="sm" className="h-7 px-2" onClick={startAnimation} title="Animatie opnieuw afspelen">
+            <Play className="w-3.5 h-3.5" />
+          </Button>
           <Button variant="outline" size="sm" className="h-7 px-2" onClick={() => zoom(0.75)} title="Zoom in">
             <ZoomIn className="w-3.5 h-3.5" />
           </Button>
@@ -211,7 +393,7 @@ export function CohortChart({
         onMouseLeave={endDrag}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 10, right: 70, left: 10, bottom: 20 }}>
+          <LineChart data={transformedData} margin={{ top: 10, right: 70, left: 10, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis
               dataKey="month"
@@ -230,25 +412,29 @@ export function CohortChart({
             />
             <YAxis
               tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => formatEuro(v)}
-              domain={[minBal * 1.05, maxBal * 1.05]}
+              ticks={yTicks}
+              tickFormatter={(v) => {
+                const real = tickToReal.get(v);
+                return real != null ? formatEuro(real) : "";
+              }}
+              domain={[splitScale.displayMin, splitScale.displayMax]}
             />
-            <ReferenceArea y1={minBal * 1.05} y2={0} fill="hsl(var(--destructive))" fillOpacity={0.05} />
-            <ReferenceArea y1={0} y2={maxBal * 1.05} fill="hsl(var(--primary))" fillOpacity={0.04} />
+            <ReferenceArea y1={splitScale.displayMin} y2={0} fill="hsl(var(--destructive))" fillOpacity={0.05} />
+            <ReferenceArea y1={0} y2={splitScale.displayMax} fill="hsl(var(--primary))" fillOpacity={0.04} />
             <ReferenceLine
               y={0}
-              stroke="hsl(var(--gold, var(--primary)))"
-              strokeWidth={2}
+              stroke="hsl(var(--destructive))"
+              strokeWidth={2.5}
               label={{
                 value: "Break-even",
                 position: "insideTopLeft",
                 fontSize: 11,
-                fontWeight: 600,
-                fill: "hsl(var(--foreground))",
+                fontWeight: 700,
+                fill: "hsl(var(--destructive))",
                 offset: 8,
               }}
             />
-            {!panMode && (
+            {!panMode && animPhase === "done" && (
               <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
@@ -258,14 +444,15 @@ export function CohortChart({
                 }}
                 labelFormatter={(v) => `Maand ${v}`}
                 formatter={(value: number, name: string) => {
-                  const c = consultants.find((x) => `c_${x.id}` === name);
-                  return [formatEuro(value), c?.name ?? name];
+                  const c = consultants.find((x) => `c_${x.id}` === name || `x_${x.id}` === name);
+                  const real = splitScale.inverse(value);
+                  return [formatEuro(real), c?.name ?? name];
                 }}
               />
             )}
             {consultants.map((c) => (
               <Line
-                key={c.id}
+                key={`active_${c.id}`}
                 type="monotone"
                 dataKey={`c_${c.id}`}
                 stroke={c.color}
@@ -277,29 +464,50 @@ export function CohortChart({
                 activeDot={panMode ? false : { r: 4 }}
               />
             ))}
+            {consultants
+              .filter((c) => c.exitMonth !== null)
+              .map((c) => (
+                <Line
+                  key={`exit_${c.id}`}
+                  type="monotone"
+                  dataKey={`x_${c.id}`}
+                  stroke={c.color}
+                  strokeWidth={1.5}
+                  strokeOpacity={0.45}
+                  strokeDasharray="4 3"
+                  dot={false}
+                  connectNulls
+                  isAnimationActive={false}
+                  activeDot={panMode ? false : { r: 4 }}
+                />
+              ))}
             <Customized component={BreakEvenDots} />
+            <Customized component={ExitMarkers} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       <DevNote
-        story={<><strong>As a user (C-level)</strong>, I want to see each consultant's cumulative financial balance plotted over the months since their start date, with a clear pulsing marker exactly where they cross break-even, and the ability to zoom and pan into a specific period, <strong>so that</strong> I can visually identify who is still loss-making, when each one becomes profitable, and inspect dense parts of the chart in detail.</>}
-        logic={`Each line shows ONE consultant. For every month since their
-start date we keep a running total:
+        story={<><strong>As a user (C-level)</strong>, I want to see each consultant's cumulative financial balance plotted over the months since their start date, with a clear pulsing marker exactly where they cross break-even, exit markers when consultants leave, and a smooth intro animation that draws the lines from the startup phase outward, <strong>so that</strong> I can visually identify who is still loss-making, when each becomes profitable, and how revenue tapers when someone exits.</>}
+        logic={`Each line shows ONE consultant. Y-axis uses a split scale:
+the lower 45% covers the loss zone (yMin → €0) and the upper
+55% covers the profit zone (€0 → yMax) — so the startup phase
+is visually amplified.
 
-                  ┌─ this month's margin earned
-                  │
-   Balance(M) =   Σ  ( Margin  −  Cost )      from month 0 → M
-                  │
-                  └─ this month's salary + overhead
+   Balance(M) =  Σ ( Margin − Cost )   from month 0 → M
 
-   Balance < 0   →   still in startup phase   (red zone)
-   Balance = 0   →   BREAK-EVEN  (the gold line + pulsing dot)
-   Balance > 0   →   profitable                (green zone)
+   Balance < 0   →   startup phase (red zone, expanded)
+   Balance = 0   →   BREAK-EVEN (red reference line + pulsing dot)
+   Balance > 0   →   profitable (green zone)
 
-The pulsing dot on each line marks the FIRST month that
-consultant's balance reached zero. Zoom and pan let you
-focus on a specific window of months.`}
+When a consultant exits (endDate), a red LogOut marker is placed
+at the exit month and the line continues as a dashed segment that
+gradually declines (mirror of the rise) — representing residual
+revenue tapering off after departure.
+
+Intro animation: chart starts zoomed on the break-even window,
+draws each line stroke-by-stroke, then zooms out to show the full
+horizon. Replay via the ▶ button.`}
       />
     </div>
   );
