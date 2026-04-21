@@ -200,6 +200,23 @@ export function CohortChart({
     }
     setExitHover(null);
 
+    // Reduced-motion: jump straight to done state with full domain & visible lines
+    if (prefersReducedMotion) {
+      setAnimPhase("done");
+      setDomain([0, Math.max(1, maxMonths - 1)]);
+      // Make sure any previously-hidden paths become visible
+      const wrapper = wrapperRef.current;
+      if (wrapper) {
+        const paths = wrapper.querySelectorAll<SVGPathElement>(".recharts-line-curve");
+        paths.forEach((path) => {
+          path.style.transition = "none";
+          path.style.strokeDasharray = "none";
+          path.style.strokeDashoffset = "0";
+        });
+      }
+      return;
+    }
+
     // 2. Reset to phase 1 + zoomed-in domain + hide lines immediately
     setAnimPhase("intro-zoom");
     setDomain([0, Math.min(maxMonths - 1, breakEvenMaxMonth + 2)]);
@@ -234,12 +251,23 @@ export function CohortChart({
       setAnimPhase("done");
     }, 3300);
     animTimers.current.push(t1, t2, t3);
-  }, [maxMonths, breakEvenMaxMonth, resetLinePaths]);
+  }, [maxMonths, breakEvenMaxMonth, resetLinePaths, prefersReducedMotion]);
 
-  // Trigger intro animation on mount and whenever filtered set changes meaningfully
+  // Trigger intro animation ONLY on initial mount + manual replay (not on filter changes).
+  // Filter changes still re-render data but do not restart the intro.
   useEffect(() => {
     startAnimation();
+    // Keyboard shortcut: R = replay
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && /input|textarea|select/i.test(e.target.tagName)) return;
+      if (e.key === "r" || e.key === "R") {
+        e.preventDefault();
+        startAnimation();
+      }
+    };
+    window.addEventListener("keydown", onKey);
     return () => {
+      window.removeEventListener("keydown", onKey);
       animTimers.current.forEach((t) => window.clearTimeout(t));
       if (animRafRef.current !== null) {
         cancelAnimationFrame(animRafRef.current);
@@ -247,7 +275,7 @@ export function CohortChart({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [maxMonths]);
+  }, []);
 
   const zoom = (factor: number) => {
     setDomain(([a, b]) => {
