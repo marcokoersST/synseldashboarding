@@ -157,7 +157,7 @@ export default function Groeimodel() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{activeStartup}</div>
+              <div className="text-2xl font-bold text-warning">{activeStartup}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Actieve consultants nog vóór break-even
               </p>
@@ -174,7 +174,7 @@ export default function Groeimodel() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">{roi.toFixed(2)}×</div>
+              <div className="text-2xl font-bold text-success">{roi.toFixed(2)}×</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Winst na break-even / opstartinvestering
               </p>
