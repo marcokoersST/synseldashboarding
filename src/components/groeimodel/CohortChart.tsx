@@ -507,6 +507,29 @@ export function CohortChart({
             <Customized component={ExitMarkers} />
           </LineChart>
         </ResponsiveContainer>
+        {exitHover && (
+          <div
+            className="pointer-events-none absolute z-50 rounded-md border border-border bg-card shadow-lg px-3 py-2 text-xs"
+            style={{
+              left: Math.min(exitHover.x + 14, (wrapperRef.current?.clientWidth ?? 0) - 200),
+              top: Math.max(exitHover.y - 60, 4),
+              minWidth: 180,
+            }}
+          >
+            <div className="flex items-center gap-1.5 font-semibold text-destructive mb-1">
+              <LogOut className="w-3 h-3" />
+              Uit dienst
+            </div>
+            <div className="font-medium text-foreground">{exitHover.name}</div>
+            <div className="text-muted-foreground mt-0.5">{formatExitDate(exitHover.date)}</div>
+            <div className="mt-1.5 pt-1.5 border-t border-border flex items-center justify-between gap-3">
+              <span className="text-muted-foreground">Saldo:</span>
+              <span className={`font-semibold ${exitHover.balance >= 0 ? "text-foreground" : "text-destructive"}`}>
+                {formatEuro(exitHover.balance)}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <DevNote
