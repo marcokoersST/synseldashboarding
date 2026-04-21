@@ -20,6 +20,7 @@ import { DevNote } from "./DevNote";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, RotateCcw, Hand, Play, LogOut } from "lucide-react";
 import { FilterSummary } from "./FilterSummary";
+import { makeSplitScale } from "./splitScale";
 
 interface CohortChartProps {
   filterUnits: string[];
@@ -30,26 +31,7 @@ interface CohortChartProps {
 
 type AnimPhase = "intro-zoom" | "drawing" | "zoom-out" | "done";
 
-// Split-scale: lower 45% of plot covers [yMin, 0], upper 55% covers [0, yMax]
-function makeSplitScale(yMin: number, yMax: number) {
-  // We map real value -> "display value" in a synthetic linear domain [-100, 100].
-  // 0 always maps to display=0 (the boundary).
-  // negatives stretched (1 unit of negative real space takes more display space).
-  // We keep ratio 45/55 by setting display ranges accordingly.
-  const negSpan = Math.max(1, Math.abs(yMin));
-  const posSpan = Math.max(1, yMax);
-  const NEG_DISPLAY = 45;
-  const POS_DISPLAY = 55;
-  const transform = (v: number): number => {
-    if (v <= 0) return -(Math.abs(v) / negSpan) * NEG_DISPLAY;
-    return (v / posSpan) * POS_DISPLAY;
-  };
-  const inverse = (d: number): number => {
-    if (d <= 0) return -((-d) / NEG_DISPLAY) * negSpan;
-    return (d / POS_DISPLAY) * posSpan;
-  };
-  return { transform, inverse, displayMin: -NEG_DISPLAY, displayMax: POS_DISPLAY };
-}
+// Split-scale helper lives in ./splitScale (imported above) so it can be unit-tested.
 
 export function CohortChart({
   filterUnits,
