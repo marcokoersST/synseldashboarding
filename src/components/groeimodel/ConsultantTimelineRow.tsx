@@ -71,7 +71,7 @@ export function ConsultantTimelineRow({ lifecycle, result }: Props) {
       </td>
       <td className="px-4 py-3 text-sm">
         {result.breakEvenMonth !== null ? (
-          <span className="font-semibold">M{result.breakEvenMonth}</span>
+          <span className="font-semibold">P{result.breakEvenMonth}</span>
         ) : (
           <span className="text-muted-foreground">Nog niet</span>
         )}

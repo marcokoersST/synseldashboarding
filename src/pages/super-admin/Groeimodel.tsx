@@ -8,6 +8,7 @@ import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { CohortChart } from "@/components/groeimodel/CohortChart";
 import { ConsultantTimelineRow } from "@/components/groeimodel/ConsultantTimelineRow";
 import { BreakEvenHistogram } from "@/components/groeimodel/BreakEvenHistogram";
+import { ActivityRevenueChart } from "@/components/groeimodel/ActivityRevenueChart";
 import {
   lifecyclesWithBreakEven,
   getStartupCostByUnit,
@@ -392,11 +393,11 @@ Filter scope: Year + Period (P1–P13) on start date, Unit, Status.`}
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {avgBreakEven} <span className="text-base font-normal text-muted-foreground">maanden</span>
+                {avgBreakEven} <span className="text-base font-normal text-muted-foreground">periodes</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {breakEvenSpread
-                  ? `Spreiding M${breakEvenSpread.min} – M${breakEvenSpread.max}`
+                  ? `Spreiding P${breakEvenSpread.min} – P${breakEvenSpread.max}`
                   : "Nog geen consultants in deze selectie hebben break-even bereikt"}
               </p>
               <FilterSummary {...filterProps} className="mt-2" />
@@ -550,7 +551,7 @@ Reading the result:
                 unit: "unit",
                 start: "startdatum",
                 startup: "opstartkosten",
-                be: "break-even maand",
+                be: "break-even periode",
                 profit: "winst sindsdien",
               }[sortKey]}{" "}
               ({sortDir === "asc" ? "oplopend" : "aflopend"})
@@ -697,6 +698,26 @@ visually consistent across the dashboard.`}
           </Card>
         </AnimatedCard>
       </div>
+
+      {/* Activity & Revenue per Period — full width */}
+      <AnimatedCard delay={640}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Actieve consultants &amp; Omzet per periode</CardTitle>
+            <CardDescription>
+              Per periode in de geselecteerde tijdspanne — links aantal actieve consultants, rechts totale gerealiseerde omzet.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ActivityRevenueChart
+              filterUnits={filterUnits}
+              statusFilter={statusFilter}
+              filterYears={filterYears}
+              filterPeriodRange={filterPeriodRange}
+            />
+          </CardContent>
+        </Card>
+      </AnimatedCard>
     </div>
   );
 }
