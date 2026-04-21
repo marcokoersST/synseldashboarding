@@ -10,17 +10,17 @@ import { ConsultantTimelineRow } from "@/components/groeimodel/ConsultantTimelin
 import { BreakEvenHistogram } from "@/components/groeimodel/BreakEvenHistogram";
 import {
   lifecyclesWithBreakEven,
-  getTotalStartupInvestment,
-  getAverageBreakEvenMonths,
-  getActiveStartupCount,
-  getCohortROI,
   getStartupCostByUnit,
   formatEuro,
+  getAvailableCohortYears,
+  monthToPeriod,
 } from "@/data/groeimodelData";
 import { departments } from "@/data/adminData";
-import { Sprout, Clock, TrendingUp, Coins, Filter as FilterIcon, ChevronDown } from "lucide-react";
+import { Sprout, Clock, TrendingUp, Coins, Filter as FilterIcon, ChevronDown, CalendarRange } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
 import { DevNote } from "@/components/groeimodel/DevNote";
+import { FilterSummary } from "@/components/groeimodel/FilterSummary";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type StatusFilter = "all" | "active" | "terminated";
 
@@ -28,27 +28,59 @@ export default function Groeimodel() {
   const [filterUnits, setFilterUnits] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [unitsOpen, setUnitsOpen] = useState(false);
+  const [filterYears, setFilterYears] = useState<number[]>([]);
+  const [yearsOpen, setYearsOpen] = useState(false);
+  const [filterPeriodRange, setFilterPeriodRange] = useState<[number, number]>([1, 13]);
+  const [periodOpen, setPeriodOpen] = useState(false);
 
   const allUnits = departments.map((d) => d.name);
-
-  const totalStartup = getTotalStartupInvestment();
-  const avgBreakEven = getAverageBreakEvenMonths();
-  const activeStartup = getActiveStartupCount();
-  const roi = getCohortROI();
+  const allYears = useMemo(() => getAvailableCohortYears(), []);
 
   const filteredRows = useMemo(() => {
     return lifecyclesWithBreakEven.filter(({ lifecycle }) => {
       if (filterUnits.length > 0 && !filterUnits.includes(lifecycle.unit)) return false;
       if (statusFilter === "active" && lifecycle.endDate) return false;
       if (statusFilter === "terminated" && !lifecycle.endDate) return false;
+      if (filterYears.length > 0 && !filterYears.includes(lifecycle.startDate.getFullYear())) return false;
+      const p = monthToPeriod(lifecycle.startDate.getMonth());
+      if (p < filterPeriodRange[0] || p > filterPeriodRange[1]) return false;
       return true;
     });
-  }, [filterUnits, statusFilter]);
+  }, [filterUnits, statusFilter, filterYears, filterPeriodRange]);
+
+  // KPIs derived from filtered set
+  const totalStartup = useMemo(
+    () => filteredRows.reduce((s, x) => s + x.result.startupCost, 0),
+    [filteredRows],
+  );
+  const avgBreakEven = useMemo(() => {
+    const reached = filteredRows.filter((x) => x.result.breakEvenMonth !== null);
+    if (!reached.length) return 0;
+    return Math.round(reached.reduce((s, x) => s + (x.result.breakEvenMonth as number), 0) / reached.length);
+  }, [filteredRows]);
+  const activeStartup = useMemo(
+    () => filteredRows.filter((x) => !x.lifecycle.endDate && x.result.breakEvenMonth === null).length,
+    [filteredRows],
+  );
+  const roi = useMemo(() => {
+    const totalProfit = filteredRows.reduce((s, x) => s + Math.max(0, x.result.profitSinceBreakEven), 0);
+    return totalStartup > 0 ? totalProfit / totalStartup : 0;
+  }, [filteredRows, totalStartup]);
 
   const startupByUnit = getStartupCostByUnit();
 
   const toggleUnit = (u: string) => {
     setFilterUnits((prev) => (prev.includes(u) ? prev.filter((x) => x !== u) : [...prev, u]));
+  };
+  const toggleYear = (y: number) => {
+    setFilterYears((prev) => (prev.includes(y) ? prev.filter((x) => x !== y) : [...prev, y]));
+  };
+
+  const filterProps = {
+    years: filterYears,
+    periodRange: filterPeriodRange,
+    units: filterUnits,
+    status: statusFilter,
   };
 
   return (
@@ -97,6 +129,100 @@ export default function Groeimodel() {
             </PopoverContent>
           </Popover>
 
+          {/* Year filter */}
+          <Popover open={yearsOpen} onOpenChange={setYearsOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <CalendarRange className="w-4 h-4" />
+                Jaar{filterYears.length > 0 ? ` (${filterYears.length})` : ""}
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-44" align="end">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold">Cohort jaar</span>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => setFilterYears(allYears)}>Alles aan</Button>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => setFilterYears([])}>Uit</Button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                {allYears.map((y) => (
+                  <label key={y} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox checked={filterYears.includes(y)} onCheckedChange={() => toggleYear(y)} />
+                    {y}
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Period range */}
+          <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <CalendarRange className="w-4 h-4" />
+                {filterPeriodRange[0] === 1 && filterPeriodRange[1] === 13
+                  ? "Periode"
+                  : `P${filterPeriodRange[0]}–P${filterPeriodRange[1]}`}
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64" align="end">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold">Periode-range (P1–P13)</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs px-2"
+                  onClick={() => setFilterPeriodRange([1, 13])}
+                >
+                  Reset
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className="text-[10px] text-muted-foreground mb-1">Van</div>
+                  <Select
+                    value={String(filterPeriodRange[0])}
+                    onValueChange={(v) =>
+                      setFilterPeriodRange(([_, hi]) => {
+                        const lo = Number(v);
+                        return [lo, Math.max(lo, hi)];
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 13 }, (_, i) => i + 1).map((p) => (
+                        <SelectItem key={p} value={String(p)}>P{p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <div className="text-[10px] text-muted-foreground mb-1">Tot</div>
+                  <Select
+                    value={String(filterPeriodRange[1])}
+                    onValueChange={(v) =>
+                      setFilterPeriodRange(([lo, _]) => {
+                        const hi = Number(v);
+                        return [Math.min(lo, hi), hi];
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 13 }, (_, i) => i + 1).map((p) => (
+                        <SelectItem key={p} value={String(p)}>P{p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
           <div className="flex rounded-lg border border-border overflow-hidden">
             {(["all", "active", "terminated"] as StatusFilter[]).map((s) => (
               <button
@@ -128,6 +254,7 @@ export default function Groeimodel() {
               <p className="text-xs text-muted-foreground mt-1">
                 Cumulatieve verliezen tot break-even
               </p>
+              <FilterSummary {...filterProps} className="mt-2" />
               <DevNote
                 story={<><strong>As a user (C-level)</strong>, I want to see the total cumulative loss generated by all consultants before they reached break-even, <strong>so that</strong> I can quantify how much capital the company invests in ramping up new sales hires.</>}
                 logic={`For every consultant, take the deepest dip below zero of their
@@ -160,6 +287,7 @@ Then sum it across the whole sales team:
               <p className="text-xs text-muted-foreground mt-1">
                 Over alle consultants die break-even hebben bereikt
               </p>
+              <FilterSummary {...filterProps} className="mt-2" />
               <DevNote
                 story={<><strong>As a user (C-level)</strong>, I want to see the average number of months a consultant needs to become profitable, <strong>so that</strong> I can set realistic ramp-up expectations and benchmark recruitment & onboarding effectiveness over time.</>}
                 logic={`Only look at consultants who have ALREADY crossed break-even.
@@ -190,6 +318,7 @@ breaking even, are NOT included in this average.`}
               <p className="text-xs text-muted-foreground mt-1">
                 Actieve consultants nog vóór break-even
               </p>
+              <FilterSummary {...filterProps} className="mt-2" />
               <DevNote
                 story={<><strong>As a user (C-level)</strong>, I want to see how many active consultants have not yet reached break-even, <strong>so that</strong> I understand the size of the open investment position and how much margin pressure exists from non-profitable hires.</>}
                 logic={`Count a consultant if BOTH conditions are true:
@@ -220,6 +349,7 @@ company), the consultant is excluded.`}
               <p className="text-xs text-muted-foreground mt-1">
                 Winst na break-even / opstartinvestering
               </p>
+              <FilterSummary {...filterProps} className="mt-2" />
               <DevNote
                 story={<><strong>As a user (C-level)</strong>, I want to see the multiple of return that the consultant cohort generated relative to the capital invested in their startup phase, <strong>so that</strong> I can judge whether our hiring + ramp-up model is financially healthy at portfolio level.</>}
                 logic={`Compare what the team has earned AFTER break-even against
@@ -262,7 +392,12 @@ Reading the result:
             </div>
           </CardHeader>
           <CardContent>
-            <CohortChart filterUnits={filterUnits} filterStatus={statusFilter} />
+            <CohortChart
+              filterUnits={filterUnits}
+              filterStatus={statusFilter}
+              filterYears={filterYears}
+              filterPeriodRange={filterPeriodRange}
+            />
           </CardContent>
         </Card>
       </AnimatedCard>
@@ -273,6 +408,7 @@ Reading the result:
           <CardHeader>
             <CardTitle>Per consultant</CardTitle>
             <CardDescription>{filteredRows.length} consultants — gesorteerd op opstartkosten</CardDescription>
+            <FilterSummary {...filterProps} className="mt-1" />
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -326,6 +462,7 @@ Reading the result:
             <CardHeader>
               <CardTitle className="text-base">Opstartkosten per unit</CardTitle>
               <CardDescription>Gemiddelde investering tot break-even</CardDescription>
+              <FilterSummary {...filterProps} className="mt-1" />
             </CardHeader>
             <CardContent>
               <div className="w-full h-[260px]">
@@ -375,7 +512,12 @@ visually consistent across the dashboard.`}
               <CardDescription>Aantal consultants per break-even venster</CardDescription>
             </CardHeader>
             <CardContent>
-              <BreakEvenHistogram />
+              <BreakEvenHistogram
+                filterUnits={filterUnits}
+                filterStatus={statusFilter}
+                filterYears={filterYears}
+                filterPeriodRange={filterPeriodRange}
+              />
             </CardContent>
           </Card>
         </AnimatedCard>

@@ -180,7 +180,9 @@ export function getStartupCostByUnit() {
   }));
 }
 
-export function getBreakEvenDistribution() {
+export function getBreakEvenDistributionFor(
+  rows: { result: BreakEvenResult }[] = lifecyclesWithBreakEven,
+) {
   const buckets = [
     { label: "M0-M3", min: 0, max: 3, count: 0 },
     { label: "M3-M6", min: 3, max: 6, count: 0 },
@@ -189,7 +191,7 @@ export function getBreakEvenDistribution() {
     { label: "M12+", min: 12, max: Infinity, count: 0 },
     { label: "Niet bereikt", min: -1, max: -1, count: 0 },
   ];
-  for (const { result } of lifecyclesWithBreakEven) {
+  for (const { result } of rows) {
     if (result.breakEvenMonth === null) {
       buckets[buckets.length - 1].count += 1;
     } else {
@@ -198,6 +200,21 @@ export function getBreakEvenDistribution() {
     }
   }
   return buckets;
+}
+
+export function getBreakEvenDistribution() {
+  return getBreakEvenDistributionFor(lifecyclesWithBreakEven);
+}
+
+export function getAvailableCohortYears(): number[] {
+  const years = new Set<number>();
+  for (const lc of consultantLifecycles) years.add(lc.startDate.getFullYear());
+  return Array.from(years).sort((a, b) => a - b);
+}
+
+/** Map calendar month (0-11) to period (1-13). */
+export function monthToPeriod(month: number): number {
+  return Math.min(13, Math.max(1, Math.floor(month * 13 / 12) + 1));
 }
 
 export function formatEuro(n: number): string {
