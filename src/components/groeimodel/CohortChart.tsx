@@ -252,6 +252,10 @@ export function CohortChart({
     startAnimation();
     return () => {
       animTimers.current.forEach((t) => window.clearTimeout(t));
+      if (animRafRef.current !== null) {
+        cancelAnimationFrame(animRafRef.current);
+        animRafRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maxMonths]);
