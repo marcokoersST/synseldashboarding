@@ -116,14 +116,15 @@ export function CohortChart({
     const breakEvenMaxMonth = breakEvenPoints.length
       ? Math.max(...breakEvenPoints.map((p) => p.month))
       : Math.min(maxMonths - 1, 12);
-    const exitPoints = consultants
-      .filter((c) => c.exitMonth !== null)
-      .map((c) => ({
-        id: c.id,
-        name: c.name,
-        color: c.color,
-        month: c.exitMonth as number,
-        balance: c.series[c.exitMonth as number]?.balance ?? 0,
+    const exitPoints = filtered
+      .filter(({ result }) => result.exitMonth !== null)
+      .map(({ lifecycle, result }) => ({
+        id: lifecycle.id,
+        name: lifecycle.name,
+        color: lifecycle.unitColor,
+        month: result.exitMonth as number,
+        balance: result.cumulativeSeries[result.exitMonth as number]?.balance ?? 0,
+        exitDate: lifecycle.endDate as Date,
       }));
     return { data, consultants, minBal, maxBal, maxMonths, breakEvenPoints, exitPoints, breakEvenMaxMonth };
   }, [filtered]);
@@ -173,6 +174,12 @@ export function CohortChart({
   const [animPhase, setAnimPhase] = useState<AnimPhase>("intro-zoom");
   const [animTick, setAnimTick] = useState(0); // forces re-render during draw
   const animTimers = useRef<number[]>([]);
+
+  // Exit marker hover tooltip
+  const [exitHover, setExitHover] = useState<
+    | { id: string; name: string; date: Date; balance: number; x: number; y: number }
+    | null
+  >(null);
 
   const startAnimation = useCallback(() => {
     // Clear pending timers
@@ -328,9 +335,21 @@ export function CohortChart({
           const cx = xScale(p.month);
           const cy = yScale(splitScale.transform(p.balance));
           if (cx == null || cy == null) return null;
+          const onEnter = (e: React.MouseEvent) => {
+            const rect = wrapperRef.current?.getBoundingClientRect();
+            setExitHover({
+              id: String(p.id),
+              name: p.name,
+              date: p.exitDate,
+              balance: p.balance,
+              x: e.clientX - (rect?.left ?? 0),
+              y: e.clientY - (rect?.top ?? 0),
+            });
+          };
+          const onLeave = () => setExitHover(null);
           return (
-            <g key={p.id}>
-              <title>{`${p.name} — uit dienst`}</title>
+            <g key={String(p.id)} style={{ cursor: "pointer" }} onMouseEnter={onEnter} onMouseMove={onEnter} onMouseLeave={onLeave}>
+              <circle cx={cx} cy={cy} r={10} fill="transparent" />
               <circle cx={cx} cy={cy} r={8} fill="hsl(var(--destructive))" stroke="hsl(var(--background))" strokeWidth={2} />
               <foreignObject x={cx - 6} y={cy - 6} width={12} height={12} style={{ pointerEvents: "none" }}>
                 <div style={{ color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -343,6 +362,9 @@ export function CohortChart({
       </g>
     );
   };
+
+  const formatExitDate = (d: Date) =>
+    d.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
 
   return (
     <div className="w-full">
@@ -386,7 +408,7 @@ export function CohortChart({
 
       <div
         ref={wrapperRef}
-        className={`w-full h-[520px] select-none ${panMode ? (dragRef.current ? "cursor-grabbing" : "cursor-grab") : ""}`}
+        className={`relative w-full h-[520px] select-none ${panMode ? (dragRef.current ? "cursor-grabbing" : "cursor-grab") : ""}`}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={endDrag}
@@ -485,6 +507,29 @@ export function CohortChart({
             <Customized component={ExitMarkers} />
           </LineChart>
         </ResponsiveContainer>
+        {exitHover && (
+          <div
+            className="pointer-events-none absolute z-50 rounded-md border border-border bg-card shadow-lg px-3 py-2 text-xs"
+            style={{
+              left: Math.min(exitHover.x + 14, (wrapperRef.current?.clientWidth ?? 0) - 200),
+              top: Math.max(exitHover.y - 60, 4),
+              minWidth: 180,
+            }}
+          >
+            <div className="flex items-center gap-1.5 font-semibold text-destructive mb-1">
+              <LogOut className="w-3 h-3" />
+              Uit dienst
+            </div>
+            <div className="font-medium text-foreground">{exitHover.name}</div>
+            <div className="text-muted-foreground mt-0.5">{formatExitDate(exitHover.date)}</div>
+            <div className="mt-1.5 pt-1.5 border-t border-border flex items-center justify-between gap-3">
+              <span className="text-muted-foreground">Saldo:</span>
+              <span className={`font-semibold ${exitHover.balance >= 0 ? "text-foreground" : "text-destructive"}`}>
+                {formatEuro(exitHover.balance)}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <DevNote
