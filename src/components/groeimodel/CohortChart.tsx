@@ -408,7 +408,7 @@ export function CohortChart({
 
       <div
         ref={wrapperRef}
-        className={`w-full h-[520px] select-none ${panMode ? (dragRef.current ? "cursor-grabbing" : "cursor-grab") : ""}`}
+        className={`relative w-full h-[520px] select-none ${panMode ? (dragRef.current ? "cursor-grabbing" : "cursor-grab") : ""}`}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={endDrag}
