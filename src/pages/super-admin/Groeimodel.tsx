@@ -262,6 +262,13 @@ export default function Groeimodel() {
                 </tbody>
               </table>
             </div>
+            <div className="px-4 pb-4">
+              <DevNote
+                story={<><strong>As a user (C-level)</strong>, I want to inspect each consultant's lifecycle in a single row — start/end dates, a sparkline of their cumulative balance, total startup cost, the month they reached break-even, current status, and post break-even profit — <strong>so that</strong> I can quickly spot outliers, slow ramp-ups, and high-ROI hires worth replicating.</>}
+                source={<><code>filteredRows</code> (derived from <code>lifecyclesWithBreakEven</code> in <code>groeimodelData.ts</code>) sorted descending by <code>result.startupCost</code>; each row is rendered by <code>ConsultantTimelineRow</code>.</>}
+                logic={<>Sparkline = <code>result.cumulativeSeries</code>. Status = <code>getStatus(lifecycle, result)</code> → <code>"terminated"</code> if <code>endDate</code> exists, else <code>"profitable"</code> if <code>breakEvenMonth !== null</code>, else <code>"startup"</code>. "Winst sindsdien" = <code>result.profitSinceBreakEven</code>.</>}
+              />
+            </div>
           </CardContent>
         </Card>
       </AnimatedCard>
