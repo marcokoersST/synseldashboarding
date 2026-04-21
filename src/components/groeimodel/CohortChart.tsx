@@ -335,9 +335,21 @@ export function CohortChart({
           const cx = xScale(p.month);
           const cy = yScale(splitScale.transform(p.balance));
           if (cx == null || cy == null) return null;
+          const onEnter = (e: React.MouseEvent) => {
+            const rect = wrapperRef.current?.getBoundingClientRect();
+            setExitHover({
+              id: p.id,
+              name: p.name,
+              date: p.exitDate,
+              balance: p.balance,
+              x: e.clientX - (rect?.left ?? 0),
+              y: e.clientY - (rect?.top ?? 0),
+            });
+          };
+          const onLeave = () => setExitHover(null);
           return (
-            <g key={p.id}>
-              <title>{`${p.name} — uit dienst`}</title>
+            <g key={p.id} style={{ cursor: "pointer" }} onMouseEnter={onEnter} onMouseMove={onEnter} onMouseLeave={onLeave}>
+              <circle cx={cx} cy={cy} r={10} fill="transparent" />
               <circle cx={cx} cy={cy} r={8} fill="hsl(var(--destructive))" stroke="hsl(var(--background))" strokeWidth={2} />
               <foreignObject x={cx - 6} y={cy - 6} width={12} height={12} style={{ pointerEvents: "none" }}>
                 <div style={{ color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -350,6 +362,9 @@ export function CohortChart({
       </g>
     );
   };
+
+  const formatExitDate = (d: Date) =>
+    d.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
 
   return (
     <div className="w-full">
