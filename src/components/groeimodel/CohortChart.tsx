@@ -20,6 +20,7 @@ import { DevNote } from "./DevNote";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, RotateCcw, Hand, Play, LogOut } from "lucide-react";
 import { FilterSummary } from "./FilterSummary";
+import { makeSplitScale } from "./splitScale";
 
 interface CohortChartProps {
   filterUnits: string[];
