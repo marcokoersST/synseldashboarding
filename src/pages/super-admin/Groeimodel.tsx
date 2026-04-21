@@ -129,6 +129,100 @@ export default function Groeimodel() {
             </PopoverContent>
           </Popover>
 
+          {/* Year filter */}
+          <Popover open={yearsOpen} onOpenChange={setYearsOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <CalendarRange className="w-4 h-4" />
+                Jaar{filterYears.length > 0 ? ` (${filterYears.length})` : ""}
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-44" align="end">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold">Cohort jaar</span>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => setFilterYears(allYears)}>Alles aan</Button>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => setFilterYears([])}>Uit</Button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                {allYears.map((y) => (
+                  <label key={y} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox checked={filterYears.includes(y)} onCheckedChange={() => toggleYear(y)} />
+                    {y}
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Period range */}
+          <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <CalendarRange className="w-4 h-4" />
+                {filterPeriodRange[0] === 1 && filterPeriodRange[1] === 13
+                  ? "Periode"
+                  : `P${filterPeriodRange[0]}–P${filterPeriodRange[1]}`}
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64" align="end">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold">Periode-range (P1–P13)</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs px-2"
+                  onClick={() => setFilterPeriodRange([1, 13])}
+                >
+                  Reset
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className="text-[10px] text-muted-foreground mb-1">Van</div>
+                  <Select
+                    value={String(filterPeriodRange[0])}
+                    onValueChange={(v) =>
+                      setFilterPeriodRange(([_, hi]) => {
+                        const lo = Number(v);
+                        return [lo, Math.max(lo, hi)];
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 13 }, (_, i) => i + 1).map((p) => (
+                        <SelectItem key={p} value={String(p)}>P{p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <div className="text-[10px] text-muted-foreground mb-1">Tot</div>
+                  <Select
+                    value={String(filterPeriodRange[1])}
+                    onValueChange={(v) =>
+                      setFilterPeriodRange(([lo, _]) => {
+                        const hi = Number(v);
+                        return [Math.min(lo, hi), hi];
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 13 }, (_, i) => i + 1).map((p) => (
+                        <SelectItem key={p} value={String(p)}>P{p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
           <div className="flex rounded-lg border border-border overflow-hidden">
             {(["all", "active", "terminated"] as StatusFilter[]).map((s) => (
               <button
