@@ -16,11 +16,24 @@ import {
   monthToPeriod,
 } from "@/data/groeimodelData";
 import { departments } from "@/data/adminData";
-import { Sprout, Clock, TrendingUp, Coins, Filter as FilterIcon, ChevronDown, CalendarRange } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
+import {
+  Sprout,
+  Clock,
+  TrendingUp,
+  Coins,
+  Filter as FilterIcon,
+  ChevronDown,
+  CalendarRange,
+  Info,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, Cell, LabelList } from "recharts";
 import { DevNote } from "@/components/groeimodel/DevNote";
 import { FilterSummary } from "@/components/groeimodel/FilterSummary";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type StatusFilter = "all" | "active" | "terminated";
 
