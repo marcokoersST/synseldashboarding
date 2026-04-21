@@ -128,24 +128,38 @@ export default function Groeimodel() {
             </PopoverContent>
           </Popover>
 
-          {/* Year filter */}
-          <Popover open={yearsOpen} onOpenChange={setYearsOpen}>
+          {/* Combined Period (Year + P-range) filter */}
+          <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <CalendarRange className="w-4 h-4" />
-                Jaar{filterYears.length > 0 ? ` (${filterYears.length})` : ""}
+                {(() => {
+                  const hasYears = filterYears.length > 0;
+                  const hasRange = !(filterPeriodRange[0] === 1 && filterPeriodRange[1] === 13);
+                  if (!hasYears && !hasRange) return "Periode";
+                  const sortedYears = [...filterYears].sort((a, b) => a - b);
+                  const yearLabel = hasYears
+                    ? sortedYears.length <= 2
+                      ? sortedYears.join(", ")
+                      : `${sortedYears.slice(0, 2).join(", ")} +${sortedYears.length - 2}`
+                    : "";
+                  const rangeLabel = hasRange ? `P${filterPeriodRange[0]}–P${filterPeriodRange[1]}` : "";
+                  if (hasYears && hasRange) return `${yearLabel} · ${rangeLabel}`;
+                  return yearLabel || rangeLabel;
+                })()}
                 <ChevronDown className="w-3 h-3" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-44" align="end">
+            <PopoverContent className="w-72" align="end">
+              {/* Section 1 — Years */}
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold">Cohort jaar</span>
+                <span className="text-xs font-semibold">Jaar</span>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => setFilterYears(allYears)}>Alles aan</Button>
                   <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => setFilterYears([])}>Uit</Button>
                 </div>
               </div>
-              <div className="space-y-1.5">
+              <div className="grid grid-cols-2 gap-1.5">
                 {allYears.map((y) => (
                   <label key={y} className="flex items-center gap-2 text-sm cursor-pointer">
                     <Checkbox checked={filterYears.includes(y)} onCheckedChange={() => toggleYear(y)} />
@@ -153,23 +167,12 @@ export default function Groeimodel() {
                   </label>
                 ))}
               </div>
-            </PopoverContent>
-          </Popover>
 
-          {/* Period range */}
-          <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <CalendarRange className="w-4 h-4" />
-                {filterPeriodRange[0] === 1 && filterPeriodRange[1] === 13
-                  ? "Periode"
-                  : `P${filterPeriodRange[0]}–P${filterPeriodRange[1]}`}
-                <ChevronDown className="w-3 h-3" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64" align="end">
+              <div className="my-3 h-px bg-border" />
+
+              {/* Section 2 — Period range */}
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold">Periode-range (P1–P13)</span>
+                <span className="text-xs font-semibold">Periode (P1–P13)</span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -219,6 +222,9 @@ export default function Groeimodel() {
                   </Select>
                 </div>
               </div>
+              <p className="mt-2 text-[10px] text-muted-foreground leading-snug">
+                Filtert consultants die in deze periode binnen de gekozen jaren zijn gestart.
+              </p>
             </PopoverContent>
           </Popover>
 
