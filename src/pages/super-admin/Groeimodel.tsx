@@ -10,17 +10,17 @@ import { ConsultantTimelineRow } from "@/components/groeimodel/ConsultantTimelin
 import { BreakEvenHistogram } from "@/components/groeimodel/BreakEvenHistogram";
 import {
   lifecyclesWithBreakEven,
-  getTotalStartupInvestment,
-  getAverageBreakEvenMonths,
-  getActiveStartupCount,
-  getCohortROI,
   getStartupCostByUnit,
   formatEuro,
+  getAvailableCohortYears,
+  monthToPeriod,
 } from "@/data/groeimodelData";
 import { departments } from "@/data/adminData";
-import { Sprout, Clock, TrendingUp, Coins, Filter as FilterIcon, ChevronDown } from "lucide-react";
+import { Sprout, Clock, TrendingUp, Coins, Filter as FilterIcon, ChevronDown, CalendarRange } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
 import { DevNote } from "@/components/groeimodel/DevNote";
+import { FilterSummary } from "@/components/groeimodel/FilterSummary";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type StatusFilter = "all" | "active" | "terminated";
 
