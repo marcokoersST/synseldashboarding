@@ -195,7 +195,7 @@ export default function Groeimodel() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Popover open={unitsOpen} onOpenChange={setUnitsOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -272,6 +272,7 @@ export default function Groeimodel() {
                   variant="ghost"
                   size="sm"
                   className="h-6 text-xs px-2"
+                  disabled={periodIsDefault}
                   onClick={() => setFilterPeriodRange([1, 13])}
                 >
                   Reset
