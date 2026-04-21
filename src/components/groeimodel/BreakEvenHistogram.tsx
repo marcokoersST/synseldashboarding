@@ -1,5 +1,6 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
 import { getBreakEvenDistribution } from "@/data/groeimodelData";
+import { DevNote } from "./DevNote";
 
 export function BreakEvenHistogram() {
   const data = getBreakEvenDistribution();
