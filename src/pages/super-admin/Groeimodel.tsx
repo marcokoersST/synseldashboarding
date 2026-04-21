@@ -543,33 +543,59 @@ Reading the result:
         <Card>
           <CardHeader>
             <CardTitle>Per consultant</CardTitle>
-            <CardDescription>{filteredRows.length} consultants — gesorteerd op opstartkosten</CardDescription>
+            <CardDescription>
+              {filteredRows.length} consultant{filteredRows.length === 1 ? "" : "s"} — gesorteerd op{" "}
+              {{
+                name: "naam",
+                unit: "unit",
+                start: "startdatum",
+                startup: "opstartkosten",
+                be: "break-even maand",
+                profit: "winst sindsdien",
+              }[sortKey]}{" "}
+              ({sortDir === "asc" ? "oplopend" : "aflopend"})
+            </CardDescription>
             <FilterSummary {...filterProps} className="mt-1" />
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted/40 border-y border-border">
-                  <tr className="text-xs text-muted-foreground uppercase tracking-wider">
-                    <th className="px-4 py-2 text-left font-medium">Consultant</th>
-                    <th className="px-4 py-2 text-left font-medium">Unit</th>
-                    <th className="px-4 py-2 text-left font-medium">Periode</th>
-                    <th className="px-4 py-2 text-left font-medium">Verloop</th>
-                    <th className="px-4 py-2 text-left font-medium">Opstartkosten</th>
-                    <th className="px-4 py-2 text-left font-medium">Break-even</th>
-                    <th className="px-4 py-2 text-left font-medium">Status</th>
-                    <th className="px-4 py-2 text-left font-medium">Winst sindsdien</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...filteredRows]
-                    .sort((a, b) => b.result.startupCost - a.result.startupCost)
-                    .map(({ lifecycle, result }) => (
+            {sortedRows.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                  <FilterIcon className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <div className="text-sm font-medium mb-1">Geen consultants in deze selectie</div>
+                <div className="text-xs text-muted-foreground mb-3">
+                  Pas de filters aan of zet ze terug naar de standaardwaarden.
+                </div>
+                {activeFilterCount > 0 && (
+                  <Button variant="link" size="sm" onClick={resetAllFilters} className="h-auto p-0 text-primary">
+                    Reset filters ({activeFilterCount})
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-muted/40 border-y border-border">
+                    <tr className="text-xs text-muted-foreground">
+                      <th className="px-4 py-2 text-left"><SortHeader label="Consultant" k="name" /></th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Unit" k="unit" /></th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Startdatum" k="start" /></th>
+                      <th className="px-4 py-2 text-left font-medium uppercase tracking-wider">Verloop</th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Opstartkosten" k="startup" /></th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Break-even" k="be" /></th>
+                      <th className="px-4 py-2 text-left font-medium uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Winst sindsdien" k="profit" /></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedRows.map(({ lifecycle, result }) => (
                       <ConsultantTimelineRow key={lifecycle.id} lifecycle={lifecycle} result={result} />
                     ))}
-                </tbody>
-              </table>
-            </div>
+                  </tbody>
+                </table>
+              </div>
+            )}
             <div className="px-4 pb-4">
               <DevNote
                 story={<><strong>As a user (C-level)</strong>, I want to inspect each consultant's lifecycle in a single row — start/end dates, a sparkline of their cumulative balance, total startup cost, the month they reached break-even, current status, and post break-even profit — <strong>so that</strong> I can quickly spot outliers, slow ramp-ups, and high-ROI hires worth replicating.</>}
@@ -611,19 +637,28 @@ Reading the result:
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                     <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => formatEuro(v)} />
-                    <Tooltip
+                    <RTooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
                         borderRadius: "8px",
                         fontSize: "12px",
                       }}
-                      formatter={(v: number) => [formatEuro(v), "Gem. opstart"]}
+                      formatter={(v: number, _n, item: any) => {
+                        const n = item?.payload?.count ?? 0;
+                        return [`${formatEuro(v)} · n=${n}`, item?.payload?.name ?? "Gem. opstart"];
+                      }}
                     />
                     <Bar dataKey="avgStartup" radius={[4, 4, 0, 0]}>
                       {startupByUnit.map((u, i) => (
                         <Cell key={i} fill={u.color} />
                       ))}
+                      <LabelList
+                        dataKey="avgStartup"
+                        position="top"
+                        formatter={(v: number) => formatEuro(v)}
+                        style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
