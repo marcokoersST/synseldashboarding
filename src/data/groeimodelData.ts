@@ -266,11 +266,11 @@ export function getBreakEvenDistributionFor(
   rows: { result: BreakEvenResult }[] = lifecyclesWithBreakEven,
 ) {
   const buckets = [
-    { label: "M0-M3", min: 0, max: 3, count: 0 },
-    { label: "M3-M6", min: 3, max: 6, count: 0 },
-    { label: "M6-M9", min: 6, max: 9, count: 0 },
-    { label: "M9-M12", min: 9, max: 12, count: 0 },
-    { label: "M12+", min: 12, max: Infinity, count: 0 },
+    { label: "P0-P3", min: 0, max: 3, count: 0 },
+    { label: "P3-P6", min: 3, max: 6, count: 0 },
+    { label: "P6-P9", min: 6, max: 9, count: 0 },
+    { label: "P9-P12", min: 9, max: 12, count: 0 },
+    { label: "P12+", min: 12, max: Infinity, count: 0 },
     { label: "Niet bereikt", min: -1, max: -1, count: 0 },
   ];
   for (const { result } of rows) {
@@ -310,4 +310,84 @@ export function formatEuro(n: number): string {
 
 export function formatDate(d: Date): string {
   return d.toLocaleDateString("nl-NL", { month: "short", year: "numeric" });
+}
+
+// ---------------------------------------------------------------------------
+// Activity & Revenue per Period (calendar-aligned)
+// ---------------------------------------------------------------------------
+
+export interface ActivityRevenuePoint {
+  /** Absolute period index = year * 13 + (period - 1) */
+  abs: number;
+  year: number;
+  period: number;
+  /** "P5 '25" or "P5" depending on caller */
+  label: string;
+  active: number;
+  revenue: number;
+}
+
+interface ActivityRevenueFilters {
+  filterUnits: string[];
+  statusFilter: "all" | "active" | "terminated";
+  filterYears: number[];
+  filterPeriodRange: [number, number];
+}
+
+/**
+ * Aggregates per calendar period (year × P1..P13):
+ *  - active: # consultants that were employed during that period (after filters)
+ *  - revenue: sum of monthlyMargin[offset] across those active consultants,
+ *             where offset = absPeriodIndex - absStartIndex.
+ *
+ * Time-axis: Cartesian product of (years ∈ filterYears OR all available) × (P in filterPeriodRange).
+ * If multiple years are visible, labels are "P{n} '{YY}" — otherwise just "P{n}".
+ */
+export function getActivityAndRevenueByPeriod(
+  filters: ActivityRevenueFilters,
+): ActivityRevenuePoint[] {
+  const { filterUnits, statusFilter, filterYears, filterPeriodRange } = filters;
+
+  // Apply same filters as KPI cards / cohort chart.
+  const filtered = lifecyclesWithBreakEven.filter(({ lifecycle }) => {
+    if (filterUnits.length > 0 && !filterUnits.includes(lifecycle.unit)) return false;
+    if (statusFilter === "active" && lifecycle.endDate) return false;
+    if (statusFilter === "terminated" && !lifecycle.endDate) return false;
+    if (filterYears.length > 0 && !filterYears.includes(lifecycle.startDate.getFullYear())) return false;
+    const p = monthToPeriod(lifecycle.startDate.getMonth());
+    if (p < filterPeriodRange[0] || p > filterPeriodRange[1]) return false;
+    return true;
+  });
+
+  const years = filterYears.length > 0 ? [...filterYears].sort((a, b) => a - b) : getAvailableCohortYears();
+  const [pLo, pHi] = filterPeriodRange;
+  const showYearSuffix = years.length > 1;
+
+  // Pre-compute consultant absolute start/end indices.
+  const consultants = filtered.map(({ lifecycle }) => {
+    const startAbs = lifecycle.startDate.getFullYear() * 13 + (monthToPeriod(lifecycle.startDate.getMonth()) - 1);
+    const endAbs = lifecycle.endDate
+      ? lifecycle.endDate.getFullYear() * 13 + (monthToPeriod(lifecycle.endDate.getMonth()) - 1)
+      : Number.POSITIVE_INFINITY;
+    return { lifecycle, startAbs, endAbs };
+  });
+
+  const points: ActivityRevenuePoint[] = [];
+  for (const y of years) {
+    for (let p = pLo; p <= pHi; p++) {
+      const abs = y * 13 + (p - 1);
+      let active = 0;
+      let revenue = 0;
+      for (const { lifecycle, startAbs, endAbs } of consultants) {
+        if (abs < startAbs || abs > endAbs) continue;
+        active += 1;
+        const offset = abs - startAbs;
+        const m = lifecycle.monthlyMargin[offset];
+        if (typeof m === "number") revenue += m;
+      }
+      const label = showYearSuffix ? `P${p} '${String(y).slice(-2)}` : `P${p}`;
+      points.push({ abs, year: y, period: p, label, active, revenue });
+    }
+  }
+  return points.sort((a, b) => a.abs - b.abs);
 }
