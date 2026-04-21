@@ -13,8 +13,8 @@ describe("split Y-axis scale", () => {
       ];
       for (const [yMin, yMax] of ranges) {
         const s = makeSplitScale(yMin, yMax);
-        expect(s.transform(0)).toBe(0);
-        expect(s.inverse(0)).toBe(0);
+        expect(s.transform(0) === 0).toBe(true); // accept ±0
+        expect(s.inverse(0) === 0).toBe(true);
       }
     });
 
