@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { lifecyclesWithBreakEven, formatEuro, ConsultantLifecycle, BreakEvenResult } from "@/data/groeimodelData";
 import { useMemo } from "react";
+import { DevNote } from "./DevNote";
 
 interface CohortChartProps {
   filterUnits: string[]; // empty = all
