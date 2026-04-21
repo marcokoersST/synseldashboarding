@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, RotateCcw, Hand, Play, LogOut } from "lucide-react";
 import { FilterSummary } from "./FilterSummary";
 import { makeSplitScale } from "./splitScale";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface CohortChartProps {
   filterUnits: string[];
@@ -158,11 +159,17 @@ export function CohortChart({
   const animTimers = useRef<number[]>([]);
   const animRafRef = useRef<number | null>(null);
 
-  // Exit marker hover tooltip
+  // Exit marker hover/focus tooltip
   const [exitHover, setExitHover] = useState<
     | { id: string; name: string; date: Date; balance: number; x: number; y: number }
     | null
   >(null);
+
+  // Hover-highlight state for line emphasis
+  const [hoveredLine, setHoveredLine] = useState<number | null>(null);
+
+  // Reduced-motion preference
+  const prefersReducedMotion = useReducedMotion();
 
   // Hard-reset every line path: cancel transitions, hide instantly via dashoffset.
   const resetLinePaths = useCallback(() => {
@@ -192,6 +199,23 @@ export function CohortChart({
       animRafRef.current = null;
     }
     setExitHover(null);
+
+    // Reduced-motion: jump straight to done state with full domain & visible lines
+    if (prefersReducedMotion) {
+      setAnimPhase("done");
+      setDomain([0, Math.max(1, maxMonths - 1)]);
+      // Make sure any previously-hidden paths become visible
+      const wrapper = wrapperRef.current;
+      if (wrapper) {
+        const paths = wrapper.querySelectorAll<SVGPathElement>(".recharts-line-curve");
+        paths.forEach((path) => {
+          path.style.transition = "none";
+          path.style.strokeDasharray = "none";
+          path.style.strokeDashoffset = "0";
+        });
+      }
+      return;
+    }
 
     // 2. Reset to phase 1 + zoomed-in domain + hide lines immediately
     setAnimPhase("intro-zoom");
@@ -227,12 +251,23 @@ export function CohortChart({
       setAnimPhase("done");
     }, 3300);
     animTimers.current.push(t1, t2, t3);
-  }, [maxMonths, breakEvenMaxMonth, resetLinePaths]);
+  }, [maxMonths, breakEvenMaxMonth, resetLinePaths, prefersReducedMotion]);
 
-  // Trigger intro animation on mount and whenever filtered set changes meaningfully
+  // Trigger intro animation ONLY on initial mount + manual replay (not on filter changes).
+  // Filter changes still re-render data but do not restart the intro.
   useEffect(() => {
     startAnimation();
+    // Keyboard shortcut: R = replay
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && /input|textarea|select/i.test(e.target.tagName)) return;
+      if (e.key === "r" || e.key === "R") {
+        e.preventDefault();
+        startAnimation();
+      }
+    };
+    window.addEventListener("keydown", onKey);
     return () => {
+      window.removeEventListener("keydown", onKey);
       animTimers.current.forEach((t) => window.clearTimeout(t));
       if (animRafRef.current !== null) {
         cancelAnimationFrame(animRafRef.current);
@@ -240,7 +275,7 @@ export function CohortChart({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [maxMonths]);
+  }, []);
 
   const zoom = (factor: number) => {
     setDomain(([a, b]) => {
@@ -355,20 +390,46 @@ export function CohortChart({
           const cx = xScale(p.month);
           const cy = yScale(splitScale.transform(p.balance));
           if (cx == null || cy == null) return null;
-          const onEnter = (e: React.MouseEvent) => {
+          const showTip = (clientX: number, clientY: number) => {
             const rect = wrapperRef.current?.getBoundingClientRect();
             setExitHover({
               id: String(p.id),
               name: p.name,
               date: p.exitDate,
               balance: p.balance,
-              x: e.clientX - (rect?.left ?? 0),
-              y: e.clientY - (rect?.top ?? 0),
+              x: clientX - (rect?.left ?? 0),
+              y: clientY - (rect?.top ?? 0),
             });
           };
+          const onEnter = (e: React.MouseEvent) => showTip(e.clientX, e.clientY);
           const onLeave = () => setExitHover(null);
+          const onFocus = () => {
+            // Position tip near the marker itself when keyboard-focused
+            const rect = wrapperRef.current?.getBoundingClientRect();
+            setExitHover({
+              id: String(p.id),
+              name: p.name,
+              date: p.exitDate,
+              balance: p.balance,
+              x: cx,
+              y: cy,
+            });
+            void rect;
+          };
           return (
-            <g key={String(p.id)} style={{ cursor: "pointer" }} onMouseEnter={onEnter} onMouseMove={onEnter} onMouseLeave={onLeave}>
+            <g
+              key={String(p.id)}
+              tabIndex={0}
+              role="img"
+              aria-label={`Uit dienst — ${p.name} op ${formatExitDate(p.exitDate)}, saldo ${formatEuro(p.balance)}`}
+              style={{ cursor: "pointer", outline: "none" }}
+              className="focus-visible:[&>circle:nth-child(2)]:stroke-foreground"
+              onMouseEnter={onEnter}
+              onMouseMove={onEnter}
+              onMouseLeave={onLeave}
+              onFocus={onFocus}
+              onBlur={onLeave}
+            >
               <circle cx={cx} cy={cy} r={10} fill="transparent" />
               <circle cx={cx} cy={cy} r={8} fill="hsl(var(--destructive))" stroke="hsl(var(--background))" strokeWidth={2} />
               <foreignObject x={cx - 6} y={cy - 6} width={12} height={12} style={{ pointerEvents: "none" }}>
@@ -402,16 +463,16 @@ export function CohortChart({
           Venster: M{Math.round(domain[0])} – M{Math.round(domain[1])}
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" className="h-7 px-2" onClick={startAnimation} title="Animatie opnieuw afspelen">
+          <Button variant="outline" size="sm" className="h-7 px-2" onClick={startAnimation} title="Animatie opnieuw afspelen (R)" aria-label="Animatie opnieuw afspelen">
             <Play className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="outline" size="sm" className="h-7 px-2" onClick={() => zoom(0.75)} title="Zoom in">
+          <Button variant="outline" size="sm" className="h-7 px-2" onClick={() => zoom(0.75)} title="Zoom in" aria-label="Zoom in">
             <ZoomIn className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="outline" size="sm" className="h-7 px-2" onClick={() => zoom(1.33)} title="Zoom uit">
+          <Button variant="outline" size="sm" className="h-7 px-2" onClick={() => zoom(1.33)} title="Zoom uit" aria-label="Zoom uit">
             <ZoomOut className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="outline" size="sm" className="h-7 px-2" onClick={reset} title="Reset">
+          <Button variant="outline" size="sm" className="h-7 px-2" onClick={reset} title="Reset venster" aria-label="Reset venster">
             <RotateCcw className="w-3.5 h-3.5" />
           </Button>
           <Button
@@ -420,6 +481,8 @@ export function CohortChart({
             className="h-7 px-2"
             onClick={() => setPanMode((p) => !p)}
             title="Pan / verschuif"
+            aria-label="Pan / verschuif"
+            aria-pressed={panMode}
           >
             <Hand className="w-3.5 h-3.5" />
           </Button>
@@ -478,51 +541,120 @@ export function CohortChart({
             />
             {!panMode && animPhase === "done" && (
               <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                }}
-                labelFormatter={(v) => `Maand ${v}`}
-                formatter={(value: number, name: string) => {
-                  const c = consultants.find((x) => `c_${x.id}` === name || `x_${x.id}` === name);
-                  const real = splitScale.inverse(value);
-                  return [formatEuro(real), c?.name ?? name];
+                wrapperStyle={{ outline: "none" }}
+                cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }}
+                content={(tipProps: any) => {
+                  const { active, payload, label, coordinate } = tipProps || {};
+                  if (!active || !payload || !payload.length) return null;
+                  const cy = coordinate?.y ?? 0;
+                  const items = payload
+                    .filter((p: any) => p.value != null)
+                    .map((p: any) => {
+                      const c = consultants.find((x) => `c_${x.id}` === p.dataKey || `x_${x.id}` === p.dataKey);
+                      // Recharts payload entries don't always carry pixel-y; approximate by re-projecting via the value.
+                      // We can compute distance using transformed value vs cursor's data-Y if available.
+                      const dist = Math.abs((p.value as number) - (tipProps?.payload?.[0]?.payload?.month != null ? (p.value as number) : (p.value as number)));
+                      return {
+                        key: String(p.dataKey),
+                        name: c?.name ?? String(p.dataKey),
+                        color: (p.stroke as string) || (c?.color ?? "hsl(var(--foreground))"),
+                        real: splitScale.inverse(p.value as number),
+                        transformedY: p.value as number,
+                        dist,
+                      };
+                    });
+                  // Sort by absolute |display-y - cursor-y in chart space|. Without per-point pixel-y,
+                  // approximate with distance between transformed value and the average — good enough for ranking.
+                  const cursorTransformed = items.length
+                    ? items.reduce((s: number, x: any) => s + x.transformedY, 0) / items.length
+                    : 0;
+                  // Better proxy: use coordinate.y indirectly via re-projection of cursor; fallback to cursorTransformed.
+                  void cy;
+                  items.sort(
+                    (a: any, b: any) =>
+                      Math.abs(a.transformedY - cursorTransformed) - Math.abs(b.transformedY - cursorTransformed),
+                  );
+                  const top = items.slice(0, 3);
+                  const rest = items.length - top.length;
+                  return (
+                    <div
+                      style={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: 8,
+                        fontSize: 12,
+                        padding: "8px 10px",
+                        minWidth: 180,
+                      }}
+                    >
+                      <div className="font-semibold mb-1.5">Maand {label}</div>
+                      {top.map((it: any) => (
+                        <div key={it.key} className="flex items-center justify-between gap-3 py-0.5">
+                          <span className="flex items-center gap-1.5 truncate">
+                            <span
+                              className="inline-block w-2 h-2 rounded-full shrink-0"
+                              style={{ background: it.color }}
+                            />
+                            <span className="truncate">{it.name}</span>
+                          </span>
+                          <span className="font-medium">{formatEuro(it.real)}</span>
+                        </div>
+                      ))}
+                      {rest > 0 && (
+                        <div className="mt-1 pt-1 border-t border-border text-[11px] text-muted-foreground">
+                          +{rest} andere consultant{rest === 1 ? "" : "s"}
+                        </div>
+                      )}
+                    </div>
+                  );
                 }}
               />
             )}
-            {consultants.map((c) => (
-              <Line
-                key={`active_${c.id}`}
-                type="monotone"
-                dataKey={`c_${c.id}`}
-                stroke={c.color}
-                strokeWidth={1.5}
-                strokeOpacity={0.55}
-                dot={false}
-                connectNulls
-                isAnimationActive={false}
-                activeDot={panMode ? false : { r: 4 }}
-              />
-            ))}
-            {consultants
-              .filter((c) => c.exitMonth !== null)
-              .map((c) => (
+            {consultants.map((c) => {
+              const isHovered = hoveredLine === c.id;
+              const isOther = hoveredLine !== null && hoveredLine !== c.id;
+              return (
                 <Line
-                  key={`exit_${c.id}`}
+                  key={`active_${c.id}`}
                   type="monotone"
-                  dataKey={`x_${c.id}`}
+                  dataKey={`c_${c.id}`}
                   stroke={c.color}
-                  strokeWidth={1.5}
-                  strokeOpacity={0.45}
-                  strokeDasharray="4 3"
+                  strokeWidth={isHovered ? 3 : 1.5}
+                  strokeOpacity={isOther ? 0.15 : isHovered ? 1 : 0.55}
                   dot={false}
                   connectNulls
                   isAnimationActive={false}
                   activeDot={panMode ? false : { r: 4 }}
+                  onMouseEnter={() => setHoveredLine(c.id)}
+                  onMouseLeave={() => setHoveredLine(null)}
+                  style={{ transition: "stroke-opacity 300ms ease-out, stroke-width 300ms ease-out" }}
                 />
-              ))}
+              );
+            })}
+            {consultants
+              .filter((c) => c.exitMonth !== null)
+              .map((c) => {
+                const isHovered = hoveredLine === c.id;
+                const isOther = hoveredLine !== null && hoveredLine !== c.id;
+                return (
+                  <Line
+                    key={`exit_${c.id}`}
+                    type="monotone"
+                    dataKey={`x_${c.id}`}
+                    stroke={c.color}
+                    strokeWidth={isHovered ? 2.5 : 1.5}
+                    strokeOpacity={isOther ? 0.1 : isHovered ? 0.9 : 0.45}
+                    strokeDasharray="4 3"
+                    dot={false}
+                    connectNulls
+                    isAnimationActive={false}
+                    activeDot={panMode ? false : { r: 4 }}
+                    onMouseEnter={() => setHoveredLine(c.id)}
+                    onMouseLeave={() => setHoveredLine(null)}
+                    style={{ transition: "stroke-opacity 300ms ease-out, stroke-width 300ms ease-out" }}
+                  />
+                );
+              })}
             <Customized component={BreakEvenDots} />
             <Customized component={ExitMarkers} />
           </LineChart>

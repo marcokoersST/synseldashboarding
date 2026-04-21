@@ -16,11 +16,24 @@ import {
   monthToPeriod,
 } from "@/data/groeimodelData";
 import { departments } from "@/data/adminData";
-import { Sprout, Clock, TrendingUp, Coins, Filter as FilterIcon, ChevronDown, CalendarRange } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
+import {
+  Sprout,
+  Clock,
+  TrendingUp,
+  Coins,
+  Filter as FilterIcon,
+  ChevronDown,
+  CalendarRange,
+  Info,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, Cell, LabelList } from "recharts";
 import { DevNote } from "@/components/groeimodel/DevNote";
 import { FilterSummary } from "@/components/groeimodel/FilterSummary";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type StatusFilter = "all" | "active" | "terminated";
 
@@ -31,6 +44,11 @@ export default function Groeimodel() {
   const [filterYears, setFilterYears] = useState<number[]>([]);
   const [filterPeriodRange, setFilterPeriodRange] = useState<[number, number]>([1, 13]);
   const [periodOpen, setPeriodOpen] = useState(false);
+
+  // Sortable table state
+  type SortKey = "name" | "unit" | "start" | "startup" | "be" | "profit";
+  const [sortKey, setSortKey] = useState<SortKey>("startup");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const allUnits = departments.map((d) => d.name);
   const allYears = useMemo(() => getAvailableCohortYears(), []);
@@ -61,10 +79,20 @@ export default function Groeimodel() {
     () => filteredRows.filter((x) => !x.lifecycle.endDate && x.result.breakEvenMonth === null).length,
     [filteredRows],
   );
+  const breakEvenSpread = useMemo(() => {
+    const reached = filteredRows
+      .filter((x) => x.result.breakEvenMonth !== null)
+      .map((x) => x.result.breakEvenMonth as number);
+    if (!reached.length) return null;
+    return { min: Math.min(...reached), max: Math.max(...reached) };
+  }, [filteredRows]);
+  const totalProfitSinceBE = useMemo(
+    () => filteredRows.reduce((s, x) => s + Math.max(0, x.result.profitSinceBreakEven), 0),
+    [filteredRows],
+  );
   const roi = useMemo(() => {
-    const totalProfit = filteredRows.reduce((s, x) => s + Math.max(0, x.result.profitSinceBreakEven), 0);
-    return totalStartup > 0 ? totalProfit / totalStartup : 0;
-  }, [filteredRows, totalStartup]);
+    return totalStartup > 0 ? totalProfitSinceBE / totalStartup : 0;
+  }, [totalProfitSinceBE, totalStartup]);
 
   const startupByUnit = getStartupCostByUnit();
 
@@ -74,6 +102,73 @@ export default function Groeimodel() {
   const toggleYear = (y: number) => {
     setFilterYears((prev) => (prev.includes(y) ? prev.filter((x) => x !== y) : [...prev, y]));
   };
+
+  const resetAllFilters = () => {
+    setFilterUnits([]);
+    setStatusFilter("all");
+    setFilterYears([]);
+    setFilterPeriodRange([1, 13]);
+  };
+
+  const activeFilterCount =
+    (filterUnits.length > 0 ? 1 : 0) +
+    (statusFilter !== "all" ? 1 : 0) +
+    (filterYears.length > 0 ? 1 : 0) +
+    (!(filterPeriodRange[0] === 1 && filterPeriodRange[1] === 13) ? 1 : 0);
+
+  const periodIsDefault = filterPeriodRange[0] === 1 && filterPeriodRange[1] === 13;
+
+  // Sort the filtered rows
+  const sortedRows = useMemo(() => {
+    const arr = [...filteredRows];
+    const dir = sortDir === "asc" ? 1 : -1;
+    arr.sort((a, b) => {
+      switch (sortKey) {
+        case "name":
+          return a.lifecycle.name.localeCompare(b.lifecycle.name) * dir;
+        case "unit":
+          return a.lifecycle.unit.localeCompare(b.lifecycle.unit) * dir;
+        case "start":
+          return (a.lifecycle.startDate.getTime() - b.lifecycle.startDate.getTime()) * dir;
+        case "startup":
+          return (a.result.startupCost - b.result.startupCost) * dir;
+        case "be": {
+          const av = a.result.breakEvenMonth ?? Number.POSITIVE_INFINITY;
+          const bv = b.result.breakEvenMonth ?? Number.POSITIVE_INFINITY;
+          return (av - bv) * dir;
+        }
+        case "profit":
+          return (a.result.profitSinceBreakEven - b.result.profitSinceBreakEven) * dir;
+      }
+    });
+    return arr;
+  }, [filteredRows, sortKey, sortDir]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "name" || key === "unit" ? "asc" : "desc");
+    }
+  };
+
+  const SortHeader = ({ label, k, align = "left" }: { label: string; k: SortKey; align?: "left" | "right" }) => (
+    <button
+      type="button"
+      onClick={() => toggleSort(k)}
+      className={`flex items-center gap-1 font-medium uppercase tracking-wider hover:text-foreground transition-colors ${
+        align === "right" ? "ml-auto" : ""
+      }`}
+    >
+      {label}
+      {sortKey === k ? (
+        sortDir === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+      ) : (
+        <ArrowUpDown className="w-3 h-3 opacity-50" />
+      )}
+    </button>
+  );
 
   const filterProps = {
     years: filterYears,
@@ -100,7 +195,7 @@ export default function Groeimodel() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Popover open={unitsOpen} onOpenChange={setUnitsOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -177,6 +272,7 @@ export default function Groeimodel() {
                   variant="ghost"
                   size="sm"
                   className="h-6 text-xs px-2"
+                  disabled={periodIsDefault}
                   onClick={() => setFilterPeriodRange([1, 13])}
                 >
                   Reset
@@ -295,9 +391,13 @@ Filter scope: Year + Period (P1–P13) on start date, Unit, Status.`}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{avgBreakEven} <span className="text-base font-normal text-muted-foreground">maanden</span></div>
+              <div className="text-2xl font-bold">
+                {avgBreakEven} <span className="text-base font-normal text-muted-foreground">maanden</span>
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Over alle consultants die break-even hebben bereikt
+                {breakEvenSpread
+                  ? `Spreiding M${breakEvenSpread.min} – M${breakEvenSpread.max}`
+                  : "Nog geen consultants in deze selectie hebben break-even bereikt"}
               </p>
               <FilterSummary {...filterProps} className="mt-2" />
               <DevNote
@@ -362,7 +462,26 @@ company), the consultant is excluded.`}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-success">{roi.toFixed(2)}×</div>
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="inline-flex items-center gap-1.5 cursor-help">
+                      <span className="text-2xl font-bold text-success">{roi.toFixed(2)}×</span>
+                      <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs text-xs leading-relaxed">
+                    <div className="font-semibold mb-1">ROI berekening</div>
+                    <div>
+                      {roi.toFixed(2)}× = <span className="font-medium">{formatEuro(totalProfitSinceBE)}</span> winst
+                      sinds break-even / <span className="font-medium">{formatEuro(totalStartup)}</span> opstartinvestering.
+                    </div>
+                    <div className="mt-1.5 text-muted-foreground">
+                      Let op: telt alleen niet-geamortiseerde opstartkosten van consultants in deze selectie.
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <p className="text-xs text-muted-foreground mt-1">
                 Winst na break-even / opstartinvestering
               </p>
@@ -424,33 +543,59 @@ Reading the result:
         <Card>
           <CardHeader>
             <CardTitle>Per consultant</CardTitle>
-            <CardDescription>{filteredRows.length} consultants — gesorteerd op opstartkosten</CardDescription>
+            <CardDescription>
+              {filteredRows.length} consultant{filteredRows.length === 1 ? "" : "s"} — gesorteerd op{" "}
+              {{
+                name: "naam",
+                unit: "unit",
+                start: "startdatum",
+                startup: "opstartkosten",
+                be: "break-even maand",
+                profit: "winst sindsdien",
+              }[sortKey]}{" "}
+              ({sortDir === "asc" ? "oplopend" : "aflopend"})
+            </CardDescription>
             <FilterSummary {...filterProps} className="mt-1" />
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted/40 border-y border-border">
-                  <tr className="text-xs text-muted-foreground uppercase tracking-wider">
-                    <th className="px-4 py-2 text-left font-medium">Consultant</th>
-                    <th className="px-4 py-2 text-left font-medium">Unit</th>
-                    <th className="px-4 py-2 text-left font-medium">Periode</th>
-                    <th className="px-4 py-2 text-left font-medium">Verloop</th>
-                    <th className="px-4 py-2 text-left font-medium">Opstartkosten</th>
-                    <th className="px-4 py-2 text-left font-medium">Break-even</th>
-                    <th className="px-4 py-2 text-left font-medium">Status</th>
-                    <th className="px-4 py-2 text-left font-medium">Winst sindsdien</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...filteredRows]
-                    .sort((a, b) => b.result.startupCost - a.result.startupCost)
-                    .map(({ lifecycle, result }) => (
+            {sortedRows.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                  <FilterIcon className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <div className="text-sm font-medium mb-1">Geen consultants in deze selectie</div>
+                <div className="text-xs text-muted-foreground mb-3">
+                  Pas de filters aan of zet ze terug naar de standaardwaarden.
+                </div>
+                {activeFilterCount > 0 && (
+                  <Button variant="link" size="sm" onClick={resetAllFilters} className="h-auto p-0 text-primary">
+                    Reset filters ({activeFilterCount})
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-muted/40 border-y border-border">
+                    <tr className="text-xs text-muted-foreground">
+                      <th className="px-4 py-2 text-left"><SortHeader label="Consultant" k="name" /></th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Unit" k="unit" /></th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Startdatum" k="start" /></th>
+                      <th className="px-4 py-2 text-left font-medium uppercase tracking-wider">Verloop</th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Opstartkosten" k="startup" /></th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Break-even" k="be" /></th>
+                      <th className="px-4 py-2 text-left font-medium uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Winst sindsdien" k="profit" /></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedRows.map(({ lifecycle, result }) => (
                       <ConsultantTimelineRow key={lifecycle.id} lifecycle={lifecycle} result={result} />
                     ))}
-                </tbody>
-              </table>
-            </div>
+                  </tbody>
+                </table>
+              </div>
+            )}
             <div className="px-4 pb-4">
               <DevNote
                 story={<><strong>As a user (C-level)</strong>, I want to inspect each consultant's lifecycle in a single row — start/end dates, a sparkline of their cumulative balance, total startup cost, the month they reached break-even, current status, and post break-even profit — <strong>so that</strong> I can quickly spot outliers, slow ramp-ups, and high-ROI hires worth replicating.</>}
@@ -492,19 +637,28 @@ Reading the result:
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                     <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => formatEuro(v)} />
-                    <Tooltip
+                    <RTooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
                         borderRadius: "8px",
                         fontSize: "12px",
                       }}
-                      formatter={(v: number) => [formatEuro(v), "Gem. opstart"]}
+                      formatter={(v: number, _n, item: any) => {
+                        const n = item?.payload?.count ?? 0;
+                        return [`${formatEuro(v)} · n=${n}`, item?.payload?.name ?? "Gem. opstart"];
+                      }}
                     />
                     <Bar dataKey="avgStartup" radius={[4, 4, 0, 0]}>
                       {startupByUnit.map((u, i) => (
                         <Cell key={i} fill={u.color} />
                       ))}
+                      <LabelList
+                        dataKey="avgStartup"
+                        position="top"
+                        formatter={(v: number) => formatEuro(v)}
+                        style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>

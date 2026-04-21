@@ -1,4 +1,4 @@
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, LabelList } from "recharts";
 import { getBreakEvenDistributionFor, lifecyclesWithBreakEven, monthToPeriod } from "@/data/groeimodelData";
 import { useMemo } from "react";
 import { DevNote } from "./DevNote";
@@ -64,9 +64,14 @@ export function BreakEvenHistogram({
               formatter={(v: number) => [`${v} consultants`, "Aantal"]}
             />
             <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-              {data.map((_, i) => (
-                <Cell key={i} fill={colors[i]} />
+              {data.map((d, i) => (
+                <Cell key={i} fill={colors[i]} fillOpacity={d.count === 0 ? 0.2 : 1} />
               ))}
+              <LabelList
+                dataKey="count"
+                position="top"
+                style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+              />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
