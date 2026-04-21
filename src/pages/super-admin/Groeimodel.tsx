@@ -157,7 +157,7 @@ export default function Groeimodel() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-warning">{activeStartup}</div>
+              <div className="text-2xl font-bold text-gold">{activeStartup}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Actieve consultants nog vóór break-even
               </p>

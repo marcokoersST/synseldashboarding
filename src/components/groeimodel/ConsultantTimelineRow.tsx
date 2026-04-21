@@ -20,8 +20,8 @@ export function ConsultantTimelineRow({ lifecycle, result }: Props) {
   const sparkData = result.cumulativeSeries.map((s) => ({ month: s.month, balance: s.balance }));
 
   const statusBadge = {
-    startup: { label: "Opstart", className: "bg-amber-500/15 text-amber-700 border-amber-500/30" },
-    profitable: { label: "Winstgevend", className: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
+    startup: { label: "Opstart", className: "bg-gold/15 text-gold border-gold/30" },
+    profitable: { label: "Winstgevend", className: "bg-success/15 text-success border-success/30" },
     terminated: { label: "Uit dienst", className: "bg-muted text-muted-foreground border-border" },
   }[status];
 
@@ -82,7 +82,7 @@ export function ConsultantTimelineRow({ lifecycle, result }: Props) {
         </Badge>
       </td>
       <td className="px-4 py-3 text-sm font-medium">
-        <span className={cn(result.profitSinceBreakEven > 0 ? "text-emerald-600" : "text-muted-foreground")}>
+        <span className={cn(result.profitSinceBreakEven > 0 ? "text-success" : "text-muted-foreground")}>
           {result.breakEvenMonth !== null ? formatEuro(result.profitSinceBreakEven) : "—"}
         </span>
       </td>
