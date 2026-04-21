@@ -28,27 +28,59 @@ export default function Groeimodel() {
   const [filterUnits, setFilterUnits] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [unitsOpen, setUnitsOpen] = useState(false);
+  const [filterYears, setFilterYears] = useState<number[]>([]);
+  const [yearsOpen, setYearsOpen] = useState(false);
+  const [filterPeriodRange, setFilterPeriodRange] = useState<[number, number]>([1, 13]);
+  const [periodOpen, setPeriodOpen] = useState(false);
 
   const allUnits = departments.map((d) => d.name);
-
-  const totalStartup = getTotalStartupInvestment();
-  const avgBreakEven = getAverageBreakEvenMonths();
-  const activeStartup = getActiveStartupCount();
-  const roi = getCohortROI();
+  const allYears = useMemo(() => getAvailableCohortYears(), []);
 
   const filteredRows = useMemo(() => {
     return lifecyclesWithBreakEven.filter(({ lifecycle }) => {
       if (filterUnits.length > 0 && !filterUnits.includes(lifecycle.unit)) return false;
       if (statusFilter === "active" && lifecycle.endDate) return false;
       if (statusFilter === "terminated" && !lifecycle.endDate) return false;
+      if (filterYears.length > 0 && !filterYears.includes(lifecycle.startDate.getFullYear())) return false;
+      const p = monthToPeriod(lifecycle.startDate.getMonth());
+      if (p < filterPeriodRange[0] || p > filterPeriodRange[1]) return false;
       return true;
     });
-  }, [filterUnits, statusFilter]);
+  }, [filterUnits, statusFilter, filterYears, filterPeriodRange]);
+
+  // KPIs derived from filtered set
+  const totalStartup = useMemo(
+    () => filteredRows.reduce((s, x) => s + x.result.startupCost, 0),
+    [filteredRows],
+  );
+  const avgBreakEven = useMemo(() => {
+    const reached = filteredRows.filter((x) => x.result.breakEvenMonth !== null);
+    if (!reached.length) return 0;
+    return Math.round(reached.reduce((s, x) => s + (x.result.breakEvenMonth as number), 0) / reached.length);
+  }, [filteredRows]);
+  const activeStartup = useMemo(
+    () => filteredRows.filter((x) => !x.lifecycle.endDate && x.result.breakEvenMonth === null).length,
+    [filteredRows],
+  );
+  const roi = useMemo(() => {
+    const totalProfit = filteredRows.reduce((s, x) => s + Math.max(0, x.result.profitSinceBreakEven), 0);
+    return totalStartup > 0 ? totalProfit / totalStartup : 0;
+  }, [filteredRows, totalStartup]);
 
   const startupByUnit = getStartupCostByUnit();
 
   const toggleUnit = (u: string) => {
     setFilterUnits((prev) => (prev.includes(u) ? prev.filter((x) => x !== u) : [...prev, u]));
+  };
+  const toggleYear = (y: number) => {
+    setFilterYears((prev) => (prev.includes(y) ? prev.filter((x) => x !== y) : [...prev, y]));
+  };
+
+  const filterProps = {
+    years: filterYears,
+    periodRange: filterPeriodRange,
+    units: filterUnits,
+    status: statusFilter,
   };
 
   return (
