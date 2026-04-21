@@ -1,81 +1,73 @@
 
 
-# Plan: Synsel Groeimodel — QA verbeteringen
+# Plan: Periode-terminologie + nieuwe Activiteit & Omzet tegel
 
-13 verbeteringen gegroepeerd in 4 logische batches. Geen nieuwe dependencies. Alleen Groeimodel-bestanden geraakt.
+## 1. Terminologie: "Maand/M" → "Periode/P" overal in Groeimodel
 
-## Batch A — Cohortgrafiek interactie & leesbaarheid
+De interne data-stap blijft 1 cohort-tick (~ 4 weken), maar het label in de UI wordt "P" en "periodes". Zo wordt "M5" automatisch "P5" en "4 maanden" → "4 periodes".
 
-**1. Hover-highlight op lijnen** (`CohortChart.tsx`)
-- `hoveredLine` state. Op `<Line>` `onMouseEnter/Leave` → die lijn `strokeWidth=3`, andere `opacity=0.15`, transition 300ms. Pattern uit `RevenueChart`.
+**Scope (alleen Groeimodel-bestanden):**
+- `ConsultantTimelineRow.tsx` — kolom Break-even: `M{n}` → `P{n}`.
+- `BreakEvenHistogram.tsx` — bucket-labels `M0-M3`, `M3-M6`, `M6-M9`, `M9-M12`, `M12+` → `P0-P3`, `P3-P6`, `P6-P9`, `P9-P12`, `P12+`. Tooltip-tekst en DevNote (`months`/`maanden`) → `periodes`.
+- `CohortChart.tsx` — X-as `tickFormatter` `M${n}` → `P${n}`; X-as label "Maanden sinds startdatum" → "Periodes sinds startdatum"; tooltip-header "Maand {label}" → "Periode {label}". Reduced-motion en exit-marker tooltip-teksten met "maand" → "periode".
+- `Groeimodel.tsx` KPI "Gem. tijd tot break-even": `maanden` → `periodes`; spreidingstekst `M{min} – M{max}` → `P{min} – P{max}`. Tabel-sortbeschrijving `"break-even maand"` → `"break-even periode"`. ROI-tooltip blijft ongewijzigd (geen tijdseenheid).
+- `DevNote` story/logic teksten in alle Groeimodel-tegels: `month(s)` → `period(s)` waar het over de cohort-tick gaat (kostenbasis "€4.260/m" blijft maandelijks → vervangen door "per periode" of laten staan met voetnoot — kies: kort houden = "per periode (~4 wk)").
 
-**2. Slimme tooltip — top 3 dichtstbijzijnde** (`CohortChart.tsx`)
-- Custom `<Tooltip content={...}>`: sorteer payload op `|cursorY - lineY|`, toon top 3 + footer "+N anderen". Bewaar bestaande styling.
+**Niet aanraken:** kalenderdatum-formattering (`formatDate` toont nog "jan 2025") en de `monthToPeriod`-helper (die mapt kalendermaand→periode 1–13, een ander concept).
 
-**3. Toolbar a11y & reduced-motion** (`CohortChart.tsx`, `src/index.css`)
-- Tooltips op de 5 toolbar-knoppen met kbd-hint ("Pan (P)", "Reset (R)", "Replay (Space)"). Keyboard listeners optioneel binnen scope: alleen `R` voor replay.
-- `useReducedMotion` hook (matchMedia `prefers-reduced-motion`) → bij true: `startAnimation` springt direct naar phase `done`, geen path-draw, geen domain-zoom.
+## 2. Nieuwe paginabrede tegel: "Actieve consultants & Omzet per periode"
 
-**4. Animatie alleen bij mount/replay** (`CohortChart.tsx`)
-- Verwijder filter-deps uit het effect dat `startAnimation` aanroept. Run alleen op mount + manuele replay-klik. Filter-changes herrenderen data zonder intro opnieuw te triggeren.
+**Locatie:** onderaan `Groeimodel.tsx`, onder de bestaande twee onderste tegels, full-width Card.
 
-**5. Exit-marker keyboard focus** (`CohortChart.tsx`)
-- `<g tabIndex={0} role="img" aria-label="Exit ...">` op exit-marker, `onFocus/onBlur` togglet dezelfde tooltip-state als hover.
+**Visualisatie:** Recharts `ComposedChart` met dual Y-as.
+- X-as: kalenderperiode-labels die respecteren de Year+P1–P13 filters bovenaan.
+  - 1 jaar geselecteerd → 13 ticks: `P1`, `P2`, …, `P13`.
+  - 2 of meer jaren → ticks: `P1 '25`, `P2 '25`, …, `P13 '25`, `P1 '26`, `P2 '26`, …. Per jaar gegroepeerd, oplopend gesorteerd.
+  - Alleen jaren in `filterYears` (of alle `getAvailableCohortYears()` als leeg) en alleen periodes in `filterPeriodRange`.
+- Lijn 1 (linker Y-as): **Actieve consultants** — per periode tellen we hoeveel consultants in de selectie op dat moment in dienst waren (`startDate ≤ periode-eind` én (`!endDate` of `endDate ≥ periode-begin`)). Eenheid: aantal.
+- Lijn 2 (rechter Y-as): **Omzet (totale marge)** — som over alle in die periode actieve consultants van hun `monthlyMargin[offset]` waarbij `offset = period-tick − startMaand-offset`. Eenheid: € (gebruik `formatEuro`).
 
-## Batch B — KPI-kaarten
+**Filter-respect:** dezelfde `filterUnits` / `statusFilter` / `filterYears` / `filterPeriodRange` als KPI-kaarten en cohort-chart. Per consultant alleen meetellen als hij door alle filters komt.
 
-**6. KPI "Gem. tijd tot break-even" — context** (`Groeimodel.tsx`)
-- Onder de hoofdwaarde: `<span>spreiding {min}–{max} mnd</span>`. Berekend uit `breakEvenMonth` van filtered consultants die break-even hebben bereikt.
+**Tijd-as opbouw (technisch):**
+- Bouw array van `{year, period}` voor elke (year ∈ years) × (period ∈ [periodRange[0]..periodRange[1]]).
+- Vertaal elke `{year, period}` naar een "absolute period index" (`year * 13 + (period-1)`) zodat we lineair kunnen sorteren.
+- Voor elke consultant berekenen we `startAbs = startYear * 13 + monthToPeriod(startMonth) - 1`, idem voor `endAbs` (of ∞).
+- Per X-tick: actief = consultants met `startAbs ≤ tickAbs ≤ endAbs`; omzet = som van `monthlyMargin[tickAbs - startAbs]` (clamp naar 0 bij index out-of-range).
 
-**7. KPI "ROI cohort" — info-tooltip** (`Groeimodel.tsx`)
-- `<Tooltip>` (Radix) op het waarde-element met uitleg: "35× = €X winst sinds break-even / €Y opstartinvestering. Telt alleen niet-geamortiseerde opstartkosten." `Info`-icoon (lucide) naast de waarde.
+**UI:**
+- Kaart-titel: "Actieve consultants & Omzet per periode".
+- Beschrijving: "Per periode in de geselecteerde tijdspanne — links aantal actieve consultants, rechts totale gerealiseerde omzet."
+- Boven de chart: `<FilterSummary {...filterProps} />`.
+- Legenda onderaan, twee items: blauw rondje "Actieve consultants" / gouden rondje "Omzet".
+- Custom Tooltip: "P{n} '{YY}" met beide waardes ("12 actieve consultants" / formatEuro).
+- Onderaan: `DevNote` met uitleg van de berekening.
+- Hoogte chart: `h-[320px]`, container `w-full`.
 
-**8. FilterSummary onder elke KPI-kaart** (`Groeimodel.tsx`)
-- Vervang statische "Toont: alle consultants" door `<FilterSummary years periodRange units status />` (component bestaat al). Consistentie met chart-tegels.
-
-## Batch C — Tabel & bottom charts
-
-**9. Sorteerbare tabel-headers** (`Groeimodel.tsx`)
-- Kolommen: Naam, Unit, Startdatum, Opstartkosten, Break-even maand, Winst sindsdien.
-- `sortKey + sortDir` state. Header-button met `ArrowUpDown` icoon. Pattern: `TVRanglijsten`.
-
-**10. Empty state tabel** (`Groeimodel.tsx`)
-- Bij 0 rijen: gecentreerde card met `Filter` icoon + "Geen consultants in deze selectie" + "Reset filters" link-button (callt parent reset-handler).
-
-**11. "Opstartkosten per unit" — datalabels + n=** (`Groeimodel.tsx` of bijbehorende chart-component)
-- `<LabelList dataKey="value" position="top" formatter={€-format}>` op de bar.
-- Custom Tooltip: "Operators · €6,8k · n=4".
-
-**12. "Break-even verdeling" — lege buckets dimmen** (`BreakEvenHistogram.tsx`)
-- In de `data.map((_, i) => <Cell ...>)` — als `data[i].count === 0` → `fillOpacity={0.2}`, en altijd een `LabelList` boven de bar met de count (ook "0").
-
-## Batch D — Periode-popover & responsive
-
-**13. Periode-Reset disable bij default** (`Groeimodel.tsx`)
-- `disabled={periodRange[0]===1 && periodRange[1]===13 && years.length===0}` op de Reset-knop binnen de popover. Visueel: `opacity-50 cursor-not-allowed`.
-
-**14. Responsive top-rij <1024px** (`Groeimodel.tsx`)
-- Container van filters: `flex flex-wrap gap-2`. Onder `md:` (`<768px`) collapse Unit + Periode + Status in één gecombineerde "Filters" popover-trigger met badge-count actieve filters.
-
-## Buiten scope (bewust)
-- Color-blind shape-onderscheid op pulsing dots → vereist meer design-input, later.
-- Legenda als chip-grid naast chart (onder #1) → optioneel in voorstel; alleen hover-highlight wordt geïmplementeerd, gebruiker kan later om chip-grid vragen.
-- Performance-profiling van re-renders → onderdeel van #4 lost merkbare hick-ups op.
+**Edge cases:**
+- Lege selectie (0 consultants): toon centered placeholder "Geen data voor deze selectie".
+- Veel ticks (3 jaar × 13 = 39): X-as `interval="preserveStartEnd"` met evt. `angle={-30}` voor leesbaarheid.
 
 ## Bestanden
 
 | Bestand | Wijzigingen |
 |---|---|
-| `src/components/groeimodel/CohortChart.tsx` | #1, #2, #3, #4, #5 |
-| `src/components/groeimodel/BreakEvenHistogram.tsx` | #12 |
-| `src/pages/super-admin/Groeimodel.tsx` | #6, #7, #8, #9, #10, #11, #13, #14 |
-| `src/hooks/useReducedMotion.ts` (nieuw, klein) | helper voor #3 |
-| `src/index.css` | optioneel kleine focus-ring style voor #5 |
+| `src/data/groeimodelData.ts` | Bucket-labels in `getBreakEvenDistributionFor` → P-notatie. Nieuwe helper `getActivityAndRevenueByPeriod(filters)` die de aggregatie per absolute periode-index doet. |
+| `src/components/groeimodel/ConsultantTimelineRow.tsx` | `M{n}` → `P{n}`. |
+| `src/components/groeimodel/BreakEvenHistogram.tsx` | DevNote-tekst "months" → "periods"; tooltip-formatter ongewijzigd (toont al "consultants"). |
+| `src/components/groeimodel/CohortChart.tsx` | X-as tick + label, tooltip-header, reduced-motion + exit-marker aria-labels: "maand" → "periode" / `M{n}` → `P{n}`. |
+| `src/components/groeimodel/ActivityRevenueChart.tsx` *(nieuw)* | De ComposedChart-component met dual-axis. |
+| `src/pages/super-admin/Groeimodel.tsx` | KPI Gem. break-even: "maanden"→"periodes", spreiding `M`→`P`. Tabel-sortKey-label "break-even maand"→"break-even periode". Render `<ActivityRevenueChart …filters />` als nieuwe full-width Card onderaan. |
 
-## Validatie na implementatie
-- Klik door 4 filter-combinaties: tabel sorteert correct, empty state verschijnt bij lege selectie, FilterSummary update onder elke KPI.
-- Hover lijn in chart → highlight werkt; tooltip toont max 3 + "+N anderen".
-- DevTools → emulate `prefers-reduced-motion: reduce` → geen intro-animatie.
-- Resize naar 800px → filters wrap of vallen in gecombineerde popover.
-- Periode-popover bij default state → Reset-knop disabled.
+## Buiten scope (bewust)
+- We rebranden alleen het label, niet de berekening — 1 cohort-tick blijft ~1 kalendermaand. Een echte 4-weken-periode zou de `monthlyMargin`-array moeten herschalen; gebruiker heeft dat niet gevraagd, dus we voorkomen mock-breaking changes.
+- Datum-formattering ("jan 2025" in tabel) blijft kalendermaand — dit is een echte datum, geen cohort-tick.
+
+## Validatie
+- Cohort-chart: X-as toont nu `P0, P3, P6…`; tooltip "Periode 5".
+- Tabel break-even: `P5` ipv `M5`.
+- Histogram: bucket-labels `P0-P3`…`P12+`.
+- KPI-kaart: "4 periodes" met "Spreiding P3 – P9".
+- Nieuwe tegel: bij Year=2025 zie je 13 punten (P1–P13). Bij Year=2025+2026 zie je 26 punten gegroepeerd. Bij Period=P5–P9 + Year=2025 zie je 5 punten.
+- Lijnen reageren op unit/status filter (aantallen lopen mee).
 
