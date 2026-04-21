@@ -305,6 +305,11 @@ export default function Groeimodel() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              <DevNote
+                story={<><strong>As a user (C-level)</strong>, I want to compare the average startup investment per business unit, <strong>so that</strong> I can see which units are most expensive to scale and where ramp-up efficiency improvements would have the largest financial impact.</>}
+                source={<><code>getStartupCostByUnit()</code> in <code>groeimodelData.ts</code>, returning <code>{"{ name, avgStartup, color }[]"}</code> per unit.</>}
+                logic={<>For each unit: <code>avgStartup = mean(result.startupCost)</code> over all consultants whose <code>lifecycle.unit</code> matches. Bar color comes from <code>lifecycle.unitColor</code> (semantic unit color).</>}
+              />
             </CardContent>
           </Card>
         </AnimatedCard>
