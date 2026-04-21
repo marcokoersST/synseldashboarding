@@ -45,6 +45,11 @@ export default function Groeimodel() {
   const [filterPeriodRange, setFilterPeriodRange] = useState<[number, number]>([1, 13]);
   const [periodOpen, setPeriodOpen] = useState(false);
 
+  // Sortable table state
+  type SortKey = "name" | "unit" | "start" | "startup" | "be" | "profit";
+  const [sortKey, setSortKey] = useState<SortKey>("startup");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
   const allUnits = departments.map((d) => d.name);
   const allYears = useMemo(() => getAvailableCohortYears(), []);
 
@@ -74,10 +79,20 @@ export default function Groeimodel() {
     () => filteredRows.filter((x) => !x.lifecycle.endDate && x.result.breakEvenMonth === null).length,
     [filteredRows],
   );
+  const breakEvenSpread = useMemo(() => {
+    const reached = filteredRows
+      .filter((x) => x.result.breakEvenMonth !== null)
+      .map((x) => x.result.breakEvenMonth as number);
+    if (!reached.length) return null;
+    return { min: Math.min(...reached), max: Math.max(...reached) };
+  }, [filteredRows]);
+  const totalProfitSinceBE = useMemo(
+    () => filteredRows.reduce((s, x) => s + Math.max(0, x.result.profitSinceBreakEven), 0),
+    [filteredRows],
+  );
   const roi = useMemo(() => {
-    const totalProfit = filteredRows.reduce((s, x) => s + Math.max(0, x.result.profitSinceBreakEven), 0);
-    return totalStartup > 0 ? totalProfit / totalStartup : 0;
-  }, [filteredRows, totalStartup]);
+    return totalStartup > 0 ? totalProfitSinceBE / totalStartup : 0;
+  }, [totalProfitSinceBE, totalStartup]);
 
   const startupByUnit = getStartupCostByUnit();
 
@@ -87,6 +102,73 @@ export default function Groeimodel() {
   const toggleYear = (y: number) => {
     setFilterYears((prev) => (prev.includes(y) ? prev.filter((x) => x !== y) : [...prev, y]));
   };
+
+  const resetAllFilters = () => {
+    setFilterUnits([]);
+    setStatusFilter("all");
+    setFilterYears([]);
+    setFilterPeriodRange([1, 13]);
+  };
+
+  const activeFilterCount =
+    (filterUnits.length > 0 ? 1 : 0) +
+    (statusFilter !== "all" ? 1 : 0) +
+    (filterYears.length > 0 ? 1 : 0) +
+    (!(filterPeriodRange[0] === 1 && filterPeriodRange[1] === 13) ? 1 : 0);
+
+  const periodIsDefault = filterPeriodRange[0] === 1 && filterPeriodRange[1] === 13;
+
+  // Sort the filtered rows
+  const sortedRows = useMemo(() => {
+    const arr = [...filteredRows];
+    const dir = sortDir === "asc" ? 1 : -1;
+    arr.sort((a, b) => {
+      switch (sortKey) {
+        case "name":
+          return a.lifecycle.name.localeCompare(b.lifecycle.name) * dir;
+        case "unit":
+          return a.lifecycle.unit.localeCompare(b.lifecycle.unit) * dir;
+        case "start":
+          return (a.lifecycle.startDate.getTime() - b.lifecycle.startDate.getTime()) * dir;
+        case "startup":
+          return (a.result.startupCost - b.result.startupCost) * dir;
+        case "be": {
+          const av = a.result.breakEvenMonth ?? Number.POSITIVE_INFINITY;
+          const bv = b.result.breakEvenMonth ?? Number.POSITIVE_INFINITY;
+          return (av - bv) * dir;
+        }
+        case "profit":
+          return (a.result.profitSinceBreakEven - b.result.profitSinceBreakEven) * dir;
+      }
+    });
+    return arr;
+  }, [filteredRows, sortKey, sortDir]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "name" || key === "unit" ? "asc" : "desc");
+    }
+  };
+
+  const SortHeader = ({ label, k, align = "left" }: { label: string; k: SortKey; align?: "left" | "right" }) => (
+    <button
+      type="button"
+      onClick={() => toggleSort(k)}
+      className={`flex items-center gap-1 font-medium uppercase tracking-wider hover:text-foreground transition-colors ${
+        align === "right" ? "ml-auto" : ""
+      }`}
+    >
+      {label}
+      {sortKey === k ? (
+        sortDir === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+      ) : (
+        <ArrowUpDown className="w-3 h-3 opacity-50" />
+      )}
+    </button>
+  );
 
   const filterProps = {
     years: filterYears,
