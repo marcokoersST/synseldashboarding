@@ -460,7 +460,7 @@ export function CohortChart({
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-2">
         <div className="text-[11px] text-muted-foreground">
-          Venster: M{Math.round(domain[0])} – M{Math.round(domain[1])}
+          Venster: P{Math.round(domain[0])} – P{Math.round(domain[1])}
         </div>
         <div className="flex items-center gap-1">
           <Button variant="outline" size="sm" className="h-7 px-2" onClick={startAnimation} title="Animatie opnieuw afspelen (R)" aria-label="Animatie opnieuw afspelen">
@@ -506,9 +506,9 @@ export function CohortChart({
               domain={domain}
               allowDataOverflow
               tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => `M${Math.round(v)}`}
+              tickFormatter={(v) => `P${Math.round(v)}`}
               label={{
-                value: "Maanden sinds startdatum",
+                value: "Periodes sinds startdatum",
                 position: "insideBottom",
                 offset: -5,
                 fontSize: 11,
@@ -587,7 +587,7 @@ export function CohortChart({
                         minWidth: 180,
                       }}
                     >
-                      <div className="font-semibold mb-1.5">Maand {label}</div>
+                      <div className="font-semibold mb-1.5">Periode {label}</div>
                       {top.map((it: any) => (
                         <div key={it.key} className="flex items-center justify-between gap-3 py-0.5">
                           <span className="flex items-center gap-1.5 truncate">
