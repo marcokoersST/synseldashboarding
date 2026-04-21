@@ -95,7 +95,7 @@ describe("split Y-axis scale", () => {
         const d = splitScale.transform(v);
         if (v < 0) expect(d).toBeLessThan(0);
         else if (v > 0) expect(d).toBeGreaterThan(0);
-        else expect(d).toBe(0);
+        else expect(d === 0).toBe(true); // accept ±0
       }
     });
   });
