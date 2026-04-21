@@ -73,8 +73,9 @@ export function BreakEvenHistogram({
       </div>
       <DevNote
         story={<><strong>As a user (C-level)</strong>, I want to see how consultants are distributed across break-even time windows, <strong>so that</strong> I can benchmark our ramp-up speed and identify a long-tail of slow performers.</>}
-        logic={`For every consultant, look at the month they crossed break-even
-and drop them into one of these buckets:
+        logic={`For every consultant in the current filter (Year + Period
+P1–P13 + Unit + Status), look at the month they crossed
+break-even and drop them into one of these buckets:
 
    ┌──────────┬──────────┬──────────┬──────────┬─────────┬──────────┐
    │  0 – 3   │  3 – 6   │  6 – 9   │  9 – 12  │  12 +   │ Not yet  │
@@ -82,6 +83,10 @@ and drop them into one of these buckets:
    └──────────┴──────────┴──────────┴──────────┴─────────┴──────────┘
 
 Each bar height  =  number of consultants in that bucket.
+
+Reference: the average consultant is designed to break even
+around month 7–9 (cumulative margin ≈ €150k in 12–18 months
+on a cost basis of ~€4.260/m incl. employer load).
 
 "Not yet" = consultant has not (yet) reached break-even
             (still in startup phase, or left the company before it).`}
