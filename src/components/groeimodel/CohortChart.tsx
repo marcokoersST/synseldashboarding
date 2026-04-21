@@ -348,7 +348,7 @@ export function CohortChart({
           };
           const onLeave = () => setExitHover(null);
           return (
-            <g key={p.id} style={{ cursor: "pointer" }} onMouseEnter={onEnter} onMouseMove={onEnter} onMouseLeave={onLeave}>
+            <g key={String(p.id)} style={{ cursor: "pointer" }} onMouseEnter={onEnter} onMouseMove={onEnter} onMouseLeave={onLeave}>
               <circle cx={cx} cy={cy} r={10} fill="transparent" />
               <circle cx={cx} cy={cy} r={8} fill="hsl(var(--destructive))" stroke="hsl(var(--background))" strokeWidth={2} />
               <foreignObject x={cx - 6} y={cy - 6} width={12} height={12} style={{ pointerEvents: "none" }}>
