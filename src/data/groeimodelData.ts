@@ -16,10 +16,11 @@ export interface ConsultantLifecycle {
 export interface BreakEvenResult {
   breakEvenMonth: number | null; // null = not yet reached
   startupCost: number; // cumulative loss until break-even (positive number)
-  cumulativeSeries: { month: number; balance: number; revenue: number; cost: number }[];
+  cumulativeSeries: { month: number; balance: number; revenue: number; cost: number; isExit?: boolean; postExit?: boolean }[];
   totalMonths: number;
   currentBalance: number;
   profitSinceBreakEven: number;
+  exitMonth: number | null;
 }
 
 // Cost basis: gross monthly salary × employer load factor
