@@ -302,7 +302,12 @@ Filter scope: Year + Period (P1–P13) on start date, Unit, Status.`}
               <FilterSummary {...filterProps} className="mt-2" />
               <DevNote
                 story={<><strong>As a user (C-level)</strong>, I want to see the average number of months a consultant needs to become profitable, <strong>so that</strong> I can set realistic ramp-up expectations and benchmark recruitment & onboarding effectiveness over time.</>}
-                logic={`Only look at consultants who have ALREADY crossed break-even.
+                logic={`Margin model: each consultant follows an S-curve ramp-up
+with seeded noise (±25%) and occasional dips (−40%) — by design
+the average consultant reaches ~€150k cumulative margin in
+12–18 months ("met horten en stoten").
+
+Only look at consultants who have ALREADY crossed break-even.
 For each of them, count the months between their start date
 and the month their running balance first hit zero.
 
