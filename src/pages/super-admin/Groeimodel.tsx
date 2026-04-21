@@ -456,14 +456,18 @@ Reading the result:
                 story={<><strong>As a user (C-level)</strong>, I want to inspect each consultant's lifecycle in a single row — start/end dates, a sparkline of their cumulative balance, total startup cost, the month they reached break-even, current status, and post break-even profit — <strong>so that</strong> I can quickly spot outliers, slow ramp-ups, and high-ROI hires worth replicating.</>}
                 logic={`One row per consultant, sorted by highest startup cost first.
 
-   Sparkline       =  the consultant's running balance over time
+   Sparkline       =  running balance over time, INCLUDING the
+                      post-exit residual decline for terminated
+                      consultants (mirror of the rise, fades to 0)
    Startup cost    =  | lowest point of that balance |
+                      (cost basis = €3.276,49 × 1,30 employer load)
    Break-even      =  the first month where balance ≥ 0
    Profit since    =  balance today  −  0   (only counted after
                       break-even was reached)
 
    Status traffic light:
-      ● terminated   →  consultant has an end date
+      ● terminated   →  consultant has an end date (rode exit-marker
+                        + dashed segment in cohortgrafiek)
       ● profitable   →  has reached break-even, still employed
       ● startup      →  still employed, balance still < 0`}
               />
