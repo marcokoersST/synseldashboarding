@@ -165,13 +165,39 @@ export function computeBreakEven(lc: ConsultantLifecycle): BreakEvenResult {
   const profitSinceBreakEven =
     breakEvenMonth !== null ? cumulative + startupCost : 0;
 
+  let exitMonth: number | null = null;
+
+  // Post-exit decline: if consultant has endDate, append trailing months where
+  // running margins fade out (mirror of the rise) and balance gradually decreases.
+  if (lc.endDate) {
+    exitMonth = lc.monthlyMargin.length - 1;
+    if (series[exitMonth]) series[exitMonth].isExit = true;
+
+    // Take the last N months of margin as the "ramp" we mirror downward.
+    const N = Math.min(9, lc.monthlyMargin.length);
+    const tail = lc.monthlyMargin.slice(-N);
+    // Average level near exit; we taper to zero across ~N months.
+    const peak = tail.reduce((a, b) => a + b, 0) / Math.max(1, tail.length);
+
+    for (let k = 1; k <= N; k++) {
+      const fade = Math.cos((k / N) * (Math.PI / 2)); // 1 → 0 smooth
+      const noise = (seededRandom(lc.id * 53 + k) - 0.5) * 0.3;
+      const revenue = Math.max(0, Math.round(peak * fade * (1 + noise)));
+      // No salary cost after exit
+      cumulative += revenue;
+      const m = exitMonth + k;
+      series.push({ month: m, balance: cumulative, revenue, cost: 0, postExit: true });
+    }
+  }
+
   return {
     breakEvenMonth,
     startupCost,
     cumulativeSeries: series,
-    totalMonths: lc.monthlyMargin.length,
+    totalMonths: series.length,
     currentBalance: cumulative,
     profitSinceBreakEven,
+    exitMonth,
   };
 }
 
