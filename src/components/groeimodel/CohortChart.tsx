@@ -108,9 +108,22 @@ export function CohortChart({ filterUnits, filterStatus }: CohortChartProps) {
         </ResponsiveContainer>
       </div>
       <DevNote
-        story={<><strong>As a user (C-level)</strong>, I want to see each consultant's cumulative financial balance (margin minus costs) plotted over the months since their start date, <strong>so that</strong> I can visually identify which consultants are still in the loss-making startup phase, when each one crosses break-even, and how steep their profitability curve becomes afterwards.</>}
-        source={<>Iterates over <code>lifecyclesWithBreakEven</code> from <code>groeimodelData.ts</code>; each consultant's <code>result.cumulativeSeries</code> ({"{ month, balance }[]"}) is mapped into a wide-format Recharts dataset (one column per consultant id).</>}
-        logic={<>For each month M, plot <code>balance(M) = Σ(monthlyMargin − monthlyCost)</code> from M0 to M. The dashed reference line at y=0 marks break-even; the red zone (y &lt; 0) is the startup phase, the green zone (y &gt; 0) is the profitable phase. Filtered live by <code>filterUnits</code> and <code>filterStatus</code>.</>}
+        story={<><strong>As a user (C-level)</strong>, I want to see each consultant's cumulative financial balance plotted over the months since their start date, <strong>so that</strong> I can visually identify who is still loss-making, when each one crosses break-even, and how steep their profit curve becomes afterwards.</>}
+        logic={`Each line shows ONE consultant. For every month since their
+start date we keep a running total:
+
+                  ┌─ this month's margin earned
+                  │
+   Balance(M) =   Σ  ( Margin  −  Cost )      from month 0 → M
+                  │
+                  └─ this month's salary + overhead
+
+   Balance < 0   →   still in startup phase   (red zone)
+   Balance = 0   →   BREAK-EVEN  (the dashed line)
+   Balance > 0   →   profitable                (green zone)
+
+The chart filters live on the selected units and status (active /
+out of service).`}
       />
     </div>
   );

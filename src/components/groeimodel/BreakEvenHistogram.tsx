@@ -39,9 +39,19 @@ export function BreakEvenHistogram() {
         </ResponsiveContainer>
       </div>
       <DevNote
-        story={<><strong>As a user (C-level)</strong>, I want to see how consultants are distributed across break-even time windows (M0–M3, M3–M6, M6–M9, M9–M12, M12+, and "Not yet"), <strong>so that</strong> I can benchmark our ramp-up speed, spot whether the bulk of hires reach profitability within an acceptable window, and identify a long-tail of slow performers.</>}
-        source={<><code>getBreakEvenDistribution()</code> in <code>groeimodelData.ts</code>, which buckets every consultant by their <code>result.breakEvenMonth</code>.</>}
-        logic={<>For each bucket: <code>count = #consultants where breakEvenMonth ∈ [bucket.min, bucket.max)</code>. Consultants with <code>breakEvenMonth === null</code> (still in startup phase or terminated before break-even) are placed in the "Not yet" bucket.</>}
+        story={<><strong>As a user (C-level)</strong>, I want to see how consultants are distributed across break-even time windows, <strong>so that</strong> I can benchmark our ramp-up speed and identify a long-tail of slow performers.</>}
+        logic={`For every consultant, look at the month they crossed break-even
+and drop them into one of these buckets:
+
+   ┌──────────┬──────────┬──────────┬──────────┬─────────┬──────────┐
+   │  0 – 3   │  3 – 6   │  6 – 9   │  9 – 12  │  12 +   │ Not yet  │
+   │  months  │  months  │  months  │  months  │ months  │          │
+   └──────────┴──────────┴──────────┴──────────┴─────────┴──────────┘
+
+Each bar height  =  number of consultants in that bucket.
+
+"Not yet" = consultant has not (yet) reached break-even
+            (still in startup phase, or left the company before it).`}
       />
     </div>
   );
