@@ -22,27 +22,79 @@ export interface BreakEvenResult {
   profitSinceBreakEven: number;
 }
 
-const MARGIN_PCT = 0.23;
+// Cost basis: gross monthly salary × employer load factor
+const BASE_GROSS_SALARY = 3276.49;
+const EMPLOYER_LOAD = 1.30;
+const BASE_MONTHLY_COST = Math.round(BASE_GROSS_SALARY * EMPLOYER_LOAD); // ≈ 4259
 
-function roleMonthlyCost(role: string): number {
+type Archetype = "high" | "average" | "slow";
+
+function roleMonthlyCost(role: string, consultantId: number): number {
   const r = role.toLowerCase();
-  if (r.includes("senior")) return 8000;
-  if (r.includes("junior")) return 5000;
-  return 6500;
+  // Light variation around base cost depending on seniority (±5–10%)
+  let factor = 1.0;
+  if (r.includes("senior")) factor = 1.10;
+  else if (r.includes("junior")) factor = 0.95;
+  else factor = 1.00;
+  // Tiny per-consultant jitter (-2%..+2%) — deterministic
+  const jitter = ((seededRandom(consultantId * 31 + 7) - 0.5) * 0.04);
+  return Math.round(BASE_MONTHLY_COST * (factor + jitter));
 }
 
-function generateMonthlyMargin(targetAnnualRevenue: number, monthsActive: number): number[] {
-  // Annual margin target
-  const targetMonthlyMargin = (targetAnnualRevenue * MARGIN_PCT) / 12;
+// Deterministic pseudo-random in [0,1) based on integer seed
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+}
+
+function pickArchetype(consultantId: number, targetAnnualRevenue: number): Archetype {
+  // Use a mix of revenue tier and seed so distribution is stable
+  const r = seededRandom(consultantId);
+  if (targetAnnualRevenue >= 200_000 || r > 0.78) return "high";
+  if (targetAnnualRevenue < 90_000 || r < 0.18) return "slow";
+  return "average";
+}
+
+/**
+ * Build a realistic monthly-margin curve for a single consultant.
+ * - S-curve ramp-up to a plateau
+ * - Average archetype reaches ~€150k cumulative in 12–18 months
+ * - Adds seeded noise (±25%) and an occasional dip (−40%) for "horten en stoten"
+ */
+function buildMarginCurve(
+  consultantId: number,
+  archetype: Archetype,
+  monthsActive: number,
+): number[] {
+  // Plateau (steady-state monthly margin) per archetype
+  const plateau =
+    archetype === "high" ? 30_000 :
+    archetype === "slow" ? 14_000 :
+    24_000; // average → ~24k/m steady → ~150k cumulative in ~12-15m
+
+  // Logistic ramp-up: midpoint around month 6, steepness ~0.55
+  const midpoint = archetype === "high" ? 5 : archetype === "slow" ? 8 : 6;
+  const steepness = archetype === "high" ? 0.65 : archetype === "slow" ? 0.45 : 0.55;
+
   const series: number[] = [];
   for (let m = 0; m < monthsActive; m++) {
-    let factor: number;
-    if (m < 2) factor = 0.05 + m * 0.05; // very low first 2 months
-    else if (m < 5) factor = 0.15 + (m - 2) * 0.15; // ramp up
-    else if (m < 9) factor = 0.6 + (m - 5) * 0.08; // approach steady
-    else factor = 0.95 + Math.sin(m * 0.7) * 0.1; // steady with variance
-    const value = Math.round(targetMonthlyMargin * factor);
-    series.push(Math.max(0, value));
+    // S-curve base
+    const sCurve = 1 / (1 + Math.exp(-steepness * (m - midpoint)));
+    let value = plateau * sCurve;
+
+    // Seeded noise ±25%
+    const noise = (seededRandom(consultantId * 1000 + m) - 0.5) * 0.5; // -0.25..+0.25
+    value *= 1 + noise;
+
+    // Occasional dip (~1 in 6 months) — −40%
+    const dipRoll = seededRandom(consultantId * 17 + m * 3);
+    if (dipRoll > 0.83 && m > 1) value *= 0.6;
+
+    // Very early months: keep low regardless of noise
+    if (m === 0) value = Math.min(value, plateau * 0.05);
+    if (m === 1) value = Math.min(value, plateau * 0.12);
+
+    series.push(Math.max(0, Math.round(value)));
   }
   return series;
 }
