@@ -180,6 +180,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
                 {kpi.format === "currency" ? formatCurrency(Math.round(kpi.value)) : kpi.value.toLocaleString("nl-NL")}
               </p>
               <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} invert={kpi.invertDelta} />
+              <ProgressBar current={kpi.value} previous={kpi.previous} invert={kpi.invertDelta} />
             </CardContent>
           </Card>
         ))}
