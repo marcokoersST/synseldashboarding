@@ -244,13 +244,21 @@ function OverviewView({ delay }: { delay: number }) {
           style={{
             width: "100%",
             background:
+              "linear-gradient(to right, hsl(var(--gold) / 0.6), hsl(var(--gold) / 0.3))",
+          }}
+        />
+        <div
+          className="h-full transition-all duration-700"
+          style={{
+            width: `${(42 / 96) * 100}%`,
+            background:
               "linear-gradient(to right, hsl(var(--primary) / 0.6), hsl(var(--primary) / 0.3))",
           }}
         />
         <div
           className="h-full transition-all duration-700"
           style={{
-            width: `${(18 / 42) * 100}%`,
+            width: `${(18 / 96) * 100}%`,
             background:
               "linear-gradient(to right, hsl(var(--teal) / 0.6), hsl(var(--teal) / 0.3))",
           }}
@@ -258,7 +266,7 @@ function OverviewView({ delay }: { delay: number }) {
         <div
           className="h-full rounded-r-full transition-all duration-700"
           style={{
-            width: `${(7 / 42) * 100}%`,
+            width: `${(7 / 96) * 100}%`,
             background:
               "linear-gradient(to right, hsl(var(--success) / 0.6), hsl(var(--success) / 0.3))",
           }}
