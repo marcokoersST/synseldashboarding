@@ -658,6 +658,9 @@ Reading the result:
               <CardTitle className="text-base">Opstartkosten per unit</CardTitle>
               <CardDescription>Gemiddelde investering tot break-even</CardDescription>
               <FilterSummary {...filterProps} className="mt-1" />
+              <p className="text-xs text-muted-foreground mt-1">
+                <span className="font-medium">n</span> = aantal consultants in de unit waarop het gemiddelde is gebaseerd.
+              </p>
             </CardHeader>
             <CardContent>
               <div className="w-full h-[260px]">
