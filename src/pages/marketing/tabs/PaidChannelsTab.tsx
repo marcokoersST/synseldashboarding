@@ -78,6 +78,7 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
     { key: "source", label: "Bron", show: true },
     { key: "conversions", label: "Conversions", show: true },
     { key: "registrations", label: "Inschrijven", show: true },
+    { key: "registrations", label: "% Bem.", show: showConversion },
     { key: "cpr", label: "CPA", show: showConversion },
     { key: "cpc", label: "Cost/Inschrijven.", show: showConversion },
     { key: "spend", label: "Spend", show: true },
@@ -148,16 +149,20 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
-                {rows.map((row) => (
+                {rows.map((row) => {
+                  const bemPct = row.conversions > 0 ? (row.registrations / row.conversions) * 100 : 0;
+                  return (
                   <tr key={row.source} className="border-b transition-colors hover:bg-muted/50">
                     <td className="p-4 align-middle font-medium">{row.source}</td>
                     <td className="p-4 align-middle">{dc(row.conversions, `pc-${row.source}-conv`)}</td>
                     <td className="p-4 align-middle">{dc(row.registrations, `pc-${row.source}-reg`)}</td>
+                    {showConversion && <td className="p-4 align-middle">{bemPct.toFixed(1)}%</td>}
                     {showConversion && <td className="p-4 align-middle">{dc(row.cpr, `pc-${row.source}-cpr`, "currency", true)}</td>}
                     {showConversion && <td className="p-4 align-middle">{dc(row.cpc, `pc-${row.source}-cpc`, "currency", true)}</td>}
                     <td className="p-4 align-middle">{dc(row.spend, `pc-${row.source}-spend`, "currency")}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -168,6 +173,7 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
                   <td className="p-4">Totaal</td>
                   <td className="p-4">{dc(grand.conversions, "pc-total-conv")}</td>
                   <td className="p-4">{dc(grand.registrations, "pc-total-reg")}</td>
+                  {showConversion && <td className="p-4">{(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0).toFixed(1)}%</td>}
                   {showConversion && <td className="p-4">{dc(grandCpr, "pc-total-cpr", "currency", true)}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpc, "pc-total-cpc", "currency", true)}</td>}
                   <td className="p-4">{dc(grand.spend, "pc-total-spend", "currency")}</td>
@@ -194,8 +200,8 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
               <YAxis type="category" dataKey="unit" width={100} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="registrations" name="Cost per Inschrijving" fill={MARKETING_COLORS[0]} radius={[0, 4, 4, 0]} />
-              <Bar dataKey="acquisitions" name="Acquisitions" fill={MARKETING_COLORS[1]} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="registrations" name="Inschrijven" fill={MARKETING_COLORS[0]} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="acquisitions" name="Cost per Inschrijving" fill={MARKETING_COLORS[1]} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

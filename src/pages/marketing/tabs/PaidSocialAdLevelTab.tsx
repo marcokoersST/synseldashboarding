@@ -136,7 +136,7 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
                     { label: "Ad / Bron", key: "name" as SortKey },
                     { label: "Conversions", key: "conversions" as SortKey },
                     { label: "Inschrijven", key: "registrations" as SortKey },
-                    ...(showConversion ? [{ label: "CPA", key: "cpr" as SortKey }, { label: "Cost/Inschrijven", key: "cpr" as SortKey }] : []),
+                    ...(showConversion ? [{ label: "% Bem.", key: "registrations" as SortKey }, { label: "CPA", key: "cpr" as SortKey }, { label: "Cost/Inschrijven", key: "cpr" as SortKey }] : []),
                     { label: "Spend", key: "spend" as SortKey },
                   ].map((col) => (
                     <th key={col.label} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground cursor-pointer select-none sticky top-0 bg-background z-10" onClick={() => toggleSort(col.key)}>
@@ -153,6 +153,7 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
                   const isOpen = expanded.has(parent.adType);
                   const cpr = parent.registrations > 0 ? parent.spend / parent.registrations : 0;
                   const cpc = parent.conversions > 0 ? parent.spend / parent.conversions : 0;
+                  const bemPct = parent.conversions > 0 ? (parent.registrations / parent.conversions) * 100 : 0;
                   return (
                     <React.Fragment key={parent.adType}>
                       <tr className="border-b transition-colors cursor-pointer hover:bg-muted/50" onClick={() => toggle(parent.adType)}>
@@ -164,6 +165,7 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
                         </td>
                         <td className="p-4 align-middle font-semibold">{dc(parent.conversions, `al-${parent.adType}-conv`)}</td>
                         <td className="p-4 align-middle font-semibold">{dc(parent.registrations, `al-${parent.adType}-reg`)}</td>
+                        {showConversion && <td className="p-4 align-middle font-semibold">{bemPct.toFixed(1)}%</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpr, `al-${parent.adType}-cpr`, "currency", true)}</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpc, `al-${parent.adType}-cpc`, "currency", true)}</td>}
                         <td className="p-4 align-middle font-semibold">{dc(parent.spend, `al-${parent.adType}-spend`, "currency")}</td>
@@ -171,11 +173,13 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
                       {isOpen && parent.children.map((child) => {
                         const childCpr = child.registrations > 0 ? child.spend / child.registrations : 0;
                         const childCpc = child.conversions > 0 ? child.spend / child.conversions : 0;
+                        const childBemPct = child.conversions > 0 ? (child.registrations / child.conversions) * 100 : 0;
                         return (
                           <tr key={`${parent.adType}-${child.platform}`} className="border-b transition-colors bg-muted/20">
                             <td className="p-4 pl-10 align-middle text-muted-foreground">{child.platform}</td>
                             <td className="p-4 align-middle">{dc(child.conversions, `al-${parent.adType}-${child.platform}-conv`)}</td>
                             <td className="p-4 align-middle">{dc(child.registrations, `al-${parent.adType}-${child.platform}-reg`)}</td>
+                            {showConversion && <td className="p-4 align-middle">{childBemPct.toFixed(1)}%</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpr, `al-${parent.adType}-${child.platform}-cpr`, "currency", true)}</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpc, `al-${parent.adType}-${child.platform}-cpc`, "currency", true)}</td>}
                             <td className="p-4 align-middle">{dc(child.spend, `al-${parent.adType}-${child.platform}-spend`, "currency")}</td>
@@ -195,6 +199,7 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
                   <td className="p-4">Totaal</td>
                   <td className="p-4">{dc(grand.conversions, "al-total-conv")}</td>
                   <td className="p-4">{dc(grand.registrations, "al-total-reg")}</td>
+                  {showConversion && <td className="p-4">{(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0).toFixed(1)}%</td>}
                   {showConversion && <td className="p-4">{dc(grandCpr, "al-total-cpr", "currency", true)}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpc, "al-total-cpc", "currency", true)}</td>}
                   <td className="p-4">{dc(grand.spend, "al-total-spend", "currency")}</td>
@@ -221,8 +226,8 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
               <YAxis type="category" dataKey="unit" width={100} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="registrations" name="Cost per Inschrijving" fill={MARKETING_COLORS[0]} radius={[0, 4, 4, 0]} />
-              <Bar dataKey="acquisitions" name="Acquisitions" fill={MARKETING_COLORS[1]} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="registrations" name="Inschrijven" fill={MARKETING_COLORS[0]} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="acquisitions" name="Cost per Inschrijving" fill={MARKETING_COLORS[1]} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
