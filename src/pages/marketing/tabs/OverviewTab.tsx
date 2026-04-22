@@ -202,7 +202,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Inschrijvingen</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Inschrijvingen (nieuw in systeem)</p>
             <p className="text-2xl font-bold">{consultantTotals.inschrijvingen}</p>
             <DeltaBadge current={consultantTotals.inschrijvingen} previous={previousInflowRegistrations} compareLabel={compareLabel} />
           </CardContent>
