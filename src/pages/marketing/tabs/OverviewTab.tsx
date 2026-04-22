@@ -50,6 +50,24 @@ function DeltaBadge({ current, previous, compareLabel, invert }: { current: numb
   );
 }
 
+function ProgressBar({ current, previous, invert }: { current: number; previous: number; invert?: boolean }) {
+  const d = deltaPercent(current, previous);
+  const isPositive = d === null ? true : invert ? d < 0 : d > 0;
+  const ratio = previous > 0 ? Math.min((current / previous) * 100, 150) : 100;
+  const ratioLabel = previous > 0 ? Math.round((current / previous) * 100) : 100;
+  return (
+    <div className="mt-2">
+      <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+        <div
+          className={cn("h-full rounded-full transition-all", isPositive ? "bg-emerald-500" : "bg-red-400")}
+          style={{ width: `${Math.min(ratio / 1.5 * 100 / 100, 100)}%` }}
+        />
+      </div>
+      <p className="text-[10px] text-muted-foreground mt-0.5">{ratioLabel}% van vorige week</p>
+    </div>
+  );
+}
+
 const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
   const compareLabel = getCompareDisplayText(compareRange);
 
