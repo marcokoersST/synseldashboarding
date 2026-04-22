@@ -47,7 +47,7 @@ export default function Groeimodel() {
   const [periodOpen, setPeriodOpen] = useState(false);
 
   // Sortable table state
-  type SortKey = "name" | "unit" | "start" | "startup" | "be" | "profit";
+  type SortKey = "name" | "unit" | "start" | "end" | "startup" | "be" | "profit";
   const [sortKey, setSortKey] = useState<SortKey>("startup");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
@@ -131,6 +131,12 @@ export default function Groeimodel() {
           return a.lifecycle.unit.localeCompare(b.lifecycle.unit) * dir;
         case "start":
           return (a.lifecycle.startDate.getTime() - b.lifecycle.startDate.getTime()) * dir;
+        case "end": {
+          // In dienst (no endDate) sorts last on asc, first on desc
+          const av = a.lifecycle.endDate ? a.lifecycle.endDate.getTime() : Number.POSITIVE_INFINITY;
+          const bv = b.lifecycle.endDate ? b.lifecycle.endDate.getTime() : Number.POSITIVE_INFINITY;
+          return (av - bv) * dir;
+        }
         case "startup":
           return (a.result.startupCost - b.result.startupCost) * dir;
         case "be": {
@@ -570,6 +576,7 @@ Reading the result:
                 name: "naam",
                 unit: "unit",
                 start: "startdatum",
+                end: "einddatum",
                 startup: "opstartkosten",
                 be: "break-even periode",
                 profit: "winst sindsdien",
@@ -602,6 +609,7 @@ Reading the result:
                       <th className="px-4 py-2 text-left"><SortHeader label="Consultant" k="name" /></th>
                       <th className="px-4 py-2 text-left"><SortHeader label="Unit" k="unit" /></th>
                       <th className="px-4 py-2 text-left"><SortHeader label="Startdatum" k="start" /></th>
+                      <th className="px-4 py-2 text-left"><SortHeader label="Einddatum" k="end" /></th>
                       <th className="px-4 py-2 text-left font-medium uppercase tracking-wider">Verloop</th>
                       <th className="px-4 py-2 text-left"><SortHeader label="Opstartkosten" k="startup" /></th>
                       <th className="px-4 py-2 text-left"><SortHeader label="Break-even" k="be" /></th>
