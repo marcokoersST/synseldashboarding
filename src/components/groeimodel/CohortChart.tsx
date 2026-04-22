@@ -690,25 +690,24 @@ export function CohortChart({
 
       <DevNote
         story={<><strong>As a user (C-level)</strong>, I want to see each consultant's cumulative financial balance plotted over the months since their start date, with a clear pulsing marker exactly where they cross break-even, exit markers when consultants leave, and a smooth intro animation that draws the lines from the startup phase outward, <strong>so that</strong> I can visually identify who is still loss-making, when each becomes profitable, and how revenue tapers when someone exits.</>}
-        logic={`Each line shows ONE consultant. Y-axis uses a split scale:
-the lower 45% covers the loss zone (yMin → €0) and the upper
-55% covers the profit zone (€0 → yMax) — so the startup phase
-is visually amplified.
+        logic={`Each line represents one consultant's running balance over
+time (margin earned minus monthly cost).
 
-   Balance(M) =  Σ ( Margin − Cost )   from month 0 → M
+The vertical axis is split: the loss area at the bottom is
+visually enlarged so the startup phase is easier to read.
 
-   Balance < 0   →   startup phase (red zone, expanded)
-   Balance = 0   →   BREAK-EVEN (red reference line + pulsing dot)
-   Balance > 0   →   profitable (green zone)
+   • Below the zero line  — still in startup (loss).
+   • Exactly on the zero line — break-even, highlighted with
+     a pulsing marker.
+   • Above the zero line  — profitable.
 
-When a consultant exits (endDate), a red LogOut marker is placed
-at the exit month and the line continues as a dashed segment that
-gradually declines (mirror of the rise) — representing residual
-revenue tapering off after departure.
+When a consultant leaves the company, an exit marker is placed
+on the line and the line continues as a dashed segment that
+gradually fades back toward zero, showing how revenue tapers
+off after their departure.
 
-Intro animation: chart starts zoomed on the break-even window,
-draws each line stroke-by-stroke, then zooms out to show the full
-horizon. Replay via the ▶ button.`}
+The chart opens with a short intro animation that draws each
+line and can be replayed with the play button.`}
       />
     </div>
   );
