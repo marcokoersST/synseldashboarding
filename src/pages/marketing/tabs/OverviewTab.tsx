@@ -70,8 +70,8 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     const previousReverseMatching = getComparisonValue(rmVolume, { dateRange, compareRange, seed: "overview-reverse-matching" });
     const items: { label: string; value: number; previous: number; tab: string; format?: string; invertDelta?: boolean }[] = [
       { label: "Conversions", value: totalConversions, previous: previousConversions, tab: "paid-channels" },
-      { label: "Registrations", value: totalRegistrations, previous: previousRegistrations, tab: "paid-channels" },
-      { label: "Cost per Registration", value: cpr, previous: previousCpr, format: "currency", tab: "paid-channels", invertDelta: true },
+      { label: "Inschrijven", value: totalRegistrations, previous: previousRegistrations, tab: "paid-channels" },
+      { label: "Cost per Inschrijving", value: cpr, previous: previousCpr, format: "currency", tab: "paid-channels", invertDelta: true },
       { label: "Reverse Matching", value: rmVolume, previous: previousReverseMatching, tab: "reverse-matching" },
     ];
     return items;
@@ -140,7 +140,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     return {
       bestSource: sorted[0]?.[0] ?? "-",
       bestSourceVolume: sorted[0]?.[1] ?? 0,
-      lowestCPR: "Indeed",
+      lowestCPR: "Indeed (€8,14)",
     };
   }, []);
 
@@ -309,11 +309,11 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
         <CardContent>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between p-2 rounded bg-emerald-500/10">
-              <span className="text-muted-foreground">Best performing source</span>
+              <span className="text-muted-foreground">Best presterende bron</span>
               <span className="font-semibold text-emerald-700">{highlights.bestSource} ({highlights.bestSourceVolume})</span>
             </div>
             <div className="flex justify-between p-2 rounded bg-blue-500/10">
-              <span className="text-muted-foreground">Laagste CPR</span>
+              <span className="text-muted-foreground">Laagste CPA</span>
               <span className="font-semibold text-blue-700">{highlights.lowestCPR}</span>
             </div>
             <div
@@ -322,7 +322,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
             >
               <span className="text-muted-foreground flex items-center gap-1.5">
                 <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
-                Snelst stijgende CPR
+                Snelst stijgende CPA
               </span>
               <span className="font-semibold text-red-700">
                 {fastestRisingCPR.source} (+{fastestRisingCPR.rise.toFixed(1)}%)
@@ -345,7 +345,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
                 <div key={u.unit}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium">{u.unit}</span>
-                    <span className="text-muted-foreground">{u.registrations} reg. / {u.conversions} conv.</span>
+                    <span className="text-muted-foreground">{u.registrations} bem. / {u.conversions} conv.</span>
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
