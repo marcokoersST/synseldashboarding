@@ -63,6 +63,11 @@ const navItems: NavItem[] = [
     label: "Vacaturetitel Funnel", 
     path: "/marketing/vacature-funnel",
   },
+  {
+    icon: Sprout,
+    label: "Synsel Groeimodel",
+    path: "/super-admin/groeimodel",
+  },
   { 
     icon: LayoutDashboard, 
     label: "Dashboard consultant", 
@@ -165,7 +170,6 @@ const navItems: NavItem[] = [
       { icon: BarChart3, label: "Overzicht", path: "/super-admin" },
       { icon: Eye, label: "User Emulatie", path: "/super-admin/emulate" },
       { icon: LineChart, label: "C-Level Dashboard", path: "/super-admin/c-level" },
-      { icon: Sprout, label: "Synsel Groeimodel", path: "/super-admin/groeimodel" },
     ]
   },
   {
