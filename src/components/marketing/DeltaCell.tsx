@@ -10,17 +10,27 @@ interface DeltaCellProps {
   dateRange: DateRange;
   compareRange: DateRange | null;
   seed: string;
-  format?: "number" | "currency";
+  format?: "number" | "currency" | "percentage";
   invertDelta?: boolean;
   deltaMode?: DeltaMode;
+  /** Optional explicit previous value. When provided, overrides seed-based calculation. */
+  previousValue?: number;
 }
 
-const DeltaCell = ({ value, dateRange, compareRange, seed, format = "number", invertDelta = false, deltaMode = "percent" }: DeltaCellProps) => {
-  const formatted = format === "currency" ? formatCurrency(Math.round(value)) : value.toLocaleString("nl-NL");
+const formatValue = (value: number, format: "number" | "currency" | "percentage") => {
+  if (format === "currency") return formatCurrency(Math.round(value));
+  if (format === "percentage") return `${value.toFixed(1)}%`;
+  return value.toLocaleString("nl-NL");
+};
+
+const DeltaCell = ({ value, dateRange, compareRange, seed, format = "number", invertDelta = false, deltaMode = "percent", previousValue }: DeltaCellProps) => {
+  const formatted = formatValue(value, format);
 
   if (!compareRange) return <>{formatted}</>;
 
-  const prev = getComparisonValue(value, { dateRange, compareRange, seed });
+  const prev = previousValue !== undefined
+    ? previousValue
+    : getComparisonValue(value, { dateRange, compareRange, seed });
   const delta = deltaPercent(value, prev);
 
   if (delta === null) return <>{formatted}</>;
@@ -28,8 +38,13 @@ const DeltaCell = ({ value, dateRange, compareRange, seed, format = "number", in
   const absoluteDelta = value - prev;
   const isPos = invertDelta ? delta < 0 : delta > 0;
 
+  const formatAbs = (v: number) => {
+    if (format === "currency") return `${v > 0 ? "+" : v < 0 ? "-" : ""}${formatCurrency(Math.abs(Math.round(v)))}`;
+    if (format === "percentage") return `${v > 0 ? "+" : ""}${v.toFixed(1)}pp`;
+    return `${v > 0 ? "+" : ""}${v.toLocaleString("nl-NL")}`;
+  };
   const displayDelta = deltaMode === "absolute"
-    ? `${absoluteDelta > 0 ? "+" : ""}${format === "currency" ? formatCurrency(Math.round(absoluteDelta)) : absoluteDelta.toLocaleString("nl-NL")}`
+    ? formatAbs(absoluteDelta)
     : `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`;
 
   return (

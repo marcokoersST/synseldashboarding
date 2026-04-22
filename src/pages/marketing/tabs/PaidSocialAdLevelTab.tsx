@@ -79,9 +79,15 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
     setExpanded(prev => { const n = new Set(prev); n.has(adType) ? n.delete(adType) : n.add(adType); return n; });
   };
 
-  const dc = (value: number, seed: string, format?: "number" | "currency", invertDelta?: boolean) => (
-    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} />
+  const dc = (value: number, seed: string, format?: "number" | "currency" | "percentage", invertDelta?: boolean, previousValue?: number) => (
+    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} previousValue={previousValue} />
   );
+
+  const prevBemPct = (conversions: number, registrations: number, convSeed: string, regSeed: string) => {
+    const prevConv = getComparisonValue(conversions, { dateRange, compareRange, seed: convSeed });
+    const prevReg = getComparisonValue(registrations, { dateRange, compareRange, seed: regSeed });
+    return prevConv > 0 ? (prevReg / prevConv) * 100 : 0;
+  };
 
   const chartData = chartView === "unit" ? unitChart : fgChart;
 
@@ -165,7 +171,7 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
                         </td>
                         <td className="p-4 align-middle font-semibold">{dc(parent.conversions, `al-${parent.adType}-conv`)}</td>
                         <td className="p-4 align-middle font-semibold">{dc(parent.registrations, `al-${parent.adType}-reg`)}</td>
-                        {showConversion && <td className="p-4 align-middle font-semibold">{bemPct.toFixed(1)}%</td>}
+                        {showConversion && <td className="p-4 align-middle font-semibold">{dc(bemPct, `al-${parent.adType}-bem`, "percentage", false, prevBemPct(parent.conversions, parent.registrations, `al-${parent.adType}-conv`, `al-${parent.adType}-reg`))}</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpr, `al-${parent.adType}-cpr`, "currency", true)}</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpc, `al-${parent.adType}-cpc`, "currency", true)}</td>}
                         <td className="p-4 align-middle font-semibold">{dc(parent.spend, `al-${parent.adType}-spend`, "currency")}</td>
@@ -179,7 +185,7 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
                             <td className="p-4 pl-10 align-middle text-muted-foreground">{child.platform}</td>
                             <td className="p-4 align-middle">{dc(child.conversions, `al-${parent.adType}-${child.platform}-conv`)}</td>
                             <td className="p-4 align-middle">{dc(child.registrations, `al-${parent.adType}-${child.platform}-reg`)}</td>
-                            {showConversion && <td className="p-4 align-middle">{childBemPct.toFixed(1)}%</td>}
+                            {showConversion && <td className="p-4 align-middle">{dc(childBemPct, `al-${parent.adType}-${child.platform}-bem`, "percentage", false, prevBemPct(child.conversions, child.registrations, `al-${parent.adType}-${child.platform}-conv`, `al-${parent.adType}-${child.platform}-reg`))}</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpr, `al-${parent.adType}-${child.platform}-cpr`, "currency", true)}</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpc, `al-${parent.adType}-${child.platform}-cpc`, "currency", true)}</td>}
                             <td className="p-4 align-middle">{dc(child.spend, `al-${parent.adType}-${child.platform}-spend`, "currency")}</td>
@@ -199,7 +205,7 @@ const PaidSocialAdLevelTab = ({ dateRange, compareRange, deltaMode = "percent" }
                   <td className="p-4">Totaal</td>
                   <td className="p-4">{dc(grand.conversions, "al-total-conv")}</td>
                   <td className="p-4">{dc(grand.registrations, "al-total-reg")}</td>
-                  {showConversion && <td className="p-4">{(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0).toFixed(1)}%</td>}
+                  {showConversion && <td className="p-4">{dc(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0, "al-total-bem", "percentage", false, prevBemPct(grand.conversions, grand.registrations, "al-total-conv", "al-total-reg"))}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpr, "al-total-cpr", "currency", true)}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpc, "al-total-cpc", "currency", true)}</td>}
                   <td className="p-4">{dc(grand.spend, "al-total-spend", "currency")}</td>

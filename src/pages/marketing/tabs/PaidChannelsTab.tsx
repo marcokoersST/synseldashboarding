@@ -85,9 +85,15 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
   ];
   const visibleCols = columns.filter(c => c.show);
 
-  const dc = (value: number, seed: string, format?: "number" | "currency", invertDelta?: boolean) => (
-    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} />
+  const dc = (value: number, seed: string, format?: "number" | "currency" | "percentage", invertDelta?: boolean, previousValue?: number) => (
+    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} previousValue={previousValue} />
   );
+
+  const prevBemPct = (conversions: number, registrations: number, convSeed: string, regSeed: string) => {
+    const prevConv = getComparisonValue(conversions, { dateRange, compareRange, seed: convSeed });
+    const prevReg = getComparisonValue(registrations, { dateRange, compareRange, seed: regSeed });
+    return prevConv > 0 ? (prevReg / prevConv) * 100 : 0;
+  };
 
   const chartData = chartView === "unit" ? unitChart : fgChart;
 
@@ -156,7 +162,7 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
                     <td className="p-4 align-middle font-medium">{row.source}</td>
                     <td className="p-4 align-middle">{dc(row.conversions, `pc-${row.source}-conv`)}</td>
                     <td className="p-4 align-middle">{dc(row.registrations, `pc-${row.source}-reg`)}</td>
-                    {showConversion && <td className="p-4 align-middle">{bemPct.toFixed(1)}%</td>}
+                    {showConversion && <td className="p-4 align-middle">{dc(bemPct, `pc-${row.source}-bem`, "percentage", false, prevBemPct(row.conversions, row.registrations, `pc-${row.source}-conv`, `pc-${row.source}-reg`))}</td>}
                     {showConversion && <td className="p-4 align-middle">{dc(row.cpr, `pc-${row.source}-cpr`, "currency", true)}</td>}
                     {showConversion && <td className="p-4 align-middle">{dc(row.cpc, `pc-${row.source}-cpc`, "currency", true)}</td>}
                     <td className="p-4 align-middle">{dc(row.spend, `pc-${row.source}-spend`, "currency")}</td>
@@ -173,7 +179,7 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
                   <td className="p-4">Totaal</td>
                   <td className="p-4">{dc(grand.conversions, "pc-total-conv")}</td>
                   <td className="p-4">{dc(grand.registrations, "pc-total-reg")}</td>
-                  {showConversion && <td className="p-4">{(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0).toFixed(1)}%</td>}
+                  {showConversion && <td className="p-4">{dc(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0, "pc-total-bem", "percentage", false, prevBemPct(grand.conversions, grand.registrations, "pc-total-conv", "pc-total-reg"))}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpr, "pc-total-cpr", "currency", true)}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpc, "pc-total-cpc", "currency", true)}</td>}
                   <td className="p-4">{dc(grand.spend, "pc-total-spend", "currency")}</td>
