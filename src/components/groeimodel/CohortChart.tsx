@@ -628,7 +628,7 @@ export function CohortChart({
                   dot={false}
                   connectNulls
                   isAnimationActive={false}
-                  activeDot={panMode ? false : { r: 4 }}
+                  activeDot={{ r: 4 }}
                   onMouseEnter={() => setHoveredLine(c.id)}
                   onMouseLeave={() => setHoveredLine(null)}
                   style={{ transition: "stroke-opacity 300ms ease-out, stroke-width 300ms ease-out" }}
