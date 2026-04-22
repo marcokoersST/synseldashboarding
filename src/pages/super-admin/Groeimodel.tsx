@@ -699,25 +699,6 @@ visually consistent across the dashboard.`}
         </AnimatedCard>
       </div>
 
-      {/* Activity & Revenue per Period — full width */}
-      <AnimatedCard delay={640}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Actieve consultants &amp; Omzet per periode</CardTitle>
-            <CardDescription>
-              Per periode in de geselecteerde tijdspanne — links aantal actieve consultants, rechts totale gerealiseerde omzet.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ActivityRevenueChart
-              filterUnits={filterUnits}
-              statusFilter={statusFilter}
-              filterYears={filterYears}
-              filterPeriodRange={filterPeriodRange}
-            />
-          </CardContent>
-        </Card>
-      </AnimatedCard>
     </div>
   );
 }
