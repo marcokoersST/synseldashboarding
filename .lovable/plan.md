@@ -1,26 +1,29 @@
 
-# Plan: Einddatum kolom toevoegen aan "Per consultant" tabel
+# Plan: Tooltip blijft tonen ook als hand-icoon (pan mode) actief is
 
-## Wijziging
-In de "Per consultant" tabel op de Synsel Groeimodel pagina komt een nieuwe **Einddatum** kolom direct na **Startdatum**. De gecombineerde weergave (`startDate → endDate`) in de Startdatum-cel wordt opgesplitst.
+## Probleem
+In `CohortChart.tsx` wordt de hover-tooltip met consultant-data uitgeschakeld zodra pan-mode (hand-icoon) actief is:
+- `{!panMode && animPhase === "done" && <Tooltip ... />}` → tooltip wordt niet eens gerenderd in pan mode.
+- `activeDot={panMode ? false : { r: 4 }}` → ook de actieve dot op de lijnen verdwijnt.
 
-## Gedrag
-- **In dienst** (geen `endDate`): toont badge/tekst `In dienst` (subtiel, muted-foreground).
-- **Uit dienst** (`endDate` aanwezig): toont de datum (bv. `mrt 2025`) in dezelfde stijl als de startdatum.
+Hierdoor verdwijnen de hover-kaartjes met consultant-namen + €-waarden zodra de gebruiker het hand-icoon aanklikt.
 
-## Bestanden
-1. **`src/components/groeimodel/ConsultantTimelineRow.tsx`**
-   - Startdatum-cel: verwijder de `→ formatDate(endDate)` regel; alleen `formatDate(startDate)` blijft.
-   - Nieuwe `<td>` direct erna: 
-     - `endDate ? formatDate(endDate) : <span className="text-muted-foreground italic">In dienst</span>`
-   - Sorteerbaar maken via dezelfde patroon als andere kolommen (indien tabel sorteerlogica heeft).
+## Oplossing
+Tooltip en `activeDot` losmaken van `panMode`. De tooltip moet alleen weggehaald worden tijdens het actief slepen (zodat hover en sleep niet conflicteren), niet zodra pan-mode aan staat.
 
-2. **`src/pages/super-admin/Groeimodel.tsx`** (of waar de tabel-header staat)
-   - Voeg `<th>EINDDATUM ↕</th>` toe tussen `STARTDATUM` en `VERLOOP`.
-   - Indien sorteerbaar: voeg `endDate` toe aan de sort-key opties; consultants in dienst sorteren als "laatste" bij oplopend / "eerste" bij aflopend (of altijd onderaan — te bevestigen tijdens implementatie via huidige sort-conventie).
+### Wijzigingen in `src/components/groeimodel/CohortChart.tsx`
+
+1. **Tooltip-conditie** (regel 546): vervang `!panMode && animPhase === "done"` door alleen `animPhase === "done"`. Tooltip blijft dus altijd actief na de intro-animatie, ook in pan mode.
+
+2. **ActiveDot op beide Line-sets** (regels 631 en 655): vervang `activeDot={panMode ? false : { r: 4 }}` door simpelweg `activeDot={{ r: 4 }}`. Dots verschijnen weer op hover ongeacht pan mode.
+
+3. **Drag-conflict voorkomen**: tijdens het daadwerkelijk slepen (muis ingedrukt + bewegen) is het wenselijk dat de tooltip even rust. Dit lossen we op door tijdens een actieve drag (`dragRef.current !== null`) de pointer-events op de tooltip-laag niet te blokkeren — Recharts handelt dit zelf netjes: zodra de muis beweegt over de chart wordt de tooltip gewoon getoond. Geen extra logica nodig; eventuele cursor-styling (`cursor-grab/grabbing`) blijft behouden.
 
 ## Validatie
-- Tabel toont 8 kolommen i.p.v. 7.
-- Daan Jacobs (uit dienst): toont `mrt 2024` in Startdatum, `mrt 2025` in Einddatum.
-- Alle andere consultants: tonen `In dienst` in muted styling in Einddatum kolom.
-- Layout blijft passen (kolombreedtes herverdelen automatisch).
+- Pan-icoon UIT → hover toont tooltip-kaartje met top-3 consultants ✅ (al het geval).
+- Pan-icoon AAN, niet slepend → hover toont nu óók het tooltip-kaartje + active dots op de lijnen.
+- Pan-icoon AAN, actief slepen (muis ingedrukt) → grafiek verschuift; tooltip mag mee-bewegen, geen flikkering.
+- Exit-marker hover blijft werken zoals voorheen.
+
+## Bestanden
+- `src/components/groeimodel/CohortChart.tsx` (3 kleine aanpassingen)
