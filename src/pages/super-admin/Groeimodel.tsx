@@ -341,6 +341,26 @@ export default function Groeimodel() {
         </div>
       </div>
 
+      {/* Activity & Revenue per Period — full width (top) */}
+      <AnimatedCard delay={0}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Actieve consultants &amp; Omzet per periode</CardTitle>
+            <CardDescription>
+              Per periode in de geselecteerde tijdspanne — links aantal actieve consultants, rechts totale gerealiseerde omzet.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ActivityRevenueChart
+              filterUnits={filterUnits}
+              statusFilter={statusFilter}
+              filterYears={filterYears}
+              filterPeriodRange={filterPeriodRange}
+            />
+          </CardContent>
+        </Card>
+      </AnimatedCard>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <AnimatedCard delay={0}>
