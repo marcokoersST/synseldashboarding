@@ -1,46 +1,26 @@
 
+# Plan: Einddatum kolom toevoegen aan "Per consultant" tabel
 
-# Plan: Exit-marker tooltip blijft hangen na klik
+## Wijziging
+In de "Per consultant" tabel op de Synsel Groeimodel pagina komt een nieuwe **Einddatum** kolom direct na **Startdatum**. De gecombineerde weergave (`startDate → endDate`) in de Startdatum-cel wordt opgesplitst.
 
-## Probleem
-In de Cohortgrafiek (Tijd tot Break-Even) heeft de "Uit dienst"-marker een `tabIndex={0}` met `onFocus`/`onBlur`-handlers. Bij klikken op de marker:
-1. `onMouseEnter` toont de tooltip.
-2. Klik geeft het `<g>`-element focus → `onFocus` zet de tooltip opnieuw.
-3. `onMouseLeave` clear `exitHover`, maar de focus blijft → tooltip blijft zichtbaar tot je elders klikt.
-
-## Oplossing
-
-In `src/components/groeimodel/CohortChart.tsx` (ExitMarkers component, regel ~419-441):
-
-- **`tabIndex={0}` behouden** voor toetsenbord-toegankelijkheid, maar focus-gedrag scheiden van hover-gedrag zodat hover de enige bron van waarheid wordt voor muisgebruikers.
-- **Klik-gedrag toevoegen**: bij `onMouseDown` op de marker direct `blur()` aanroepen, zodat een klik geen permanente focus geeft.
-- **Aparte state voor focus vs hover** is overkill — eenvoudiger: de tooltip toont zolang óf de muis erboven is óf het element keyboard-focus heeft. Bij muisuit én blur verdwijnt hij. Door `onMouseDown` actief te `blur`-en, voorkomen we dat een klik focus achterlaat.
-
-### Concrete wijziging
-```tsx
-<g
-  ...
-  onMouseEnter={onEnter}
-  onMouseMove={onEnter}
-  onMouseLeave={onLeave}
-  onMouseDown={(e) => {
-    // Voorkom dat klik permanente focus geeft → tooltip zou blijven hangen
-    (e.currentTarget as SVGGElement).blur?.();
-    onLeave();
-  }}
-  onFocus={onFocus}
-  onBlur={onLeave}
->
-```
-
-Daarnaast: ook bij algemene mouseLeave op de wrapper-div (`onMouseLeave={endDrag}` regel 498) een `setExitHover(null)` aanroepen als safety-net wanneer de cursor de hele grafiek verlaat.
-
-## Validatie
-- Hover op rode "Uit dienst"-bolletje → tooltip verschijnt.
-- Muis weghalen → tooltip verdwijnt direct.
-- Klik op bolletje → tooltip blijft NIET hangen na muisuit.
-- Tab-navigatie naar marker → tooltip verschijnt; Tab weg → verdwijnt (toegankelijkheid behouden).
+## Gedrag
+- **In dienst** (geen `endDate`): toont badge/tekst `In dienst` (subtiel, muted-foreground).
+- **Uit dienst** (`endDate` aanwezig): toont de datum (bv. `mrt 2025`) in dezelfde stijl als de startdatum.
 
 ## Bestanden
-- `src/components/groeimodel/CohortChart.tsx` (één blok in `ExitMarkers` + één regel in wrapper-div)
+1. **`src/components/groeimodel/ConsultantTimelineRow.tsx`**
+   - Startdatum-cel: verwijder de `→ formatDate(endDate)` regel; alleen `formatDate(startDate)` blijft.
+   - Nieuwe `<td>` direct erna: 
+     - `endDate ? formatDate(endDate) : <span className="text-muted-foreground italic">In dienst</span>`
+   - Sorteerbaar maken via dezelfde patroon als andere kolommen (indien tabel sorteerlogica heeft).
 
+2. **`src/pages/super-admin/Groeimodel.tsx`** (of waar de tabel-header staat)
+   - Voeg `<th>EINDDATUM ↕</th>` toe tussen `STARTDATUM` en `VERLOOP`.
+   - Indien sorteerbaar: voeg `endDate` toe aan de sort-key opties; consultants in dienst sorteren als "laatste" bij oplopend / "eerste" bij aflopend (of altijd onderaan — te bevestigen tijdens implementatie via huidige sort-conventie).
+
+## Validatie
+- Tabel toont 8 kolommen i.p.v. 7.
+- Daan Jacobs (uit dienst): toont `mrt 2024` in Startdatum, `mrt 2025` in Einddatum.
+- Alle andere consultants: tonen `In dienst` in muted styling in Einddatum kolom.
+- Layout blijft passen (kolombreedtes herverdelen automatisch).
