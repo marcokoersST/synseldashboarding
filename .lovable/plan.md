@@ -1,39 +1,41 @@
 
 
-# Plan: Update consultant monthly cost to €3,900
+# Plan: "Kandidaten benaderd" toevoegen als eerste stap in Reverse Matching funnel
 
-## Change
-Update the assumed monthly cost per consultant from **€4,260** to **€3,900** (€3,000 gross salary × 1.3 employer load) across all mock data calculations and Dev info documentation on the Synsel Groeimodel page.
+## Doel
+Een nieuwe eerste stap **"Kandidaten benaderd"** toevoegen aan de Reverse Matching tegel op het consultant dashboard. Deze stap komt **vóór** Voorgesteld → Gesprekken → Plaatsingen, en moet zichtbaar zijn in:
+- De KPI flow (overzichtsmodus)
+- De gradient funnel-balk (overzichtsmodus)
+- De staafdiagram in de Conversie funnel (detailmodus)
+- De lijngrafiek "Trend per periode" (detailmodus)
 
-## Files to update
+## Wijzigingen in `src/components/dashboard/ReverseMatchingCard.tsx`
 
-### 1. `src/data/groeimodelData.ts`
-- Update the monthly cost constant (currently `4260` / `MONTHLY_COST` or similar) to `3900`.
-- Update the inline comment explaining the figure to: `// €3,000 gross salary × 1.3 employer load = €3,900/month`.
-- All downstream calculations (running balance, startup cost, break-even period, profit since break-even, cohort ROI) automatically recompute from this constant — no further data edits needed.
+### 1. Mock data uitbreiden
+- **`kpis` array**: nieuwe eerste entry `approached` toevoegen — label "Benaderd" (of "Kandidaten benaderd"), waarde **96**, trend +10%, icoon `Send` (lucide), kleur `gold` (bestaande tokenkleur, sluit aan op het bestaande palet primary/teal/success).
+- **`conversions` array**: één extra conversie vooraan: `Benaderd → Voorgesteld` met percentage **43.8%** (42/96). Bestaande twee conversies blijven ongewijzigd.
+- **`trendData`**: per periode (P8–P13) een `approached`-veld toevoegen, oplopende reeks die consistent boven `pitched` ligt (bv. 80, 85, 72, 100, 92, 96).
 
-### 2. `src/pages/super-admin/Groeimodel.tsx` — Dev info logic strings
-Replace every mention of `€4,260` with `€3,900` and rephrase the explanation consistently. Affected tiles:
-- **Total startup investment**: "...minus their monthly cost of about **€3,900** (€3,000 gross salary × 1.3 employer load)."
-- **Average time to break-even**: same cost reference if mentioned.
-- **In startup phase**: same cost reference if mentioned.
-- **Per consultant** table: sparkline / startup cost description if it references the cost figure.
+### 2. Overzichtsmodus (`OverviewView`)
+- KPI flow rendert automatisch 4 blokken in plaats van 3 dankzij `kpis.map`. Layout blijft `flex-1` per blok zodat alles op één rij past binnen de huidige tegelbreedte.
+- **Gradient funnel bar**: één extra segment vooraan toevoegen voor "Benaderd" (volle breedte met `gold`-gradient en `rounded-l-full`), de bestaande primary-balk verliest `rounded-l-full` en wordt geschaald op `42/96`. Volgende segmenten (`teal` 18/96, `success` 7/96) opnieuw genormaliseerd op de nieuwe topwaarde van 96.
 
-### 3. Other Dev info components — sweep for the old number
-Check and update any remaining `4260` / `4,260` references in the `logic` strings of:
-- `src/components/groeimodel/ActivityRevenueChart.tsx`
-- `src/components/groeimodel/CohortChart.tsx`
-- `src/components/groeimodel/BreakEvenHistogram.tsx`
+### 3. Detailmodus (`DetailView`) — Conversie funnel staafdiagram
+- `kpis.map` rendert nu 4 staven; de eerste ("Benaderd") krijgt 100% breedte, de overige worden geschaald t.o.v. `kpis[0].value` (96). Conversiepercentages naast elke regel komen uit de uitgebreide `conversions` array.
 
-## Validation
-- All KPI tiles (Total startup investment, Average break-even, In startup phase, Cohort ROI) recompute with the lower cost — startup investment goes down, break-even arrives slightly earlier, ROI improves.
-- Per-consultant sparklines and table values reflect the new balance curve.
-- Every Dev info popover on the page reads "**€3,900** (€3,000 gross salary × 1.3 employer load)" — no leftover €4,260 anywhere.
+### 4. Detailmodus — Lijngrafiek "Trend per periode"
+- Een vierde `<Line>` toevoegen vóór de bestaande lijnen met `dataKey="approached"`, `stroke="hsl(var(--gold))"`, `name="Benaderd"`, zelfde `strokeWidth={2}` en `dot={false}`.
 
-## Files touched
-- `src/data/groeimodelData.ts`
-- `src/pages/super-admin/Groeimodel.tsx`
-- `src/components/groeimodel/ActivityRevenueChart.tsx` (if reference present)
-- `src/components/groeimodel/CohortChart.tsx` (if reference present)
-- `src/components/groeimodel/BreakEvenHistogram.tsx` (if reference present)
+### 5. Sanity-check op kleurenkeuze
+- `gold` is reeds gedefinieerd in het project (gebruikt in CoreActivitiesCard, BonusCard etc.) en past bij het bestaande palet primary → teal → success → gold. Hierdoor blijft de funnel visueel consistent zonder nieuwe CSS-tokens.
+
+## Validatie
+- Overzichtsmodus toont 4 KPI-blokken met conversie-pijlen ertussen (3 conversies in totaal).
+- Gradient balk start met goud → blauw → teal → groen, breedtes kloppen met `96 → 42 → 18 → 7`.
+- Detailmodus staafdiagram toont 4 staven, van breed naar smal, met conversiepercentages naast staven 2/3/4.
+- Lijngrafiek toont 4 lijnen, "Benaderd" als bovenste reeks in goud.
+- Geen overflow in de tegel bij 1422px viewport.
+
+## Bestanden
+- `src/components/dashboard/ReverseMatchingCard.tsx` (alleen mock data + render-uitbreidingen, geen structurele refactor)
 
