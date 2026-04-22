@@ -47,7 +47,13 @@ export function ConsultantTimelineRow({ lifecycle, result }: Props) {
       </td>
       <td className="px-4 py-3 text-sm text-muted-foreground">
         {formatDate(lifecycle.startDate)}
-        {lifecycle.endDate && <div className="text-xs">→ {formatDate(lifecycle.endDate)}</div>}
+      </td>
+      <td className="px-4 py-3 text-sm">
+        {lifecycle.endDate ? (
+          <span className="text-muted-foreground">{formatDate(lifecycle.endDate)}</span>
+        ) : (
+          <span className="text-muted-foreground/70 italic">In dienst</span>
+        )}
       </td>
       <td className="px-4 py-3 w-32">
         <div className="h-10">
