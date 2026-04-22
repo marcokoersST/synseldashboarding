@@ -50,6 +50,24 @@ function DeltaBadge({ current, previous, compareLabel, invert }: { current: numb
   );
 }
 
+function ProgressBar({ current, previous, invert }: { current: number; previous: number; invert?: boolean }) {
+  const d = deltaPercent(current, previous);
+  const isPositive = d === null ? true : invert ? d < 0 : d > 0;
+  const ratio = previous > 0 ? Math.min((current / previous) * 100, 150) : 100;
+  const ratioLabel = previous > 0 ? Math.round((current / previous) * 100) : 100;
+  return (
+    <div className="mt-2">
+      <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+        <div
+          className={cn("h-full rounded-full transition-all", isPositive ? "bg-emerald-500" : "bg-red-400")}
+          style={{ width: `${Math.min(ratio / 1.5 * 100 / 100, 100)}%` }}
+        />
+      </div>
+      <p className="text-[10px] text-muted-foreground mt-0.5">{ratioLabel}% van vorige week</p>
+    </div>
+  );
+}
+
 const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
   const compareLabel = getCompareDisplayText(compareRange);
 
@@ -162,6 +180,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
                 {kpi.format === "currency" ? formatCurrency(Math.round(kpi.value)) : kpi.value.toLocaleString("nl-NL")}
               </p>
               <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} invert={kpi.invertDelta} />
+              <ProgressBar current={kpi.value} previous={kpi.previous} invert={kpi.invertDelta} />
             </CardContent>
           </Card>
         ))}
@@ -205,6 +224,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
             <p className="text-xs font-medium text-muted-foreground mb-1">Inschrijvingen (nieuw in systeem)</p>
             <p className="text-2xl font-bold">{consultantTotals.inschrijvingen}</p>
             <DeltaBadge current={consultantTotals.inschrijvingen} previous={previousInflowRegistrations} compareLabel={compareLabel} />
+            <ProgressBar current={consultantTotals.inschrijvingen} previous={previousInflowRegistrations} />
           </CardContent>
         </Card>
         <Card>
@@ -212,6 +232,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
             <p className="text-xs font-medium text-muted-foreground mb-1">Heractiveringen</p>
             <p className="text-2xl font-bold">{inflowHeractiveringen.current}</p>
             <DeltaBadge current={inflowHeractiveringen.current} previous={previousHeractiveringen} compareLabel={compareLabel} />
+            <ProgressBar current={inflowHeractiveringen.current} previous={previousHeractiveringen} />
           </CardContent>
         </Card>
       </div>
