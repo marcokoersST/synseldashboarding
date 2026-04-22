@@ -24,9 +24,9 @@ export interface BreakEvenResult {
 }
 
 // Cost basis: gross monthly salary × employer load factor
-const BASE_GROSS_SALARY = 3276.49;
+const BASE_GROSS_SALARY = 3000;
 const EMPLOYER_LOAD = 1.30;
-const BASE_MONTHLY_COST = Math.round(BASE_GROSS_SALARY * EMPLOYER_LOAD); // ≈ 4259
+const BASE_MONTHLY_COST = Math.round(BASE_GROSS_SALARY * EMPLOYER_LOAD); // €3,000 gross salary × 1.3 employer load = €3,900/month
 
 type Archetype = "high" | "average" | "slow";
 
