@@ -427,6 +427,10 @@ export function CohortChart({
               onMouseEnter={onEnter}
               onMouseMove={onEnter}
               onMouseLeave={onLeave}
+              onMouseDown={(e) => {
+                (e.currentTarget as SVGGElement).blur?.();
+                onLeave();
+              }}
               onFocus={onFocus}
               onBlur={onLeave}
             >
