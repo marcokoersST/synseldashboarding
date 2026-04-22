@@ -345,6 +345,14 @@ function DetailView({ delay }: { delay: number }) {
               />
               <Line
                 type="monotone"
+                dataKey="approached"
+                stroke="hsl(var(--gold))"
+                strokeWidth={2}
+                dot={false}
+                name="Benaderd"
+              />
+              <Line
+                type="monotone"
                 dataKey="pitched"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
