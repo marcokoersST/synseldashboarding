@@ -427,6 +427,10 @@ export function CohortChart({
               onMouseEnter={onEnter}
               onMouseMove={onEnter}
               onMouseLeave={onLeave}
+              onMouseDown={(e) => {
+                (e.currentTarget as SVGGElement).blur?.();
+                onLeave();
+              }}
               onFocus={onFocus}
               onBlur={onLeave}
             >
@@ -495,7 +499,7 @@ export function CohortChart({
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={endDrag}
-        onMouseLeave={endDrag}
+        onMouseLeave={() => { endDrag(); setExitHover(null); }}
       >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={transformedData} margin={{ top: 10, right: 70, left: 10, bottom: 20 }}>
