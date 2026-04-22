@@ -14,6 +14,7 @@ import {
   TrendingDown,
   Building2,
   Calendar,
+  Send,
 } from "lucide-react";
 import {
   LineChart,
@@ -27,6 +28,16 @@ import {
 // ─── Mock data ───
 
 const kpis = [
+  {
+    key: "approached",
+    label: "Benaderd",
+    value: 96,
+    trend: 10,
+    icon: Send,
+    color: "gold",
+    bgClass: "bg-gold/10",
+    iconClass: "text-gold",
+  },
   {
     key: "pitched",
     label: "Voorgesteld",
@@ -60,17 +71,18 @@ const kpis = [
 ] as const;
 
 const conversions = [
+  { rate: 43.8, label: "Benaderd → Voorgesteld" },
   { rate: 42.9, label: "Pitch → Gesprek" },
   { rate: 38.9, label: "Gesprek → Plaatsing" },
 ];
 
 const trendData = [
-  { period: "P8", pitched: 35, applications: 14, deals: 4 },
-  { period: "P9", pitched: 38, applications: 15, deals: 5 },
-  { period: "P10", pitched: 30, applications: 12, deals: 4 },
-  { period: "P11", pitched: 44, applications: 20, deals: 6 },
-  { period: "P12", pitched: 40, applications: 16, deals: 5 },
-  { period: "P13", pitched: 42, applications: 18, deals: 7 },
+  { period: "P8", approached: 80, pitched: 35, applications: 14, deals: 4 },
+  { period: "P9", approached: 85, pitched: 38, applications: 15, deals: 5 },
+  { period: "P10", approached: 72, pitched: 30, applications: 12, deals: 4 },
+  { period: "P11", approached: 100, pitched: 44, applications: 20, deals: 6 },
+  { period: "P12", approached: 92, pitched: 40, applications: 16, deals: 5 },
+  { period: "P13", approached: 96, pitched: 42, applications: 18, deals: 7 },
 ];
 
 const recentPlacements = [
@@ -232,13 +244,21 @@ function OverviewView({ delay }: { delay: number }) {
           style={{
             width: "100%",
             background:
+              "linear-gradient(to right, hsl(var(--gold) / 0.6), hsl(var(--gold) / 0.3))",
+          }}
+        />
+        <div
+          className="h-full transition-all duration-700"
+          style={{
+            width: `${(42 / 96) * 100}%`,
+            background:
               "linear-gradient(to right, hsl(var(--primary) / 0.6), hsl(var(--primary) / 0.3))",
           }}
         />
         <div
           className="h-full transition-all duration-700"
           style={{
-            width: `${(18 / 42) * 100}%`,
+            width: `${(18 / 96) * 100}%`,
             background:
               "linear-gradient(to right, hsl(var(--teal) / 0.6), hsl(var(--teal) / 0.3))",
           }}
@@ -246,7 +266,7 @@ function OverviewView({ delay }: { delay: number }) {
         <div
           className="h-full rounded-r-full transition-all duration-700"
           style={{
-            width: `${(7 / 42) * 100}%`,
+            width: `${(7 / 96) * 100}%`,
             background:
               "linear-gradient(to right, hsl(var(--success) / 0.6), hsl(var(--success) / 0.3))",
           }}
@@ -322,6 +342,14 @@ function DetailView({ delay }: { delay: number }) {
                   borderRadius: "8px",
                   fontSize: "11px",
                 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="approached"
+                stroke="hsl(var(--gold))"
+                strokeWidth={2}
+                dot={false}
+                name="Benaderd"
               />
               <Line
                 type="monotone"
