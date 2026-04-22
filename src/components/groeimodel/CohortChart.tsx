@@ -543,7 +543,7 @@ export function CohortChart({
                 offset: 8,
               }}
             />
-            {!panMode && animPhase === "done" && (
+            {animPhase === "done" && (
               <Tooltip
                 wrapperStyle={{ outline: "none" }}
                 cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }}
@@ -628,7 +628,7 @@ export function CohortChart({
                   dot={false}
                   connectNulls
                   isAnimationActive={false}
-                  activeDot={panMode ? false : { r: 4 }}
+                  activeDot={{ r: 4 }}
                   onMouseEnter={() => setHoveredLine(c.id)}
                   onMouseLeave={() => setHoveredLine(null)}
                   style={{ transition: "stroke-opacity 300ms ease-out, stroke-width 300ms ease-out" }}
@@ -652,7 +652,7 @@ export function CohortChart({
                     dot={false}
                     connectNulls
                     isAnimationActive={false}
-                    activeDot={panMode ? false : { r: 4 }}
+                    activeDot={{ r: 4 }}
                     onMouseEnter={() => setHoveredLine(c.id)}
                     onMouseLeave={() => setHoveredLine(null)}
                     style={{ transition: "stroke-opacity 300ms ease-out, stroke-width 300ms ease-out" }}
