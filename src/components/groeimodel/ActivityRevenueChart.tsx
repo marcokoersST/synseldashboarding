@@ -131,21 +131,19 @@ export function ActivityRevenueChart({
 
       <DevNote
         story={<><strong>As a user (C-level)</strong>, I want to see how many consultants were active per calendar period and how much margin they collectively generated, <strong>so that</strong> I can correlate workforce size with realised revenue across the selected timeframe.</>}
-        logic={`Time axis = Cartesian product of (selected years) × (P{lo}..P{hi}).
-Single year: ticks render as "P1, P2, … P13".
-Multiple years: "P1 '25, P2 '25, …, P1 '26, …".
+        logic={`The horizontal axis lists every period in the selected year(s),
+from P1 to P13. When more than one year is selected, the axis
+simply continues into the next year (P1 '25, P2 '25, …, P1 '26).
 
-For each tick with absolute index  abs = year × 13 + (period − 1):
+For each period on that axis we look at two things:
 
-   Active   =  COUNT( consultant   where  startAbs ≤ abs ≤ endAbs )
-   Revenue  =  Σ  monthlyMargin[ abs − startAbs ]
-              across those active consultants
+   • Active line  — how many consultants were employed at that
+     moment (started before, and not yet left).
+   • Revenue line — the total margin those active consultants
+     generated in that specific period.
 
-startAbs = startDate.year × 13 + (monthToPeriod(startDate.month) − 1)
-endAbs   = endDate     ? same for endDate : ∞
-
-Filter scope: identical to the KPI tiles and cohort chart
-(Unit + Status + Year + P-range on start date).`}
+The same filters as the rest of the page apply: unit, status,
+year and period range.`}
       />
     </div>
   );
