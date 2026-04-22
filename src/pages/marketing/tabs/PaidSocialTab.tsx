@@ -79,9 +79,15 @@ const PaidSocialTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props
     setExpanded(prev => { const n = new Set(prev); n.has(platform) ? n.delete(platform) : n.add(platform); return n; });
   };
 
-  const dc = (value: number, seed: string, format?: "number" | "currency", invertDelta?: boolean) => (
-    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} />
+  const dc = (value: number, seed: string, format?: "number" | "currency" | "percentage", invertDelta?: boolean, previousValue?: number) => (
+    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} previousValue={previousValue} />
   );
+
+  const prevBemPct = (conversions: number, registrations: number, convSeed: string, regSeed: string) => {
+    const prevConv = getComparisonValue(conversions, { dateRange, compareRange, seed: convSeed });
+    const prevReg = getComparisonValue(registrations, { dateRange, compareRange, seed: regSeed });
+    return prevConv > 0 ? (prevReg / prevConv) * 100 : 0;
+  };
 
   const chartData = chartView === "unit" ? unitChart : fgChart;
 
@@ -165,7 +171,7 @@ const PaidSocialTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props
                         </td>
                         <td className="p-4 align-middle font-semibold">{dc(parent.conversions, `ps-${parent.platform}-conv`)}</td>
                         <td className="p-4 align-middle font-semibold">{dc(parent.registrations, `ps-${parent.platform}-reg`)}</td>
-                        {showConversion && <td className="p-4 align-middle font-semibold">{bemPct.toFixed(1)}%</td>}
+                        {showConversion && <td className="p-4 align-middle font-semibold">{dc(bemPct, `ps-${parent.platform}-bem`, "percentage", false, prevBemPct(parent.conversions, parent.registrations, `ps-${parent.platform}-conv`, `ps-${parent.platform}-reg`))}</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpr, `ps-${parent.platform}-cpr`, "currency", true)}</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpc, `ps-${parent.platform}-cpc`, "currency", true)}</td>}
                         <td className="p-4 align-middle font-semibold">{dc(parent.spend, `ps-${parent.platform}-spend`, "currency")}</td>
@@ -179,7 +185,7 @@ const PaidSocialTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props
                             <td className="p-4 pl-10 align-middle text-muted-foreground">{child.segment}</td>
                             <td className="p-4 align-middle">{dc(child.conversions, `ps-${parent.platform}-${child.segment}-conv`)}</td>
                             <td className="p-4 align-middle">{dc(child.registrations, `ps-${parent.platform}-${child.segment}-reg`)}</td>
-                            {showConversion && <td className="p-4 align-middle">{childBemPct.toFixed(1)}%</td>}
+                            {showConversion && <td className="p-4 align-middle">{dc(childBemPct, `ps-${parent.platform}-${child.segment}-bem`, "percentage", false, prevBemPct(child.conversions, child.registrations, `ps-${parent.platform}-${child.segment}-conv`, `ps-${parent.platform}-${child.segment}-reg`))}</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpr, `ps-${parent.platform}-${child.segment}-cpr`, "currency", true)}</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpc, `ps-${parent.platform}-${child.segment}-cpc`, "currency", true)}</td>}
                             <td className="p-4 align-middle">{dc(child.spend, `ps-${parent.platform}-${child.segment}-spend`, "currency")}</td>
@@ -199,7 +205,7 @@ const PaidSocialTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props
                   <td className="p-4">Totaal</td>
                   <td className="p-4">{dc(grand.conversions, "ps-total-conv")}</td>
                   <td className="p-4">{dc(grand.registrations, "ps-total-reg")}</td>
-                  {showConversion && <td className="p-4">{(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0).toFixed(1)}%</td>}
+                  {showConversion && <td className="p-4">{dc(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0, "ps-total-bem", "percentage", false, prevBemPct(grand.conversions, grand.registrations, "ps-total-conv", "ps-total-reg"))}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpr, "ps-total-cpr", "currency", true)}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpc, "ps-total-cpc", "currency", true)}</td>}
                   <td className="p-4">{dc(grand.spend, "ps-total-spend", "currency")}</td>

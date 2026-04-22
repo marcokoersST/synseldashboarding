@@ -90,9 +90,15 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
   ];
   const visCols = colHeaders.filter(c => c.show);
 
-  const dc = (value: number, seed: string, format?: "number" | "currency", invertDelta?: boolean) => (
-    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} />
+  const dc = (value: number, seed: string, format?: "number" | "currency" | "percentage", invertDelta?: boolean, previousValue?: number) => (
+    <DeltaCell value={value} dateRange={dateRange} compareRange={compareRange} seed={seed} format={format} invertDelta={invertDelta} deltaMode={deltaMode} previousValue={previousValue} />
   );
+
+  const prevBemPct = (conversions: number, registrations: number, convSeed: string, regSeed: string) => {
+    const prevConv = getComparisonValue(conversions, { dateRange, compareRange, seed: convSeed });
+    const prevReg = getComparisonValue(registrations, { dateRange, compareRange, seed: regSeed });
+    return prevConv > 0 ? (prevReg / prevConv) * 100 : 0;
+  };
 
   const chartData = chartView === "unit" ? unitChart : fgChart;
 
@@ -170,7 +176,7 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
                         </td>
                         <td className="p-4 align-middle font-semibold">{dc(parent.conversions, `jb-${parent.board}-conv`)}</td>
                         <td className="p-4 align-middle font-semibold">{dc(parent.registrations, `jb-${parent.board}-reg`)}</td>
-                        {showConversion && <td className="p-4 align-middle font-semibold">{bemPct.toFixed(1)}%</td>}
+                        {showConversion && <td className="p-4 align-middle font-semibold">{dc(bemPct, `jb-${parent.board}-bem`, "percentage", false, prevBemPct(parent.conversions, parent.registrations, `jb-${parent.board}-conv`, `jb-${parent.board}-reg`))}</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpr, `jb-${parent.board}-cpr`, "currency", true)}</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpc, `jb-${parent.board}-cpc`, "currency", true)}</td>}
                         <td className="p-4 align-middle font-semibold">{dc(parent.spend, `jb-${parent.board}-spend`, "currency")}</td>
@@ -184,7 +190,7 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
                             <td className="p-4 pl-10 align-middle text-muted-foreground">{child.category}</td>
                             <td className="p-4 align-middle">{dc(child.conversions, `jb-${parent.board}-${child.category}-conv`)}</td>
                             <td className="p-4 align-middle">{dc(child.registrations, `jb-${parent.board}-${child.category}-reg`)}</td>
-                            {showConversion && <td className="p-4 align-middle">{childBemPct.toFixed(1)}%</td>}
+                            {showConversion && <td className="p-4 align-middle">{dc(childBemPct, `jb-${parent.board}-${child.category}-bem`, "percentage", false, prevBemPct(child.conversions, child.registrations, `jb-${parent.board}-${child.category}-conv`, `jb-${parent.board}-${child.category}-reg`))}</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpr, `jb-${parent.board}-${child.category}-cpr`, "currency", true)}</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpc, `jb-${parent.board}-${child.category}-cpc`, "currency", true)}</td>}
                             <td className="p-4 align-middle">{dc(child.spend, `jb-${parent.board}-${child.category}-spend`, "currency")}</td>
@@ -204,7 +210,7 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
                   <td className="p-4">Totaal</td>
                   <td className="p-4">{dc(grand.conversions, "jb-total-conv")}</td>
                   <td className="p-4">{dc(grand.registrations, "jb-total-reg")}</td>
-                  {showConversion && <td className="p-4">{(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0).toFixed(1)}%</td>}
+                  {showConversion && <td className="p-4">{dc(grand.conversions > 0 ? (grand.registrations / grand.conversions) * 100 : 0, "jb-total-bem", "percentage", false, prevBemPct(grand.conversions, grand.registrations, "jb-total-conv", "jb-total-reg"))}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpr, "jb-total-cpr", "currency", true)}</td>}
                   {showConversion && <td className="p-4">{dc(grandCpc, "jb-total-cpc", "currency", true)}</td>}
                   <td className="p-4">{dc(grand.spend, "jb-total-spend", "currency")}</td>
