@@ -38,8 +38,13 @@ const DeltaCell = ({ value, dateRange, compareRange, seed, format = "number", in
   const absoluteDelta = value - prev;
   const isPos = invertDelta ? delta < 0 : delta > 0;
 
+  const formatAbs = (v: number) => {
+    if (format === "currency") return `${v > 0 ? "+" : v < 0 ? "-" : ""}${formatCurrency(Math.abs(Math.round(v)))}`;
+    if (format === "percentage") return `${v > 0 ? "+" : ""}${v.toFixed(1)}pp`;
+    return `${v > 0 ? "+" : ""}${v.toLocaleString("nl-NL")}`;
+  };
   const displayDelta = deltaMode === "absolute"
-    ? `${absoluteDelta > 0 ? "+" : ""}${formatValue(Math.abs(absoluteDelta) === absoluteDelta ? absoluteDelta : absoluteDelta, format === "percentage" ? "percentage" : format)}`
+    ? formatAbs(absoluteDelta)
     : `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`;
 
   return (
