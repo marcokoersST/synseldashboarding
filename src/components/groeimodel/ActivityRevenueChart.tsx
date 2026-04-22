@@ -131,21 +131,21 @@ export function ActivityRevenueChart({
 
       <DevNote
         story={<><strong>As a user (C-level)</strong>, I want to see how many consultants were active per calendar period and how much margin they collectively generated, <strong>so that</strong> I can correlate workforce size with realised revenue across the selected timeframe.</>}
-        logic={`Tijd-as = Cartesisch product van (gekozen jaren) × (P{lo}..P{hi}).
-Bij 1 jaar: ticks "P1, P2, … P13".
-Bij meerdere jaren: "P1 '25, P2 '25, …, P1 '26, …".
+        logic={`Time axis = Cartesian product of (selected years) × (P{lo}..P{hi}).
+Single year: ticks render as "P1, P2, … P13".
+Multiple years: "P1 '25, P2 '25, …, P1 '26, …".
 
-Per tick met absolute index  abs = year × 13 + (period − 1):
+For each tick with absolute index  abs = year × 13 + (period − 1):
 
-   Actief   =  COUNT( consultant   waar  startAbs ≤ abs ≤ endAbs )
-   Omzet    =  Σ  monthlyMargin[ abs − startAbs ]
-              over diezelfde actieve consultants
+   Active   =  COUNT( consultant   where  startAbs ≤ abs ≤ endAbs )
+   Revenue  =  Σ  monthlyMargin[ abs − startAbs ]
+              across those active consultants
 
 startAbs = startDate.year × 13 + (monthToPeriod(startDate.month) − 1)
-endAbs   = endDate     ? idem voor endDate : ∞
+endAbs   = endDate     ? same for endDate : ∞
 
-Filter scope: identiek aan de KPI-tegels en cohortgrafiek
-(Unit + Status + Jaar + P-range op startdatum).`}
+Filter scope: identical to the KPI tiles and cohort chart
+(Unit + Status + Year + P-range on start date).`}
       />
     </div>
   );
