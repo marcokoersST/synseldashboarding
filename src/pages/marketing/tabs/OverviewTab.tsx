@@ -224,6 +224,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
             <p className="text-xs font-medium text-muted-foreground mb-1">Inschrijvingen (nieuw in systeem)</p>
             <p className="text-2xl font-bold">{consultantTotals.inschrijvingen}</p>
             <DeltaBadge current={consultantTotals.inschrijvingen} previous={previousInflowRegistrations} compareLabel={compareLabel} />
+            <ProgressBar current={consultantTotals.inschrijvingen} previous={previousInflowRegistrations} />
           </CardContent>
         </Card>
         <Card>
@@ -231,6 +232,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
             <p className="text-xs font-medium text-muted-foreground mb-1">Heractiveringen</p>
             <p className="text-2xl font-bold">{inflowHeractiveringen.current}</p>
             <DeltaBadge current={inflowHeractiveringen.current} previous={previousHeractiveringen} compareLabel={compareLabel} />
+            <ProgressBar current={inflowHeractiveringen.current} previous={previousHeractiveringen} />
           </CardContent>
         </Card>
       </div>
