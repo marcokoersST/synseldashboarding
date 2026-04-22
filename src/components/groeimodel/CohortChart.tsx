@@ -543,7 +543,7 @@ export function CohortChart({
                 offset: 8,
               }}
             />
-            {!panMode && animPhase === "done" && (
+            {animPhase === "done" && (
               <Tooltip
                 wrapperStyle={{ outline: "none" }}
                 cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }}
