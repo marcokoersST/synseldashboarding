@@ -29,7 +29,8 @@ import {
    LineChart,
    Megaphone,
    Building2,
-   Sprout
+   Sprout,
+   Sparkles
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -117,10 +118,15 @@ const navItems: NavItem[] = [
     path: "/marketing",
   },
   {
+    icon: Sparkles,
+    label: "AI KPI Dashboard",
+    path: "/concepts/ai-kpi",
+    sectionLabel: "Concepts",
+  },
+  {
     icon: ClipboardCheck,
     label: "Dashboards Hendrik",
     path: "/hendrik/overzicht",
-    sectionLabel: "Concepts",
     subItems: [
       { icon: ClipboardCheck, label: "Kwaliteitsoverzicht", path: "/hendrik/overzicht" },
       { icon: Mail, label: "Mail & Voorstellen", path: "/hendrik/mail-voorstellen" },

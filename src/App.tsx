@@ -71,6 +71,7 @@ const TVRanglijstenGrafiek = lazy(() => import("./pages/TVRanglijstenGrafiek"));
 const ManagerOverzichtV2 = lazy(() => import("./pages/manager/OverzichtV2"));
 const ManagerOverzichtFinal = lazy(() => import("./pages/manager/OverzichtFinal"));
 const ProductiviteitDashboard = lazy(() => import("./pages/marco/ProductiviteitDashboard"));
+const AIKpiDashboard = lazy(() => import("./pages/concepts/AIKpiDashboard"));
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,7 @@ const App = () => (
               <Route path="/marketing/vacature-funnel" element={<MarketingVacatureFunnel />} />
               <Route path="/corporate-recruitment/inflow" element={<CorporateRecruitmentInflow />} />
               <Route path="/marco/productiviteit" element={<ProductiviteitDashboard />} />
+              <Route path="/concepts/ai-kpi" element={<AIKpiDashboard />} />
             </Route>
             {/* Standalone preview routes (no sidebar/topbar) */}
             <Route path="/preview/consultant" element={
