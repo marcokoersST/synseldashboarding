@@ -1,66 +1,34 @@
-# Plan: Major HygieneTiles ruimer & rustiger maken
+## Problem
 
-## Probleem
-In de huidige `HygieneTile` (major variant) staan **2 ringen + Updated-counter naast elkaar in één rij**, gevolgd door een dunne stacked bar en daaronder **3 mini-boxjes voor Required/Process/Freshness**. Dat maakt de boven­helft krap (rings tegen elkaar, kleine percentage-tekst onder ring) en de onderhelft visueel saai (drie identieke kleine kaartjes naast elkaar). De legenda van de verdelingsbalk wraps niet en kan op smallere kolommen overlopen.
+In the Systeem Hygiene header, selecting a different "Hygiene dim." value (e.g. switching from `All` to `Administrative process` or `Freshness / recently updated`) causes the header to visually shift. Other filter chips (Owners, Entiteiten, Updated timestamp) jump horizontally — and at narrow widths the row may even wrap to a new line.
 
-## Doel
-Eén grote, duidelijke "hero" per major tile, met de andere data in **gelaagde, ademende secties** in plaats van alles dicht op elkaar.
+**Cause:** `SelectFilter` renders the selected value as inline text inside the trigger button, so the button width depends on the option's character length. Because the filter row uses `flex flex-wrap` with `ml-auto`, every width change reflows the entire row.
 
-## Nieuwe layout per major tile
+The same root cause exists for the `Datum` and `Compare` filters (e.g. "Vandaag" vs "Laatste 30 dagen"), but it is most visible on the Hygiene dim. filter because its options vary the most in length.
 
-```text
-┌──────────────────────────────────────────────────────────┐
-│ Candidates  ▸ NEEDS ATTENTION                          › │  ← header met dunne onderlijn
-│ Completeness en freshness van kandidaat-records.         │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│      ╭────╮      RECORDS                                 │
-│     │  66  │     4.860                                   │
-│      ╰────╯      totaal                                  │
-│      Hygiene                                             │
-│      / 100       UPDATED 7D                              │
-│                  908                                     │
-│                  19% van totaal                          │
-│                                                          │
-├──────────────────────────────────────────────────────────┤
-│ RECORD VERDELING                              4.860      │
-│ ███████████░░░░░░░░░░░░░░░░░░░░░░ (3-kleurig, h-3)      │
-│ ■ Incompleet 1.798   ■ Compleet, oud 1.562   ■ Fresh 1.500│
-├──────────────────────────────────────────────────────────┤
-│ SCORE BREAKDOWN                                          │
-│ Required  50%  ████████████░░░  63                       │
-│ Process   25%  █████████████░░  89                       │
-│ Freshness 25%  ███████░░░░░░░░  49                       │
-├──────────────────────────────────────────────────────────┤
-│ Candidates score is needs attention. 63% van …           │
-└──────────────────────────────────────────────────────────┘
-```
+## Fix
 
-### Belangrijkste wijzigingen
-1. **Eén hero-ring** in plaats van twee. Diameter **132 px** (was 96), strokeWidth 11. Binnenin: kleine "HYGIENE" label, groot getal (text-4xl), "/ 100" subtekst. Geeft visueel anker.
-2. **Verticale stat-kolom** rechts van de ring met twee blokken (Records, Updated 7d) i.p.v. één geknepen counter. Updated-blok krijgt percentage-context ("19% van totaal"). De aparte "Verplichte velden"-ring vervalt — dat percentage komt terug in de Score breakdown sectie.
-3. **Volle breedte verdelingsbalk** (h-3 i.p.v. h-2), gescheiden sectie met eigen header "RECORD VERDELING" + totaal. Legenda wordt een **3-koloms grid** met kleurenblok + label + getal rechts uitgelijnd → wraps netjes en is afleesbaar.
-4. **Score breakdown als 3 horizontale bars** met label, gewicht-badge (50% / 25% / 25%) en mini progress (kleur volgt Clean/Attention/Critical drempel). Vervangt de drie identieke mini-kaartjes — geeft direct visueel oordeel per dimensie.
-5. **Sectie-scheidingen** met dunne `border-border/60` lijntjes i.p.v. losse spacing → rustiger en hiërarchischer.
-6. **Footer summary** in eigen sectie met scheidingslijn (was zwevend onderaan).
-7. Tile min-height van 420 → **460 px** zodat secties echt ademen.
+Give each `SelectFilter` trigger a stable width so the value can change without reflowing the row.
 
-### Minor tiles (rechter kolom)
-Behouden compact, maar lichte verbetering:
-- Iets grotere ring (60 → 68 px), grotere getal-typografie.
-- Stacked bar onderin via `mt-auto` zodat alle vier minor tiles dezelfde verticale ritmiek krijgen.
-- Status-badge naast titel i.p.v. erboven → minder ruimteverlies.
+1. **`src/pages/concepts/SysteemHygiene.tsx` → `SelectFilter`**
+   - Add an optional `triggerClassName` (or `minWidth`) prop.
+   - Apply `min-w-[Xpx]` and `justify-between` on the trigger so the chevron stays right-aligned and the button does not shrink/grow with content.
+   - Truncate long values (`truncate` + `max-w` on the value span) so very long labels don't blow up the button either.
 
-## Implementatie
-Eén bestand wordt vervangen:
-- `src/components/systeem-hygiene/HygieneTile.tsx` — herschreven met: aparte `MinorTile` sub-component, en hulpcomponenten `StatLine`, `LegendItem`, `BreakdownRow`. Geen wijzigingen aan de data layer of aan `SysteemHygiene.tsx` (zelfde props blijven).
+2. **Apply explicit widths per filter** at the call site in the header:
+   - `Datum`: `min-w-[170px]`
+   - `Compare`: `min-w-[230px]`
+   - `Hygiene dim.`: `min-w-[260px]` (fits the longest option "Freshness / recently updated")
+   - Leave `MultiSelectFilter` chips as-is — their label is a fixed "N geselecteerd" / placeholder pattern and doesn't fluctuate the same way. Optionally add a small `min-w-[140px]` to Owners/Entiteiten for visual consistency.
 
-Geen nieuwe dependencies, geen routing-wijzigingen. Bestaande grid in `SysteemHygiene` (`lg:grid-cols-[1fr_1fr_1fr_320px]`) blijft werken; major tiles vullen hun kolom natuurlijk uit met de nieuwe min-height.
+3. **Header row stability**
+   - Keep `flex-wrap` for true small-viewport fallback, but the fixed widths mean dimension changes will no longer trigger a reflow at the user's 2042px viewport.
 
-## Acceptatiecriteria
-- Eén grote ring per major tile, gecentreerd t.o.v. de stat-kolom; geen twee ringen meer naast elkaar.
-- Verdelingsbalk-legenda wraps niet en blijft leesbaar op de huidige major-kolom-breedte (~460 px op het 2042px viewport).
-- Score breakdown toont 3 horizontale bars met kleur volgens drempel (≥85 groen / ≥60 oranje / <60 rood).
-- Sectie-scheidingen met dunne lijnen; visueel rustiger dan voorheen.
-- Minor tiles blijven compact, maar status-badge staat naast titel en stacked bar zit netjes onderin.
-- Geen overflow of geknepen tekst bij viewports vanaf 1280 px.
+## Out of scope
+
+- No changes to filter behavior, options list, or the rest of the page.
+- No restyle of the tiles or overlay.
+
+## Files touched
+
+- `src/pages/concepts/SysteemHygiene.tsx` (only the header `SelectFilter` usages and the `SelectFilter` component definition)

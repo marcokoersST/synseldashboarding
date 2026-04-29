@@ -92,14 +92,15 @@ export default function SysteemHygiene() {
 
             {/* Filters */}
             <div className="ml-auto flex flex-wrap items-center gap-2">
-              <SelectFilter label="Datum" value={datePreset} options={DATE_PRESETS} onSelect={setDatePreset} />
-              <SelectFilter label="Compare" value={comparison} options={["Vorige vergelijkbare periode", "Vorig jaar", "Geen"]} onSelect={setComparison} />
+              <SelectFilter label="Datum" value={datePreset} options={DATE_PRESETS} onSelect={setDatePreset} triggerClassName="min-w-[190px]" />
+              <SelectFilter label="Compare" value={comparison} options={["Vorige vergelijkbare periode", "Vorig jaar", "Geen"]} onSelect={setComparison} triggerClassName="min-w-[260px]" />
               <MultiSelectFilter
                 label="Entiteiten"
                 placeholder="Alles"
                 values={selectedEntities}
                 options={[...MAJOR, ...MINOR].map(e => ({ value: e, label: ENTITY_LABEL[e] }))}
                 onChange={vals => setSelectedEntities(vals as EntityKey[])}
+                triggerClassName="min-w-[150px]"
               />
               <MultiSelectFilter
                 label="Owners"
@@ -107,8 +108,9 @@ export default function SysteemHygiene() {
                 values={selectedOwners}
                 options={OWNERS.map(o => ({ value: o.fullName, label: o.fullName }))}
                 onChange={setSelectedOwners}
+                triggerClassName="min-w-[160px]"
               />
-              <SelectFilter label="Hygiene dim." value={dimension} options={HYGIENE_DIMENSIONS} onSelect={setDimension} />
+              <SelectFilter label="Hygiene dim." value={dimension} options={HYGIENE_DIMENSIONS} onSelect={setDimension} triggerClassName="min-w-[280px]" />
               <div className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[10px] text-muted-foreground">
                 <RefreshCw className="h-3 w-3" />
                 <span>Updated {refreshLabel}</span>
@@ -157,14 +159,16 @@ export default function SysteemHygiene() {
 
 // ---- Filter primitives -----------------------------------------------------
 
-function SelectFilter({ label, value, options, onSelect }: { label: string; value: string; options: string[]; onSelect: (v: string) => void }) {
+function SelectFilter({ label, value, options, onSelect, triggerClassName }: { label: string; value: string; options: string[]; onSelect: (v: string) => void; triggerClassName?: string }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-          <span className="text-muted-foreground">{label}:</span>
-          <span className="font-medium">{value}</span>
-          <ChevronDown className="h-3 w-3" />
+        <Button variant="outline" size="sm" className={cn("h-8 gap-1.5 text-xs justify-between", triggerClassName)}>
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className="text-muted-foreground shrink-0">{label}:</span>
+            <span className="font-medium truncate">{value}</span>
+          </span>
+          <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-56 p-1">
@@ -192,22 +196,26 @@ function MultiSelectFilter({
   values,
   options,
   onChange,
+  triggerClassName,
 }: {
   label: string;
   placeholder: string;
   values: string[];
   options: { value: string; label: string }[];
   onChange: (vals: string[]) => void;
+  triggerClassName?: string;
 }) {
   const allValues = options.map(o => o.value);
   const display = values.length === 0 ? placeholder : `${values.length} geselecteerd`;
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-          <span className="text-muted-foreground">{label}:</span>
-          <span className="font-medium">{display}</span>
-          <ChevronDown className="h-3 w-3" />
+        <Button variant="outline" size="sm" className={cn("h-8 gap-1.5 text-xs justify-between", triggerClassName)}>
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className="text-muted-foreground shrink-0">{label}:</span>
+            <span className="font-medium truncate">{display}</span>
+          </span>
+          <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-64 p-2">
