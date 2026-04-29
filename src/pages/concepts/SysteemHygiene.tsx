@@ -65,9 +65,9 @@ export default function SysteemHygiene() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="-m-6 min-h-[calc(100vh-0px)] bg-background">
       {/* Sticky header — fixed two-row layout, immune to width/filter changes */}
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 rounded-tl-2xl overflow-hidden">
         {/* Row 1: title + updated chip */}
         <div className="flex h-20 items-center gap-4 px-6">
           <div className="relative shrink-0">
