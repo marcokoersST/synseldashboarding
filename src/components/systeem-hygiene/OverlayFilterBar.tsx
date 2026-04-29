@@ -18,9 +18,10 @@ interface Props {
   entity: EntityKey;
   filters: OverlayFilters;
   onChange: (next: OverlayFilters) => void;
+  activeTab?: string;
 }
 
-export function OverlayFilterBar({ entity, filters, onChange }: Props) {
+export function OverlayFilterBar({ entity, filters, onChange, activeTab }: Props) {
   const statusOptions = useMemo(() => getStatusOptions(entity), [entity]);
   const ownerOptions = OWNERS;
 
@@ -64,21 +65,23 @@ export function OverlayFilterBar({ entity, filters, onChange }: Props) {
         </ToggleGroup>
       </div>
 
-      <div className="flex items-center gap-1">
-        <span className="text-muted-foreground">Scope</span>
-        <ToggleGroup
-          type="single"
-          size="sm"
-          value={filters.fieldScope}
-          onValueChange={(v) => v && onChange({ ...filters, fieldScope: v as FieldScope })}
-          className="h-7"
-        >
-          <ToggleGroupItem value="mandatory" className="h-7 px-2 text-xs">Mandatory</ToggleGroupItem>
-          <ToggleGroupItem value="mandatoryIfAvailable" className="h-7 px-2 text-xs">Mand. if avail.</ToggleGroupItem>
-          <ToggleGroupItem value="wouldBeNice" className="h-7 px-2 text-xs">Would-be-nice</ToggleGroupItem>
-          <ToggleGroupItem value="optional" className="h-7 px-2 text-xs">Optional</ToggleGroupItem>
-        </ToggleGroup>
-      </div>
+      {activeTab === "fields" && (
+        <div className="flex items-center gap-1">
+          <span className="text-muted-foreground">Scope</span>
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={filters.fieldScope}
+            onValueChange={(v) => v && onChange({ ...filters, fieldScope: v as FieldScope })}
+            className="h-7"
+          >
+            <ToggleGroupItem value="mandatory" className="h-7 px-2 text-xs">Mandatory</ToggleGroupItem>
+            <ToggleGroupItem value="mandatoryIfAvailable" className="h-7 px-2 text-xs">Mand. if avail.</ToggleGroupItem>
+            <ToggleGroupItem value="wouldBeNice" className="h-7 px-2 text-xs">Would-be-nice</ToggleGroupItem>
+            <ToggleGroupItem value="optional" className="h-7 px-2 text-xs">Optional</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      )}
 
       <div className="ml-auto">
         <Button
