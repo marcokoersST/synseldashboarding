@@ -204,26 +204,40 @@ function OverviewTab({ entity, filters, selectedStep }: { entity: EntityKey; fil
   const checks = getProcessChecks(entity).slice(0, 5);
   const actions = getActionPointers(entity, 4);
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Top action pointers</h4>
-        <ActionPointerList items={actions} />
-      </div>
-      <div className="space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Process checks</h4>
-        <div className="space-y-2">
-          {checks.map((c, i) => (
-            <div key={i} className="rounded-lg border border-border bg-card/50 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-foreground truncate">{c.check}</span>
-                <span className="text-xs font-semibold tabular-nums" style={{ color: STATUS_COLOR[c.status] }}>{c.passedPct}%</span>
-              </div>
-              <Progress value={c.passedPct} className="h-1.5 mt-1.5" />
-            </div>
-          ))}
+    <div className="space-y-5">
+      {/* Featured: Events deze periode */}
+      <section className="rounded-xl border border-primary/30 bg-primary/5 p-4 shadow-sm">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="rounded-lg bg-primary/15 p-2 text-primary">
+            <Activity className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-foreground leading-tight">Events deze periode</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Mutaties en activiteit binnen de huidige periode</p>
+          </div>
         </div>
-        <h4 className="text-xs uppercase tracking-wider text-muted-foreground pt-2">Events deze periode</h4>
         <EventCountersStrip counters={counters} />
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-3">
+          <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Top action pointers</h4>
+          <ActionPointerList items={actions} />
+        </div>
+        <div className="space-y-3">
+          <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Process checks</h4>
+          <div className="space-y-2">
+            {checks.map((c, i) => (
+              <div key={i} className="rounded-lg border border-border bg-card/50 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-foreground truncate">{c.check}</span>
+                  <span className="text-xs font-semibold tabular-nums" style={{ color: STATUS_COLOR[c.status] }}>{c.passedPct}%</span>
+                </div>
+                <Progress value={c.passedPct} className="h-1.5 mt-1.5" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
