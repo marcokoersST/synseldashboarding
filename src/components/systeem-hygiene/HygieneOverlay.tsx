@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, ChevronDown, ChevronRight } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from "recharts";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import {
   ENTITY_SUBTITLE,
   STATUS_COLOR,
   STATUS_LABEL,
+  DEFAULT_OVERLAY_FILTERS,
   getEntitySummary,
   getProcessChecks,
   getActionPointers,
@@ -23,12 +24,16 @@ import {
   getAiSynselCoverage,
   getNotitiesActivityByEntity,
   getInsights,
+  getStepDropOffs,
+  getEntityDropOffs,
   type EntityKey,
-  type FieldScope,
+  type OverlayFilters,
 } from "@/data/systeemHygieneData";
 import { ActionPointerList } from "./ActionPointerList";
 import { EventCountersStrip, EventLogList } from "./EventLog";
 import { InsightCard } from "./InsightCard";
+import { OverlayFilterBar } from "./OverlayFilterBar";
+import { StepDropOffTable, EntityComparisonTable } from "./DropOffSummaryTable";
 
 interface Props {
   entity: EntityKey | null;
@@ -69,6 +74,20 @@ function OverlayBody({ entity }: { entity: EntityKey }) {
   const summary = getEntitySummary(entity);
   const insights = getInsights(entity);
   const color = STATUS_COLOR[summary.status];
+
+  const [filters, setFilters] = useState<OverlayFilters>(DEFAULT_OVERLAY_FILTERS);
+  const [selectedStep, setSelectedStep] = useState<string | null>(null);
+  const [showCompare, setShowCompare] = useState(false);
+
+  // Reset bij entity-wissel
+  useEffect(() => {
+    setFilters(DEFAULT_OVERLAY_FILTERS);
+    setSelectedStep(null);
+    setShowCompare(false);
+  }, [entity]);
+
+  const stepRows = useMemo(() => getStepDropOffs(entity, filters), [entity, filters]);
+  const entityRows = useMemo(() => getEntityDropOffs(filters), [filters]);
 
   return (
     <div className="flex h-full flex-col">
@@ -113,13 +132,43 @@ function OverlayBody({ entity }: { entity: EntityKey }) {
           </TabsList>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          <TabsContent value="overview" className="m-0"><OverviewTab entity={entity} /></TabsContent>
-          <TabsContent value="fields" className="m-0"><FieldsTab entity={entity} /></TabsContent>
-          <TabsContent value="process" className="m-0"><ProcessTab entity={entity} /></TabsContent>
-          <TabsContent value="records" className="m-0"><RecordsTab entity={entity} /></TabsContent>
-          <TabsContent value="actions" className="m-0"><ActionsTab entity={entity} /></TabsContent>
-          <TabsContent value="events" className="m-0"><EventsTab entity={entity} /></TabsContent>
+        <div className="flex-1 overflow-y-auto">
+          <OverlayFilterBar entity={entity} filters={filters} onChange={setFilters} />
+
+          <div className="px-6 py-4 space-y-4">
+            {/* Drop-off summary block — shown above every tab */}
+            <section className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Drop-off per step{selectedStep ? ` — gefilterd op ${selectedStep}` : ""}
+                </h4>
+                {selectedStep && (
+                  <Button type="button" size="sm" variant="ghost" className="h-6 px-2 text-xs"
+                    onClick={() => setSelectedStep(null)}>
+                    Step-filter wissen
+                  </Button>
+                )}
+              </div>
+              <StepDropOffTable rows={stepRows} selectedStep={selectedStep} onSelectStep={setSelectedStep} />
+
+              <button
+                type="button"
+                onClick={() => setShowCompare(v => !v)}
+                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+              >
+                {showCompare ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                Vergelijk met andere entities
+              </button>
+              {showCompare && <EntityComparisonTable rows={entityRows} highlight={entity} />}
+            </section>
+
+            <TabsContent value="overview" className="m-0"><OverviewTab entity={entity} filters={filters} selectedStep={selectedStep} /></TabsContent>
+            <TabsContent value="fields" className="m-0"><FieldsTab entity={entity} filters={filters} /></TabsContent>
+            <TabsContent value="process" className="m-0"><ProcessTab entity={entity} /></TabsContent>
+            <TabsContent value="records" className="m-0"><RecordsTab entity={entity} /></TabsContent>
+            <TabsContent value="actions" className="m-0"><ActionsTab entity={entity} /></TabsContent>
+            <TabsContent value="events" className="m-0"><EventsTab entity={entity} /></TabsContent>
+          </div>
         </div>
       </Tabs>
     </div>
@@ -149,7 +198,7 @@ function Metric({ label, value, sub, color }: { label: string; value: string; su
 
 // ---- Tabs ------------------------------------------------------------------
 
-function OverviewTab({ entity }: { entity: EntityKey }) {
+function OverviewTab({ entity, filters, selectedStep }: { entity: EntityKey; filters: OverlayFilters; selectedStep: string | null }) {
   const counters = getEventCounters(entity);
   const checks = getProcessChecks(entity).slice(0, 5);
   const actions = getActionPointers(entity, 4);
@@ -179,28 +228,18 @@ function OverviewTab({ entity }: { entity: EntityKey }) {
   );
 }
 
-function FieldsTab({ entity }: { entity: EntityKey }) {
-  const [scope, setScope] = useState<FieldScope>("mandatory");
+function FieldsTab({ entity, filters }: { entity: EntityKey; filters: OverlayFilters }) {
+  const scope = filters.fieldScope;
   const data = getFieldMissingCounts(entity, scope);
   const showMarketing = entity === "jobs";
   const marketingData = showMarketing ? getMarketingFieldMissingCounts() : null;
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2">
-        {(["mandatory", "mandatoryIfAvailable", "wouldBeNice", "optional"] as FieldScope[]).map(s => (
-          <Button
-            key={s}
-            type="button"
-            size="sm"
-            variant={scope === s ? "default" : "outline"}
-            onClick={() => setScope(s)}
-            className="text-xs"
-          >
-            {s === "mandatory" ? "Mandatory" : s === "mandatoryIfAvailable" ? "Mandatory if available" : s === "wouldBeNice" ? "Would-be-nice" : "Optional"}
-          </Button>
-        ))}
+      <div className="text-[11px] text-muted-foreground">
+        Scope: <span className="font-medium text-foreground">{scope === "mandatory" ? "Mandatory" : scope === "mandatoryIfAvailable" ? "Mandatory if available" : scope === "wouldBeNice" ? "Would-be-nice" : "Optional"}</span> — wijzig via filterbalk hierboven.
       </div>
+
 
       {data.length === 0 ? (
         <div className="rounded-lg border border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
