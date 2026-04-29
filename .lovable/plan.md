@@ -1,135 +1,66 @@
-# Plan: HygieneOverlay verbeteren met drop-off samenvattingen + filters
+# Plan: Major HygieneTiles ruimer & rustiger maken
+
+## Probleem
+In de huidige `HygieneTile` (major variant) staan **2 ringen + Updated-counter naast elkaar in één rij**, gevolgd door een dunne stacked bar en daaronder **3 mini-boxjes voor Required/Process/Freshness**. Dat maakt de boven­helft krap (rings tegen elkaar, kleine percentage-tekst onder ring) en de onderhelft visueel saai (drie identieke kleine kaartjes naast elkaar). De legenda van de verdelingsbalk wraps niet en kan op smallere kolommen overlopen.
 
 ## Doel
-In de `HygieneOverlay` (popup vanuit de Systeem Hygiene tegels) krijgt **elke tab** een consistent **filterblok bovenin** en een **samenvattingstabel** met **drop-offs per step** (process / funnel-stappen) én **per entity** (zodat je vanuit de detail-overlay alsnog cross-entity vergelijkt). Hierdoor wordt de overlay niet alleen detail-, maar ook beslissingstool.
+Eén grote, duidelijke "hero" per major tile, met de andere data in **gelaagde, ademende secties** in plaats van alles dicht op elkaar.
 
-## Scope
-- 1 component: `src/components/systeem-hygiene/HygieneOverlay.tsx`
-- 1 nieuw klein component: `src/components/systeem-hygiene/OverlayFilterBar.tsx` (gedeelde filterbalk)
-- 1 nieuw klein component: `src/components/systeem-hygiene/DropOffSummaryTable.tsx` (herbruikbare tabel)
-- Data: bestaande exports uit `src/data/systeemHygieneData.ts` aggregeren in 2 nieuwe pure helpers:
-  - `getStepDropOffs(entity, filters)` → drop-off per process-step / stage
-  - `getEntityDropOffs(filters)` → drop-off per entity (alle 7)
-
-Geen wijzigingen aan de mock data zelf — alleen afgeleide aggregaties.
-
-## UX
-
-### 1. Vaste filterbalk (sticky onder tab-strip)
-Eén `OverlayFilterBar` direct onder de `TabsList`, voor álle tabs zichtbaar. Compact, één rij, `text-xs`:
-
-- **Owner** — multi-select popover (uit `OWNERS`) met "Alles aan/uit"
-- **Status / Stage** — multi-select, opties hangen af van entity (kandidaatstatus, deal stage, vacature status, etc.)
-- **Freshness** — segmented: `Alles` · `Vers` · `Outdated` · `Stale` (gebaseerd op `FRESHNESS_DAYS[entity]`)
-- **Field scope** — segmented: `Mandatory` · `Mandatory if available` · `Would-be-nice` · `Optional` (vervangt de losse knoppenrij in Fields-tab; werkt globaal)
-- **Reset** — kleine ghost button rechts
-
-State leeft in `OverlayBody` en wordt via props doorgegeven aan elke tab + tabel. Filters resetten bij entity-wissel.
-
-### 2. Drop-off samenvattingstabel — twee varianten
-
-**A. Per step (entity-specifiek)** — bovenin elke tab onder de filterbar.
+## Nieuwe layout per major tile
 
 ```text
-Step / Stage          Records    Compleet   Drop-off    Hygiene
-Nieuw                  1.240      94%        ▼ 6%        92
-Verdelen                 870      71%        ▼ 23%       64
-Bemiddelbaar             510      58%        ▼ 13%       55
-Plaatsing                210      82%        ▲ 24%       78
+┌──────────────────────────────────────────────────────────┐
+│ Candidates  ▸ NEEDS ATTENTION                          › │  ← header met dunne onderlijn
+│ Completeness en freshness van kandidaat-records.         │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│      ╭────╮      RECORDS                                 │
+│     │  66  │     4.860                                   │
+│      ╰────╯      totaal                                  │
+│      Hygiene                                             │
+│      / 100       UPDATED 7D                              │
+│                  908                                     │
+│                  19% van totaal                          │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│ RECORD VERDELING                              4.860      │
+│ ███████████░░░░░░░░░░░░░░░░░░░░░░ (3-kleurig, h-3)      │
+│ ■ Incompleet 1.798   ■ Compleet, oud 1.562   ■ Fresh 1.500│
+├──────────────────────────────────────────────────────────┤
+│ SCORE BREAKDOWN                                          │
+│ Required  50%  ████████████░░░  63                       │
+│ Process   25%  █████████████░░  89                       │
+│ Freshness 25%  ███████░░░░░░░░  49                       │
+├──────────────────────────────────────────────────────────┤
+│ Candidates score is needs attention. 63% van …           │
+└──────────────────────────────────────────────────────────┘
 ```
 
-- Bron: `getProcessChecks(entity)` + `getDealStageCompleteness()` voor deals + analoge afleiding voor andere entities.
-- "Drop-off" = verschil compleet% t.o.v. vorige step. Kleur: rood >15%, oranje 8–15%, groen ≤8%.
-- Klik op een rij → filtert de onderliggende tab-content op die step.
+### Belangrijkste wijzigingen
+1. **Eén hero-ring** in plaats van twee. Diameter **132 px** (was 96), strokeWidth 11. Binnenin: kleine "HYGIENE" label, groot getal (text-4xl), "/ 100" subtekst. Geeft visueel anker.
+2. **Verticale stat-kolom** rechts van de ring met twee blokken (Records, Updated 7d) i.p.v. één geknepen counter. Updated-blok krijgt percentage-context ("19% van totaal"). De aparte "Verplichte velden"-ring vervalt — dat percentage komt terug in de Score breakdown sectie.
+3. **Volle breedte verdelingsbalk** (h-3 i.p.v. h-2), gescheiden sectie met eigen header "RECORD VERDELING" + totaal. Legenda wordt een **3-koloms grid** met kleurenblok + label + getal rechts uitgelijnd → wraps netjes en is afleesbaar.
+4. **Score breakdown als 3 horizontale bars** met label, gewicht-badge (50% / 25% / 25%) en mini progress (kleur volgt Clean/Attention/Critical drempel). Vervangt de drie identieke mini-kaartjes — geeft direct visueel oordeel per dimensie.
+5. **Sectie-scheidingen** met dunne `border-border/60` lijntjes i.p.v. losse spacing → rustiger en hiërarchischer.
+6. **Footer summary** in eigen sectie met scheidingslijn (was zwevend onderaan).
+7. Tile min-height van 420 → **460 px** zodat secties echt ademen.
 
-**B. Per entity (cross-entity)** — uitklap onder per-step tabel ("Vergelijk met andere entities").
+### Minor tiles (rechter kolom)
+Behouden compact, maar lichte verbetering:
+- Iets grotere ring (60 → 68 px), grotere getal-typografie.
+- Stacked bar onderin via `mt-auto` zodat alle vier minor tiles dezelfde verticale ritmiek krijgen.
+- Status-badge naast titel i.p.v. erboven → minder ruimteverlies.
 
-```text
-Entity        Hygiene   Required   Process   Freshness   Δ vs. avg
-Candidates      72        68         78        70          -4
-Companies       81        85         80        76          +5
-Deals           58        52         60        65         -18
-...
-```
+## Implementatie
+Eén bestand wordt vervangen:
+- `src/components/systeem-hygiene/HygieneTile.tsx` — herschreven met: aparte `MinorTile` sub-component, en hulpcomponenten `StatLine`, `LegendItem`, `BreakdownRow`. Geen wijzigingen aan de data layer of aan `SysteemHygiene.tsx` (zelfde props blijven).
 
-- Bron: `getAllSummaries()`.
-- Huidige entity is highlighted; sortable per kolom.
-- Geeft context: "is dit erg vs. de rest?".
-
-### 3. Per-tab integratie
-| Tab | Per-step tabel toont | Tab-content blijft |
-|---|---|---|
-| Overzicht | Top action pointers + process checks gefiltered | bestaand, gefilterd |
-| Velden | Missing per veld (gefilterd op scope/owner) | bestaande charts |
-| Process | Drop-off per process check | bestaande lijst |
-| Records | Records gefilterd op step uit klik | bestaande tabel + step-kolom |
-| Action pointers | Pointers gegroepeerd per step | bestaande lijst |
-| Events | Event-tellers per step | bestaand |
-
-Filters in de balk werken op alle tabs tegelijk; tabs hoeven de filter-state alleen te lezen.
-
-## Technisch
-
-### Nieuwe types in `systeemHygieneData.ts`
-```ts
-export interface OverlayFilters {
-  owners: string[];          // [] = alle
-  statuses: string[];        // entity-specifiek
-  freshness: "all" | "fresh" | "outdated" | "stale";
-  fieldScope: FieldScope;
-}
-
-export interface StepDropOff {
-  step: string;
-  records: number;
-  completePct: number;
-  dropOffPct: number;        // vs. vorige step, negatief = verbeter
-  hygieneScore: number;
-}
-
-export interface EntityDropOff {
-  entity: EntityKey;
-  hygiene: number;
-  required: number;
-  process: number;
-  freshness: number;
-  deltaVsAvg: number;
-}
-```
-
-### Nieuwe helpers (puur, deterministisch — zelfde PRNG-stijl)
-- `getStepDropOffs(entity: EntityKey, filters: OverlayFilters): StepDropOff[]`
-  - Candidates → kandidaatstatus-volgorde uit `CANDIDATE_FIELDS_BY_STATUS`
-  - Deals → `DEAL_STAGES_FOR_CHART`
-  - Companies/Contacts/Jobs/AI.synsel/Notities → process-check volgorde uit `getProcessChecks(entity)`
-- `getEntityDropOffs(filters: OverlayFilters): EntityDropOff[]`
-  - Wrapt `getAllSummaries()` + berekent gemiddelde + delta.
-- `getStatusOptions(entity: EntityKey): string[]` — voor de status-multi-select.
-
-### Bestaande functies aanpassen om filters mee te wegen
-Minimaal-invasief: helpers krijgen optionele `filters?: OverlayFilters` parameter. Wanneer leeg → huidig gedrag. Filtering past een deterministische verlaging toe op tellingen (consistent met de bestaande mock-aanpak), bv. `count * ownerFraction * statusFraction`.
-
-### Componenten
-- `OverlayFilterBar`: `<div class="sticky top-0 z-10 bg-card/80 backdrop-blur border-b px-6 py-2 flex items-center gap-2 text-xs">` met `Popover` voor owner/status, `ToggleGroup` voor freshness/scope, `Button ghost` voor reset.
-- `DropOffSummaryTable`: generieke tabel met props `{ rows, columns, highlightKey?, onRowClick? }`. Drop-off cell rendert pijl + kleur volgens drempels.
-- `EntityComparisonTable`: collapsible (`<details>`), default dicht, gebruikt zelfde tabelcomponent.
-
-### Styling (consistent met bestaand)
-- `text-xs`, `tabular-nums`, `border-border/40`, `hover:bg-muted/30`
-- Drop-off kleuren via `STATUS_COLOR` (kritiek/attention/clean) — geen nieuwe tokens.
-- Sticky filterbar gebruikt zelfde `bg-card/40` als header.
+Geen nieuwe dependencies, geen routing-wijzigingen. Bestaande grid in `SysteemHygiene` (`lg:grid-cols-[1fr_1fr_1fr_320px]`) blijft werken; major tiles vullen hun kolom natuurlijk uit met de nieuwe min-height.
 
 ## Acceptatiecriteria
-- Filterbalk staat sticky onder de tabs, zichtbaar in álle 6 tabs van de overlay.
-- Per-step drop-off tabel verschijnt bovenin elke tab; rijen klikbaar; kleur op drop-off% klopt met drempels (≤8 groen / 8–15 oranje / >15 rood).
-- "Vergelijk met andere entities" panel toont alle 7 entities met huidige entity gehighlight; sorteerbaar.
-- Wijzigen van een filter werkt synchroon over álle tab-content (charts, tabellen, action pointers, events).
-- Wisselen van entity reset filters; geen state-lek tussen entities.
-- Geen overflow bij 80vw × 75vh op 2042px viewport (huidige viewer); filterbar wraps niet op desktop.
-- Bestaande veldscope-knoppen in Fields-tab vervallen (verhuisd naar filterbar); chart blijft werken.
-
-## Bestanden
-- `src/data/systeemHygieneData.ts` — types + 3 helpers + optionele filter-param op bestaande aggregators
-- `src/components/systeem-hygiene/HygieneOverlay.tsx` — filter-state, doorgeven aan tabs, per-step tabel injecteren
-- `src/components/systeem-hygiene/OverlayFilterBar.tsx` — nieuw
-- `src/components/systeem-hygiene/DropOffSummaryTable.tsx` — nieuw (herbruikt voor entity-tabel)
+- Eén grote ring per major tile, gecentreerd t.o.v. de stat-kolom; geen twee ringen meer naast elkaar.
+- Verdelingsbalk-legenda wraps niet en blijft leesbaar op de huidige major-kolom-breedte (~460 px op het 2042px viewport).
+- Score breakdown toont 3 horizontale bars met kleur volgens drempel (≥85 groen / ≥60 oranje / <60 rood).
+- Sectie-scheidingen met dunne lijnen; visueel rustiger dan voorheen.
+- Minor tiles blijven compact, maar status-badge staat naast titel en stacked bar zit netjes onderin.
+- Geen overflow of geknepen tekst bij viewports vanaf 1280 px.
