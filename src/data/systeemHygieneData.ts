@@ -479,18 +479,77 @@ export function getEventCounters(entity: EntityKey): EventCounters {
   };
 }
 
-export interface EventLogRow { id: string; owner: string; action: string; field: string; entityName: string; minutesAgo: number }
+export interface EventLogRow { id: string; owner: string; sentence: string; field: string; action: string; entityName: string; minutesAgo: number }
 
-const ACTIONS = ["updated", "added a note to", "changed stage on", "created", "updated field on"];
-const FIELDS_BY_ENTITY: Record<EntityKey, string[]> = {
-  candidates: ["Resume", "AI.synsel", "Phone", "Status", "Opgemaakt CV", "Functiegroep"],
-  companies: ["Sector", "Branches", "Status", "Contactpersoon", "Telefoonnummer"],
-  contacts: ["Functie", "Title", "Email", "Stage", "Voorkeurscontactpersoon"],
-  jobs: ["Job description", "Publicatie titel", "Primaire contact", "Sector", "Status"],
-  deals: ["Stage", "Start datum", "Payroll partner", "Contract type", "Value", "Close date"],
-  ai_synsel: ["AI keuring", "AI matchscore", "AI samenvatting", "Coverage flag"],
-  notities: ["Note", "Call", "Meeting", "Task"],
+// Per-entity, per-field allowed action verbs + sentence builder following user-provided logic
+type FieldVerbMap = Record<string, string[]>;
+
+const FIELD_VERBS_BY_ENTITY: Record<EntityKey, FieldVerbMap> = {
+  candidates: {
+    "resume": ["added", "removed"],
+    "status": ["changed", "set"],
+    "functiegroep": ["changed", "added", "set"],
+    "opgemaakt CV": ["added", "removed", "generated"],
+    "phone number": ["added", "removed", "changed"],
+    "AI.synsel": ["changed"],
+  },
+  companies: {
+    "sector": ["changed", "set"],
+    "branches": ["added", "changed"],
+    "status": ["changed", "set"],
+    "contactpersoon": ["added", "removed"],
+    "telefoonnummer": ["added", "changed", "removed"],
+  },
+  contacts: {
+    "functie": ["changed", "set"],
+    "title": ["changed", "set"],
+    "email": ["added", "changed", "removed"],
+    "stage": ["changed", "set"],
+    "voorkeurscontactpersoon": ["set", "changed"],
+  },
+  jobs: {
+    "job description": ["added", "changed"],
+    "publicatie titel": ["set", "changed"],
+    "primaire contact": ["added", "changed"],
+    "sector": ["set", "changed"],
+    "status": ["changed", "set"],
+  },
+  deals: {
+    "stage": ["changed", "set"],
+    "start datum": ["set", "changed"],
+    "payroll partner": ["set", "changed"],
+    "contract type": ["set", "changed"],
+    "value": ["set", "changed"],
+    "close date": ["set", "changed"],
+  },
+  ai_synsel: {
+    "AI keuring": ["changed"],
+    "AI matchscore": ["changed"],
+    "AI samenvatting": ["changed", "generated"],
+    "coverage flag": ["changed"],
+  },
+  notities: {
+    "note": ["added", "changed", "removed"],
+    "call": ["added"],
+    "meeting": ["added"],
+  },
 };
+
+function buildEventSentence(entity: EntityKey, owner: string, field: string, action: string, entityName: string): string {
+  // Special phrasings per field
+  const f = field.toLowerCase();
+  if (entity === "candidates") {
+    if (f === "resume") return `${owner} ${action} resume to record ${entityName}`;
+    if (f === "phone number") return `${owner} ${action} phone number on record ${entityName}`;
+    if (f === "opgemaakt cv") return `${owner} ${action} opgemaakt CV on ${entityName}`;
+    if (f === "ai.synsel") return `${owner} changed AI.synsel on ${entityName}`;
+    return `${owner} ${action} ${field} on ${entityName}`;
+  }
+  if (entity === "notities") {
+    return `${owner} ${action} ${field} on ${entityName}`;
+  }
+  return `${owner} ${action} ${field} on ${entityName}`;
+}
 
 const SAMPLE_NAMES_BY_ENTITY: Record<EntityKey, string[]> = {
   candidates: ["Mark de Vries", "Sanne Jansen", "Tim Bakker", "Lotte van Dijk", "Ruud Smit"],
@@ -499,20 +558,33 @@ const SAMPLE_NAMES_BY_ENTITY: Record<EntityKey, string[]> = {
   jobs: ["Senior Lasser Tilburg", "Werkvoorbereider Eindhoven", "Operator Veghel", "Engineer Helmond", "Monteur Den Bosch"],
   deals: ["Plaatsing Acme #182", "W&S Brouwer #91", "Detavast Daalman #44", "Plaatsing Holtkamp #210", "W&S Vellekoop #18"],
   ai_synsel: ["AI run #4821", "AI keuring batch #91", "AI matchscore job #612", "AI samenvatting candidate #1841"],
-  notities: ["Note on Acme #182", "Call with Brouwer", "Meeting Daalman", "Task: follow up Holtkamp"],
+  notities: ["Acme #182", "Brouwer Operators", "Daalman Monteurs", "Holtkamp Industries", "Vellekoop Tech"],
+};
+
+const FIELDS_BY_ENTITY: Record<EntityKey, string[]> = {
+  candidates: ["resume", "AI.synsel", "phone number", "status", "opgemaakt CV", "functiegroep"],
+  companies: ["sector", "branches", "status", "contactpersoon", "telefoonnummer"],
+  contacts: ["functie", "title", "email", "stage", "voorkeurscontactpersoon"],
+  jobs: ["job description", "publicatie titel", "primaire contact", "sector", "status"],
+  deals: ["stage", "start datum", "payroll partner", "contract type", "value", "close date"],
+  ai_synsel: ["AI keuring", "AI matchscore", "AI samenvatting", "coverage flag"],
+  notities: ["note", "call", "meeting"],
 };
 
 export function getEventLog(entity: EntityKey, limit = 8): EventLogRow[] {
   const seed = entitySeed(entity) + 31;
   const fields = FIELDS_BY_ENTITY[entity];
   const names = SAMPLE_NAMES_BY_ENTITY[entity];
+  const verbMap = FIELD_VERBS_BY_ENTITY[entity];
   return Array.from({ length: limit }, (_, i) => {
     const owner = allConsultantsList[hash(seed, i, 1) % allConsultantsList.length].fullName;
-    const action = ACTIONS[hash(seed, i, 2) % ACTIONS.length];
     const field = fields[hash(seed, i, 3) % fields.length];
+    const verbs = verbMap[field] ?? verbMap[field.toLowerCase()] ?? ["updated"];
+    const action = verbs[hash(seed, i, 2) % verbs.length];
     const entityName = names[hash(seed, i, 4) % names.length];
     const minutesAgo = Math.round(2 + rng(seed, i + 50) * 480);
-    return { id: `${entity}-${i}`, owner, action, field, entityName, minutesAgo };
+    const sentence = buildEventSentence(entity, owner, field, action, entityName);
+    return { id: `${entity}-${i}`, owner, sentence, field, action, entityName, minutesAgo };
   });
 }
 
