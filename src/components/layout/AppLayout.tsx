@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { InsightsDrawer } from "@/components/dashboard/InsightsDrawer";
 import { consultantInsights } from "@/data/consultantInsightsData";
+import { cn } from "@/lib/utils";
 
 // Context for pages to inject actions into the TopBar
 interface TopBarActionsContextType {
@@ -35,6 +36,7 @@ export function AppLayout() {
   const [readIds, setReadIds] = useState<string[]>(getReadIds);
   const mainRef = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
+  const isSysteemHygiene = pathname === "/concepts/systeem-hygiene";
 
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0);
@@ -61,14 +63,22 @@ export function AppLayout() {
       <div className="h-screen bg-sidebar flex overflow-hidden">
         <Sidebar isCollapsed={isCollapsed} onToggleCollapse={() => setIsCollapsed(prev => !prev)} />
         <div className={`${isCollapsed ? 'ml-16' : 'ml-52'} flex-1 flex flex-col h-screen min-w-0 transition-[margin-left] duration-300 ease-in-out`}>
-          <TopBar
-            latestInsight={latestUnread?.message}
-            unreadCount={unreadCount}
-            onOpenInsights={() => setDrawerOpen(true)}
+          {!isSysteemHygiene && (
+            <TopBar
+              latestInsight={latestUnread?.message}
+              unreadCount={unreadCount}
+              onOpenInsights={() => setDrawerOpen(true)}
+            >
+              {topBarActions}
+            </TopBar>
+          )}
+          <main
+            ref={mainRef}
+            className={cn(
+              "flex-1 bg-background overflow-y-auto overflow-x-hidden scrollbar-thin overscroll-contain min-w-0",
+              isSysteemHygiene ? "p-0 rounded-none" : "p-6 rounded-tl-2xl",
+            )}
           >
-            {topBarActions}
-          </TopBar>
-          <main ref={mainRef} className="flex-1 bg-background rounded-tl-2xl p-6 overflow-y-auto overflow-x-hidden scrollbar-thin overscroll-contain min-w-0">
             <Outlet />
           </main>
         </div>
