@@ -76,6 +76,20 @@ function OverlayBody({ entity }: { entity: EntityKey }) {
   const insights = getInsights(entity);
   const color = STATUS_COLOR[summary.status];
 
+  const [filters, setFilters] = useState<OverlayFilters>(DEFAULT_OVERLAY_FILTERS);
+  const [selectedStep, setSelectedStep] = useState<string | null>(null);
+  const [showCompare, setShowCompare] = useState(false);
+
+  // Reset bij entity-wissel
+  useEffect(() => {
+    setFilters(DEFAULT_OVERLAY_FILTERS);
+    setSelectedStep(null);
+    setShowCompare(false);
+  }, [entity]);
+
+  const stepRows = useMemo(() => getStepDropOffs(entity, filters), [entity, filters]);
+  const entityRows = useMemo(() => getEntityDropOffs(filters), [filters]);
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -119,13 +133,43 @@ function OverlayBody({ entity }: { entity: EntityKey }) {
           </TabsList>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          <TabsContent value="overview" className="m-0"><OverviewTab entity={entity} /></TabsContent>
-          <TabsContent value="fields" className="m-0"><FieldsTab entity={entity} /></TabsContent>
-          <TabsContent value="process" className="m-0"><ProcessTab entity={entity} /></TabsContent>
-          <TabsContent value="records" className="m-0"><RecordsTab entity={entity} /></TabsContent>
-          <TabsContent value="actions" className="m-0"><ActionsTab entity={entity} /></TabsContent>
-          <TabsContent value="events" className="m-0"><EventsTab entity={entity} /></TabsContent>
+        <div className="flex-1 overflow-y-auto">
+          <OverlayFilterBar entity={entity} filters={filters} onChange={setFilters} />
+
+          <div className="px-6 py-4 space-y-4">
+            {/* Drop-off summary block — shown above every tab */}
+            <section className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Drop-off per step{selectedStep ? ` — gefilterd op ${selectedStep}` : ""}
+                </h4>
+                {selectedStep && (
+                  <Button type="button" size="sm" variant="ghost" className="h-6 px-2 text-xs"
+                    onClick={() => setSelectedStep(null)}>
+                    Step-filter wissen
+                  </Button>
+                )}
+              </div>
+              <StepDropOffTable rows={stepRows} selectedStep={selectedStep} onSelectStep={setSelectedStep} />
+
+              <button
+                type="button"
+                onClick={() => setShowCompare(v => !v)}
+                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+              >
+                {showCompare ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                Vergelijk met andere entities
+              </button>
+              {showCompare && <EntityComparisonTable rows={entityRows} highlight={entity} />}
+            </section>
+
+            <TabsContent value="overview" className="m-0"><OverviewTab entity={entity} filters={filters} selectedStep={selectedStep} /></TabsContent>
+            <TabsContent value="fields" className="m-0"><FieldsTab entity={entity} filters={filters} /></TabsContent>
+            <TabsContent value="process" className="m-0"><ProcessTab entity={entity} /></TabsContent>
+            <TabsContent value="records" className="m-0"><RecordsTab entity={entity} /></TabsContent>
+            <TabsContent value="actions" className="m-0"><ActionsTab entity={entity} /></TabsContent>
+            <TabsContent value="events" className="m-0"><EventsTab entity={entity} /></TabsContent>
+          </div>
         </div>
       </Tabs>
     </div>
