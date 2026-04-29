@@ -36,7 +36,7 @@ export function OverlayFilterBar({ entity, filters, onChange }: Props) {
 
       <MultiSelectPopover
         label="Owner"
-        options={ownerOptions.map(o => ({ value: o.code ?? o.name, label: o.name }))}
+        options={ownerOptions.map(o => ({ value: o.fullName, label: o.fullName }))}
         selected={filters.owners}
         onChange={v => onChange({ ...filters, owners: v })}
       />
