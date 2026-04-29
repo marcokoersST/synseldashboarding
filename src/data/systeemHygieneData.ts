@@ -171,6 +171,7 @@ export interface EntitySummary {
   status: ScoreStatus;
   recordCount: number;
   updatedPastWeek: number;
+  addedPastWeek: number;
   distribution: { incomplete: number; outdatedComplete: number; freshComplete: number }; // counts
   topIssue: string;
   quickSummary: string;
@@ -199,6 +200,7 @@ export function getEntitySummary(entity: EntityKey): EntitySummary {
   );
   const recordCount = RECORD_COUNTS[entity];
   const updatedPastWeek = Math.round(recordCount * (0.04 + rng(seed, 4) * 0.18));
+  const addedPastWeek = Math.round(recordCount * (0.01 + rng(seed, 5) * 0.04));
 
   // Distribution sums to recordCount
   const incompletePct = (100 - requiredScore) / 100;
@@ -217,6 +219,7 @@ export function getEntitySummary(entity: EntityKey): EntitySummary {
     status: getScoreStatus(score),
     recordCount,
     updatedPastWeek,
+    addedPastWeek,
     distribution: { incomplete, outdatedComplete, freshComplete },
     topIssue: TOP_ISSUE[entity],
     quickSummary: `${ENTITY_LABEL[entity]} score is ${STATUS_LABEL[getScoreStatus(score)].toLowerCase()}. ${requiredScore}% van verplichte velden ingevuld. Grootste issue: ${TOP_ISSUE[entity]}.`,
