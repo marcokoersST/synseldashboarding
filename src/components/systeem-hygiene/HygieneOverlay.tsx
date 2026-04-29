@@ -27,7 +27,6 @@ import {
   getStepDropOffs,
   getEntityDropOffs,
   type EntityKey,
-  type FieldScope,
   type OverlayFilters,
 } from "@/data/systeemHygieneData";
 import { ActionPointerList } from "./ActionPointerList";
