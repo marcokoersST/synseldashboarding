@@ -171,6 +171,7 @@ export interface EntitySummary {
   status: ScoreStatus;
   recordCount: number;
   updatedPastWeek: number;
+  addedPastWeek: number;
   distribution: { incomplete: number; outdatedComplete: number; freshComplete: number }; // counts
   topIssue: string;
   quickSummary: string;
@@ -199,6 +200,7 @@ export function getEntitySummary(entity: EntityKey): EntitySummary {
   );
   const recordCount = RECORD_COUNTS[entity];
   const updatedPastWeek = Math.round(recordCount * (0.04 + rng(seed, 4) * 0.18));
+  const addedPastWeek = Math.round(recordCount * (0.01 + rng(seed, 5) * 0.04));
 
   // Distribution sums to recordCount
   const incompletePct = (100 - requiredScore) / 100;
@@ -217,6 +219,7 @@ export function getEntitySummary(entity: EntityKey): EntitySummary {
     status: getScoreStatus(score),
     recordCount,
     updatedPastWeek,
+    addedPastWeek,
     distribution: { incomplete, outdatedComplete, freshComplete },
     topIssue: TOP_ISSUE[entity],
     quickSummary: `${ENTITY_LABEL[entity]} score is ${STATUS_LABEL[getScoreStatus(score)].toLowerCase()}. ${requiredScore}% van verplichte velden ingevuld. Grootste issue: ${TOP_ISSUE[entity]}.`,
@@ -309,7 +312,7 @@ export function getMarketingFieldMissingCounts(): { field: string; missing: numb
 
 // ---- Process checks ---------------------------------------------------------
 
-export interface ProcessCheck { check: string; passedPct: number; status: ScoreStatus }
+export interface ProcessCheck { check: string; passedPct: number; status: ScoreStatus; passed: number; total: number; prevPct: number; deltaPct: number; examples: string[]; explanation: string }
 
 const PROCESS_CHECK_TEXT: Record<EntityKey, string[]> = {
   candidates: [
@@ -368,10 +371,21 @@ const PROCESS_CHECK_TEXT: Record<EntityKey, string[]> = {
 
 export function getProcessChecks(entity: EntityKey): ProcessCheck[] {
   const seed = entitySeed(entity) + 7;
+  const names = SAMPLE_NAMES_BY_ENTITY[entity];
   return PROCESS_CHECK_TEXT[entity].map((check, i) => {
     const passedPct = Math.round(45 + rng(seed, i) * 50);
-    return { check, passedPct, status: getScoreStatus(passedPct) };
+    const total = Math.round(80 + rng(seed, i + 90) * 1200);
+    const passed = Math.round(total * passedPct / 100);
+    const prevPct = Math.max(0, Math.min(100, passedPct + Math.round((rng(seed, i + 200) - 0.5) * 14)));
+    const deltaPct = passedPct - prevPct;
+    const examples = [0, 1, 2].map(k => names[(i + k) % names.length]);
+    const explanation = `Deze check meet of records die voldoen aan de voorwaarde "${check.toLowerCase()}" correct zijn ingevuld. ${total - passed} van ${total} records voldoen niet en zijn meegenomen als faal. Records worden geteld op basis van actuele veld-status; freshness en owner-filter werken mee in de aggregatie.`;
+    return { check, passedPct, status: getScoreStatus(passedPct), total, passed, prevPct, deltaPct, examples, explanation };
   });
+}
+
+export function getFieldScopeTotal(entity: EntityKey, scope: FieldScope): number {
+  return fieldsForEntity(entity, scope).length;
 }
 
 // ---- Action pointers --------------------------------------------------------
@@ -384,6 +398,7 @@ export interface ActionPointer {
   suggestedAction: string;
   affectedRecords: number;
   owner?: string;
+  flagged?: boolean;
 }
 
 const ACTION_TEMPLATES: Record<EntityKey, Omit<ActionPointer, "affectedRecords" | "entity" | "owner">[]> = {
@@ -423,10 +438,11 @@ const ACTION_TEMPLATES: Record<EntityKey, Omit<ActionPointer, "affectedRecords" 
     { priority: "low", issue: "AI coverage onder 60% voor entiteit", impact: "Verminderde insights", suggestedAction: "Bulk AI.synsel verwerking starten" },
   ],
   notities: [
-    { priority: "high", issue: "Actieve deals zonder activiteit > 14 dagen", impact: "Sales process risk", suggestedAction: "Note of call loggen" },
-    { priority: "medium", issue: "Bedrijven met actieve jobs zonder recente note/meeting", impact: "Account-relatie verzwakt", suggestedAction: "Touchpoint plannen" },
-    { priority: "medium", issue: "Kandidaat-dossiers actief zonder recente update", impact: "Kandidaat haakt af", suggestedAction: "Update sturen" },
-    { priority: "low", issue: "Te late open taken", impact: "Process risk", suggestedAction: "Taken afronden of herplannen" },
+    { priority: "high", issue: "Notes met negatieve klanttoon — sales-impact risico", impact: "Kan deal momentum schaden", suggestedAction: "Note herzien en feitelijk maken", flagged: true },
+    { priority: "high", issue: "Notes met demotiverende formuleringen richting kandidaat of klant", impact: "Verzwakt vertrouwen en commerciële positie", suggestedAction: "Toon aanpassen of intern label gebruiken", flagged: true },
+    { priority: "high", issue: "Note type ontbreekt of is generiek 'Algemeen' op recente notities", impact: "Note niet vindbaar in rapportage", suggestedAction: "Correct activity type kiezen" },
+    { priority: "medium", issue: "Recente notities zonder linked entity of activity type", impact: "Note geïsoleerd van dossier", suggestedAction: "Koppelen aan candidate/deal/company" },
+    { priority: "medium", issue: "Korte one-liner notities zonder context op deals in late stage", impact: "Verlies van besluitvormings-historie", suggestedAction: "Context, besluit en next step toevoegen" },
   ],
 };
 
@@ -463,18 +479,77 @@ export function getEventCounters(entity: EntityKey): EventCounters {
   };
 }
 
-export interface EventLogRow { id: string; owner: string; action: string; field: string; entityName: string; minutesAgo: number }
+export interface EventLogRow { id: string; owner: string; sentence: string; field: string; action: string; entityName: string; minutesAgo: number }
 
-const ACTIONS = ["updated", "added a note to", "changed stage on", "created", "updated field on"];
-const FIELDS_BY_ENTITY: Record<EntityKey, string[]> = {
-  candidates: ["Resume", "AI.synsel", "Phone", "Status", "Opgemaakt CV", "Functiegroep"],
-  companies: ["Sector", "Branches", "Status", "Contactpersoon", "Telefoonnummer"],
-  contacts: ["Functie", "Title", "Email", "Stage", "Voorkeurscontactpersoon"],
-  jobs: ["Job description", "Publicatie titel", "Primaire contact", "Sector", "Status"],
-  deals: ["Stage", "Start datum", "Payroll partner", "Contract type", "Value", "Close date"],
-  ai_synsel: ["AI keuring", "AI matchscore", "AI samenvatting", "Coverage flag"],
-  notities: ["Note", "Call", "Meeting", "Task"],
+// Per-entity, per-field allowed action verbs + sentence builder following user-provided logic
+type FieldVerbMap = Record<string, string[]>;
+
+const FIELD_VERBS_BY_ENTITY: Record<EntityKey, FieldVerbMap> = {
+  candidates: {
+    "resume": ["added", "removed"],
+    "status": ["changed", "set"],
+    "functiegroep": ["changed", "added", "set"],
+    "opgemaakt CV": ["added", "removed", "generated"],
+    "phone number": ["added", "removed", "changed"],
+    "AI.synsel": ["changed"],
+  },
+  companies: {
+    "sector": ["changed", "set"],
+    "branches": ["added", "changed"],
+    "status": ["changed", "set"],
+    "contactpersoon": ["added", "removed"],
+    "telefoonnummer": ["added", "changed", "removed"],
+  },
+  contacts: {
+    "functie": ["changed", "set"],
+    "title": ["changed", "set"],
+    "email": ["added", "changed", "removed"],
+    "stage": ["changed", "set"],
+    "voorkeurscontactpersoon": ["set", "changed"],
+  },
+  jobs: {
+    "job description": ["added", "changed"],
+    "publicatie titel": ["set", "changed"],
+    "primaire contact": ["added", "changed"],
+    "sector": ["set", "changed"],
+    "status": ["changed", "set"],
+  },
+  deals: {
+    "stage": ["changed", "set"],
+    "start datum": ["set", "changed"],
+    "payroll partner": ["set", "changed"],
+    "contract type": ["set", "changed"],
+    "value": ["set", "changed"],
+    "close date": ["set", "changed"],
+  },
+  ai_synsel: {
+    "AI keuring": ["changed"],
+    "AI matchscore": ["changed"],
+    "AI samenvatting": ["changed", "generated"],
+    "coverage flag": ["changed"],
+  },
+  notities: {
+    "note": ["added", "changed", "removed"],
+    "call": ["added"],
+    "meeting": ["added"],
+  },
 };
+
+function buildEventSentence(entity: EntityKey, owner: string, field: string, action: string, entityName: string): string {
+  // Special phrasings per field
+  const f = field.toLowerCase();
+  if (entity === "candidates") {
+    if (f === "resume") return `${owner} ${action} resume to record ${entityName}`;
+    if (f === "phone number") return `${owner} ${action} phone number on record ${entityName}`;
+    if (f === "opgemaakt cv") return `${owner} ${action} opgemaakt CV on ${entityName}`;
+    if (f === "ai.synsel") return `${owner} changed AI.synsel on ${entityName}`;
+    return `${owner} ${action} ${field} on ${entityName}`;
+  }
+  if (entity === "notities") {
+    return `${owner} ${action} ${field} on ${entityName}`;
+  }
+  return `${owner} ${action} ${field} on ${entityName}`;
+}
 
 const SAMPLE_NAMES_BY_ENTITY: Record<EntityKey, string[]> = {
   candidates: ["Mark de Vries", "Sanne Jansen", "Tim Bakker", "Lotte van Dijk", "Ruud Smit"],
@@ -483,20 +558,33 @@ const SAMPLE_NAMES_BY_ENTITY: Record<EntityKey, string[]> = {
   jobs: ["Senior Lasser Tilburg", "Werkvoorbereider Eindhoven", "Operator Veghel", "Engineer Helmond", "Monteur Den Bosch"],
   deals: ["Plaatsing Acme #182", "W&S Brouwer #91", "Detavast Daalman #44", "Plaatsing Holtkamp #210", "W&S Vellekoop #18"],
   ai_synsel: ["AI run #4821", "AI keuring batch #91", "AI matchscore job #612", "AI samenvatting candidate #1841"],
-  notities: ["Note on Acme #182", "Call with Brouwer", "Meeting Daalman", "Task: follow up Holtkamp"],
+  notities: ["Acme #182", "Brouwer Operators", "Daalman Monteurs", "Holtkamp Industries", "Vellekoop Tech"],
+};
+
+const FIELDS_BY_ENTITY: Record<EntityKey, string[]> = {
+  candidates: ["resume", "AI.synsel", "phone number", "status", "opgemaakt CV", "functiegroep"],
+  companies: ["sector", "branches", "status", "contactpersoon", "telefoonnummer"],
+  contacts: ["functie", "title", "email", "stage", "voorkeurscontactpersoon"],
+  jobs: ["job description", "publicatie titel", "primaire contact", "sector", "status"],
+  deals: ["stage", "start datum", "payroll partner", "contract type", "value", "close date"],
+  ai_synsel: ["AI keuring", "AI matchscore", "AI samenvatting", "coverage flag"],
+  notities: ["note", "call", "meeting"],
 };
 
 export function getEventLog(entity: EntityKey, limit = 8): EventLogRow[] {
   const seed = entitySeed(entity) + 31;
   const fields = FIELDS_BY_ENTITY[entity];
   const names = SAMPLE_NAMES_BY_ENTITY[entity];
+  const verbMap = FIELD_VERBS_BY_ENTITY[entity];
   return Array.from({ length: limit }, (_, i) => {
     const owner = allConsultantsList[hash(seed, i, 1) % allConsultantsList.length].fullName;
-    const action = ACTIONS[hash(seed, i, 2) % ACTIONS.length];
     const field = fields[hash(seed, i, 3) % fields.length];
+    const verbs = verbMap[field] ?? verbMap[field.toLowerCase()] ?? ["updated"];
+    const action = verbs[hash(seed, i, 2) % verbs.length];
     const entityName = names[hash(seed, i, 4) % names.length];
     const minutesAgo = Math.round(2 + rng(seed, i + 50) * 480);
-    return { id: `${entity}-${i}`, owner, action, field, entityName, minutesAgo };
+    const sentence = buildEventSentence(entity, owner, field, action, entityName);
+    return { id: `${entity}-${i}`, owner, sentence, field, action, entityName, minutesAgo };
   });
 }
 

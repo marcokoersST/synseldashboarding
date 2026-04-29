@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, Sparkles, ChevronDown, ChevronRight, Activity } from "lucide-react";
+import { X, Sparkles, Activity, Info } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from "recharts";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   ENTITY_LABEL,
   ENTITY_SUBTITLE,
@@ -25,15 +27,16 @@ import {
   getNotitiesActivityByEntity,
   getInsights,
   getStepDropOffs,
-  getEntityDropOffs,
+  getFieldScopeTotal,
   type EntityKey,
   type OverlayFilters,
+  type FieldScope,
 } from "@/data/systeemHygieneData";
 import { ActionPointerList } from "./ActionPointerList";
 import { EventCountersStrip, EventLogList } from "./EventLog";
 import { InsightCard } from "./InsightCard";
 import { OverlayFilterBar } from "./OverlayFilterBar";
-import { StepDropOffTable, EntityComparisonTable } from "./DropOffSummaryTable";
+import { StepDropOffTable } from "./DropOffSummaryTable";
 
 interface Props {
   entity: EntityKey | null;
@@ -78,17 +81,16 @@ function OverlayBody({ entity }: { entity: EntityKey }) {
 
   const [filters, setFilters] = useState<OverlayFilters>(DEFAULT_OVERLAY_FILTERS);
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
-  const [showCompare, setShowCompare] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("overview");
 
   // Reset bij entity-wissel
   useEffect(() => {
     setFilters(DEFAULT_OVERLAY_FILTERS);
     setSelectedStep(null);
-    setShowCompare(false);
+    setActiveTab("overview");
   }, [entity]);
 
   const stepRows = useMemo(() => getStepDropOffs(entity, filters), [entity, filters]);
-  const entityRows = useMemo(() => getEntityDropOffs(filters), [filters]);
 
   return (
     <div className="flex h-full flex-col">
@@ -118,7 +120,7 @@ function OverlayBody({ entity }: { entity: EntityKey }) {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
         <div className="shrink-0 border-b border-border px-6">
           <TabsList className="bg-transparent h-auto p-0">
             {["overview", "fields", "process", "records", "actions", "events"].map(t => (
@@ -134,7 +136,7 @@ function OverlayBody({ entity }: { entity: EntityKey }) {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          <OverlayFilterBar entity={entity} filters={filters} onChange={setFilters} />
+          <OverlayFilterBar entity={entity} filters={filters} onChange={setFilters} activeTab={activeTab} />
 
           <div className="px-6 py-4 space-y-4">
             {/* Drop-off summary block — shown above every tab */}
@@ -151,20 +153,10 @@ function OverlayBody({ entity }: { entity: EntityKey }) {
                 )}
               </div>
               <StepDropOffTable rows={stepRows} selectedStep={selectedStep} onSelectStep={setSelectedStep} />
-
-              <button
-                type="button"
-                onClick={() => setShowCompare(v => !v)}
-                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
-              >
-                {showCompare ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                Vergelijk met andere entities
-              </button>
-              {showCompare && <EntityComparisonTable rows={entityRows} highlight={entity} />}
             </section>
 
-            <TabsContent value="overview" className="m-0"><OverviewTab entity={entity} filters={filters} selectedStep={selectedStep} /></TabsContent>
-            <TabsContent value="fields" className="m-0"><FieldsTab entity={entity} filters={filters} /></TabsContent>
+            <TabsContent value="overview" className="m-0"><OverviewTab entity={entity} /></TabsContent>
+            <TabsContent value="fields" className="m-0"><FieldsTab entity={entity} filters={filters} onChangeFilters={setFilters} /></TabsContent>
             <TabsContent value="process" className="m-0"><ProcessTab entity={entity} /></TabsContent>
             <TabsContent value="records" className="m-0"><RecordsTab entity={entity} /></TabsContent>
             <TabsContent value="actions" className="m-0"><ActionsTab entity={entity} /></TabsContent>
@@ -199,10 +191,11 @@ function Metric({ label, value, sub, color }: { label: string; value: string; su
 
 // ---- Tabs ------------------------------------------------------------------
 
-function OverviewTab({ entity, filters, selectedStep }: { entity: EntityKey; filters: OverlayFilters; selectedStep: string | null }) {
+function OverviewTab({ entity }: { entity: EntityKey }) {
   const counters = getEventCounters(entity);
   const checks = getProcessChecks(entity).slice(0, 5);
   const actions = getActionPointers(entity, 4);
+  const isNotities = entity === "notities";
   return (
     <div className="space-y-5">
       {/* Featured: Events deze periode */}
@@ -216,7 +209,7 @@ function OverviewTab({ entity, filters, selectedStep }: { entity: EntityKey; fil
             <p className="text-[11px] text-muted-foreground mt-0.5">Mutaties en activiteit binnen de huidige periode</p>
           </div>
         </div>
-        <EventCountersStrip counters={counters} />
+        <EventCountersStrip counters={counters} exclude={isNotities ? ["stageChanges", "tasksAdded"] : undefined} />
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -243,18 +236,31 @@ function OverviewTab({ entity, filters, selectedStep }: { entity: EntityKey; fil
   );
 }
 
-function FieldsTab({ entity, filters }: { entity: EntityKey; filters: OverlayFilters }) {
+function FieldsTab({ entity, filters, onChangeFilters }: { entity: EntityKey; filters: OverlayFilters; onChangeFilters: (f: OverlayFilters) => void }) {
   const scope = filters.fieldScope;
   const data = getFieldMissingCounts(entity, scope);
   const showMarketing = entity === "jobs";
   const marketingData = showMarketing ? getMarketingFieldMissingCounts() : null;
+  const scopeTotal = getFieldScopeTotal(entity, scope);
+  const maxN = data.length > 10 ? 10 : 5;
+  const [showAll, setShowAll] = useState(false);
+  const [showAllMarketing, setShowAllMarketing] = useState(false);
+  const visible = showAll ? data : data.slice(0, maxN);
+  const marketingMaxN = (marketingData?.length ?? 0) > 10 ? 10 : 5;
+  const visibleMarketing = marketingData ? (showAllMarketing ? marketingData : marketingData.slice(0, marketingMaxN)) : null;
 
   return (
     <div className="space-y-5">
-      <div className="text-[11px] text-muted-foreground">
-        Scope: <span className="font-medium text-foreground">{scope === "mandatory" ? "Mandatory" : scope === "mandatoryIfAvailable" ? "Mandatory if available" : scope === "wouldBeNice" ? "Would-be-nice" : "Optional"}</span> — wijzig via filterbalk hierboven.
+      <div className="rounded-lg border border-border bg-card/30 px-3 py-2 flex items-start gap-2 text-[11px] text-muted-foreground">
+        <Info className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary" />
+        <span>
+          <span className="font-medium text-foreground">Hoe lezen:</span>{" "}
+          De bargraph toont per veld het aantal records waar dat veld leeg is binnen de huidige scope ({scope}).
+          De gekozen scope bevat <span className="font-medium text-foreground">{scopeTotal}</span> velden.
+          Records worden gesorteerd van meeste missend naar minste; percentages zijn missing / records-in-scope.
+          Wijzig de scope hieronder of via de filterbalk.
+        </span>
       </div>
-
 
       {data.length === 0 ? (
         <div className="rounded-lg border border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
@@ -262,10 +268,17 @@ function FieldsTab({ entity, filters }: { entity: EntityKey; filters: OverlayFil
         </div>
       ) : (
         <div>
-          <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">{showMarketing ? "Sales velden — missing count" : "Missing per veld"}</h4>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs uppercase tracking-wider text-muted-foreground">{showMarketing ? "Sales velden — missing count" : "Missing per veld"}</h4>
+            {data.length > maxN && (
+              <Button type="button" size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setShowAll(v => !v)}>
+                {showAll ? `Toon top ${maxN}` : `Toon alle ${data.length} velden`}
+              </Button>
+            )}
+          </div>
           <div className="h-[280px]">
             <ResponsiveContainer>
-              <BarChart data={data} margin={{ top: 8, right: 12, left: 4, bottom: 60 }}>
+              <BarChart data={visible} margin={{ top: 8, right: 12, left: 4, bottom: 60 }}>
                 <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="field" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} angle={-30} textAnchor="end" interval={0} />
                 <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
@@ -277,12 +290,38 @@ function FieldsTab({ entity, filters }: { entity: EntityKey; filters: OverlayFil
         </div>
       )}
 
-      {showMarketing && marketingData && (
+      {/* Secondary scope switcher between bargraph and extras */}
+      <div className="flex items-center justify-between rounded-lg border border-border bg-card/30 px-3 py-2">
+        <span className="text-[11px] text-muted-foreground">
+          Scope categorie: kies welk type velden je wilt analyseren.
+        </span>
+        <ToggleGroup
+          type="single"
+          size="sm"
+          value={filters.fieldScope}
+          onValueChange={(v) => v && onChangeFilters({ ...filters, fieldScope: v as FieldScope })}
+          className="h-7"
+        >
+          <ToggleGroupItem value="mandatory" className="h-7 px-2 text-xs">Mandatory</ToggleGroupItem>
+          <ToggleGroupItem value="mandatoryIfAvailable" className="h-7 px-2 text-xs">Mand. if avail.</ToggleGroupItem>
+          <ToggleGroupItem value="wouldBeNice" className="h-7 px-2 text-xs">Would-be-nice</ToggleGroupItem>
+          <ToggleGroupItem value="optional" className="h-7 px-2 text-xs">Optional</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {showMarketing && visibleMarketing && marketingData && (
         <div>
-          <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Marketing / publicatie velden — gepubliceerde vacatures</h4>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Marketing / publicatie velden — gepubliceerde vacatures</h4>
+            {marketingData.length > marketingMaxN && (
+              <Button type="button" size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setShowAllMarketing(v => !v)}>
+                {showAllMarketing ? `Toon top ${marketingMaxN}` : `Toon alle ${marketingData.length} velden`}
+              </Button>
+            )}
+          </div>
           <div className="h-[260px]">
             <ResponsiveContainer>
-              <BarChart data={marketingData} margin={{ top: 8, right: 12, left: 4, bottom: 60 }}>
+              <BarChart data={visibleMarketing} margin={{ top: 8, right: 12, left: 4, bottom: 60 }}>
                 <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="field" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} angle={-30} textAnchor="end" interval={0} />
                 <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
@@ -373,13 +412,40 @@ function ProcessTab({ entity }: { entity: EntityKey }) {
   return (
     <div className="space-y-2 max-w-3xl">
       {checks.map((c, i) => (
-        <div key={i} className="rounded-lg border border-border bg-card/50 p-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-sm text-foreground">{c.check}</span>
-            <span className="text-sm font-semibold tabular-nums" style={{ color: STATUS_COLOR[c.status] }}>{c.passedPct}%</span>
-          </div>
-          <Progress value={c.passedPct} className="h-2 mt-2" />
-        </div>
+        <HoverCard key={i} openDelay={120} closeDelay={80}>
+          <HoverCardTrigger asChild>
+            <div className="rounded-lg border border-border bg-card/50 p-3 cursor-help hover:border-primary/40 transition-colors">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm text-foreground">{c.check}</span>
+                <span className="text-sm font-semibold tabular-nums" style={{ color: STATUS_COLOR[c.status] }}>{c.passedPct}%</span>
+              </div>
+              <Progress value={c.passedPct} className="h-2 mt-2" />
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent align="start" className="w-96 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-foreground">{c.check}</span>
+              <span className={cn("text-[11px] tabular-nums px-1.5 py-0.5 rounded", c.deltaPct >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive")}>
+                {c.deltaPct >= 0 ? "+" : ""}{c.deltaPct}% vs vorige periode
+              </span>
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              <span className="font-medium text-foreground">{c.passed.toLocaleString("nl-NL")}</span> van <span className="font-medium text-foreground">{c.total.toLocaleString("nl-NL")}</span> records voldoen ({c.passedPct}%).
+            </div>
+            <div className="rounded-md bg-muted/40 p-2 text-[11px] text-muted-foreground leading-relaxed">
+              <div className="flex items-center gap-1 mb-1 text-primary"><Sparkles className="h-3 w-3" /><span className="font-medium">AI uitleg</span></div>
+              {c.explanation}
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Voorbeelden van falende records</div>
+              <ul className="space-y-0.5">
+                {c.examples.map((ex, k) => (
+                  <li key={k} className="text-xs text-foreground">• {ex}</li>
+                ))}
+              </ul>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
       ))}
     </div>
   );
@@ -431,10 +497,11 @@ function ActionsTab({ entity }: { entity: EntityKey }) {
 
 function EventsTab({ entity }: { entity: EntityKey }) {
   const counters = getEventCounters(entity);
-  const log = getEventLog(entity, 14);
+  const log = [...getEventLog(entity, 14)].sort((a, b) => a.minutesAgo - b.minutesAgo);
+  const isNotities = entity === "notities";
   return (
     <div className="space-y-4">
-      <EventCountersStrip counters={counters} />
+      <EventCountersStrip counters={counters} exclude={isNotities ? ["stageChanges", "tasksAdded"] : undefined} />
       <div>
         <div className="flex items-center gap-2 mb-2">
           <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Events vandaag</h4>
