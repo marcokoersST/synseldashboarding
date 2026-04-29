@@ -1,130 +1,135 @@
-# Plan: Systeem Hygiene Dashboard (`/concepts/systeem-hygiene`)
+# Plan: HygieneOverlay verbeteren met drop-off samenvattingen + filters
 
-A new dashboard under **Concepts** that scores the hygiene of internal RecruitCRM + AI.synsel data across 7 entities. Layout matches the uploaded wireframes: a fixed header with global score + filters, 3 large major tiles (Candidates, Companies, Deals), a column of 4 minor tiles (Contacts, Jobs, AI.synsel, Notities), and a centered ~80% × 75% overlay (not fullscreen) with blurred backdrop on tile click.
+## Doel
+In de `HygieneOverlay` (popup vanuit de Systeem Hygiene tegels) krijgt **elke tab** een consistent **filterblok bovenin** en een **samenvattingstabel** met **drop-offs per step** (process / funnel-stappen) én **per entity** (zodat je vanuit de detail-overlay alsnog cross-entity vergelijkt). Hierdoor wordt de overlay niet alleen detail-, maar ook beslissingstool.
 
-## 1. Data layer — `src/data/systeemHygieneData.ts` (new)
+## Scope
+- 1 component: `src/components/systeem-hygiene/HygieneOverlay.tsx`
+- 1 nieuw klein component: `src/components/systeem-hygiene/OverlayFilterBar.tsx` (gedeelde filterbalk)
+- 1 nieuw klein component: `src/components/systeem-hygiene/DropOffSummaryTable.tsx` (herbruikbare tabel)
+- Data: bestaande exports uit `src/data/systeemHygieneData.ts` aggregeren in 2 nieuwe pure helpers:
+  - `getStepDropOffs(entity, filters)` → drop-off per process-step / stage
+  - `getEntityDropOffs(filters)` → drop-off per entity (alle 7)
 
-Mock-only, internally generated (no API). Exposes:
+Geen wijzigingen aan de mock data zelf — alleen afgeleide aggregaties.
 
-- `SCORE_WEIGHTS = { requiredFields: 0.5, adminProcess: 0.25, freshness: 0.25 }`
-- `THRESHOLDS = { clean: 85, attention: 60 }` and `getScoreStatus(score) → 'clean' | 'attention' | 'critical' | 'grey'`
-- `FRESHNESS_DAYS = { candidates: 30, companies: 90, contacts: 90, jobs: 30, deals: 14, placements: 14, notes: 30 }`
-- Per-entity required-field rule sets, exactly mirroring the briefing/pseudo code:
-  - `CANDIDATE_FIELDS_BY_STATUS` (nieuw / verdelen / inschrijven / acquisitie+procedure+geplaatst+niet geplaatst)
-  - `COMPANY_FIELDS`, `CONTACT_FIELDS`, `JOB_FIELDS` (sales + marketing groups)
-  - `DEAL_FIELDS_BY_STAGE` (early pipeline / detavast-detachering active / W&S / overgenomen / niet begonnen / else)
-- Generators (deterministic seeded so numbers are stable across reloads):
-  - `getEntitySummary(entity)` → `{ score, requiredScore, adminScore, freshnessScore, updatedPastWeek, distribution: { incomplete, outdatedComplete, freshComplete }, topIssue, recordCount }`
-  - `getGlobalHygieneScore()` → weighted average across all 7 entities + per-entity breakdown
-  - `getFieldMissingCounts(entity, scope: 'mandatory'|'mandatoryIfAvailable'|'wouldBeNice'|'optional', filter?)` → `{ field, missing }[]`
-  - `getProcessChecks(entity)` → `{ check, passedPct, status }[]` (using exact text from briefing)
-  - `getActionPointers(entity)` → `{ priority, issue, impact, suggestedAction, affectedRecords, owner }[]` ranked via the briefing's priority formula
-  - `getEventCounters(entity)` and `getEventLog(entity, limit)` → consultant `{name} {action} {field} on {entityName} – {timeAgo}`
-  - `getRecordsNeedingAttention(entity)` → table rows tailored per entity (columns from pseudo code)
-  - `getDealStageCompleteness()` → stacked-bar data per deal stage
-  - `getInsights('global'|entity)` → list of insight cards (text from briefing examples, parameterized with mock counts)
+## UX
 
-Owners are sampled from `allConsultantsList` in `src/data/ranglijstenData.ts` so the owner filter and event log feel native.
+### 1. Vaste filterbalk (sticky onder tab-strip)
+Eén `OverlayFilterBar` direct onder de `TabsList`, voor álle tabs zichtbaar. Compact, één rij, `text-xs`:
 
-## 2. Page — `src/pages/concepts/SysteemHygiene.tsx` (new)
+- **Owner** — multi-select popover (uit `OWNERS`) met "Alles aan/uit"
+- **Status / Stage** — multi-select, opties hangen af van entity (kandidaatstatus, deal stage, vacature status, etc.)
+- **Freshness** — segmented: `Alles` · `Vers` · `Outdated` · `Stale` (gebaseerd op `FRESHNESS_DAYS[entity]`)
+- **Field scope** — segmented: `Mandatory` · `Mandatory if available` · `Would-be-nice` · `Optional` (vervangt de losse knoppenrij in Fields-tab; werkt globaal)
+- **Reset** — kleine ghost button rechts
+
+State leeft in `OverlayBody` en wordt via props doorgegeven aan elke tab + tabel. Filters resetten bij entity-wissel.
+
+### 2. Drop-off samenvattingstabel — twee varianten
+
+**A. Per step (entity-specifiek)** — bovenin elke tab onder de filterbar.
 
 ```text
-┌─ Header (sticky) ───────────────────────────────────────────────────────┐
-│ Title • Global Hygiene Ring (e.g. 78 — Needs attention)                 │
-│ Filters: Date • Compare • Entity • Owner • Status/Stage • Dimension     │
-│ Refresh timestamp                                                       │
-└─────────────────────────────────────────────────────────────────────────┘
-┌─────────────┬─────────────┬─────────────┬───────────────────┐
-│ Candidates  │ Companies   │ Deals       │ Contacts          │
-│  (major)    │  (major)    │  (major)    │  (minor)          │
-│             │             │             ├───────────────────┤
-│             │             │             │ Jobs (minor)      │
-│             │             │             ├───────────────────┤
-│             │             │             │ AI.synsel (minor) │
-│             │             │             ├───────────────────┤
-│             │             │             │ Notities (minor)  │
-└─────────────┴─────────────┴─────────────┴───────────────────┘
-┌─ Insight cards row (3-4 global insights from getInsights('global')) ────┐
-└─────────────────────────────────────────────────────────────────────────┘
+Step / Stage          Records    Compleet   Drop-off    Hygiene
+Nieuw                  1.240      94%        ▼ 6%        92
+Verdelen                 870      71%        ▼ 23%       64
+Bemiddelbaar             510      58%        ▼ 13%       55
+Plaatsing                210      82%        ▲ 24%       78
 ```
 
-Grid: `lg:grid-cols-[1fr_1fr_1fr_320px]` with the right column stacking 4 minor tiles in a nested `grid-rows-4`.
+- Bron: `getProcessChecks(entity)` + `getDealStageCompleteness()` voor deals + analoge afleiding voor andere entities.
+- "Drop-off" = verschil compleet% t.o.v. vorige step. Kleur: rood >15%, oranje 8–15%, groen ≤8%.
+- Klik op een rij → filtert de onderliggende tab-content op die step.
 
-### Filters
-- Date range presets: Today, Yesterday, Last 7/14/30 days, Current/Previous week, Current/Previous period, Current year, Custom — using the existing date-range pattern from `DateFilterPanel`.
-- Comparison: previous comparable period; metrics show `Δ abs (Δ %)` via `DeltaCell`.
-- Entity, Owner (`allConsultantsList`), Status/stage (dynamic per entity), Hygiene dimension (All / Required / Process / Freshness) — all multi-select popovers with "Alles aan/uit" matching app convention.
+**B. Per entity (cross-entity)** — uitklap onder per-step tabel ("Vergelijk met andere entities").
 
-State is held in the page via `useState` and passed to tiles + overlay; overlay receives the same filter object so it stays in sync.
+```text
+Entity        Hygiene   Required   Process   Freshness   Δ vs. avg
+Candidates      72        68         78        70          -4
+Companies       81        85         80        76          +5
+Deals           58        52         60        65         -18
+...
+```
 
-## 3. Tile component — `src/components/systeem-hygiene/HygieneTile.tsx`
+- Bron: `getAllSummaries()`.
+- Huidige entity is highlighted; sortable per kolom.
+- Geeft context: "is dit erg vs. de rest?".
 
-Used for both major and minor (variant prop). Contents per briefing:
-1. **Cleanliness rating** – circular progress (reuse `AnimatedRing`).
-2. **Verplichte velden ingevuld** – second smaller circular progress.
-3. **Records updated past week** – counter (`AnimatedNumber`).
-4. **Record status distribution** – horizontal stacked bar (Incomplete / Complete-outdated / Complete-fresh) using semantic colors (red / orange / green).
-5. **Quick summary** – 1-line insight text.
+### 3. Per-tab integratie
+| Tab | Per-step tabel toont | Tab-content blijft |
+|---|---|---|
+| Overzicht | Top action pointers + process checks gefiltered | bestaand, gefilterd |
+| Velden | Missing per veld (gefilterd op scope/owner) | bestaande charts |
+| Process | Drop-off per process check | bestaande lijst |
+| Records | Records gefilterd op step uit klik | bestaande tabel + step-kolom |
+| Action pointers | Pointers gegroepeerd per step | bestaande lijst |
+| Events | Event-tellers per step | bestaand |
 
-Visual status indicators:
-- ≥85 → green, 60-84 → orange, <60 → red, no data → grey. Status driven by `getScoreStatus`.
+Filters in de balk werken op alle tabs tegelijk; tabs hoeven de filter-state alleen te lezen.
 
-Hover shows score breakdown tooltip; click → `onOpen(entity)`.
+## Technisch
 
-Minor variant hides chart 4 (uses sparkline-style strip) and stacks visuals vertically to fit the narrower column.
+### Nieuwe types in `systeemHygieneData.ts`
+```ts
+export interface OverlayFilters {
+  owners: string[];          // [] = alle
+  statuses: string[];        // entity-specifiek
+  freshness: "all" | "fresh" | "outdated" | "stale";
+  fieldScope: FieldScope;
+}
 
-## 4. Detail overlay — `src/components/systeem-hygiene/HygieneOverlay.tsx`
+export interface StepDropOff {
+  step: string;
+  records: number;
+  completePct: number;
+  dropOffPct: number;        // vs. vorige step, negatief = verbeter
+  hygieneScore: number;
+}
 
-Built on existing `Dialog` component but with custom sizing: `max-w-[80vw] h-[75vh]`, centered, semi-transparent `backdrop-blur-sm` background (NOT fullscreen — explicitly required by the brief). Closes on X, Escape, outside click. Preserves dashboard filters.
+export interface EntityDropOff {
+  entity: EntityKey;
+  hygiene: number;
+  required: number;
+  process: number;
+  freshness: number;
+  deltaVsAvg: number;
+}
+```
 
-Tabs (sticky top inside overlay): **Overview · Fields · Process · Freshness · Records · Action pointers · Events**.
+### Nieuwe helpers (puur, deterministisch — zelfde PRNG-stijl)
+- `getStepDropOffs(entity: EntityKey, filters: OverlayFilters): StepDropOff[]`
+  - Candidates → kandidaatstatus-volgorde uit `CANDIDATE_FIELDS_BY_STATUS`
+  - Deals → `DEAL_STAGES_FOR_CHART`
+  - Companies/Contacts/Jobs/AI.synsel/Notities → process-check volgorde uit `getProcessChecks(entity)`
+- `getEntityDropOffs(filters: OverlayFilters): EntityDropOff[]`
+  - Wrapt `getAllSummaries()` + berekent gemiddelde + delta.
+- `getStatusOptions(entity: EntityKey): string[]` — voor de status-multi-select.
 
-Per-entity content driven by an `entityConfig` map, rendering:
+### Bestaande functies aanpassen om filters mee te wegen
+Minimaal-invasief: helpers krijgen optionele `filters?: OverlayFilters` parameter. Wanneer leeg → huidig gedrag. Filtering past een deterministische verlaging toe op tellingen (consistent met de bestaande mock-aanpak), bv. `count * ownerFraction * statusFraction`.
 
-| Entity | Fields tab | Process tab | Records tab | Extras |
-|---|---|---|---|---|
-| Candidates | Vertical bar (missing fields) + toggle mandatory/optional/would-be-nice; status filter | Process checklist scorecard | Records-needing-attention table + Ask Synsel AI chat panel | Status-dependent rules visible in tooltip |
-| Companies | Vertical bar of missing company fields | Checklist (linked contact, sector, branch, address…) | Related-entity quality table | — |
-| Contacts | Vertical bar of missing contact fields | Checklist | Contact usability table | — |
-| Jobs | Two bars: Sales fields + Marketing/publication fields; published-only toggle | Checklist + Publication readiness scorecards | Jobs-needing-attention table | — |
-| Deals | Stacked bar by stage + missing-fields-by-stage bar (filtered by selected stage) | Checklist | High-risk deal records table | Stage filter inside overlay |
-| AI.synsel | AI coverage by entity bar | — | AI-detected issues table | Ask Synsel AI chat |
-| Notities | Activity volume by entity bar | Activity quality checklist | Records without recent activity table | — |
+### Componenten
+- `OverlayFilterBar`: `<div class="sticky top-0 z-10 bg-card/80 backdrop-blur border-b px-6 py-2 flex items-center gap-2 text-xs">` met `Popover` voor owner/status, `ToggleGroup` voor freshness/scope, `Button ghost` voor reset.
+- `DropOffSummaryTable`: generieke tabel met props `{ rows, columns, highlightKey?, onRowClick? }`. Drop-off cell rendert pijl + kleur volgens drempels.
+- `EntityComparisonTable`: collapsible (`<details>`), default dicht, gebruikt zelfde tabelcomponent.
 
-All tabs share the right-rail/bottom-rail Action Pointers and Event log (counters + today's events) per the wireframe.
+### Styling (consistent met bestaand)
+- `text-xs`, `tabular-nums`, `border-border/40`, `hover:bg-muted/30`
+- Drop-off kleuren via `STATUS_COLOR` (kritiek/attention/clean) — geen nieuwe tokens.
+- Sticky filterbar gebruikt zelfde `bg-card/40` als header.
 
-Tables are clickable rows that "open in RecruitCRM" — wire to a stub `console.log` + toast for now (no real link available).
+## Acceptatiecriteria
+- Filterbalk staat sticky onder de tabs, zichtbaar in álle 6 tabs van de overlay.
+- Per-step drop-off tabel verschijnt bovenin elke tab; rijen klikbaar; kleur op drop-off% klopt met drempels (≤8 groen / 8–15 oranje / >15 rood).
+- "Vergelijk met andere entities" panel toont alle 7 entities met huidige entity gehighlight; sorteerbaar.
+- Wijzigen van een filter werkt synchroon over álle tab-content (charts, tabellen, action pointers, events).
+- Wisselen van entity reset filters; geen state-lek tussen entities.
+- Geen overflow bij 80vw × 75vh op 2042px viewport (huidige viewer); filterbar wraps niet op desktop.
+- Bestaande veldscope-knoppen in Fields-tab vervallen (verhuisd naar filterbar); chart blijft werken.
 
-## 5. Insight engine
-
-`InsightCard` component (small, color-coded) reused at the bottom of the page (global insights) and at the top of each overlay (entity-specific insights). Severity color: green/orange/red dot left of text.
-
-## 6. Routing & nav
-
-- `src/App.tsx`: lazy `const SysteemHygiene = lazy(() => import("./pages/concepts/SysteemHygiene"));` + route `/concepts/systeem-hygiene` inside `<AppLayout />`.
-- `src/components/dashboard/Sidebar.tsx`: under existing **Concepts** section (where AI KPI Dashboard already sits), add a second item: `{ icon: ShieldCheck, label: "Systeem Hygiene", path: "/concepts/systeem-hygiene" }`. Use a new Lucide icon `ShieldCheck` so it's distinct from Super Admin's `Shield`.
-
-## 7. Memory
-
-Add `mem://features/concepts/systeem-hygiene` describing: routes, weights, thresholds, freshness defaults, overlay sizing rule (80% × 75%, never fullscreen), Concepts grouping. Update `mem://index.md` Memories list.
-
-## Acceptance
-- Route resolves; sidebar shows new item under Concepts; nav highlight works.
-- Header shows global hygiene ring (0-100) + status label; filters render and update tile values via shared state.
-- 3 major + 4 minor tiles render with correct visuals; status colors follow thresholds.
-- Clicking any tile opens a centered ~80%×75% overlay with blurred dimmed backdrop; underlying page still partially visible. ESC / X / outside-click close it.
-- Each entity overlay shows the tabs and visuals listed above with stable mock data and at least one action pointer + 3 event-log rows.
-- No external API calls; all data internal.
-- TypeScript compiles, no build errors.
-
-## Files touched
-- `src/data/systeemHygieneData.ts` (new)
-- `src/pages/concepts/SysteemHygiene.tsx` (new)
-- `src/components/systeem-hygiene/HygieneTile.tsx` (new)
-- `src/components/systeem-hygiene/HygieneOverlay.tsx` (new)
-- `src/components/systeem-hygiene/InsightCard.tsx` (new)
-- `src/components/systeem-hygiene/ActionPointerList.tsx` (new)
-- `src/components/systeem-hygiene/EventLog.tsx` (new)
-- `src/App.tsx`
-- `src/components/dashboard/Sidebar.tsx`
-- `mem://features/concepts/systeem-hygiene` (new) + `mem://index.md`
+## Bestanden
+- `src/data/systeemHygieneData.ts` — types + 3 helpers + optionele filter-param op bestaande aggregators
+- `src/components/systeem-hygiene/HygieneOverlay.tsx` — filter-state, doorgeven aan tabs, per-step tabel injecteren
+- `src/components/systeem-hygiene/OverlayFilterBar.tsx` — nieuw
+- `src/components/systeem-hygiene/DropOffSummaryTable.tsx` — nieuw (herbruikt voor entity-tabel)
