@@ -229,28 +229,18 @@ function OverviewTab({ entity, filters, selectedStep }: { entity: EntityKey; fil
   );
 }
 
-function FieldsTab({ entity }: { entity: EntityKey }) {
-  const [scope, setScope] = useState<FieldScope>("mandatory");
+function FieldsTab({ entity, filters }: { entity: EntityKey; filters: OverlayFilters }) {
+  const scope = filters.fieldScope;
   const data = getFieldMissingCounts(entity, scope);
   const showMarketing = entity === "jobs";
   const marketingData = showMarketing ? getMarketingFieldMissingCounts() : null;
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2">
-        {(["mandatory", "mandatoryIfAvailable", "wouldBeNice", "optional"] as FieldScope[]).map(s => (
-          <Button
-            key={s}
-            type="button"
-            size="sm"
-            variant={scope === s ? "default" : "outline"}
-            onClick={() => setScope(s)}
-            className="text-xs"
-          >
-            {s === "mandatory" ? "Mandatory" : s === "mandatoryIfAvailable" ? "Mandatory if available" : s === "wouldBeNice" ? "Would-be-nice" : "Optional"}
-          </Button>
-        ))}
+      <div className="text-[11px] text-muted-foreground">
+        Scope: <span className="font-medium text-foreground">{scope === "mandatory" ? "Mandatory" : scope === "mandatoryIfAvailable" ? "Mandatory if available" : scope === "wouldBeNice" ? "Would-be-nice" : "Optional"}</span> — wijzig via filterbalk hierboven.
       </div>
+
 
       {data.length === 0 ? (
         <div className="rounded-lg border border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
