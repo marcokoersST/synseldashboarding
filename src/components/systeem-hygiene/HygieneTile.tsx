@@ -33,6 +33,9 @@ export function HygieneTile({ entity, summary, variant, onOpen }: Props) {
   const updatedPct = Math.round(
     (summary.updatedPastWeek / Math.max(summary.recordCount, 1)) * 100,
   );
+  const addedPct = Math.round(
+    (summary.addedPastWeek / Math.max(summary.recordCount, 1)) * 100,
+  );
 
   return (
     <button
@@ -70,11 +73,16 @@ export function HygieneTile({ entity, summary, variant, onOpen }: Props) {
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-3">
           <StatLine
             label="Records"
             value={summary.recordCount.toLocaleString("nl-NL")}
             sub="totaal"
+          />
+          <StatLine
+            label="Added 7d"
+            value={summary.addedPastWeek.toLocaleString("nl-NL")}
+            sub={`${addedPct}% van totaal`}
           />
           <StatLine
             label="Updated 7d"
@@ -163,12 +171,20 @@ function MinorTile({
             </span>
           </div>
         </div>
-        <div className="ml-auto text-right">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Updated 7d</div>
-          <div className="text-xl font-semibold tabular-nums text-foreground">
-            <AnimatedNumber value={summary.updatedPastWeek} />
+        <div className="ml-auto flex flex-col items-end gap-1.5">
+          <div className="text-right">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Added 7d</div>
+            <div className="text-base font-semibold tabular-nums text-foreground leading-none">
+              <AnimatedNumber value={summary.addedPastWeek} />
+            </div>
           </div>
-          <div className="mt-0.5 text-[10px] text-muted-foreground">
+          <div className="text-right">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Updated 7d</div>
+            <div className="text-base font-semibold tabular-nums text-foreground leading-none">
+              <AnimatedNumber value={summary.updatedPastWeek} />
+            </div>
+          </div>
+          <div className="text-[10px] text-muted-foreground">
             {summary.recordCount.toLocaleString("nl-NL")} records
           </div>
         </div>
