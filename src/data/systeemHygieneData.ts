@@ -398,6 +398,7 @@ export interface ActionPointer {
   suggestedAction: string;
   affectedRecords: number;
   owner?: string;
+  flagged?: boolean;
 }
 
 const ACTION_TEMPLATES: Record<EntityKey, Omit<ActionPointer, "affectedRecords" | "entity" | "owner">[]> = {
