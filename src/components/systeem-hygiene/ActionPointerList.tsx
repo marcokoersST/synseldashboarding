@@ -19,11 +19,15 @@ export function ActionPointerList({ items, className, showEntity = false }: { it
   return (
     <div className={cn("space-y-2", className)}>
       {items.map((a, i) => (
-        <div key={i} className="flex items-start gap-3 rounded-lg border border-border bg-card/50 p-3">
+        <div key={i} className={cn(
+          "flex items-start gap-3 rounded-lg border bg-card/50 p-3",
+          a.flagged ? "border-destructive/50 bg-destructive/5" : "border-border",
+        )}>
           <Badge variant="outline" className={cn("shrink-0 text-[10px] uppercase tracking-wider", priorityStyle[a.priority])}>{priorityLabel[a.priority]}</Badge>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span className="text-sm font-medium text-foreground">{a.issue}</span>
+              {a.flagged && <Badge variant="outline" className="text-[10px] uppercase tracking-wider bg-destructive/15 text-destructive border-destructive/40">Sales risk</Badge>}
               {showEntity && <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{ENTITY_LABEL[a.entity]}</span>}
             </div>
             <div className="mt-0.5 text-xs text-muted-foreground">
