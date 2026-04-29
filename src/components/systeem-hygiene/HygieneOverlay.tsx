@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, Sparkles, ChevronDown, ChevronRight } from "lucide-react";
+import { X, Sparkles, ChevronDown, ChevronRight, Activity } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from "recharts";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -52,11 +52,12 @@ export function HygieneOverlay({ entity, open, onOpenChange }: Props) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:duration-300 data-[state=closed]:duration-200 ease-out" />
         <DialogPrimitive.Content
           className={cn(
             "fixed left-1/2 top-1/2 z-50 w-[90vw] h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-border bg-background shadow-2xl",
-            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-98 data-[state=open]:slide-in-from-bottom-2",
+            "data-[state=open]:duration-500 data-[state=closed]:duration-200 data-[state=open]:ease-[cubic-bezier(0.22,1,0.36,1)] data-[state=closed]:ease-out",
           )}
         >
           <OverlayBody entity={entity} />
@@ -203,26 +204,40 @@ function OverviewTab({ entity, filters, selectedStep }: { entity: EntityKey; fil
   const checks = getProcessChecks(entity).slice(0, 5);
   const actions = getActionPointers(entity, 4);
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Top action pointers</h4>
-        <ActionPointerList items={actions} />
-      </div>
-      <div className="space-y-3">
-        <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Process checks</h4>
-        <div className="space-y-2">
-          {checks.map((c, i) => (
-            <div key={i} className="rounded-lg border border-border bg-card/50 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-foreground truncate">{c.check}</span>
-                <span className="text-xs font-semibold tabular-nums" style={{ color: STATUS_COLOR[c.status] }}>{c.passedPct}%</span>
-              </div>
-              <Progress value={c.passedPct} className="h-1.5 mt-1.5" />
-            </div>
-          ))}
+    <div className="space-y-5">
+      {/* Featured: Events deze periode */}
+      <section className="rounded-xl border border-primary/30 bg-primary/5 p-4 shadow-sm">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="rounded-lg bg-primary/15 p-2 text-primary">
+            <Activity className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-foreground leading-tight">Events deze periode</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Mutaties en activiteit binnen de huidige periode</p>
+          </div>
         </div>
-        <h4 className="text-xs uppercase tracking-wider text-muted-foreground pt-2">Events deze periode</h4>
         <EventCountersStrip counters={counters} />
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-3">
+          <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Top action pointers</h4>
+          <ActionPointerList items={actions} />
+        </div>
+        <div className="space-y-3">
+          <h4 className="text-xs uppercase tracking-wider text-muted-foreground">Process checks</h4>
+          <div className="space-y-2">
+            {checks.map((c, i) => (
+              <div key={i} className="rounded-lg border border-border bg-card/50 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-foreground truncate">{c.check}</span>
+                  <span className="text-xs font-semibold tabular-nums" style={{ color: STATUS_COLOR[c.status] }}>{c.passedPct}%</span>
+                </div>
+                <Progress value={c.passedPct} className="h-1.5 mt-1.5" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
