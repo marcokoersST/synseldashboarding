@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, ChevronDown, ChevronRight } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from "recharts";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import {
   ENTITY_SUBTITLE,
   STATUS_COLOR,
   STATUS_LABEL,
+  DEFAULT_OVERLAY_FILTERS,
   getEntitySummary,
   getProcessChecks,
   getActionPointers,
@@ -23,12 +24,17 @@ import {
   getAiSynselCoverage,
   getNotitiesActivityByEntity,
   getInsights,
+  getStepDropOffs,
+  getEntityDropOffs,
   type EntityKey,
   type FieldScope,
+  type OverlayFilters,
 } from "@/data/systeemHygieneData";
 import { ActionPointerList } from "./ActionPointerList";
 import { EventCountersStrip, EventLogList } from "./EventLog";
 import { InsightCard } from "./InsightCard";
+import { OverlayFilterBar } from "./OverlayFilterBar";
+import { StepDropOffTable, EntityComparisonTable } from "./DropOffSummaryTable";
 
 interface Props {
   entity: EntityKey | null;
