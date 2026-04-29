@@ -512,13 +512,42 @@ export interface RecordRow {
 }
 
 const STATUS_BY_ENTITY: Record<EntityKey, string[]> = {
-  candidates: ["Inschrijven", "Acquisitie", "Procedure", "Verdelen"],
-  companies: ["Actief", "Prospect", "Klant"],
-  contacts: ["Warm", "Lead", "Klant"],
-  jobs: ["Open", "Gepubliceerd", "Concept", "Archived"],
-  deals: ["3.1 | 1e gesprek", "4.0 | Plaatsing", "4.1 | Contract verstuurd", "5 | Gedetacheerd", "6 | W&S"],
+  candidates: [
+    "1 | Inschrijven", "2 | Acquisitie", "3 | In procedure",
+    "Afgewezen", "Geplaatst", "Lead", "Niet beschikbaar",
+    "Niet geplaatst", "Nieuw", "Vacature aanvraag", "Verdelen",
+  ],
+  companies: ["Klant", "Oud-klant", "Prospect", "Gesloten", "Zwarte lijst"],
+  contacts: ["Nieuw", "In dienst", "Uit dienst", "Geen contactpersoon"],
+  jobs: ["Open", "On hold", "Canceld", "Afgekeurd", "Closed"],
+  deals: [
+    "1.0 | Goedgekeurd",
+    "1.1 | Via mail voorstellen",
+    "2.0 | Kandidaat voorgesteld",
+    "2.1 | Reminder verstuurd",
+    "2.3 | Lopende zaak",
+    "3.0 | 1e gesprek nog inplannen",
+    "3.1 | 1e sollicitatiegesprek",
+    "3.2 | Inplannen vervolggesprek",
+    "3.3 | Vervolggesprek",
+    "3.4 | Deal sluiter",
+    "4.0 | Plaatsing aangemaakt",
+    "4.1 | Contract verstuurd",
+    "4.2 | Contract getekend",
+    "5 | Momenteel gedetacheerd",
+    "6 | Geplaatst W&S / Marge facturering",
+    "Lost", "Won", "Niet begonnen",
+    "Afgevallen tijdens detacheringsperiode",
+    "Kandidaat teruggetrokken",
+    "Overgenomen na detacheringsperiode",
+    "Overgenomen na margefacturatie/W&S",
+  ],
   ai_synsel: ["Pending", "Failed", "Incomplete"],
-  notities: ["Active", "Stale"],
+  notities: [
+    "Call", "Intake", "Inschrijving", "Bezoekrapport",
+    "Deal Algemeen", "Lopende Zaak", "To Do", "Sentiment Analyse",
+    "Evaluatie Plaatsing", "Plan Van Aanpak",
+  ],
 };
 
 export function getRecordsNeedingAttention(entity: EntityKey, limit = 8): RecordRow[] {
