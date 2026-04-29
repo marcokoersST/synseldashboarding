@@ -312,7 +312,7 @@ export function getMarketingFieldMissingCounts(): { field: string; missing: numb
 
 // ---- Process checks ---------------------------------------------------------
 
-export interface ProcessCheck { check: string; passedPct: number; status: ScoreStatus }
+export interface ProcessCheck { check: string; passedPct: number; status: ScoreStatus; passed: number; total: number; prevPct: number; deltaPct: number; examples: string[]; explanation: string }
 
 const PROCESS_CHECK_TEXT: Record<EntityKey, string[]> = {
   candidates: [
@@ -371,10 +371,21 @@ const PROCESS_CHECK_TEXT: Record<EntityKey, string[]> = {
 
 export function getProcessChecks(entity: EntityKey): ProcessCheck[] {
   const seed = entitySeed(entity) + 7;
+  const names = SAMPLE_NAMES_BY_ENTITY[entity];
   return PROCESS_CHECK_TEXT[entity].map((check, i) => {
     const passedPct = Math.round(45 + rng(seed, i) * 50);
-    return { check, passedPct, status: getScoreStatus(passedPct) };
+    const total = Math.round(80 + rng(seed, i + 90) * 1200);
+    const passed = Math.round(total * passedPct / 100);
+    const prevPct = Math.max(0, Math.min(100, passedPct + Math.round((rng(seed, i + 200) - 0.5) * 14)));
+    const deltaPct = passedPct - prevPct;
+    const examples = [0, 1, 2].map(k => names[(i + k) % names.length]);
+    const explanation = `Deze check meet of records die voldoen aan de voorwaarde "${check.toLowerCase()}" correct zijn ingevuld. ${total - passed} van ${total} records voldoen niet en zijn meegenomen als faal. Records worden geteld op basis van actuele veld-status; freshness en owner-filter werken mee in de aggregatie.`;
+    return { check, passedPct, status: getScoreStatus(passedPct), total, passed, prevPct, deltaPct, examples, explanation };
   });
+}
+
+export function getFieldScopeTotal(entity: EntityKey, scope: FieldScope): number {
+  return fieldsForEntity(entity, scope).length;
 }
 
 // ---- Action pointers --------------------------------------------------------
