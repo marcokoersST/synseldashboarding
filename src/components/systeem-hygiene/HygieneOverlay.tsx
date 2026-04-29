@@ -409,44 +409,129 @@ function NotitiesActivityChart() {
 
 function ProcessTab({ entity }: { entity: EntityKey }) {
   const checks = getProcessChecks(entity);
+  const summary = getEntitySummary(entity);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [pinnedIdx, setPinnedIdx] = useState<number | null>(null);
+  const activeIdx = hoveredIdx ?? pinnedIdx;
+
+  const stats = useMemo(() => {
+    if (checks.length === 0) {
+      return { count: 0, avg: 0, critical: 0, best: null as null | typeof checks[0], worst: null as null | typeof checks[0] };
+    }
+    const avg = Math.round(checks.reduce((s, c) => s + c.passedPct, 0) / checks.length);
+    const critical = checks.filter(c => c.status === "critical").length;
+    const sorted = [...checks].sort((a, b) => b.passedPct - a.passedPct);
+    return { count: checks.length, avg, critical, best: sorted[0], worst: sorted[sorted.length - 1] };
+  }, [checks]);
+
+  const adminColor = STATUS_COLOR[summary.status];
+  const active = activeIdx !== null ? checks[activeIdx] : null;
+
   return (
-    <div className="space-y-2 max-w-3xl">
-      {checks.map((c, i) => (
-        <HoverCard key={i} openDelay={120} closeDelay={80}>
-          <HoverCardTrigger asChild>
-            <div className="rounded-lg border border-border bg-card/50 p-3 cursor-help hover:border-primary/40 transition-colors">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
+      {/* Left: bar list */}
+      <div className="space-y-2">
+        {checks.map((c, i) => {
+          const isActive = activeIdx === i;
+          const isPinned = pinnedIdx === i;
+          return (
+            <div
+              key={i}
+              onMouseEnter={() => setHoveredIdx(i)}
+              onMouseLeave={() => setHoveredIdx(null)}
+              onClick={() => setPinnedIdx(p => (p === i ? null : i))}
+              className={cn(
+                "rounded-lg border bg-card/50 p-3 cursor-pointer transition-colors",
+                isActive ? "border-primary/60 bg-card" : "border-border hover:border-primary/40",
+              )}
+            >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm text-foreground">{c.check}</span>
+                <span className="text-sm text-foreground flex items-center gap-2">
+                  {c.check}
+                  {isPinned && <span className="text-[9px] uppercase tracking-wider rounded-sm bg-primary/15 text-primary px-1.5 py-0.5">vastgezet</span>}
+                </span>
                 <span className="text-sm font-semibold tabular-nums" style={{ color: STATUS_COLOR[c.status] }}>{c.passedPct}%</span>
               </div>
               <Progress value={c.passedPct} className="h-2 mt-2" />
             </div>
-          </HoverCardTrigger>
-          <HoverCardContent align="start" className="w-96 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground">{c.check}</span>
-              <span className={cn("text-[11px] tabular-nums px-1.5 py-0.5 rounded", c.deltaPct >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive")}>
-                {c.deltaPct >= 0 ? "+" : ""}{c.deltaPct}% vs vorige periode
-              </span>
+          );
+        })}
+      </div>
+
+      {/* Right: info panel */}
+      <div className="lg:sticky lg:top-4 lg:self-start">
+        <div key={active ? `c-${activeIdx}` : "general"} className="rounded-xl border border-border bg-card/60 p-4 animate-in fade-in-0 duration-150">
+          {active ? (
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-sm font-semibold text-foreground leading-tight">{active.check}</div>
+                {pinnedIdx !== null && hoveredIdx === null && (
+                  <Button type="button" size="sm" variant="ghost" className="h-6 px-2 text-[10px] -mt-1 -mr-1" onClick={() => setPinnedIdx(null)}>Losmaken</Button>
+                )}
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-2xl font-bold tabular-nums" style={{ color: STATUS_COLOR[active.status] }}>{active.passedPct}%</span>
+                <span className={cn("text-[11px] tabular-nums px-1.5 py-0.5 rounded", active.deltaPct >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive")}>
+                  {active.deltaPct >= 0 ? "+" : ""}{active.deltaPct}% vs vorige periode
+                </span>
+              </div>
+              <Progress value={active.passedPct} className="h-2" />
+              <div className="text-[11px] text-muted-foreground">
+                <span className="font-medium text-foreground">{active.passed.toLocaleString("nl-NL")}</span> van <span className="font-medium text-foreground">{active.total.toLocaleString("nl-NL")}</span> records voldoen.
+              </div>
+              <div className="rounded-md bg-muted/40 p-2 text-[11px] text-muted-foreground leading-relaxed">
+                <div className="flex items-center gap-1 mb-1 text-primary"><Sparkles className="h-3 w-3" /><span className="font-medium">AI uitleg</span></div>
+                {active.explanation}
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Voorbeelden van falende records</div>
+                <ul className="space-y-0.5">
+                  {active.examples.map((ex, k) => (
+                    <li key={k} className="text-xs text-foreground">• {ex}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="text-[11px] text-muted-foreground">
-              <span className="font-medium text-foreground">{c.passed.toLocaleString("nl-NL")}</span> van <span className="font-medium text-foreground">{c.total.toLocaleString("nl-NL")}</span> records voldoen ({c.passedPct}%).
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Process hygiene — {ENTITY_LABEL[entity]}</div>
+                <div className="text-3xl font-bold tabular-nums mt-0.5" style={{ color: adminColor }}>{summary.adminScore}%</div>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Process checks meten administratieve stappen die per record voltooid moeten zijn: status-overgangen, vereiste artefacten per fase en follow-up acties. De score is het percentage records dat alle checks doorstaat.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <MiniStat label="Aantal checks" value={String(stats.count)} />
+                <MiniStat label="Gem. passed" value={`${stats.avg}%`} />
+                <MiniStat label="Critical" value={String(stats.critical)} accent={stats.critical > 0 ? STATUS_COLOR.critical : undefined} />
+                <MiniStat label="Beste check" value={stats.best ? `${stats.best.passedPct}%` : "—"} accent={stats.best ? STATUS_COLOR[stats.best.status] : undefined} />
+              </div>
+              {stats.worst && (
+                <div className="rounded-md bg-muted/30 p-2 text-[11px]">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Slechtste check</div>
+                  <div className="flex items-center justify-between gap-2 mt-0.5">
+                    <span className="text-foreground truncate">{stats.worst.check}</span>
+                    <span className="font-semibold tabular-nums shrink-0" style={{ color: STATUS_COLOR[stats.worst.status] }}>{stats.worst.passedPct}%</span>
+                  </div>
+                </div>
+              )}
+              <div className="text-[10px] text-muted-foreground italic pt-1 border-t border-border/60">
+                Hover een balk voor details · klik om vast te zetten.
+              </div>
             </div>
-            <div className="rounded-md bg-muted/40 p-2 text-[11px] text-muted-foreground leading-relaxed">
-              <div className="flex items-center gap-1 mb-1 text-primary"><Sparkles className="h-3 w-3" /><span className="font-medium">AI uitleg</span></div>
-              {c.explanation}
-            </div>
-            <div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Voorbeelden van falende records</div>
-              <ul className="space-y-0.5">
-                {c.examples.map((ex, k) => (
-                  <li key={k} className="text-xs text-foreground">• {ex}</li>
-                ))}
-              </ul>
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      ))}
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({ label, value, accent }: { label: string; value: string; accent?: string }) {
+  return (
+    <div className="rounded-md border border-border/60 bg-card/40 px-2 py-1.5">
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-sm font-semibold tabular-nums mt-0.5" style={accent ? { color: accent } : undefined}>{value}</div>
     </div>
   );
 }
