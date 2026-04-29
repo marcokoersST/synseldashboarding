@@ -438,10 +438,11 @@ const ACTION_TEMPLATES: Record<EntityKey, Omit<ActionPointer, "affectedRecords" 
     { priority: "low", issue: "AI coverage onder 60% voor entiteit", impact: "Verminderde insights", suggestedAction: "Bulk AI.synsel verwerking starten" },
   ],
   notities: [
-    { priority: "high", issue: "Actieve deals zonder activiteit > 14 dagen", impact: "Sales process risk", suggestedAction: "Note of call loggen" },
-    { priority: "medium", issue: "Bedrijven met actieve jobs zonder recente note/meeting", impact: "Account-relatie verzwakt", suggestedAction: "Touchpoint plannen" },
-    { priority: "medium", issue: "Kandidaat-dossiers actief zonder recente update", impact: "Kandidaat haakt af", suggestedAction: "Update sturen" },
-    { priority: "low", issue: "Te late open taken", impact: "Process risk", suggestedAction: "Taken afronden of herplannen" },
+    { priority: "high", issue: "Notes met negatieve klanttoon — sales-impact risico", impact: "Kan deal momentum schaden", suggestedAction: "Note herzien en feitelijk maken", flagged: true },
+    { priority: "high", issue: "Notes met demotiverende formuleringen richting kandidaat of klant", impact: "Verzwakt vertrouwen en commerciële positie", suggestedAction: "Toon aanpassen of intern label gebruiken", flagged: true },
+    { priority: "high", issue: "Note type ontbreekt of is generiek 'Algemeen' op recente notities", impact: "Note niet vindbaar in rapportage", suggestedAction: "Correct activity type kiezen" },
+    { priority: "medium", issue: "Recente notities zonder linked entity of activity type", impact: "Note geïsoleerd van dossier", suggestedAction: "Koppelen aan candidate/deal/company" },
+    { priority: "medium", issue: "Korte one-liner notities zonder context op deals in late stage", impact: "Verlies van besluitvormings-historie", suggestedAction: "Context, besluit en next step toevoegen" },
   ],
 };
 
