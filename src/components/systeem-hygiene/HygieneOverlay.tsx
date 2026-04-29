@@ -199,7 +199,7 @@ function Metric({ label, value, sub, color }: { label: string; value: string; su
 
 // ---- Tabs ------------------------------------------------------------------
 
-function OverviewTab({ entity }: { entity: EntityKey }) {
+function OverviewTab({ entity, filters, selectedStep }: { entity: EntityKey; filters: OverlayFilters; selectedStep: string | null }) {
   const counters = getEventCounters(entity);
   const checks = getProcessChecks(entity).slice(0, 5);
   const actions = getActionPointers(entity, 4);
