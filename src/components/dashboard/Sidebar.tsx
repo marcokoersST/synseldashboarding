@@ -29,8 +29,9 @@ import {
    LineChart,
    Megaphone,
    Building2,
-   Sprout,
-   Sparkles
+    Sprout,
+    Sparkles,
+    ShieldCheck
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -122,6 +123,11 @@ const navItems: NavItem[] = [
     label: "AI KPI Dashboard",
     path: "/concepts/ai-kpi",
     sectionLabel: "Concepts",
+  },
+  {
+    icon: ShieldCheck,
+    label: "Systeem Hygiene",
+    path: "/concepts/systeem-hygiene",
   },
   {
     icon: ClipboardCheck,

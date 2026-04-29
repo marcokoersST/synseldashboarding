@@ -72,6 +72,7 @@ const ManagerOverzichtV2 = lazy(() => import("./pages/manager/OverzichtV2"));
 const ManagerOverzichtFinal = lazy(() => import("./pages/manager/OverzichtFinal"));
 const ProductiviteitDashboard = lazy(() => import("./pages/marco/ProductiviteitDashboard"));
 const AIKpiDashboard = lazy(() => import("./pages/concepts/AIKpiDashboard"));
+const SysteemHygiene = lazy(() => import("./pages/concepts/SysteemHygiene"));
 
 const queryClient = new QueryClient();
 
@@ -147,6 +148,7 @@ const App = () => (
               <Route path="/corporate-recruitment/inflow" element={<CorporateRecruitmentInflow />} />
               <Route path="/marco/productiviteit" element={<ProductiviteitDashboard />} />
               <Route path="/concepts/ai-kpi" element={<AIKpiDashboard />} />
+              <Route path="/concepts/systeem-hygiene" element={<SysteemHygiene />} />
             </Route>
             {/* Standalone preview routes (no sidebar/topbar) */}
             <Route path="/preview/consultant" element={
