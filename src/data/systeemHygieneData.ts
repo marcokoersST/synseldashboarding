@@ -637,3 +637,97 @@ export function getInsights(scope: "global" | EntityKey): Insight[] {
 // ---- Owner list (for filter) -----------------------------------------------
 
 export const OWNERS: ConsultantInfo[] = allConsultantsList.filter(c => c.isActive);
+
+// ---- Overlay filters + drop-off aggregations -------------------------------
+
+export interface OverlayFilters {
+  owners: string[];                                // [] = alle
+  statuses: string[];                              // [] = alle (entity-specifiek)
+  freshness: "all" | "fresh" | "outdated" | "stale";
+  fieldScope: FieldScope;
+}
+
+export const DEFAULT_OVERLAY_FILTERS: OverlayFilters = {
+  owners: [],
+  statuses: [],
+  freshness: "all",
+  fieldScope: "mandatory",
+};
+
+export interface StepDropOff {
+  step: string;
+  records: number;
+  completePct: number;
+  dropOffPct: number;          // verschil compleet% t.o.v. vorige step (negatief = drop)
+  hygieneScore: number;
+}
+
+export interface EntityDropOff {
+  entity: EntityKey;
+  hygiene: number;
+  required: number;
+  process: number;
+  freshness: number;
+  deltaVsAvg: number;
+}
+
+const ENTITY_STEP_LABELS: Record<EntityKey, string[]> = {
+  candidates: ["Nieuw", "Verdelen", "Inschrijven", "Acquisitie", "Procedure", "Geplaatst"],
+  companies: ["Lead", "Prospect", "Klant actief", "Klant inactief"],
+  contacts: ["Nieuw", "Gekwalificeerd", "Actief", "Inactief"],
+  jobs: ["Concept", "Open", "Gepubliceerd", "On hold", "Gesloten"],
+  deals: DEAL_STAGES_FOR_CHART,
+  ai_synsel: ["Aangemaakt", "AI keuring", "AI samenvatting", "Match score", "Synced"],
+  notities: ["Vandaag", "Deze week", "Deze maand", "Ouder"],
+};
+
+export function getStatusOptions(entity: EntityKey): string[] {
+  return ENTITY_STEP_LABELS[entity];
+}
+
+function filterFactor(filters: OverlayFilters, entity: EntityKey): number {
+  let f = 1;
+  if (filters.owners.length > 0) {
+    f *= Math.max(0.15, filters.owners.length / Math.max(OWNERS.length, 1));
+  }
+  if (filters.statuses.length > 0) {
+    const total = ENTITY_STEP_LABELS[entity].length || 1;
+    f *= Math.max(0.2, filters.statuses.length / total);
+  }
+  if (filters.freshness === "fresh") f *= 0.55;
+  else if (filters.freshness === "outdated") f *= 0.3;
+  else if (filters.freshness === "stale") f *= 0.15;
+  return f;
+}
+
+export function getStepDropOffs(entity: EntityKey, filters: OverlayFilters = DEFAULT_OVERLAY_FILTERS): StepDropOff[] {
+  const seed = entitySeed(entity) + 131;
+  const labelsAll = ENTITY_STEP_LABELS[entity];
+  const labels = filters.statuses.length > 0 ? labelsAll.filter(l => filters.statuses.includes(l)) : labelsAll;
+  const total = RECORD_COUNTS[entity] * filterFactor(filters, entity);
+
+  // Funnel-like decreasing record counts
+  let prevComplete: number | null = null;
+  const decay = labels.length > 1 ? 0.78 : 1;
+  return labels.map((step, i) => {
+    const records = Math.max(8, Math.round(total * Math.pow(decay, i) / Math.max(labelsAll.length, 1) * 1.4));
+    const completePct = Math.round(45 + rng(seed, i) * 50);
+    const hygieneScore = Math.round(completePct * 0.6 + (50 + rng(seed, i + 50) * 45) * 0.4);
+    const dropOffPct = prevComplete == null ? 0 : completePct - prevComplete;
+    prevComplete = completePct;
+    return { step, records, completePct, dropOffPct, hygieneScore };
+  });
+}
+
+export function getEntityDropOffs(_filters: OverlayFilters = DEFAULT_OVERLAY_FILTERS): EntityDropOff[] {
+  const summaries = getAllSummaries();
+  const avg = Math.round(summaries.reduce((s, x) => s + x.score, 0) / summaries.length);
+  return summaries.map(s => ({
+    entity: s.entity,
+    hygiene: s.score,
+    required: s.requiredScore,
+    process: s.adminScore,
+    freshness: s.freshnessScore,
+    deltaVsAvg: s.score - avg,
+  }));
+}
