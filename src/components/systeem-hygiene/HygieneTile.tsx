@@ -38,7 +38,7 @@ export function HygieneTile({ entity, summary, variant, onOpen }: Props) {
     <button
       type="button"
       onClick={() => onOpen(entity)}
-      className="group flex min-h-[460px] w-full flex-col rounded-2xl border border-border bg-card text-left transition-all hover:border-primary/40 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+      className="group flex h-full min-h-[460px] w-full flex-col rounded-2xl border border-border bg-card text-left transition-all hover:border-primary/40 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3 border-b border-border/60 px-6 pb-4 pt-5">
@@ -113,7 +113,7 @@ export function HygieneTile({ entity, summary, variant, onOpen }: Props) {
       </div>
 
       {/* Footer summary */}
-      <div className="mt-auto border-t border-border/60 px-6 py-3 text-[11px] leading-relaxed text-muted-foreground">
+      <div className="mt-auto flex min-h-[64px] items-start border-t border-border/60 px-6 py-3 text-[11px] leading-relaxed text-muted-foreground">
         <span className="line-clamp-2 block">{summary.quickSummary}</span>
       </div>
     </button>
@@ -139,7 +139,7 @@ function MinorTile({
     <button
       type="button"
       onClick={() => onOpen(entity)}
-      className="group flex min-h-[170px] w-full flex-col rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+      className="group flex h-full min-h-[170px] w-full flex-col rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">

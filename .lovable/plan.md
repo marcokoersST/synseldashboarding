@@ -1,34 +1,27 @@
-## Problem
+## Issues
 
-In the Systeem Hygiene header, selecting a different "Hygiene dim." value (e.g. switching from `All` to `Administrative process` or `Freshness / recently updated`) causes the header to visually shift. Other filter chips (Owners, Entiteiten, Updated timestamp) jump horizontally — and at narrow widths the row may even wrap to a new line.
+1. **Tiles aren't lined up.** In the screenshot the 3 major tiles (Candidates / Companies / Deals) end at slightly different vertical positions, and their borders/section dividers don't align horizontally. Cause:
+   - The major tile uses `min-h-[460px]` but not `h-full`, so each tile only grows to fit its own content rather than stretching to the tallest in the row.
+   - The footer summary (`quickSummary`) text length varies, so the bottom border lands at a different Y per tile.
 
-**Cause:** `SelectFilter` renders the selected value as inline text inside the trigger button, so the button width depends on the option's character length. Because the filter row uses `flex flex-wrap` with `ml-auto`, every width change reflows the entire row.
-
-The same root cause exists for the `Datum` and `Compare` filters (e.g. "Vandaag" vs "Laatste 30 dagen"), but it is most visible on the Hygiene dim. filter because its options vary the most in length.
+2. **Detail overlay feels small.** Currently `w-[80vw] h-[75vh]`. User wants more room (especially for the drop-off table + missing-per-veld bar chart).
 
 ## Fix
 
-Give each `SelectFilter` trigger a stable width so the value can change without reflowing the row.
+**`src/components/systeem-hygiene/HygieneTile.tsx`**
+- Major tile root: change `min-h-[460px]` → `h-full min-h-[460px]` so all 3 tiles stretch to the tallest in the grid row, lining up the bottom border perfectly.
+- Major tile footer block: add `flex min-h-[64px] items-start` so the footer reserves a consistent two-line height regardless of summary length. This pins the score-breakdown divider on the same Y across all 3 tiles.
+- Minor tile root: also add `h-full` so the 4 minor tiles in the right column distribute evenly via the existing `grid-rows-4` container (no awkward gaps at the bottom).
 
-1. **`src/pages/concepts/SysteemHygiene.tsx` → `SelectFilter`**
-   - Add an optional `triggerClassName` (or `minWidth`) prop.
-   - Apply `min-w-[Xpx]` and `justify-between` on the trigger so the chevron stays right-aligned and the button does not shrink/grow with content.
-   - Truncate long values (`truncate` + `max-w` on the value span) so very long labels don't blow up the button either.
-
-2. **Apply explicit widths per filter** at the call site in the header:
-   - `Datum`: `min-w-[170px]`
-   - `Compare`: `min-w-[230px]`
-   - `Hygiene dim.`: `min-w-[260px]` (fits the longest option "Freshness / recently updated")
-   - Leave `MultiSelectFilter` chips as-is — their label is a fixed "N geselecteerd" / placeholder pattern and doesn't fluctuate the same way. Optionally add a small `min-w-[140px]` to Owners/Entiteiten for visual consistency.
-
-3. **Header row stability**
-   - Keep `flex-wrap` for true small-viewport fallback, but the fixed widths mean dimension changes will no longer trigger a reflow at the user's 2042px viewport.
+**`src/components/systeem-hygiene/HygieneOverlay.tsx`**
+- DialogContent sizing: `w-[80vw] h-[75vh]` → `w-[94vw] h-[92vh] max-w-[1600px]`. Gives the detail page much more room while still capping on ultra-wide displays.
 
 ## Out of scope
 
-- No changes to filter behavior, options list, or the rest of the page.
-- No restyle of the tiles or overlay.
+- No restructuring of the tile layout, no new metrics, no overlay content changes.
+- No filter / data changes.
 
 ## Files touched
 
-- `src/pages/concepts/SysteemHygiene.tsx` (only the header `SelectFilter` usages and the `SelectFilter` component definition)
+- `src/components/systeem-hygiene/HygieneTile.tsx` (3 tiny class tweaks)
+- `src/components/systeem-hygiene/HygieneOverlay.tsx` (1 class tweak on DialogContent)
