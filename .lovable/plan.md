@@ -1,49 +1,52 @@
-I found the remaining gap source: the Systeem Hygiene page is rendered inside `AppLayout`, where the persistent dark `TopBar` (`h-14`) sits above the page content. The earlier `-m-6` fix only removed the inner page padding, but it cannot remove the TopBar height, so the page header still starts below the very top of the viewport.
+## Goal
 
-Plan:
+On `/concepts/systeem-hygiene`, smooth out the detail-overlay opening animation (currently feels too fast) and restructure the Overzicht (overview) tab so **Events deze periode** is the most prominent block at the top.
 
-1. Make Systeem Hygiene a true full-height concept page inside the app shell
-   - Detect the `/concepts/systeem-hygiene` route in `AppLayout`.
-   - For this route only, hide or collapse the persistent `TopBar` area so the Systeem Hygiene header can start at the top edge of the viewport.
-   - Remove the default `p-6` and rounded top-left shell styling for this route only.
+## Changes
 
-2. Clean up the page-level workaround
-   - Replace the current `-m-6` wrapper in `SysteemHygiene.tsx` with a stable full-width/full-height wrapper.
-   - Keep the header `sticky top-0` so it remains attached to the top while scrolling.
-   - Remove `rounded-tl-2xl` from the Systeem Hygiene header, because the header should visually reach the top edge without a rounded/gapped corner.
+### 1. Smoother overlay open animation — `src/components/systeem-hygiene/HygieneOverlay.tsx`
 
-3. Preserve stability requirements
-   - Keep the redesigned two-row header and fixed-width filter controls.
-   - Ensure selecting filters and collapsing/expanding the sidebar still does not change the header height or cause layout jumps.
-   - Keep the page scroll contained in the main app content area.
+The overlay currently uses Tailwind defaults (~150ms zoom + fade) which feels snappy/abrupt. Slow and ease it:
 
-Technical changes:
+- On `DialogPrimitive.Overlay`: add `duration-300` and switch to `fade-in-0`/`fade-out-0` with `ease-out`.
+- On `DialogPrimitive.Content`:
+  - Replace the current `zoom-in-95` snap with a softer entrance: `duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]` (a calm "out-expo" feel).
+  - Use `zoom-in-98` instead of `zoom-in-95` so the scale change is gentler.
+  - Add a small `slide-in-from-bottom-2` on open for a subtle lift.
+  - Keep close animation faster (~200ms) so dismiss still feels responsive: use `data-[state=closed]:duration-200`.
 
-```tsx
-// AppLayout.tsx
-const isSysteemHygiene = pathname === "/concepts/systeem-hygiene";
+Net effect: open ~500ms with eased curve, close ~200ms. No layout/sizing changes — overlay stays at 90vw × 85vh.
 
-{!isSysteemHygiene && <TopBar ... />}
+### 2. "Events deze periode" promoted to top of Overzicht — same file, `OverviewTab`
 
-<main
-  className={cn(
-    "flex-1 bg-background overflow-y-auto overflow-x-hidden ...",
-    isSysteemHygiene ? "p-0 rounded-none" : "p-6 rounded-tl-2xl"
-  )}
->
-  <Outlet />
-</main>
+Currently the Overzicht tab is a 2-column grid with **Top action pointers** (left) and **Process checks + Events deze periode** stacked (right, events at the bottom).
+
+Restructure to a vertical stack where Events leads:
+
+```text
+┌───────────────────────────────────────────────────────┐
+│  EVENTS DEZE PERIODE  (full-width, emphasized)        │
+│  - Larger heading, accent border/background           │
+│  - EventCountersStrip rendered bigger                 │
+└───────────────────────────────────────────────────────┘
+┌──────────────────────────┬────────────────────────────┐
+│  Top action pointers     │  Process checks            │
+└──────────────────────────┴────────────────────────────┘
 ```
 
-```tsx
-// SysteemHygiene.tsx
-<div className="min-h-full bg-background">
-  <header className="sticky top-0 z-30 border-b border-border bg-background/95 ...">
-    ...
-  </header>
-</div>
-```
+Implementation details for the Events block:
+- Wrap in a `rounded-xl border border-primary/30 bg-primary/5 p-4` container so it visually leads.
+- Heading: upgrade from `text-xs uppercase tracking-wider text-muted-foreground` to `text-sm font-semibold text-foreground` with a small `Activity`/`Sparkles` icon, plus a one-line subtitle ("Mutaties en activiteit binnen de huidige periode").
+- Render `EventCountersStrip` directly below; the strip already grids 6 counters and will stretch full-width nicely.
+- Below it, the existing 2-column `Top action pointers` / `Process checks` grid is preserved (same content, just no longer hosts Events).
 
-Files to edit after approval:
-- `src/components/layout/AppLayout.tsx`
-- `src/pages/concepts/SysteemHygiene.tsx`
+No data or counter logic changes — purely visual reordering and emphasis.
+
+## Files to edit
+
+- `src/components/systeem-hygiene/HygieneOverlay.tsx` — overlay animation classes + `OverviewTab` restructure.
+
+## Out of scope
+
+- No changes to Records/Fields/Process/Actions/Events tabs.
+- No changes to header, filters, drop-off summary block, or overlay sizing.
