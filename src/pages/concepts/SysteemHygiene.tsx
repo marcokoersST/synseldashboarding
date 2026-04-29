@@ -66,56 +66,54 @@ export default function SysteemHygiene() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Sticky header */}
+      {/* Sticky header — fixed two-row layout, immune to width/filter changes */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="px-6 py-4">
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Title + global score */}
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="relative shrink-0">
-                <AnimatedRing value={global.score} size={64} strokeWidth={6} strokeColor={globalColor} />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-base font-bold tabular-nums" style={{ color: globalColor }}>
-                    <AnimatedNumber value={global.score} />
-                  </span>
-                </div>
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-xl font-semibold text-foreground">Systeem Hygiene</h1>
-                <p className="text-xs text-muted-foreground">
-                  Global hygiene score:{" "}
-                  <span className="font-medium" style={{ color: globalColor }}>{STATUS_LABEL[global.status]}</span>
-                  {" · "}Required {global.componentBreakdown.requiredFields}% · Process {global.componentBreakdown.adminProcess}% · Freshness {global.componentBreakdown.freshness}%
-                </p>
-              </div>
+        {/* Row 1: title + updated chip */}
+        <div className="flex h-20 items-center gap-4 px-6">
+          <div className="relative shrink-0">
+            <AnimatedRing value={global.score} size={64} strokeWidth={6} strokeColor={globalColor} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-base font-bold tabular-nums" style={{ color: globalColor }}>
+                <AnimatedNumber value={global.score} />
+              </span>
             </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl font-semibold text-foreground">Systeem Hygiene</h1>
+            <p className="text-xs text-muted-foreground truncate">
+              Global hygiene score:{" "}
+              <span className="font-medium" style={{ color: globalColor }}>{STATUS_LABEL[global.status]}</span>
+              {" · "}Required {global.componentBreakdown.requiredFields}% · Process {global.componentBreakdown.adminProcess}% · Freshness {global.componentBreakdown.freshness}%
+            </p>
+          </div>
+          <div className="shrink-0 flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[10px] text-muted-foreground">
+            <RefreshCw className="h-3 w-3" />
+            <span>Updated {refreshLabel}</span>
+          </div>
+        </div>
 
-            {/* Filters */}
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              <SelectFilter label="Datum" value={datePreset} options={DATE_PRESETS} onSelect={setDatePreset} triggerClassName="min-w-[190px]" />
-              <SelectFilter label="Compare" value={comparison} options={["Vorige vergelijkbare periode", "Vorig jaar", "Geen"]} onSelect={setComparison} triggerClassName="min-w-[260px]" />
-              <MultiSelectFilter
-                label="Entiteiten"
-                placeholder="Alles"
-                values={selectedEntities}
-                options={[...MAJOR, ...MINOR].map(e => ({ value: e, label: ENTITY_LABEL[e] }))}
-                onChange={vals => setSelectedEntities(vals as EntityKey[])}
-                triggerClassName="min-w-[150px]"
-              />
-              <MultiSelectFilter
-                label="Owners"
-                placeholder="Alle owners"
-                values={selectedOwners}
-                options={OWNERS.map(o => ({ value: o.fullName, label: o.fullName }))}
-                onChange={setSelectedOwners}
-                triggerClassName="min-w-[160px]"
-              />
-              <SelectFilter label="Hygiene dim." value={dimension} options={HYGIENE_DIMENSIONS} onSelect={setDimension} triggerClassName="min-w-[280px]" />
-              <div className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[10px] text-muted-foreground">
-                <RefreshCw className="h-3 w-3" />
-                <span>Updated {refreshLabel}</span>
-              </div>
-            </div>
+        {/* Row 2: filter bar — single line, horizontal scroll if needed (no wrap = no reflow) */}
+        <div className="h-12 border-t border-border/60 px-6 flex items-center overflow-x-auto scrollbar-thin">
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <SelectFilter label="Datum" value={datePreset} options={DATE_PRESETS} onSelect={setDatePreset} triggerClassName="w-[200px]" />
+            <SelectFilter label="Compare" value={comparison} options={["Vorige vergelijkbare periode", "Vorig jaar", "Geen"]} onSelect={setComparison} triggerClassName="w-[260px]" />
+            <MultiSelectFilter
+              label="Entiteiten"
+              placeholder="Alles"
+              values={selectedEntities}
+              options={[...MAJOR, ...MINOR].map(e => ({ value: e, label: ENTITY_LABEL[e] }))}
+              onChange={vals => setSelectedEntities(vals as EntityKey[])}
+              triggerClassName="w-[170px]"
+            />
+            <MultiSelectFilter
+              label="Owners"
+              placeholder="Alle owners"
+              values={selectedOwners}
+              options={OWNERS.map(o => ({ value: o.fullName, label: o.fullName }))}
+              onChange={setSelectedOwners}
+              triggerClassName="w-[170px]"
+            />
+            <SelectFilter label="Hygiene dim." value={dimension} options={HYGIENE_DIMENSIONS} onSelect={setDimension} triggerClassName="w-[260px]" />
           </div>
         </div>
       </header>
