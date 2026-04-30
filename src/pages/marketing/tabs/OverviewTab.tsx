@@ -14,7 +14,7 @@ import {
   jobboardData,
   paidSocialData,
   adLevelData,
-  reverseMatchingSteps,
+  
   totals,
   formatCurrency,
   previousPeriodValue,
@@ -168,7 +168,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
   return (
     <div className="space-y-6">
       {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {kpis.map((kpi) => (
           <Card key={kpi.label} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => onTabChange(kpi.tab)}>
             <CardContent className="p-5">
