@@ -2,31 +2,12 @@ import { Phone, Clock, CalendarCheck, Mail, PhoneCall } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import { weekCallStats, weekGesprekkenPerUnit, weekMailStats, periodCallStatsDaily, periodGesprekkenPerUnit, periodMailStats } from "@/data/tvData";
 import { useTVCompact } from "./TVDashboardLayout";
+import { TileHeader } from "./TileHeader";
+import { KPIBadge } from "./KPIBadge";
 import { cn } from "@/lib/utils";
 
 interface CallStatsProps {
   mode: "week" | "period";
-}
-
-interface KPIBadgeProps { icon: React.ComponentType<{ className?: string }>; value: string; label: string; tone: "primary" | "accent" | "chart-primary" | "gold"; compact?: boolean; }
-function KPIBadge({ icon: Icon, value, label, tone, compact }: KPIBadgeProps) {
-  const toneMap = {
-    primary: { bg: "bg-primary/10", text: "text-primary", under: "bg-primary" },
-    accent: { bg: "bg-accent/10", text: "text-accent", under: "bg-accent" },
-    "chart-primary": { bg: "bg-[hsl(var(--chart-primary)/0.12)]", text: "text-[hsl(var(--chart-primary))]", under: "bg-[hsl(var(--chart-primary))]" },
-    gold: { bg: "bg-[hsl(var(--gold)/0.15)]", text: "text-[hsl(var(--gold))]", under: "bg-[hsl(var(--gold))]" },
-  } as const;
-  const t = toneMap[tone];
-  return (
-    <div className="flex flex-col items-center text-center gap-1">
-      <div className={cn("rounded-full flex items-center justify-center", t.bg, compact ? "w-7 h-7" : "w-9 h-9")}>
-        <Icon className={cn(t.text, compact ? "w-3.5 h-3.5" : "w-4 h-4")} />
-      </div>
-      <p className={cn("font-bold text-foreground tabular-nums leading-tight", compact ? "text-base" : "text-2xl")}>{value}</p>
-      <div className={cn("rounded-full", t.under, compact ? "h-0.5 w-5" : "h-0.5 w-7")} />
-      <p className={cn("text-muted-foreground", compact ? "text-[10px]" : "text-xs")}>{label}</p>
-    </div>
-  );
 }
 
 function UnitChip({ unit, gespr, mails, calls, compact }: { unit: string; gespr: number; mails: number; calls: number; compact?: boolean }) {
@@ -75,12 +56,14 @@ export function CallStats({ mode }: CallStatsProps) {
 
   return (
     <div className={cn("bg-card rounded-xl border border-border h-full overflow-hidden flex flex-col", compact ? "p-3" : "p-5")}>
-      {/* Header strip */}
-      <div className={cn("flex items-center gap-2 -mx-3 -mt-3 mb-3 px-3 py-2 rounded-t-xl bg-gradient-to-r from-primary/10 via-accent/5 to-transparent border-b border-border/50", compact && "-mx-3 -mt-3 mb-2 py-1.5")}>
-        <Phone className={cn("text-primary", compact ? "w-3.5 h-3.5" : "w-4 h-4")} />
-        <Mail className={cn("text-[hsl(var(--gold))]", compact ? "w-3.5 h-3.5" : "w-4 h-4")} />
-        <h3 className={cn("font-semibold text-foreground", compact ? "text-xs" : "text-sm")}>Bel- & Mailstatistieken</h3>
-      </div>
+      <TileHeader
+        icons={[
+          { icon: Phone, className: "text-primary" },
+          { icon: Mail, className: "text-[hsl(var(--gold))]" },
+        ]}
+        title="Bel- & Mailstatistieken"
+        compact={compact}
+      />
 
       {/* KPIs */}
       <div className={cn("grid grid-cols-5", compact ? "gap-1 mb-2" : "gap-2 mb-4")}>
