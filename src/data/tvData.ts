@@ -376,3 +376,74 @@ export const bonusData = {
     { month: "Feb", amount: 12500 },
   ],
 };
+
+// === Auto-generated consultant funnel rows for all 56 consultants ===
+// Deterministic distribution of unit-level totals across each unit's consultants.
+import { allConsultantsList } from "./ranglijstenData";
+
+function distribute(total: number, weights: number[]): number[] {
+  const sum = weights.reduce((s, w) => s + w, 0) || 1;
+  const raw = weights.map(w => (total * w) / sum);
+  const floored = raw.map(v => Math.floor(v));
+  let remainder = total - floored.reduce((s, v) => s + v, 0);
+  const fracs = raw.map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let k = 0; k < remainder; k++) floored[fracs[k % fracs.length].i] += 1;
+  return floored;
+}
+
+function buildConsultantRowsForUnit(unitRow: UnitFunnelRow, names: string[]): ConsultantFunnelRow[] {
+  // Pseudo-random but stable weights per consultant (based on name hash)
+  const weights = names.map(n => {
+    let h = 0;
+    for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) & 0xffff;
+    return 0.5 + ((h % 100) / 100); // 0.5..1.5
+  });
+  const numericKeys: (keyof Omit<UnitFunnelRow, "unit" | "color" | "subUnit" | "voorstellenPerKandidaat" | "gemDagenTotPlaatsing">)[] = [
+    "toegewezen", "ingeschreven", "intakes", "acquisities",
+    "voorstellenViaEmail", "uitnodigingenTotaal", "nietUitgenodigd", "welUitgenodigd",
+    "eersteGesprek", "geenEersteGesprek", "welEersteGesprek",
+    "vervolgGesprek", "dealsluiter", "geplaatst",
+  ];
+  const distributed: Record<string, number[]> = {};
+  numericKeys.forEach(k => {
+    distributed[k as string] = distribute(unitRow[k] as number, weights);
+  });
+  return names.map((name, idx) => {
+    const row: ConsultantFunnelRow = {
+      unit: unitRow.unit,
+      name,
+      toegewezen: distributed.toegewezen[idx],
+      ingeschreven: distributed.ingeschreven[idx],
+      intakes: distributed.intakes[idx],
+      acquisities: distributed.acquisities[idx],
+      voorstellenPerKandidaat: unitRow.voorstellenPerKandidaat,
+      voorstellenViaEmail: distributed.voorstellenViaEmail[idx],
+      uitnodigingenTotaal: distributed.uitnodigingenTotaal[idx],
+      nietUitgenodigd: distributed.nietUitgenodigd[idx],
+      welUitgenodigd: distributed.welUitgenodigd[idx],
+      eersteGesprek: distributed.eersteGesprek[idx],
+      geenEersteGesprek: distributed.geenEersteGesprek[idx],
+      welEersteGesprek: distributed.welEersteGesprek[idx],
+      vervolgGesprek: distributed.vervolgGesprek[idx],
+      dealsluiter: distributed.dealsluiter[idx],
+      geplaatst: distributed.geplaatst[idx],
+      gemDagenTotPlaatsing: unitRow.gemDagenTotPlaatsing,
+    };
+    return row;
+  });
+}
+
+function buildAllConsultantData(unitBreakdown: UnitFunnelRow[]): Record<string, ConsultantFunnelRow[]> {
+  const result: Record<string, ConsultantFunnelRow[]> = {};
+  for (const unitRow of unitBreakdown) {
+    const names = allConsultantsList
+      .filter(c => c.unit === unitRow.unit && c.isActive)
+      .map(c => c.fullName);
+    result[unitRow.unit] = buildConsultantRowsForUnit(unitRow, names);
+  }
+  return result;
+}
+
+export const weekConsultantFunnelData = buildAllConsultantData(weekUnitBreakdown);
+export const periodConsultantFunnelData = buildAllConsultantData(periodUnitBreakdown);
