@@ -1,99 +1,85 @@
+# Visual redesign — /tv/sales-funnel-week
 
-# /tv/sales-funnel-week — feedback implementation
+Goal: every tile on the Sales Funnel week page adopts the same visual language as the **Bel- & Mailstatistieken** card so the dashboard reads as one coherent system.
 
-Scope: `/tv/sales-funnel-week` (and mirror to `/tv/sales-funnel-period` where shared components are used). Two display modes already exist:
-- **overview** = `!isFullscreen` (in iframe / page mode)
-- **tv_mode** = `isFullscreen` (`useTVCompact() === true`)
+## Design language to replicate
 
-## 1. Filter bar (overview only)
+Extracted from `CallStats.tsx`:
 
-Add a Ranglijsten-style filter row at the top of `TVSalesFunnelWeek` (and Period), only when `!compact`:
+1. **Header strip** — full-width bar at top of the tile:
+   - `bg-gradient-to-r from-primary/10 via-accent/5 to-transparent`
+   - bottom border `border-b border-border/50`
+   - small leading icon(s) in semantic color, then `text-sm font-semibold` title
+   - flush to card edges (`-mx-3 -mt-3` / `-mx-5 -mt-5`)
+2. **Soft-tinted KPI badges** (where a tile has hero numbers):
+   - circular icon chip `rounded-full` with `bg-{tone}/10` and matching `text-{tone}`
+   - bold tabular value, thin colored under-bar (`h-0.5 w-7`), small muted label
+   - tones cycled across: `primary`, `accent`, `chart-primary`, `gold`
+3. **Inline "chip" rows** for per-unit/per-segment context: `rounded-lg bg-muted/40 border border-border/40` with colored dots per metric
+4. **Card shell** stays `bg-card rounded-xl border border-border` with `p-3` (compact) / `p-5` (overview) — already shared, just enforce consistently
 
-- **Periode/tijd**: Jaar select + Week / Periode / Aangepast (custom date range) toggle, identical to `TVRanglijsten`.
-- **Units**: multi-select popover with "Alles aan/uit" + Toepassen button.
-- **Consultants**: multi-select popover, filtered by selected units, with search and "Verberg inactieve".
-- **Kolommen**: column selector — only affects the "Uitsplitsing per Unit & Conversies" tile (toggles which column groups are visible).
+## Tiles to restyle
 
-All four filters disappear in tv_mode and the active selection is shown as a chip next to the page title (same pattern as TVRanglijsten).
+### 1. `SalesFunnelKPI.tsx` (top KPI strip)
+- Add a mini gradient header strip per tile containing the icon + step label
+- Replace the current value block with the **KPIBadge** pattern: circular tinted icon chip above the bold number, accent under-bar, muted label
+- Move the `+x% t.o.v. vorige periode` delta into a small pill at the bottom (tinted bg: `bg-accent/10` for positive, `bg-destructive/10` for negative)
+- Cycle tone per index so the row reads as a colored journey
 
-State lifts into a `SalesFunnelFiltersContext` so `UnitFunnelBreakdown`, `CallStats`, `CandidatesPipeline`, and `ConversionFormulasCard` all consume the same filtered dataset.
+### 2. `UnitFunnelBreakdown.tsx`
+- Add the gradient header strip with table icon + title + `ConversionLegendPopover` aligned right
+- Header rows of the table: replace plain group labels with small tinted "group chips" (one tone per group, matching the KPI strip)
+- Conv-cells keep their `bg-muted/30` but use rounded inner pill (`rounded-md`) for visual rhythm
+- Totaal row: full-width tinted band (`bg-primary/5`) with bold figures
 
-## 2. Tile rename: "Kandidaten in Procedure" → **"Kandidaten Insides"**
+### 3. `CandidatesPipeline.tsx`
+- Add the gradient header strip (Users icon + "Kandidaten Insides")
+- Promote the "actieve kandidaten" counter into a **KPIBadge** (large, primary tone, with under-bar)
+- Bargraph rows: each label gets a tiny colored dot (matching `bar.color`) before the text; bar track uses `bg-secondary` with rounded full bar (already), but add subtle `shadow-inner` to track for depth
+- Tighter type hierarchy matching CallStats
 
-Update title in `CandidatesPipeline.tsx` (both modes).
+### 4. `ConversionFormulasCard.tsx`
+- Add gradient header strip with a formula/sigma icon + title
+- Convert the column header row into the same muted uppercase mini-header style already used (keep), but place inside a `bg-muted/20 rounded-md` band
+- Each formula row: wrap the leading icon in a small tinted circular chip (`bg-muted/60`); Actueel cell becomes a tinted pill colored by benchmark status (`bg-accent/10` / `bg-destructive/10` / `bg-muted/40`)
+- Doel cell: muted outline pill
 
-## 3. Kandidaten Insides — counter + bargraph categories
+### 5. `ConversionArrow.tsx` (between KPI tiles)
+- Repaint the chevron and rate inside a tiny rounded badge (`rounded-full bg-muted/40 border border-border/40`) so it visually links to the chip language used elsewhere
 
-Replace the current 5 generic phases with the spec:
+### 6. Page wrapper (`TVSalesFunnelWeek.tsx`)
+- No structural change; just confirm spacing (`gap-4` overview / `gap-1` compact) still holds after taller KPI tiles
 
-- **Counter (large number on top)**: `Actieve kandidaten` — total candidates currently active.
-- **Bars** (in this order):
-  1. Kandidaten op verdelen — geen owner toegewezen
-  2. Kandidaten op inschrijven — wachten op inschrijfgesprek
-  3. Kandidaten in procedure — alle acquisitie afgerond
-  4. Kandidaten met uitnodigingen
-  5. Kandidaten met gesprekken (gepland)
-  6. Kandidaten op gesprek geweest
-  7. Kandidaatprocedures met dealsluiter
-  8. Kandidaten geplaatst
+## Shared building block
 
-Add the new fields to `tvData.ts` (`candidatePipeline` becomes `candidatesInsides = { actief, bars: [...] }`) with mock numbers consistent with the existing funnel totals.
+To avoid duplication, extract a small helper component:
 
-## 4. Uitsplitsing per Unit & Conversies — expandable consultants
-
-Rebuild `UnitFunnelBreakdown` table to mirror the manager dashboard sales-funnel detail mode:
-
-- Each unit row gets a chevron toggle and is **expandable/collapsible**.
-- When expanded, child rows show every consultant in that unit (use `consultantFunnelData` already in `tvData.ts`, extended to all 56 consultants from the uploaded Unit Divisions PDF).
-- Unit row values = cumulative sum of its consultants (already true; verified). Conversion % is recomputed at unit level.
-- **Overview mode**:
-  - When unit filter selects a subset of units, only those units appear.
-  - Manual click expand/collapse.
-- **TV mode** (`compact`):
-  - 1 unit selected → that unit always expanded.
-  - >1 unit selected → all units expanded.
-  - If rows don't fit viewport height, auto-rotate: each unit folds open in turn on a timer (default 12s, adjustable via the overview filter bar — new "Rotatie-interval" numeric input).
-
-Unit Divisions data (consultant→unit) gets persisted as `src/data/unitDivisions.ts` and used to build the consultant rows.
-
-## 5. Conversieformules & Benchmarks
-
-- **Overview mode**: currently only rendered in `compact`. Render it in overview too — add to the bottom row grid so it appears in both modes.
-- **All modes**: the "Actueel" column already calls `getTotalValue` (which uses the same formula constants). Verify and ensure every formula row shows a real number. For `Verv. %` ("Wel 1e gesprek ÷ Vervolg gesprek") the data direction is currently inverted in `columnGroups` — fix to match the documented formula so the Actueel column populates correctly.
-
-## 6. Bel- & Mailstatistieken — add acquisitie calls counter
-
-Per-unit chip becomes:
-
-```
-Engineering: 28 gespr. / 168 mails / 75 calls
+```text
+src/components/tv/TileHeader.tsx
+  props: { icons: LucideIcon[]; title: string; right?: ReactNode; compact?: boolean }
+  renders the gradient strip + icons + title + optional right slot
 ```
 
-- Add `acquisitieCalls` field to `weekGesprekkenPerUnit` and `periodGesprekkenPerUnit` (mock data in `tvData.ts`).
-- Update chip rendering in `CallStats.tsx` for both week and period branches.
+Then use it in CallStats (refactor existing inline header to use it), UnitFunnelBreakdown, CandidatesPipeline, ConversionFormulasCard, and the KPI tile.
 
-## 7. Bel- & Mailstatistieken — visual redesign
+Optionally extract `KPIBadge` from CallStats into `src/components/tv/KPIBadge.tsx` so SalesFunnelKPI can reuse the exact same component (single source of truth for the badge look).
 
-Refresh the tile while staying within the existing palette (`primary`, `accent`, `gold`, `chart-primary`) but with bolder, more "popping" usage:
+## Files to add
 
-- Top KPI quad: replace flat icons with soft-tinted circular badges (bg = color/10, icon in solid color); add a thin underline accent under each value.
-- Per-unit chips: convert to a clean horizontal stacked row showing three mini-stats (gespr / mails / calls) with colored dots matching the chart legend instead of plain text.
-- Daily chart: keep recharts but render gespr (primary) and mails (gold) as side-by-side rounded bars + add a faint line for calls overlay.
-- Tighter spacing, clearer section separators, consistent rounded-xl, subtle gradient header strip ("Bel- & Mailstatistieken" with a small phone+mail icon pair).
+- `src/components/tv/TileHeader.tsx`
+- `src/components/tv/KPIBadge.tsx` (extracted)
 
-## Files to add / change
+## Files to edit
 
-- **New**: `src/data/unitDivisions.ts` (consultant→unit mapping from PDF, 56 entries).
-- **New**: `src/contexts/SalesFunnelFiltersContext.tsx` (jaar / week-period-custom / units / consultants / visibleColumns / rotationSec).
-- **New**: `src/components/tv/SalesFunnelFilterBar.tsx` (overview-only filter row, factored from TVRanglijsten patterns).
-- **Edit**: `src/pages/TVSalesFunnelWeek.tsx` — wrap content in provider, mount `SalesFunnelFilterBar`, render `ConversionFormulasCard` in overview too.
-- **Edit**: `src/pages/TVSalesFunnelPeriod.tsx` — same treatment.
-- **Edit**: `src/components/tv/UnitFunnelBreakdown.tsx` — expandable rows, consultant children, column-visibility prop, tv-mode auto-rotation.
-- **Edit**: `src/components/tv/CandidatesPipeline.tsx` — rename, new counter + 8-bar layout.
-- **Edit**: `src/components/tv/CallStats.tsx` — add calls per unit, redesign.
-- **Edit**: `src/components/tv/ConversionFormulasCard.tsx` — fix Verv. % mapping.
-- **Edit**: `src/data/tvData.ts` — add `candidatesInsides`, `acquisitieCalls` per unit, expand `consultantFunnelData` to cover all units' consultants.
+- `src/components/tv/CallStats.tsx` — switch to shared `TileHeader` + `KPIBadge`
+- `src/components/tv/SalesFunnelKPI.tsx` — full redesign using `TileHeader` + `KPIBadge` + delta pill
+- `src/components/tv/UnitFunnelBreakdown.tsx` — add `TileHeader`, group chips in header, totaal band
+- `src/components/tv/CandidatesPipeline.tsx` — add `TileHeader`, promote counter to `KPIBadge`, dotted bar labels
+- `src/components/tv/ConversionFormulasCard.tsx` — add `TileHeader`, tinted status pills for Actueel/Doel
+- `src/components/tv/ConversionArrow.tsx` — wrap in chip badge
 
-## Out of scope (confirm if needed)
-- Persisting filter selections across reloads.
-- Real-time data wiring (everything stays mock as per project memory).
+## Out of scope
+
+- Period page (`/tv/sales-funnel-period`) — same components are reused, so it inherits the redesign automatically; no separate work
+- Data, filters, rotation logic — unchanged
+- Color tokens — only existing semantic tokens (`primary`, `accent`, `chart-primary`, `gold`, `destructive`, `muted`) are used; no new tokens
