@@ -1,26 +1,41 @@
-import { candidatePipeline } from "@/data/tvData";
+import { Users } from "lucide-react";
+import { candidatesInsides } from "@/data/tvData";
 import { useTVCompact } from "./TVDashboardLayout";
 import { cn } from "@/lib/utils";
 
 export function CandidatesPipeline() {
   const compact = useTVCompact();
-  const total = candidatePipeline.reduce((s, p) => s + p.count, 0);
+  const max = Math.max(...candidatesInsides.bars.map(b => b.count), 1);
 
   return (
     <div className={cn("bg-card rounded-xl border border-border h-full overflow-hidden flex flex-col", compact ? "p-3" : "p-5")}>
-      <h3 className={cn("font-semibold text-foreground", compact ? "text-xs mb-0.5" : "text-sm mb-1")}>Kandidaten in Procedure</h3>
-      <p className={cn("font-bold text-foreground", compact ? "text-base mb-1" : "text-2xl mb-4")}>{total} <span className={cn("font-normal text-muted-foreground", compact ? "text-xs" : "text-sm")}>kandidaten actief</span></p>
-      <div className={cn("overflow-y-auto", compact ? "space-y-1 flex-1" : "space-y-3")}>
-        {candidatePipeline.map((phase) => (
-          <div key={phase.phase}>
-            <div className={cn("flex justify-between mb-0.5", compact ? "text-xs" : "text-sm")}>
-              <span className="text-muted-foreground">{phase.phase}</span>
-              <span className="font-medium text-foreground">{phase.count}</span>
+      <h3 className={cn("font-semibold text-foreground flex items-center gap-2", compact ? "text-xs mb-1" : "text-sm mb-2")}>
+        <Users className={cn(compact ? "w-3.5 h-3.5" : "w-4 h-4", "text-primary")} />
+        Kandidaten Insides
+      </h3>
+
+      {/* Counter */}
+      <div className={cn("flex items-baseline gap-2 mb-3 pb-3 border-b border-border/50", compact && "mb-2 pb-2")}>
+        <p className={cn("font-bold text-foreground tabular-nums", compact ? "text-2xl" : "text-3xl")}>
+          {candidatesInsides.actief}
+        </p>
+        <p className={cn("font-medium text-muted-foreground", compact ? "text-xs" : "text-sm")}>
+          actieve kandidaten
+        </p>
+      </div>
+
+      {/* Bargraph */}
+      <div className={cn("overflow-y-auto flex-1", compact ? "space-y-1.5" : "space-y-2.5")}>
+        {candidatesInsides.bars.map((bar) => (
+          <div key={bar.key}>
+            <div className={cn("flex justify-between mb-0.5", compact ? "text-[11px]" : "text-xs")}>
+              <span className="text-muted-foreground truncate">{bar.label}</span>
+              <span className="font-semibold text-foreground tabular-nums shrink-0 ml-2">{bar.count}</span>
             </div>
-            <div className={cn("w-full rounded-full bg-secondary", compact ? "h-2" : "h-2.5")}>
+            <div className={cn("w-full rounded-full bg-secondary", compact ? "h-1.5" : "h-2")}>
               <div
                 className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${(phase.count / total) * 100}%`, backgroundColor: phase.color }}
+                style={{ width: `${(bar.count / max) * 100}%`, backgroundColor: bar.color }}
               />
             </div>
           </div>
