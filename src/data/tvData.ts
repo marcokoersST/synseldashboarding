@@ -67,6 +67,27 @@ export const candidatePipeline: PipelinePhase[] = [
   { phase: "Geplaatst", count: 15, color: "hsl(var(--success))" },
 ];
 
+// Kandidaten Insides — 1 counter + 8 bargraph categories
+export interface CandidatesInsidesBar {
+  key: string;
+  label: string;
+  count: number;
+  color: string;
+}
+export const candidatesInsides: { actief: number; bars: CandidatesInsidesBar[] } = {
+  actief: 184,
+  bars: [
+    { key: "verdelen", label: "Op verdelen", count: 28, color: "hsl(var(--muted-foreground))" },
+    { key: "inschrijven", label: "Op inschrijven", count: 36, color: "hsl(var(--chart-primary))" },
+    { key: "procedure", label: "In procedure", count: 42, color: "hsl(var(--primary))" },
+    { key: "uitnodigingen", label: "Met uitnodigingen", count: 31, color: "hsl(var(--gold))" },
+    { key: "gesprekkenGepland", label: "Met gesprekken", count: 22, color: "hsl(var(--accent))" },
+    { key: "opGesprekGeweest", label: "Op gesprek geweest", count: 14, color: "hsl(var(--teal))" },
+    { key: "dealsluiter", label: "Procedures met dealsluiter", count: 8, color: "hsl(var(--orange-glow,var(--gold)))" },
+    { key: "geplaatst", label: "Geplaatst", count: 6, color: "hsl(var(--success))" },
+  ],
+};
+
 export const weekCallStats: DayCallStat[] = [
   { day: "Ma", outbound: 68, duration: 580 },
   { day: "Di", outbound: 72, duration: 620 },
