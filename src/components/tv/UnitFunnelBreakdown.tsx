@@ -314,8 +314,8 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
             );
           })}
           {/* Totals row */}
-          <TableRow className="border-t-2 border-border">
-            <TableCell className={cn("font-bold", compact ? "py-1.5 text-sm" : "")}>Totaal</TableCell>
+          <TableRow className="border-t-2 border-border bg-primary/5">
+            <TableCell className={cn("font-bold text-primary", compact ? "py-1.5 text-sm" : "")}>Totaal</TableCell>
             {visibleGroups.flatMap((g, gi) =>
               g.subs.map((sub, si) => {
                 const isConv = sub.type === "conv";
