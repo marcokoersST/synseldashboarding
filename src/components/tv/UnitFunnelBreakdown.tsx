@@ -1,12 +1,13 @@
-import React from "react";
-import { weekUnitBreakdown, UnitFunnelRow } from "@/data/tvData";
-
+import React, { useState, useEffect, useMemo } from "react";
+import { weekUnitBreakdown, weekConsultantFunnelData, periodConsultantFunnelData, periodUnitBreakdown, UnitFunnelRow, ConsultantFunnelRow } from "@/data/tvData";
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
 import { useTVCompact } from "./TVDashboardLayout";
 import { ConversionLegendPopover, getConversionIcon } from "./ConversionLegend";
 import { cn } from "@/lib/utils";
+import { ChevronRight, ChevronDown } from "lucide-react";
+import { useSalesFunnelFilters } from "@/contexts/SalesFunnelFiltersContext";
 
 type SubCol =
   | { type: "value"; key: keyof UnitFunnelRow; label: string; decimals?: number }
@@ -67,6 +68,7 @@ const columnGroups: ColumnGroup[] = [
     subs: [
       { type: "value", key: "vervolgGesprek", label: "Vervolg/meeloop" },
       { type: "value", key: "dealsluiter", label: "Dealsluiter" },
+      // Fix: formula = welEersteGesprek (numerator) / vervolgGesprek (denom) per docs
       { type: "conv", from: "welEersteGesprek", to: "vervolgGesprek", label: "Verv. %" },
     ],
   },
@@ -87,13 +89,13 @@ function rateColor(rate: number) {
   return "text-destructive";
 }
 
-function getCellValue(row: UnitFunnelRow, sub: SubCol): string {
+function getCellValue(row: UnitFunnelRow | ConsultantFunnelRow, sub: SubCol): string {
   if (sub.type === "value") {
-    const v = row[sub.key] as number;
+    const v = row[sub.key as keyof typeof row] as number;
     return sub.decimals !== undefined ? v.toFixed(sub.decimals) : String(v);
   }
-  const from = row[sub.from] as number;
-  const to = row[sub.to] as number;
+  const from = row[sub.from as keyof typeof row] as number;
+  const to = row[sub.to as keyof typeof row] as number;
   if (to === 0) return "0%";
   return `${((from / to) * 100).toFixed(0)}%`;
 }
@@ -115,11 +117,66 @@ export type { SubCol, ColumnGroup };
 
 interface UnitFunnelBreakdownProps {
   data?: UnitFunnelRow[];
+  consultantData?: Record<string, ConsultantFunnelRow[]>;
 }
 
-export function UnitFunnelBreakdown({ data }: UnitFunnelBreakdownProps = {}) {
+export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdownProps = {}) {
   const compact = useTVCompact();
-  const rows = data ?? weekUnitBreakdown;
+  const filters = useSalesFunnelFilters();
+  const allRows = data ?? weekUnitBreakdown;
+  const consultantsByUnit = consultantData ?? (data === periodUnitBreakdown ? periodConsultantFunnelData : weekConsultantFunnelData);
+
+  // Apply unit filter
+  const rows = useMemo(() => allRows.filter(r => filters.isUnitVisible(r.unit)), [allRows, filters.selectedUnits]);
+
+  // Visible column groups
+  const visibleGroups = columnGroups.filter(g => filters.visibleColumnGroups.includes(g.group));
+
+  // Expand state per unit
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  // TV-mode auto rotation
+  const [rotationIdx, setRotationIdx] = useState(0);
+
+  useEffect(() => {
+    if (!compact) return;
+    if (rows.length === 0) return;
+    if (rows.length === 1) {
+      // Single unit always expanded
+      setExpanded({ [rows[0].unit]: true });
+      return;
+    }
+    // Try to expand all
+    const allExpanded: Record<string, boolean> = {};
+    rows.forEach(r => allExpanded[r.unit] = true);
+    setExpanded(allExpanded);
+  }, [compact, rows.map(r => r.unit).join(",")]);
+
+  // Rotation: only kicks in when in tv mode and there are >1 units AND there isn't enough room.
+  // We approximate "not enough room" by toggling rotation when consultants total > a threshold.
+  useEffect(() => {
+    if (!compact || rows.length <= 1) return;
+    const totalConsultants = rows.reduce((s, r) => s + (consultantsByUnit[r.unit]?.length ?? 0), 0);
+    // Heuristic: rotate when many rows would be needed
+    if (totalConsultants <= 18) return;
+    const interval = Math.max(3, filters.rotationSec) * 1000;
+    const id = setInterval(() => {
+      setRotationIdx(i => (i + 1) % rows.length);
+    }, interval);
+    return () => clearInterval(id);
+  }, [compact, rows.length, filters.rotationSec, rows.map(r => r.unit).join(",")]);
+
+  useEffect(() => {
+    if (!compact || rows.length <= 1) return;
+    const totalConsultants = rows.reduce((s, r) => s + (consultantsByUnit[r.unit]?.length ?? 0), 0);
+    if (totalConsultants <= 18) return;
+    // Only the rotated one is expanded
+    const exp: Record<string, boolean> = {};
+    rows.forEach((r, i) => exp[r.unit] = i === rotationIdx);
+    setExpanded(exp);
+  }, [rotationIdx, compact, rows.length]);
+
+  const toggle = (unit: string) => setExpanded(e => ({ ...e, [unit]: !e[unit] }));
 
   return (
     <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto h-full", compact ? "p-3" : "p-5")}>
@@ -130,10 +187,9 @@ export function UnitFunnelBreakdown({ data }: UnitFunnelBreakdownProps = {}) {
 
       <Table>
         <TableHeader>
-          {/* Row 1: Group headers */}
           <TableRow>
-            <TableHead rowSpan={2} className="w-[120px] align-bottom">Unit</TableHead>
-            {columnGroups.map((g) => (
+            <TableHead rowSpan={2} className="w-[180px] align-bottom">Unit / Consultant</TableHead>
+            {visibleGroups.map((g) => (
               <TableHead
                 key={g.group}
                 colSpan={g.subs.length}
@@ -143,9 +199,8 @@ export function UnitFunnelBreakdown({ data }: UnitFunnelBreakdownProps = {}) {
               </TableHead>
             ))}
           </TableRow>
-          {/* Row 2: Sub-column labels */}
           <TableRow>
-            {columnGroups.flatMap((g, gi) =>
+            {visibleGroups.flatMap((g, gi) =>
               g.subs.map((sub, si) => {
                 const IconComp = sub.type === "conv" || sub.label === "Gem. dagen" ? getConversionIcon(sub.label) : undefined;
                 return (
@@ -170,40 +225,77 @@ export function UnitFunnelBreakdown({ data }: UnitFunnelBreakdownProps = {}) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.unit}>
-              <TableCell className={cn("font-medium", compact ? "py-1.5 text-sm" : "")}>
-                <span className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full shrink-0" style={{ background: row.color }} />
-                  {row.unit}
-                </span>
-              </TableCell>
-              {columnGroups.flatMap((g, gi) =>
-                g.subs.map((sub, si) => {
-                  const isConv = sub.type === "conv";
-                  const val = getCellValue(row, sub);
-                  const convRate = isConv ? parseFloat(val) : null;
-                  return (
-                    <TableCell
-                      key={`${gi}-${si}`}
-                      className={cn(
-                        "text-center tabular-nums",
-                        si === 0 && "border-l border-border/50",
-                      isConv ? cn("bg-muted/30 font-bold", convRate !== null && rateColor(convRate)) : "font-semibold",
-                        compact ? "py-1.5 text-xs px-1.5" : "text-[11px] px-1.5"
-                      )}
-                    >
-                      {val}
+          {rows.map((row) => {
+            const consultants = (consultantsByUnit[row.unit] ?? []).filter(c => filters.isConsultantVisible(c.name));
+            const isOpen = !!expanded[row.unit];
+            return (
+              <React.Fragment key={row.unit}>
+                <TableRow className="cursor-pointer hover:bg-muted/30" onClick={() => toggle(row.unit)}>
+                  <TableCell className={cn("font-medium", compact ? "py-1.5 text-sm" : "")}>
+                    <span className="flex items-center gap-2">
+                      {consultants.length > 0 ? (
+                        isOpen ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                      ) : <span className="w-3.5" />}
+                      <span className="w-3 h-3 rounded-full shrink-0" style={{ background: row.color }} />
+                      {row.unit}
+                      {consultants.length > 0 && <span className="text-xs text-muted-foreground">({consultants.length})</span>}
+                    </span>
+                  </TableCell>
+                  {visibleGroups.flatMap((g, gi) =>
+                    g.subs.map((sub, si) => {
+                      const isConv = sub.type === "conv";
+                      const val = getCellValue(row, sub);
+                      const convRate = isConv ? parseFloat(val) : null;
+                      return (
+                        <TableCell
+                          key={`${gi}-${si}`}
+                          className={cn(
+                            "text-center tabular-nums",
+                            si === 0 && "border-l border-border/50",
+                            isConv ? cn("bg-muted/30 font-bold", convRate !== null && rateColor(convRate)) : "font-semibold",
+                            compact ? "py-1.5 text-xs px-1.5" : "text-[11px] px-1.5"
+                          )}
+                        >
+                          {val}
+                        </TableCell>
+                      );
+                    })
+                  )}
+                </TableRow>
+                {isOpen && consultants.map(c => (
+                  <TableRow key={`${row.unit}-${c.name}`} className="bg-muted/10">
+                    <TableCell className={cn("pl-10 text-foreground/80", compact ? "py-1 text-xs" : "text-xs")}>
+                      {c.name}
                     </TableCell>
-                  );
-                })
-              )}
-            </TableRow>
-          ))}
+                    {visibleGroups.flatMap((g, gi) =>
+                      g.subs.map((sub, si) => {
+                        const isConv = sub.type === "conv";
+                        const val = getCellValue(c, sub);
+                        const convRate = isConv ? parseFloat(val) : null;
+                        return (
+                          <TableCell
+                            key={`${gi}-${si}`}
+                            className={cn(
+                              "text-center tabular-nums",
+                              si === 0 && "border-l border-border/50",
+                              isConv ? cn("bg-muted/20", convRate !== null && rateColor(convRate)) : "",
+                              compact ? "py-1 text-[11px] px-1.5" : "text-[10px] px-1.5"
+                            )}
+                          >
+                            {val}
+                          </TableCell>
+                        );
+                      })
+                    )}
+                  </TableRow>
+                ))}
+              </React.Fragment>
+            );
+          })}
           {/* Totals row */}
           <TableRow className="border-t-2 border-border">
             <TableCell className={cn("font-bold", compact ? "py-1.5 text-sm" : "")}>Totaal</TableCell>
-            {columnGroups.flatMap((g, gi) =>
+            {visibleGroups.flatMap((g, gi) =>
               g.subs.map((sub, si) => {
                 const isConv = sub.type === "conv";
                 const val = getTotalValue(sub, rows);

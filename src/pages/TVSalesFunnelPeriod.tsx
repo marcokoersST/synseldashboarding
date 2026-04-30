@@ -1,12 +1,13 @@
-import { TVDashboardLayout } from "@/components/tv/TVDashboardLayout";
-import { useTVCompact } from "@/components/tv/TVDashboardLayout";
+import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { SalesFunnelKPI } from "@/components/tv/SalesFunnelKPI";
 import { ConversionArrow } from "@/components/tv/ConversionArrow";
 import { CandidatesPipeline } from "@/components/tv/CandidatesPipeline";
 import { CallStats } from "@/components/tv/CallStats";
 import { UnitFunnelBreakdown } from "@/components/tv/UnitFunnelBreakdown";
 import { ConversionFormulasCard } from "@/components/tv/ConversionFormulasCard";
-import { periodFunnelMetrics, periodOverallConversions, periodUnitBreakdown } from "@/data/tvData";
+import { SalesFunnelFilterBar } from "@/components/tv/SalesFunnelFilterBar";
+import { SalesFunnelFiltersProvider } from "@/contexts/SalesFunnelFiltersContext";
+import { periodFunnelMetrics, periodOverallConversions, periodUnitBreakdown, periodConsultantFunnelData } from "@/data/tvData";
 import { cn } from "@/lib/utils";
 
 function PeriodContent() {
@@ -14,7 +15,8 @@ function PeriodContent() {
 
   return (
     <div className={cn("flex flex-col h-full", compact ? "gap-1" : "gap-4")}>
-      {/* KPI tiles with conversion arrows */}
+      {!compact && <SalesFunnelFilterBar />}
+
       <div className={cn("flex items-stretch shrink-0", compact ? "gap-1" : "gap-0")}>
         {periodFunnelMetrics.map((m, i) => (
           <div key={m.label} className="contents">
@@ -28,16 +30,14 @@ function PeriodContent() {
         ))}
       </div>
 
-      {/* Unit breakdown - main focus */}
       <div className={cn("min-h-0 overflow-auto", compact ? "flex-[3]" : "flex-1")}>
-        <UnitFunnelBreakdown data={periodUnitBreakdown} />
+        <UnitFunnelBreakdown data={periodUnitBreakdown} consultantData={periodConsultantFunnelData} />
       </div>
 
-      {/* Bottom row */}
-      <div className={cn("grid min-h-0", compact ? "grid-cols-3 gap-1 flex-[2]" : "grid-cols-2 gap-4 shrink-0")}>
+      <div className={cn("grid min-h-0", compact ? "grid-cols-3 gap-1 flex-[2]" : "grid-cols-3 gap-4 shrink-0")}>
         <CallStats mode="period" />
         <CandidatesPipeline />
-        {compact && <ConversionFormulasCard data={periodUnitBreakdown} />}
+        <ConversionFormulasCard data={periodUnitBreakdown} />
       </div>
     </div>
   );
@@ -45,8 +45,10 @@ function PeriodContent() {
 
 export default function TVSalesFunnelPeriod() {
   return (
-    <TVDashboardLayout title="Periodeweergave Sales Funnel">
-      <PeriodContent />
-    </TVDashboardLayout>
+    <SalesFunnelFiltersProvider defaultViewMode="periode">
+      <TVDashboardLayout title="Periodeweergave Sales Funnel">
+        <PeriodContent />
+      </TVDashboardLayout>
+    </SalesFunnelFiltersProvider>
   );
 }

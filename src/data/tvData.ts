@@ -67,6 +67,27 @@ export const candidatePipeline: PipelinePhase[] = [
   { phase: "Geplaatst", count: 15, color: "hsl(var(--success))" },
 ];
 
+// Kandidaten Insides — 1 counter + 8 bargraph categories
+export interface CandidatesInsidesBar {
+  key: string;
+  label: string;
+  count: number;
+  color: string;
+}
+export const candidatesInsides: { actief: number; bars: CandidatesInsidesBar[] } = {
+  actief: 184,
+  bars: [
+    { key: "verdelen", label: "Op verdelen", count: 28, color: "hsl(var(--muted-foreground))" },
+    { key: "inschrijven", label: "Op inschrijven", count: 36, color: "hsl(var(--chart-primary))" },
+    { key: "procedure", label: "In procedure", count: 42, color: "hsl(var(--primary))" },
+    { key: "uitnodigingen", label: "Met uitnodigingen", count: 31, color: "hsl(var(--gold))" },
+    { key: "gesprekkenGepland", label: "Met gesprekken", count: 22, color: "hsl(var(--accent))" },
+    { key: "opGesprekGeweest", label: "Op gesprek geweest", count: 14, color: "hsl(var(--teal))" },
+    { key: "dealsluiter", label: "Procedures met dealsluiter", count: 8, color: "hsl(var(--orange-glow,var(--gold)))" },
+    { key: "geplaatst", label: "Geplaatst", count: 6, color: "hsl(var(--success))" },
+  ],
+};
+
 export const weekCallStats: DayCallStat[] = [
   { day: "Ma", outbound: 68, duration: 580 },
   { day: "Di", outbound: 72, duration: 620 },
@@ -249,11 +270,11 @@ export const periodCallStatsDaily: DayCallStat[] = [
 ];
 
 export const periodGesprekkenPerUnit = [
-  { unit: "Engineering", gesprekken: 28 },
-  { unit: "Monteurs", gesprekken: 12 },
-  { unit: "Operators", gesprekken: 20 },
-  { unit: "Trainingsunit", gesprekken: 8 },
-  { unit: "Early Performers", gesprekken: 4 },
+  { unit: "Engineering", gesprekken: 28, acquisitieCalls: 168 },
+  { unit: "Monteurs", gesprekken: 12, acquisitieCalls: 96 },
+  { unit: "Operators", gesprekken: 20, acquisitieCalls: 144 },
+  { unit: "Trainingsunit", gesprekken: 8, acquisitieCalls: 72 },
+  { unit: "Early Performers", gesprekken: 4, acquisitieCalls: 36 },
 ];
 
 export const periodMailStats = {
@@ -312,11 +333,11 @@ export const weekUnitConversions: UnitConversion[] = [
 ];
 
 export const weekGesprekkenPerUnit = [
-  { unit: "Engineering", gesprekken: 7 },
-  { unit: "Monteurs", gesprekken: 3 },
-  { unit: "Operators", gesprekken: 5 },
-  { unit: "Trainingsunit", gesprekken: 2 },
-  { unit: "Early Performers", gesprekken: 1 },
+  { unit: "Engineering", gesprekken: 7, acquisitieCalls: 42 },
+  { unit: "Monteurs", gesprekken: 3, acquisitieCalls: 24 },
+  { unit: "Operators", gesprekken: 5, acquisitieCalls: 36 },
+  { unit: "Trainingsunit", gesprekken: 2, acquisitieCalls: 18 },
+  { unit: "Early Performers", gesprekken: 1, acquisitieCalls: 9 },
 ];
 
 export const weekMailStats = {
@@ -355,3 +376,74 @@ export const bonusData = {
     { month: "Feb", amount: 12500 },
   ],
 };
+
+// === Auto-generated consultant funnel rows for all 56 consultants ===
+// Deterministic distribution of unit-level totals across each unit's consultants.
+import { allConsultantsList } from "./ranglijstenData";
+
+function distribute(total: number, weights: number[]): number[] {
+  const sum = weights.reduce((s, w) => s + w, 0) || 1;
+  const raw = weights.map(w => (total * w) / sum);
+  const floored = raw.map(v => Math.floor(v));
+  let remainder = total - floored.reduce((s, v) => s + v, 0);
+  const fracs = raw.map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let k = 0; k < remainder; k++) floored[fracs[k % fracs.length].i] += 1;
+  return floored;
+}
+
+function buildConsultantRowsForUnit(unitRow: UnitFunnelRow, names: string[]): ConsultantFunnelRow[] {
+  // Pseudo-random but stable weights per consultant (based on name hash)
+  const weights = names.map(n => {
+    let h = 0;
+    for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) & 0xffff;
+    return 0.5 + ((h % 100) / 100); // 0.5..1.5
+  });
+  const numericKeys: (keyof Omit<UnitFunnelRow, "unit" | "color" | "subUnit" | "voorstellenPerKandidaat" | "gemDagenTotPlaatsing">)[] = [
+    "toegewezen", "ingeschreven", "intakes", "acquisities",
+    "voorstellenViaEmail", "uitnodigingenTotaal", "nietUitgenodigd", "welUitgenodigd",
+    "eersteGesprek", "geenEersteGesprek", "welEersteGesprek",
+    "vervolgGesprek", "dealsluiter", "geplaatst",
+  ];
+  const distributed: Record<string, number[]> = {};
+  numericKeys.forEach(k => {
+    distributed[k as string] = distribute(unitRow[k] as number, weights);
+  });
+  return names.map((name, idx) => {
+    const row: ConsultantFunnelRow = {
+      unit: unitRow.unit,
+      name,
+      toegewezen: distributed.toegewezen[idx],
+      ingeschreven: distributed.ingeschreven[idx],
+      intakes: distributed.intakes[idx],
+      acquisities: distributed.acquisities[idx],
+      voorstellenPerKandidaat: unitRow.voorstellenPerKandidaat,
+      voorstellenViaEmail: distributed.voorstellenViaEmail[idx],
+      uitnodigingenTotaal: distributed.uitnodigingenTotaal[idx],
+      nietUitgenodigd: distributed.nietUitgenodigd[idx],
+      welUitgenodigd: distributed.welUitgenodigd[idx],
+      eersteGesprek: distributed.eersteGesprek[idx],
+      geenEersteGesprek: distributed.geenEersteGesprek[idx],
+      welEersteGesprek: distributed.welEersteGesprek[idx],
+      vervolgGesprek: distributed.vervolgGesprek[idx],
+      dealsluiter: distributed.dealsluiter[idx],
+      geplaatst: distributed.geplaatst[idx],
+      gemDagenTotPlaatsing: unitRow.gemDagenTotPlaatsing,
+    };
+    return row;
+  });
+}
+
+function buildAllConsultantData(unitBreakdown: UnitFunnelRow[]): Record<string, ConsultantFunnelRow[]> {
+  const result: Record<string, ConsultantFunnelRow[]> = {};
+  for (const unitRow of unitBreakdown) {
+    const names = allConsultantsList
+      .filter(c => c.unit === unitRow.unit && c.isActive)
+      .map(c => c.fullName);
+    result[unitRow.unit] = buildConsultantRowsForUnit(unitRow, names);
+  }
+  return result;
+}
+
+export const weekConsultantFunnelData = buildAllConsultantData(weekUnitBreakdown);
+export const periodConsultantFunnelData = buildAllConsultantData(periodUnitBreakdown);
