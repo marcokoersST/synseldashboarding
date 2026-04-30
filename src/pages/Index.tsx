@@ -18,6 +18,7 @@ import { ForecastGoalsProvider } from "@/contexts/ForecastGoalsContext";
 import { ProjectionCard } from "@/components/dashboard/ProjectionCard";
 import { consultantProjections } from "@/data/projectionData";
 import { FunnelCalculatorCard } from "@/components/dashboard/FunnelCalculatorCard";
+import { UnitRanglijstenCard } from "@/components/dashboard/UnitRanglijstenCard";
 import { useParams } from "react-router-dom";
 
 const Index = () => {
@@ -30,11 +31,9 @@ const Index = () => {
         <ForecastGoalsCard delay={50} />
       </div>
 
-      {/* Funnel Calculator */}
-      <div className="mb-4">
-        <FunnelCalculatorCard delay={75} />
-      </div>
-    
+      {/* Unit Ranglijsten — eigen positie binnen unit */}
+      <UnitRanglijstenCard delay={75} />
+
       {/* Section Title */}
       <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
         <h2 className="text-lg font-semibold text-foreground">Doelen & Projecties (3 maanden)</h2>
@@ -102,6 +101,11 @@ const Index = () => {
         <CoreActivitiesCard delay={900} />
         <VacancyActivitiesCard delay={950} />
         <RecruitmentFunnel delay={1000} />
+      </div>
+
+      {/* Funnel Calculator — verplaatst naar onderaan (kandidaat voor verwijdering) */}
+      <div className="mt-6">
+        <FunnelCalculatorCard delay={1100} />
       </div>
     </ForecastGoalsProvider>
   );
