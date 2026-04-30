@@ -5,9 +5,20 @@ import {
 } from "@/components/ui/table";
 import { useTVCompact } from "./TVDashboardLayout";
 import { ConversionLegendPopover, getConversionIcon } from "./ConversionLegend";
+import { TileHeader } from "./TileHeader";
 import { cn } from "@/lib/utils";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronRight, ChevronDown, BarChart3 } from "lucide-react";
 import { useSalesFunnelFilters } from "@/contexts/SalesFunnelFiltersContext";
+
+const groupToneClasses: Record<string, string> = {
+  "1. Inschrijvingen": "bg-primary/10 text-primary",
+  "2. Acquisitie": "bg-[hsl(var(--chart-primary)/0.12)] text-[hsl(var(--chart-primary))]",
+  "3. Voorstellen": "bg-accent/10 text-accent",
+  "4. Uitnodigingen": "bg-[hsl(var(--gold)/0.15)] text-[hsl(var(--gold))]",
+  "5. Gesprekken": "bg-primary/10 text-primary",
+  "6. Vervolg": "bg-[hsl(var(--chart-primary)/0.12)] text-[hsl(var(--chart-primary))]",
+  "7. Geplaatst": "bg-accent/10 text-accent",
+};
 
 type SubCol =
   | { type: "value"; key: keyof UnitFunnelRow; label: string; decimals?: number }
