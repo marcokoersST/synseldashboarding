@@ -249,11 +249,11 @@ export const periodCallStatsDaily: DayCallStat[] = [
 ];
 
 export const periodGesprekkenPerUnit = [
-  { unit: "Engineering", gesprekken: 28 },
-  { unit: "Monteurs", gesprekken: 12 },
-  { unit: "Operators", gesprekken: 20 },
-  { unit: "Trainingsunit", gesprekken: 8 },
-  { unit: "Early Performers", gesprekken: 4 },
+  { unit: "Engineering", gesprekken: 28, acquisitieCalls: 168 },
+  { unit: "Monteurs", gesprekken: 12, acquisitieCalls: 96 },
+  { unit: "Operators", gesprekken: 20, acquisitieCalls: 144 },
+  { unit: "Trainingsunit", gesprekken: 8, acquisitieCalls: 72 },
+  { unit: "Early Performers", gesprekken: 4, acquisitieCalls: 36 },
 ];
 
 export const periodMailStats = {
@@ -312,11 +312,11 @@ export const weekUnitConversions: UnitConversion[] = [
 ];
 
 export const weekGesprekkenPerUnit = [
-  { unit: "Engineering", gesprekken: 7 },
-  { unit: "Monteurs", gesprekken: 3 },
-  { unit: "Operators", gesprekken: 5 },
-  { unit: "Trainingsunit", gesprekken: 2 },
-  { unit: "Early Performers", gesprekken: 1 },
+  { unit: "Engineering", gesprekken: 7, acquisitieCalls: 42 },
+  { unit: "Monteurs", gesprekken: 3, acquisitieCalls: 24 },
+  { unit: "Operators", gesprekken: 5, acquisitieCalls: 36 },
+  { unit: "Trainingsunit", gesprekken: 2, acquisitieCalls: 18 },
+  { unit: "Early Performers", gesprekken: 1, acquisitieCalls: 9 },
 ];
 
 export const weekMailStats = {
