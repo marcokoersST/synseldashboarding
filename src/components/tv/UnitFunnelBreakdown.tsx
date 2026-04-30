@@ -190,11 +190,13 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
   const toggle = (unit: string) => setExpanded(e => ({ ...e, [unit]: !e[unit] }));
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto h-full", compact ? "p-3" : "p-5")}>
-      <div className={cn("flex items-center gap-1.5", compact ? "mb-2" : "mb-4")}>
-        <h3 className={cn("font-semibold text-foreground", compact ? "text-sm" : "text-sm")}>Uitsplitsing per Unit & Conversies</h3>
-        {!compact && <ConversionLegendPopover />}
-      </div>
+    <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto h-full flex flex-col", compact ? "p-3" : "p-5")}>
+      <TileHeader
+        icons={[{ icon: BarChart3, className: "text-primary" }]}
+        title="Uitsplitsing per Unit & Conversies"
+        right={!compact ? <ConversionLegendPopover /> : undefined}
+        compact={compact}
+      />
 
       <Table>
         <TableHeader>
@@ -204,9 +206,17 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
               <TableHead
                 key={g.group}
                 colSpan={g.subs.length}
-                className={cn("text-center border-l border-border/50 text-muted-foreground", compact ? "text-xs px-1.5" : "text-[10px]")}
+                className={cn("text-center border-l border-border/50", compact ? "px-1.5 py-1" : "py-1.5")}
               >
-                {g.group}
+                <span
+                  className={cn(
+                    "inline-block rounded-full font-semibold",
+                    groupToneClasses[g.group] ?? "bg-muted/40 text-muted-foreground",
+                    compact ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-0.5 text-[10px]"
+                  )}
+                >
+                  {g.group}
+                </span>
               </TableHead>
             ))}
           </TableRow>
