@@ -84,13 +84,10 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     const previousSpend = getComparisonValue(totalSpend, { dateRange, compareRange, seed: "overview-spend" });
     const cpr = totalRegistrations > 0 ? totalSpend / totalRegistrations : 0;
     const previousCpr = previousRegistrations > 0 ? previousSpend / previousRegistrations : 0;
-    const rmVolume = reverseMatchingSteps[0]?.volume ?? 0;
-    const previousReverseMatching = getComparisonValue(rmVolume, { dateRange, compareRange, seed: "overview-reverse-matching" });
     const items: { label: string; value: number; previous: number; tab: string; format?: string; invertDelta?: boolean }[] = [
       { label: "Conversions", value: totalConversions, previous: previousConversions, tab: "paid-channels" },
       { label: "Inschrijven", value: totalRegistrations, previous: previousRegistrations, tab: "paid-channels" },
       { label: "Cost per Inschrijving", value: cpr, previous: previousCpr, format: "currency", tab: "paid-channels", invertDelta: true },
-      { label: "Reverse Matching", value: rmVolume, previous: previousReverseMatching, tab: "reverse-matching" },
     ];
     return items;
   }, [dateRange, compareRange]);
