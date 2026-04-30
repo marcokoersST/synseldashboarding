@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Medal, Flame, Rocket } from "lucide-react";
+import { Trophy, Medal, Flame, Rocket, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   allConsultantsList,
@@ -13,12 +13,12 @@ import {
 // Hardcoded mock identity — single source of truth for "the logged in consultant"
 const CURRENT_CONSULTANT_NAME = "Robin Jansen";
 
-const COLUMN_LABELS: Record<string, { title: string; doneLabel?: string; suffix?: "x" | "%" }> = {
-  Inschrijvingen: { title: "Inschrijvingen", doneLabel: "gedaan", suffix: "%" },
-  Acquisities: { title: "Acquisities / Voorstellen", doneLabel: "voorstellen", suffix: "x" },
-  Gesprekken: { title: "Gesprekken / Uitnodigingen", doneLabel: "uitnodigingen", suffix: "%" },
-  Intakes: { title: "Intakes", doneLabel: "van acq.", suffix: "%" },
-  Plaatsingen: { title: "Plaatsingen / Detachering", doneLabel: "detachering", suffix: "%" },
+const COLUMN_LABELS: Record<string, { title: string; doneLabel?: string }> = {
+  Inschrijvingen: { title: "Inschrijvingen", doneLabel: "gedaan" },
+  Acquisities: { title: "Acquisities / Voorstellen", doneLabel: "voorstellen" },
+  Gesprekken: { title: "Gesprekken / Uitnodigingen", doneLabel: "uitnodigingen" },
+  Intakes: { title: "Intakes", doneLabel: "van acq." },
+  Plaatsingen: { title: "Plaatsingen / Detachering", doneLabel: "detachering" },
   "Niet begonnen": { title: "Niet begonnen" },
 };
 
@@ -29,36 +29,57 @@ function shortName(fullName: string): string {
   return `${parts[0]} ${last.charAt(0)}.`;
 }
 
-function formatRatio(entry: RankingEntry, col: string): string | null {
-  if (entry.value === 0) return null;
-  const cfg = COLUMN_LABELS[col];
-  if (!cfg || entry.valueDone === undefined) return null;
+interface RatioInfo {
+  text: string;
+  tone?: "muted" | "red" | "orange" | "success";
+  suffix?: string;
+}
 
-  if (col === "Inschrijvingen" || col === "Plaatsingen") {
-    const pct = Math.round(((entry.valueDone ?? 0) / entry.value) * 100);
-    return `(${pct}%)`;
+function formatRatio(entry: RankingEntry, col: string): RatioInfo | null {
+  if (entry.value === 0 && entry.valueDone === undefined) return null;
+  if (entry.valueDone === undefined) return null;
+
+  if (col === "Inschrijvingen") {
+    const pct = entry.value > 0 ? Math.round(((entry.valueDone ?? 0) / entry.value) * 100) : 0;
+    return { text: `(${pct}%)`, tone: "muted" };
   }
   if (col === "Acquisities") {
-    const ratio = (entry.valueDone ?? 0) / entry.value;
-    return `×${ratio.toFixed(ratio >= 10 ? 0 : 1)}`;
+    // value = acquisities, valueDone = voorstellen → percentage acquisities/voorstellen
+    const pct = (entry.valueDone ?? 0) > 0 ? Math.round((entry.value / (entry.valueDone || 1)) * 100) : 0;
+    let tone: RatioInfo["tone"] = "muted";
+    if (pct > 0 && pct < 10) tone = "red";
+    else if (pct > 0 && pct < 15) tone = "orange";
+    return { text: `(${pct}%)`, tone };
   }
   if (col === "Gesprekken") {
-    // value = gesprekken, valueDone = uitnodigingen. Show conversion gesprekken/uitnodigingen
-    const pct = Math.round((entry.value / (entry.valueDone || 1)) * 100);
-    return `(${pct}%)`;
+    // value = gesprekken, valueDone = uitnodigingen — gesprekken/uitnodigingen %
+    const pct = (entry.valueDone ?? 0) > 0 ? Math.round((entry.value / (entry.valueDone || 1)) * 100) : 0;
+    return { text: `(${pct}%)`, tone: "muted" };
   }
   if (col === "Intakes") {
-    const pct = Math.round((entry.value / (entry.valueDone || 1)) * 100);
-    return `${pct}% van acq.`;
+    const pct = (entry.valueDone ?? 0) > 0 ? Math.round((entry.value / (entry.valueDone || 1)) * 100) : 0;
+    return { text: `${pct}%`, tone: pct < 80 && pct > 0 ? "orange" : "success", suffix: "van acq." };
+  }
+  if (col === "Plaatsingen") {
+    const pct = entry.value > 0 ? Math.round(((entry.valueDone ?? 0) / entry.value) * 100) : 0;
+    return { text: `(${pct}%)`, tone: "muted" };
   }
   return null;
+}
+
+function toneClass(tone?: RatioInfo["tone"]): string {
+  switch (tone) {
+    case "red": return "text-red-500";
+    case "orange": return "text-orange-500";
+    case "success": return "text-success";
+    default: return "text-muted-foreground";
+  }
 }
 
 interface RankColumnProps {
   column: RankingColumn;
   unit: string;
   selfName: string;
-  delay: number;
 }
 
 function RankColumn({ column, unit, selfName }: RankColumnProps) {
@@ -66,7 +87,6 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const selfRowRef = useRef<HTMLDivElement>(null);
 
-  // Filter entries to this unit, re-sort, re-rank
   const unitEntries = useMemo(() => {
     const filtered = column.entries.filter((e) => e.unit === unit);
     filtered.sort((a, b) => b.value - a.value);
@@ -79,7 +99,12 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
     [unitEntries]
   );
 
-  // Center the self-row on mount
+  // Trend: based on company-wide column total (proxy for unit trend)
+  const delta = useMemo(() => {
+    if (!column.previousTotal || column.previousTotal === 0) return 0;
+    return ((column.total - column.previousTotal) / column.previousTotal) * 100;
+  }, [column]);
+
   useLayoutEffect(() => {
     const container = scrollRef.current;
     const row = selfRowRef.current;
@@ -89,7 +114,7 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
   }, [unitEntries]);
 
   return (
-    <div className="flex flex-col min-w-0">
+    <div className="rounded-md border border-border/60 bg-card/40 p-2 flex flex-col min-w-0 min-w-[150px]">
       {/* Header */}
       <div className="mb-2">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
@@ -97,18 +122,32 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
         </div>
         <div className="flex items-baseline gap-1.5 mt-0.5">
           <span className="text-2xl font-bold tabular-nums leading-none">{unitTotal}</span>
-          {cfg.doneLabel && column.totalDone !== undefined && (
+          {cfg.doneLabel && column.title !== "Niet begonnen" && (
             <span className="text-[10px] text-muted-foreground truncate">
-              {column.title === "Inschrijvingen" ? "op naam" : cfg.doneLabel}
+              {column.title === "Inschrijvingen" ? "op naam" : column.title === "Intakes" ? "intakes" : cfg.doneLabel}
             </span>
           )}
         </div>
-        {column.totalDone !== undefined && cfg.doneLabel && (
+        {column.totalDone !== undefined && cfg.doneLabel && column.title !== "Intakes" && (
           <div className="text-[10px] text-success mt-0.5 flex items-center gap-1">
+            <span>✓</span>
             <span className="font-semibold tabular-nums">{unitTotalDone}</span>
             <span className="text-muted-foreground">{cfg.doneLabel}</span>
           </div>
         )}
+
+        {/* Trend line */}
+        <div className="mt-1.5 flex items-center gap-1 text-[10px]">
+          {delta >= 0 ? (
+            <TrendingUp className="w-3 h-3 text-success" />
+          ) : (
+            <TrendingDown className="w-3 h-3 text-destructive" />
+          )}
+          <span className={cn("font-semibold tabular-nums", delta >= 0 ? "text-success" : "text-destructive")}>
+            {delta >= 0 ? "+" : ""}{delta.toFixed(0)}%
+          </span>
+          <span className="text-muted-foreground">t.o.v. vorige periode</span>
+        </div>
       </div>
 
       {/* Scrollable list */}
@@ -119,8 +158,15 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
       >
         {unitEntries.map((entry) => {
           const isSelf = entry.name === selfName;
-          const ratioText = formatRatio(entry, column.title);
-          const showCheck = entry.valueDone !== undefined && column.title !== "Niet begonnen";
+          const ratio = formatRatio(entry, column.title);
+          const showCheck = entry.valueDone !== undefined && column.title !== "Niet begonnen" && column.title !== "Intakes";
+
+          // Top-3 icon (trophy / medal) — shown alongside the rank number
+          const topIcon =
+            entry.rank === 1 && entry.value > 0 ? <Trophy className="w-3 h-3 text-yellow-500" />
+            : entry.rank === 2 && entry.value > 0 ? <Medal className="w-3 h-3 text-slate-400" />
+            : entry.rank === 3 && entry.value > 0 ? <Medal className="w-3 h-3 text-amber-700" />
+            : null;
 
           return (
             <div
@@ -134,18 +180,18 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
                 entry.value === 0 && !isSelf && "opacity-50"
               )}
             >
-              {/* Rank or icon */}
-              <div className="w-5 shrink-0 flex items-center justify-center">
-                {entry.rank === 1 && entry.value > 0 ? (
-                  <Trophy className="w-3 h-3 text-yellow-500" />
-                ) : entry.rank === 2 && entry.value > 0 ? (
-                  <Medal className="w-3 h-3 text-slate-400" />
-                ) : entry.rank === 3 && entry.value > 0 ? (
-                  <Medal className="w-3 h-3 text-amber-700" />
-                ) : (
-                  <span className="text-[10px] text-muted-foreground tabular-nums">{entry.rank}.</span>
+              {/* Rank number — always visible */}
+              <span
+                className={cn(
+                  "shrink-0 text-[10px] tabular-nums w-4 text-right",
+                  isSelf ? "font-bold text-foreground" : "text-muted-foreground"
                 )}
-              </div>
+              >
+                {entry.rank}.
+              </span>
+
+              {/* Top-3 icon (in addition to rank number) */}
+              {topIcon && <span className="shrink-0">{topIcon}</span>}
 
               {/* Name */}
               <span
@@ -178,9 +224,12 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
                 </span>
               )}
 
-              {/* Ratio */}
-              {ratioText && (
-                <span className="text-[9px] text-muted-foreground shrink-0">{ratioText}</span>
+              {/* Ratio / percentage */}
+              {ratio && (
+                <span className={cn("text-[9px] shrink-0 flex items-center gap-0.5", toneClass(ratio.tone))}>
+                  <span className="font-semibold">{ratio.text}</span>
+                  {ratio.suffix && <span className="text-muted-foreground font-normal">{ratio.suffix}</span>}
+                </span>
               )}
             </div>
           );
@@ -221,14 +270,13 @@ export function UnitRanglijstenCard({ delay = 75 }: Props) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {columns.map((col, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {columns.map((col) => (
             <RankColumn
               key={col.title}
               column={col}
               unit={self.unit}
               selfName={self.fullName}
-              delay={i * 40}
             />
           ))}
         </div>
