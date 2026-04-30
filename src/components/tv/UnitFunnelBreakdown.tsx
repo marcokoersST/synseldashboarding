@@ -5,9 +5,20 @@ import {
 } from "@/components/ui/table";
 import { useTVCompact } from "./TVDashboardLayout";
 import { ConversionLegendPopover, getConversionIcon } from "./ConversionLegend";
+import { TileHeader } from "./TileHeader";
 import { cn } from "@/lib/utils";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronRight, ChevronDown, BarChart3 } from "lucide-react";
 import { useSalesFunnelFilters } from "@/contexts/SalesFunnelFiltersContext";
+
+const groupToneClasses: Record<string, string> = {
+  "1. Inschrijvingen": "bg-primary/10 text-primary",
+  "2. Acquisitie": "bg-[hsl(var(--chart-primary)/0.12)] text-[hsl(var(--chart-primary))]",
+  "3. Voorstellen": "bg-accent/10 text-accent",
+  "4. Uitnodigingen": "bg-[hsl(var(--gold)/0.15)] text-[hsl(var(--gold))]",
+  "5. Gesprekken": "bg-primary/10 text-primary",
+  "6. Vervolg": "bg-[hsl(var(--chart-primary)/0.12)] text-[hsl(var(--chart-primary))]",
+  "7. Geplaatst": "bg-accent/10 text-accent",
+};
 
 type SubCol =
   | { type: "value"; key: keyof UnitFunnelRow; label: string; decimals?: number }
@@ -179,11 +190,13 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
   const toggle = (unit: string) => setExpanded(e => ({ ...e, [unit]: !e[unit] }));
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto h-full", compact ? "p-3" : "p-5")}>
-      <div className={cn("flex items-center gap-1.5", compact ? "mb-2" : "mb-4")}>
-        <h3 className={cn("font-semibold text-foreground", compact ? "text-sm" : "text-sm")}>Uitsplitsing per Unit & Conversies</h3>
-        {!compact && <ConversionLegendPopover />}
-      </div>
+    <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto h-full flex flex-col", compact ? "p-3" : "p-5")}>
+      <TileHeader
+        icons={[{ icon: BarChart3, className: "text-primary" }]}
+        title="Uitsplitsing per Unit & Conversies"
+        right={!compact ? <ConversionLegendPopover /> : undefined}
+        compact={compact}
+      />
 
       <Table>
         <TableHeader>
@@ -193,9 +206,17 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
               <TableHead
                 key={g.group}
                 colSpan={g.subs.length}
-                className={cn("text-center border-l border-border/50 text-muted-foreground", compact ? "text-xs px-1.5" : "text-[10px]")}
+                className={cn("text-center border-l border-border/50", compact ? "px-1.5 py-1" : "py-1.5")}
               >
-                {g.group}
+                <span
+                  className={cn(
+                    "inline-block rounded-full font-semibold",
+                    groupToneClasses[g.group] ?? "bg-muted/40 text-muted-foreground",
+                    compact ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-0.5 text-[10px]"
+                  )}
+                >
+                  {g.group}
+                </span>
               </TableHead>
             ))}
           </TableRow>
@@ -293,8 +314,8 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
             );
           })}
           {/* Totals row */}
-          <TableRow className="border-t-2 border-border">
-            <TableCell className={cn("font-bold", compact ? "py-1.5 text-sm" : "")}>Totaal</TableCell>
+          <TableRow className="border-t-2 border-border bg-primary/5">
+            <TableCell className={cn("font-bold text-primary", compact ? "py-1.5 text-sm" : "")}>Totaal</TableCell>
             {visibleGroups.flatMap((g, gi) =>
               g.subs.map((sub, si) => {
                 const isConv = sub.type === "conv";
