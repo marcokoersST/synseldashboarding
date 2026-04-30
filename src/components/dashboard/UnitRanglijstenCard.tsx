@@ -161,9 +161,11 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
           const ratio = formatRatio(entry, column.title);
           const showCheck = entry.valueDone !== undefined && column.title !== "Niet begonnen" && column.title !== "Intakes";
 
-          // Top-3 icon (trophy / medal) — shown alongside the rank number
-          const topIcon =
-            entry.rank === 1 && entry.value > 0 ? <Trophy className="w-3 h-3 text-yellow-500" />
+          // Top-3 icon (trophy / medal) — only for columns where being on top is positive.
+          // Excluded: Inschrijvingen (volume "op naam" is not inherently good) and Niet begonnen (negative metric).
+          const showTopIcon = column.title !== "Inschrijvingen" && column.title !== "Niet begonnen";
+          const topIcon = !showTopIcon ? null
+            : entry.rank === 1 && entry.value > 0 ? <Trophy className="w-3 h-3 text-yellow-500" />
             : entry.rank === 2 && entry.value > 0 ? <Medal className="w-3 h-3 text-slate-400" />
             : entry.rank === 3 && entry.value > 0 ? <Medal className="w-3 h-3 text-amber-700" />
             : null;
