@@ -17,7 +17,7 @@ import {
   MARKETING_COLORS,
 } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
-
+import EditableSpendCell from "@/components/marketing/EditableSpendCell";
 interface Props {
   dateRange: DateRange;
   compareRange: DateRange | null;
