@@ -158,7 +158,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
   const toggle = (unit: string) => setExpanded(e => ({ ...e, [unit]: !e[unit] }));
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border animate-fade-in overflow-x-auto h-full flex flex-col", compact ? "p-3" : "p-5")}>
+    <div className={cn("bg-card rounded-xl border border-border animate-fade-in h-full flex flex-col", compact ? "p-3 overflow-hidden" : "p-5 overflow-x-auto")}>
       <TileHeader
         icons={[{ icon: BarChart3, className: "text-primary" }]}
         title="Uitsplitsing per Unit & Conversies"
@@ -169,18 +169,18 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead rowSpan={2} className="w-[180px] align-bottom">Unit / Consultant</TableHead>
+            <TableHead rowSpan={2} className={cn("align-bottom", compact ? "w-[200px] text-sm" : "w-[180px]")}>Unit / Consultant</TableHead>
             {visibleGroups.map((g) => (
               <TableHead
                 key={g.group}
                 colSpan={g.subs.length}
-                className={cn("text-center border-l border-border/50", compact ? "px-1.5 py-1" : "py-1.5")}
+                className={cn("text-center border-l border-border/50", compact ? "px-1.5 py-1.5" : "py-1.5")}
               >
                 <span
                   className={cn(
                     "inline-block rounded-full font-semibold",
                     groupToneClasses[g.group] ?? "bg-muted/40 text-muted-foreground",
-                    compact ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-0.5 text-[10px]"
+                    compact ? "px-3 py-1 text-sm" : "px-2.5 py-0.5 text-[10px]"
                   )}
                 >
                   {g.group}
