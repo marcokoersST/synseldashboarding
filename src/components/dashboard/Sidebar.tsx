@@ -159,6 +159,14 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: Radar,
+    label: "Dashboards Barend",
+    path: "/barend/reverse-matching",
+    subItems: [
+      { icon: Filter, label: "Reverse Matching Analytics", path: "/barend/reverse-matching" },
+    ]
+  },
+  {
     icon: BarChart3,
     label: "Dashboards Marco",
     path: "/marco/productiviteit",
