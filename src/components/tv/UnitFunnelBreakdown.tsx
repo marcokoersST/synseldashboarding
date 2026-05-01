@@ -199,13 +199,20 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
                       "text-center whitespace-nowrap",
                       si === 0 && "border-l border-border/50",
                       sub.type === "conv" ? "text-muted-foreground bg-muted/30" : "",
-                      compact ? "text-[11px] px-1.5 py-1.5" : "text-[10px] px-1.5"
+                      compact ? "text-xs px-1.5 py-1.5 font-semibold" : "text-[10px] px-1.5"
                     )}
                   >
                     {IconComp ? (
-                      <span className="inline-flex items-center justify-center" title={sub.label}>
-                        <IconComp className={cn(compact ? "w-3.5 h-3.5" : "w-3 h-3")} />
-                      </span>
+                      compact ? (
+                        <span className="inline-flex items-center justify-center gap-1" title={sub.label}>
+                          <IconComp className="w-3.5 h-3.5" />
+                          <span>{sub.label}</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center justify-center" title={sub.label}>
+                          <IconComp className="w-3 h-3" />
+                        </span>
+                      )
                     ) : sub.label}
                   </TableHead>
                 );
@@ -220,14 +227,14 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
             return (
               <React.Fragment key={row.unit}>
                 <TableRow className="cursor-pointer hover:bg-muted/30" onClick={() => toggle(row.unit)}>
-                  <TableCell className={cn("font-medium", compact ? "py-1.5 text-sm" : "")}>
+                  <TableCell className={cn("font-medium", compact ? "py-2 text-base" : "")}>
                     <span className="flex items-center gap-2">
                       {consultants.length > 0 ? (
-                        isOpen ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                      ) : <span className="w-3.5" />}
-                      <span className="w-3 h-3 rounded-full shrink-0" style={{ background: row.color }} />
+                        isOpen ? <ChevronDown className={cn("text-muted-foreground", compact ? "w-4 h-4" : "w-3.5 h-3.5")} /> : <ChevronRight className={cn("text-muted-foreground", compact ? "w-4 h-4" : "w-3.5 h-3.5")} />
+                      ) : <span className={compact ? "w-4" : "w-3.5"} />}
+                      <span className={cn("rounded-full shrink-0", compact ? "w-3.5 h-3.5" : "w-3 h-3")} style={{ background: row.color }} />
                       {row.unit}
-                      {consultants.length > 0 && <span className="text-xs text-muted-foreground">({consultants.length})</span>}
+                      {consultants.length > 0 && <span className={cn("text-muted-foreground", compact ? "text-sm" : "text-xs")}>({consultants.length})</span>}
                     </span>
                   </TableCell>
                   {visibleGroups.flatMap((g, gi) =>
@@ -242,7 +249,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
                             "text-center tabular-nums",
                             si === 0 && "border-l border-border/50",
                             isConv ? cn("bg-muted/30 font-bold", convRate !== null && rateColor(convRate)) : "font-semibold",
-                            compact ? "py-1.5 text-xs px-1.5" : "text-[11px] px-1.5"
+                            compact ? "py-2 text-sm px-1.5" : "text-[11px] px-1.5"
                           )}
                         >
                           {val}
@@ -253,7 +260,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
                 </TableRow>
                 {isOpen && consultants.map(c => (
                   <TableRow key={`${row.unit}-${c.name}`} className="bg-muted/10">
-                    <TableCell className={cn("pl-10 text-foreground/80", compact ? "py-1 text-xs" : "text-xs")}>
+                    <TableCell className={cn("pl-10 text-foreground/80", compact ? "py-1.5 text-sm" : "text-xs")}>
                       {c.name}
                     </TableCell>
                     {visibleGroups.flatMap((g, gi) =>
@@ -268,7 +275,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
                               "text-center tabular-nums",
                               si === 0 && "border-l border-border/50",
                               isConv ? cn("bg-muted/20", convRate !== null && rateColor(convRate)) : "",
-                              compact ? "py-1 text-[11px] px-1.5" : "text-[10px] px-1.5"
+                              compact ? "py-1.5 text-sm px-1.5" : "text-[10px] px-1.5"
                             )}
                           >
                             {val}
@@ -283,7 +290,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
           })}
           {/* Totals row */}
           <TableRow className="border-t-2 border-border bg-primary/5">
-            <TableCell className={cn("font-bold text-primary", compact ? "py-1.5 text-sm" : "")}>Totaal</TableCell>
+            <TableCell className={cn("font-bold text-primary", compact ? "py-2 text-base" : "")}>Totaal</TableCell>
             {visibleGroups.flatMap((g, gi) =>
               g.subs.map((sub, si) => {
                 const isConv = sub.type === "conv";
@@ -296,7 +303,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
                       "text-center tabular-nums font-bold",
                       si === 0 && "border-l border-border/50",
                       isConv ? cn("bg-muted/30", convRate !== null && rateColor(convRate)) : "",
-                      compact ? "py-1.5 text-xs px-1.5" : "text-[11px] px-1.5"
+                      compact ? "py-2 text-sm px-1.5" : "text-[11px] px-1.5"
                     )}
                   >
                     {val}
