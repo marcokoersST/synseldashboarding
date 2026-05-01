@@ -5,6 +5,7 @@ import { CandidatesPipeline } from "@/components/tv/CandidatesPipeline";
 import { CallStats } from "@/components/tv/CallStats";
 import { UnitFunnelBreakdown } from "@/components/tv/UnitFunnelBreakdown";
 import { ConversionFormulasCard } from "@/components/tv/ConversionFormulasCard";
+import { ConversionIconLegend } from "@/components/tv/ConversionIconLegend";
 import { SalesFunnelFilterBar } from "@/components/tv/SalesFunnelFilterBar";
 import { SalesFunnelFiltersProvider } from "@/contexts/SalesFunnelFiltersContext";
 import { weekFunnelMetrics, weekOverallConversions } from "@/data/tvData";
@@ -14,14 +15,56 @@ import { DevNote } from "@/components/groeimodel/DevNote";
 function WeekContent() {
   const compact = useTVCompact();
 
+  // TV mode: fixed grid that fills the viewport, never scrolls.
+  if (compact) {
+    return (
+      <div
+        className="h-full w-full grid gap-2 overflow-hidden"
+        style={{ gridTemplateRows: "13fr 52fr 5fr 30fr" }}
+      >
+        {/* KPI row */}
+        <div className="flex items-stretch gap-1 min-h-0">
+          {weekFunnelMetrics.map((m, i) => (
+            <div key={m.label} className="contents">
+              <div className="flex-1 min-w-0">
+                <SalesFunnelKPI metric={m} index={i} />
+              </div>
+              {i < weekFunnelMetrics.length - 1 && i < weekOverallConversions.length && (
+                <ConversionArrow rate={weekOverallConversions[i].rate} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Unit breakdown */}
+        <div className="min-h-0 overflow-hidden">
+          <UnitFunnelBreakdown />
+        </div>
+
+        {/* Icon legend strip */}
+        <div className="min-h-0 flex items-center">
+          <div className="w-full">
+            <ConversionIconLegend />
+          </div>
+        </div>
+
+        {/* Bottom row */}
+        <div className="grid grid-cols-3 gap-2 min-h-0">
+          <CallStats mode="week" />
+          <CandidatesPipeline />
+          <ConversionFormulasCard />
+        </div>
+      </div>
+    );
+  }
+
+  // Normal preview mode (unchanged behaviour, with DevNotes)
   return (
-    <div className={cn("flex flex-col h-full", compact ? "gap-1" : "gap-4")}>
-      {!compact && (
-        <>
-          <SalesFunnelFilterBar />
-          <DevNote
-            story={<><strong>As a user (manager/TV viewer)</strong>, I want to filter the Sales Funnel data by unit, consultant, date range, and visible column groups, <strong>so that</strong> I can focus on the exact slice of performance I need to analyse or present on TV.</>}
-            logic={`The filter bar provides four controls:
+    <div className="flex flex-col h-full gap-4">
+      <SalesFunnelFilterBar />
+      <DevNote
+        story={<><strong>As a user (manager/TV viewer)</strong>, I want to filter the Sales Funnel data by unit, consultant, date range, and visible column groups, <strong>so that</strong> I can focus on the exact slice of performance I need to analyse or present on TV.</>}
+        logic={`The filter bar provides four controls:
 
   • Unit selector — multi-select popover with "Alle units"
     default and batch toggle. Filters all tiles below.
@@ -34,12 +77,10 @@ function WeekContent() {
 
 All filters propagate through SalesFunnelFiltersContext
 so every child tile reacts to the same selection.`}
-          />
-        </>
-      )}
+      />
 
       {/* KPI tiles */}
-      <div className={cn("flex items-stretch shrink-0", compact ? "gap-1" : "gap-0")}>
+      <div className="flex items-stretch shrink-0 gap-0">
         {weekFunnelMetrics.map((m, i) => (
           <div key={m.label} className="contents">
             <div className="flex-1 min-w-0">
@@ -63,25 +104,19 @@ Each card shows:
     period (green = positive, red = negative).
 
 Between each pair of cards a ConversionArrow displays
-the step-to-step conversion rate (e.g. Acquisities ÷
-Inschrijvingen × 100).
-
-Color coding on the arrow pill:
-  ≥ 70 % → green (accent)
-  40-69 % → neutral
-  < 40 % → red (destructive)
+the step-to-step conversion rate.
 
 Data source: weekFunnelMetrics + weekOverallConversions
 from tvData.ts.`}
       />
 
       {/* Unit breakdown */}
-      <div className={cn("min-h-0 overflow-auto", compact ? "flex-[3]" : "flex-1")}>
+      <div className="min-h-0 overflow-auto flex-1">
         <UnitFunnelBreakdown />
       </div>
 
       {/* Bottom row */}
-      <div className={cn("grid min-h-0", compact ? "grid-cols-3 gap-1 flex-[2]" : "grid-cols-3 gap-4 shrink-0")}>
+      <div className="grid grid-cols-3 gap-4 shrink-0">
         <CallStats mode="week" />
         <CandidatesPipeline />
         <ConversionFormulasCard />
