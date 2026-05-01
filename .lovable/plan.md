@@ -1,105 +1,42 @@
-# TV Mode Redesign — `/tv/sales-funnel-week`
+# Fix cramped TV mode on `/tv/sales-funnel-week`
 
-## Problem
+## What's wrong
 
-In TV mode (fullscreen), the dashboard currently:
-- Uses tiny 10–11 px fonts unreadable on a 55" TV at viewing distance.
-- Has inner scrollbars in CandidatesPipeline, ConversionFormulasCard, and the unit-funnel wrapper, hiding data.
-- Auto-rotates units when there are too many to fit, requiring a viewer to wait to see all data.
-- Shows red "Dev info" buttons that don't belong on a public TV.
-- Replaces conversion-column headers with bare icons (Send, Crosshair, Repeat, etc.) with no visible legend in TV mode — the `Info` legend trigger is hidden when `compact` is true. Viewers can't tell what each icon means.
+From the screenshot:
+- The unit table only fills the **top half** of its container — the 6 rows clump at the top, leaving a big empty white area below.
+- The bottom row (Bel-statistieken / Kandidaten Insides / Conversieformules) is squeezed too small for a 55" TV.
+- The KPI row at the top eats more vertical space than it needs.
 
-## Goal
+Root cause: the `<Table>` inside `UnitFunnelBreakdown` has natural row height (no stretching), so it doesn't expand to fill the flex container. And the page-level grid gives 52% to the table but only 30% to the bottom row.
 
-When `tv-mode` is active:
-- Every tile fits the viewport — **zero scrollbars anywhere**.
-- All data is visible at once — no rotation, no hover, no clicks needed.
-- Typography sized for ~3 m viewing distance on a 55" 1080p/4K TV.
-- Dev info buttons hidden in TV mode (still visible in normal preview).
-- A persistent, visible icon legend explains every conversion-column icon.
+## Changes
 
-## Layout (TV mode only)
+### 1. Make the table fill its tile (`UnitFunnelBreakdown.tsx`)
 
-Fixed CSS grid that occupies `h-screen` minus the small "Sluiten" bar:
+In TV mode, set `<Table className="h-full">` and add `h-full w-full` on the table body so the 6 unit rows + Totaal row distribute evenly across the available height (eliminates the empty white space below the table).
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ KPI ROW  (5 cards + 4 arrows)            ~13% height        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│ UNIT FUNNEL BREAKDOWN (always fully expanded, all rows)     │
-│                                          ~52% height        │
-│                                                             │
-├─────────────────────────────────────────────────────────────┤
-│ ICON LEGEND STRIP — full width            ~5% height        │
-├─────────────────────────────────────────────────────────────┤
-│ CallStats        │ CandidatesPipeline │ ConversionFormulas  │
-│                                          ~30% height        │
-└─────────────────────────────────────────────────────────────┘
-```
+### 2. Rebalance the page grid (`TVSalesFunnelWeek.tsx`)
 
-## Per-tile changes
+Change `gridTemplateRows` from `13fr 52fr 5fr 30fr` to `11fr 42fr 5fr 42fr`:
+- KPI row: 13 → **11** (slightly tighter; it's already big enough)
+- Unit table: 52 → **42** (no longer over-allocated since rows now stretch to fill)
+- Icon legend strip: **5** (unchanged)
+- Bottom row: 30 → **42** (much more breathing room for the 3 tiles)
 
-### `TVSalesFunnelWeek.tsx`
-- Wrap page in `grid` with fixed fr ratios (e.g. `13fr 52fr 5fr 30fr`), `h-full overflow-hidden`.
-- Hide every `<DevNote>` on this page when `useTVCompact()` is true.
-- **New: ConversionIconLegend strip** between the unit table and the bottom row — visible only in TV mode. Renders all 11 entries from `conversionIconMap` as horizontal pills: `<Icon> Label — Formula`. Sized `text-sm` so it's readable from across the room. Single row, `flex flex-wrap justify-center gap-x-4 gap-y-1`.
+### 3. Bottom-row tile breathing room
 
-### `SalesFunnelKPI.tsx`
-- TV-mode font scale: label `text-base`, value bumped to `text-2xl`, delta pill `text-sm`.
-- Card padding `p-4`.
+The extra ~12% height on the bottom row means:
+- Bel-statistieken chart gets a real height (was ~80 px, will be ~180 px).
+- Kandidaten Insides bars get visible spacing instead of being mashed.
+- Conversieformules rows can use their `1fr` distribution properly.
 
-### `UnitFunnelBreakdown.tsx`
-- **Remove rotation logic in TV mode** — always show all units expanded with all consultants.
-- Remove `overflow-x-auto`; use `table-fixed` with percentage column widths.
-- TV mode: header pills `text-sm`, body cells `text-sm`, consultant rows `text-xs`.
-- **Show text label next to icons** in column headers when in TV mode (replace icon-only headers with `icon + label`) so column meaning is explicit even before the legend strip is read.
-- Auto-tighten row padding (`useLayoutEffect` measuring container vs row count) to guarantee no overflow without a scrollbar.
+No font changes needed — the existing TV-mode font sizes are fine; the problem is purely vertical distribution.
 
-### `CallStats.tsx`
-- TV mode: KPIs `text-lg`, chip text `text-sm`, chart `flex-1 min-h-0`.
-- Ensure all flex children have `min-h-0` (no clipping).
+## Files touched
 
-### `CandidatesPipeline.tsx`
-- **Remove `overflow-y-auto`** on the bars container.
-- Use `flex-1` + `justify-between` so 8 bars distribute evenly across available height.
-- TV mode: bar labels `text-sm`, count `text-base font-bold`, bar height `h-2.5`.
-
-### `ConversionFormulasCard.tsx`
-- **Remove `overflow-y-auto`** on the formula list.
-- Use `flex-1 grid grid-rows-[repeat(N,1fr)]` so all rows fit equally.
-- TV mode: row text `text-sm`, Actueel/Doel pills `text-base font-bold`.
-
-### Icon legend strip (new component)
-- File: `src/components/tv/ConversionIconLegend.tsx`.
-- Renders one row per entry from `conversionFormulas` (group + icon + short formula + benchmark) in a compact, horizontally-laid-out strip.
-- Background `bg-muted/30 rounded-lg`, padding `px-3 py-1.5`, separators `divide-x divide-border/40`.
-- Used only when `useTVCompact()` is true.
-
-### `DevNote` hiding
-- Wrap each `<DevNote ... />` call inside the TV components with `{!compact && (<DevNote ... />)}`. No edits to `DevNote` itself.
-
-### Global safety net (`src/index.css`)
-```css
-.tv-mode .overflow-y-auto,
-.tv-mode .overflow-x-auto,
-.tv-mode .overflow-auto { overflow: hidden !important; }
-```
-
-## Technical details
-
-- **No new dependencies, no data changes.**
-- Files touched:
-  - `src/pages/TVSalesFunnelWeek.tsx`
-  - `src/components/tv/SalesFunnelKPI.tsx`
-  - `src/components/tv/UnitFunnelBreakdown.tsx`
-  - `src/components/tv/CallStats.tsx`
-  - `src/components/tv/CandidatesPipeline.tsx`
-  - `src/components/tv/ConversionFormulasCard.tsx`
-  - `src/components/tv/ConversionIconLegend.tsx` (new)
-  - `src/index.css`
-- Behavior outside TV mode is unchanged (preview without fullscreen keeps DevNotes, current spacing, and current legend popover).
+- `src/components/tv/UnitFunnelBreakdown.tsx` — add `h-full` to `<Table>` in TV mode.
+- `src/pages/TVSalesFunnelWeek.tsx` — adjust `gridTemplateRows` ratios.
 
 ## Out of scope
 
-- Other TV pages (`/tv/sales-funnel-period`, `/tv/heatmap`, `/tv/ranglijsten`, `/tv/beker`, `/tv/gedetacheerden`). Same pattern can be rolled out in a follow-up.
+Other TV pages, font/colour changes, and behaviour outside TV mode remain unchanged.

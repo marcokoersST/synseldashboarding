@@ -166,7 +166,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
         compact={compact}
       />
 
-      <Table>
+      <Table className={compact ? "h-full" : ""}>
         <TableHeader>
           <TableRow>
             <TableHead rowSpan={2} className={cn("align-bottom", compact ? "w-[200px] text-sm" : "w-[180px]")}>Unit / Consultant</TableHead>
