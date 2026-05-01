@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { ChevronDown, ChevronRight, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
@@ -8,6 +8,7 @@ import DeltaCell from "@/components/marketing/DeltaCell";
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import { jobboardData, aggregateByUnit, aggregateByFunctiegroep, totals as calcTotals, formatCurrency, deltaPercent, MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
+import EditableSpendCell from "@/components/marketing/EditableSpendCell";
 
 interface Props {
   dateRange: DateRange;
@@ -23,6 +24,11 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [showConversion, setShowConversion] = useState(false);
   const [chartView, setChartView] = useState<"unit" | "functiegroep">("unit");
+  const [manualSpends, setManualSpends] = useState<Record<string, number>>({});
+
+  const handleSaveSpend = useCallback((key: string, value: number) => {
+    setManualSpends(prev => ({ ...prev, [key]: value }));
+  }, []);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof jobboardData>();
@@ -179,7 +185,15 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(bemPct, `jb-${parent.board}-bem`, "percentage", false, prevBemPct(parent.conversions, parent.registrations, `jb-${parent.board}-conv`, `jb-${parent.board}-reg`))}</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpr, `jb-${parent.board}-cpr`, "currency", true)}</td>}
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpc, `jb-${parent.board}-cpc`, "currency", true)}</td>}
-                        <td className="p-4 align-middle font-semibold">{dc(parent.spend, `jb-${parent.board}-spend`, "currency")}</td>
+                        <td className="p-4 align-middle font-semibold">
+                          <EditableSpendCell
+                            spend={parent.spend}
+                            manualSpend={manualSpends[parent.board]}
+                            onSave={(v) => handleSaveSpend(parent.board, v)}
+                          >
+                            {dc(manualSpends[parent.board] ?? parent.spend, `jb-${parent.board}-spend`, "currency")}
+                          </EditableSpendCell>
+                        </td>
                       </tr>
                       {isOpen && parent.children.map((child) => {
                         const childCpr = child.registrations > 0 ? child.spend / child.registrations : 0;
@@ -193,7 +207,15 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
                             {showConversion && <td className="p-4 align-middle">{dc(childBemPct, `jb-${parent.board}-${child.category}-bem`, "percentage", false, prevBemPct(child.conversions, child.registrations, `jb-${parent.board}-${child.category}-conv`, `jb-${parent.board}-${child.category}-reg`))}</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpr, `jb-${parent.board}-${child.category}-cpr`, "currency", true)}</td>}
                             {showConversion && <td className="p-4 align-middle">{dc(childCpc, `jb-${parent.board}-${child.category}-cpc`, "currency", true)}</td>}
-                            <td className="p-4 align-middle">{dc(child.spend, `jb-${parent.board}-${child.category}-spend`, "currency")}</td>
+                            <td className="p-4 align-middle">
+                              <EditableSpendCell
+                                spend={child.spend}
+                                manualSpend={manualSpends[`${parent.board}-${child.category}`]}
+                                onSave={(v) => handleSaveSpend(`${parent.board}-${child.category}`, v)}
+                              >
+                                {dc(manualSpends[`${parent.board}-${child.category}`] ?? child.spend, `jb-${parent.board}-${child.category}-spend`, "currency")}
+                              </EditableSpendCell>
+                            </td>
                           </tr>
                         );
                       })}

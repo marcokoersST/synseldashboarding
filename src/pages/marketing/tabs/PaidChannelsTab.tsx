@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { ArrowUpDown, TrendingUp, TrendingDown } from "lucide-react";
@@ -17,7 +17,7 @@ import {
   MARKETING_COLORS,
 } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
-
+import EditableSpendCell from "@/components/marketing/EditableSpendCell";
 interface Props {
   dateRange: DateRange;
   compareRange: DateRange | null;
@@ -31,6 +31,11 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [showConversion, setShowConversion] = useState(false);
   const [chartView, setChartView] = useState<"unit" | "functiegroep">("unit");
+  const [manualSpends, setManualSpends] = useState<Record<string, number>>({});
+
+  const handleSaveSpend = useCallback((source: string, value: number) => {
+    setManualSpends(prev => ({ ...prev, [source]: value }));
+  }, []);
 
   const rows = useMemo(() => {
     const agg = aggregatePaidChannels(paidChannelData).map(r => ({
@@ -165,7 +170,15 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
                     {showConversion && <td className="p-4 align-middle">{dc(bemPct, `pc-${row.source}-bem`, "percentage", false, prevBemPct(row.conversions, row.registrations, `pc-${row.source}-conv`, `pc-${row.source}-reg`))}</td>}
                     {showConversion && <td className="p-4 align-middle">{dc(row.cpr, `pc-${row.source}-cpr`, "currency", true)}</td>}
                     {showConversion && <td className="p-4 align-middle">{dc(row.cpc, `pc-${row.source}-cpc`, "currency", true)}</td>}
-                    <td className="p-4 align-middle">{dc(row.spend, `pc-${row.source}-spend`, "currency")}</td>
+                    <td className="p-4 align-middle">
+                      <EditableSpendCell
+                        spend={row.spend}
+                        manualSpend={manualSpends[row.source]}
+                        onSave={(v) => handleSaveSpend(row.source, v)}
+                      >
+                        {dc(manualSpends[row.source] ?? row.spend, `pc-${row.source}-spend`, "currency")}
+                      </EditableSpendCell>
+                    </td>
                   </tr>
                   );
                 })}

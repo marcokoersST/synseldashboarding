@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -113,6 +114,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     return Array.from(set).sort();
   }, []);
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set(allUnits));
+  const [unitViewMode, setUnitViewMode] = useState<"totaal" | "gemiddeld" | "mediaan">("totaal");
 
   const filteredConsultants = useMemo(
     () => inflowConsultantData.filter((c) => selectedUnits.has(c.unit)),
@@ -123,7 +125,36 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     { inschrijvingen: 0, acquisitie: 0, prevInschrijvingen: 0, prevAcquisitie: 0 }
   ), [filteredConsultants]);
   const sourceTotals = useMemo(() => inflowSourceData.reduce((acc, s) => ({ inschrijvingen: acc.inschrijvingen + s.inschrijvingen, acquisitie: acc.acquisitie + s.acquisitie }), { inschrijvingen: 0, acquisitie: 0 }), []);
-  const unitChartData = useMemo(() => aggregateByUnit(filteredConsultants), [filteredConsultants]);
+
+  const unitChartData = useMemo(() => {
+    const baseData = aggregateByUnit(filteredConsultants);
+    if (unitViewMode === "totaal") return baseData;
+
+    const median = (arr: number[]) => {
+      const sorted = [...arr].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    };
+
+    return baseData.map(unitRow => {
+      const consultantsInUnit = filteredConsultants.filter(c => c.unit === unitRow.unit);
+      const count = consultantsInUnit.length || 1;
+
+      if (unitViewMode === "gemiddeld") {
+        return {
+          ...unitRow,
+          inschrijvingen: Math.round((unitRow.inschrijvingen / count) * 10) / 10,
+          acquisitie: Math.round((unitRow.acquisitie / count) * 10) / 10,
+        };
+      }
+      // mediaan
+      return {
+        ...unitRow,
+        inschrijvingen: median(consultantsInUnit.map(c => c.inschrijvingen)),
+        acquisitie: median(consultantsInUnit.map(c => c.acquisitie)),
+      };
+    });
+  }, [filteredConsultants, unitViewMode]);
   const previousInflowRegistrations = useMemo(
     () => getComparisonValue(consultantTotals.inschrijvingen, { dateRange, compareRange, seed: "overview-inflow-registrations" }),
     [consultantTotals.inschrijvingen, dateRange, compareRange],
@@ -301,7 +332,19 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
 
       {/* Inflow unit chart */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Inflow per Unit</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Inflow per Unit</CardTitle>
+          <Select value={unitViewMode} onValueChange={(v) => setUnitViewMode(v as "totaal" | "gemiddeld" | "mediaan")}>
+            <SelectTrigger className="w-[200px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="totaal">Totaal</SelectItem>
+              <SelectItem value="gemiddeld">Gemiddeld per consultant</SelectItem>
+              <SelectItem value="mediaan">Mediaan per consultant</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={unitChartData} margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
@@ -363,7 +406,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
                 <div key={u.unit}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium">{u.unit}</span>
-                    <span className="text-muted-foreground">{u.registrations} bem. / {u.conversions} conv.</span>
+                    <span className="text-muted-foreground">{u.registrations} inschrijven / {u.conversions} conv.</span>
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
