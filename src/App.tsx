@@ -60,6 +60,9 @@ const PeterJanAcquisitieFunnel = lazy(() => import("./pages/peter-jan/Acquisitie
 const PeterJanOmzetDashboard = lazy(() => import("./pages/peter-jan/OmzetDashboard"));
 // AcquisitieConversie merged into ManagerSalesFunnel
 
+// Barend dashboards
+const BarendReverseMatching = lazy(() => import("./pages/barend/ReverseMatchingAnalytics"));
+
 // Marketing dashboards
 const MarketingHub = lazy(() => import("./pages/marketing/MarketingHub"));
 const MarketingVacatureFunnel = lazy(() => import("./pages/marketing/VacatureFunnelMonitor"));
@@ -140,6 +143,7 @@ const App = () => (
               <Route path="/peter-jan/sales-flow" element={<PeterJanSalesFlow />} />
               <Route path="/peter-jan/acquisitie-funnel" element={<PeterJanAcquisitieFunnel />} />
               <Route path="/peter-jan/omzet-dashboard" element={<PeterJanOmzetDashboard />} />
+              <Route path="/barend/reverse-matching" element={<BarendReverseMatching />} />
               <Route path="/marketing" element={<MarketingHub />} />
               <Route path="/marketing/inflow" element={<MarketingHub />} />
               <Route path="/marketing/inschrijvingen" element={<MarketingHub />} />
