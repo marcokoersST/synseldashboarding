@@ -319,20 +319,20 @@ strip — see Trend over time + Match quality for those.`}
               title="Actie nodig"
               subtitle="Kandidaten die wachten op een vervolgstap of binnen SLA opgevolgd moeten worden"
               tone="gold"
-              devStory={<>Als <strong>Barend</strong> wil ik direct zien welke kandidaten dreigen te verlopen door SLA-overschrijdingen, zodat Sales meteen ingrijpt en geen leads worden verspeeld.</>}
-              devLogic={`4 SLA-tegels:
-  • Doorgezet, nog niet gebeld (warning)
-  • > 2u niet gebeld (danger)   ← SLA breach call
-  • Gereageerd, nog niet doorgezet (warning)
-  • > 1u geen reactie (danger)  ← SLA breach response
+              devStory={<>As <strong>Barend</strong>, I want to instantly see which candidates risk falling out of the funnel because of SLA breaches, so Sales can intervene immediately and no leads are wasted.</>}
+              devLogic={`4 SLA tiles:
+  • Forwarded, not yet called (warning)
+  • > 2h not called (danger)        ← SLA breach call
+  • Replied, not yet forwarded (warning)
+  • > 1h no response (danger)       ← SLA breach response
 
-SLA-grenzen: 2u call-deadline · 1u response-deadline.
-Severity-mapping:
+SLA thresholds: 2h call deadline · 1h response deadline.
+Severity mapping:
   warning → bg-gold/6, border-gold/30
   danger  → bg-destructive/5, border-destructive/30
 
-"Oudste wacht …" wordt afgeleid uit de oldest pending
-record per groep (nu nog statisch in actieNodigTiles).`}
+"Oldest waiting …" is derived from the oldest pending
+record per group (currently static in actieNodigTiles).`}
             />
             <div className="grid grid-cols-2 gap-3">
               {actieNodigTiles.map(tile => {
