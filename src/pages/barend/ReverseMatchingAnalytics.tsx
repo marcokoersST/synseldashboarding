@@ -270,16 +270,16 @@ via context (delta = current - compare).`}
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Funnel KPI's</h2>
         <DevInfo
-          story={<>De 6 kerntegels tonen de hoofdstappen van de reverse-matching funnel: vacatures opgepakt → kandidaten gematched → doorgezet → voorgesteld → op gesprek → geplaatst. <strong>Barend</strong> wil één blik op de hele engine en direct weten of er ergens dropoff is.</>}
-          logic={`KPI tegels (6) — bron: reverseFunnelKpis in barendData.ts.
-Elke tegel:
+          story={<>The 6 hero tiles show the main stages of the reverse-matching funnel: vacancies picked up → candidates matched → forwarded → proposed → interviewed → placed. <strong>Barend</strong> wants a single glance at the whole engine and to immediately spot any drop-off.</>}
+          logic={`KPI tiles (6) — source: reverseFunnelKpis in barendData.ts.
+Per tile:
   • value (AnimatedNumber count-up)
-  • delta vs. vorige periode (DeltaBadge)
-  • subtitel met context (bv. "Door matching engine")
-  • tone bepaalt accent-kleur (primary/accent/gold/chart-primary)
+  • delta vs. previous period (DeltaBadge)
+  • subtitle with context (e.g. "Via matching engine")
+  • tone drives accent colour (primary/accent/gold/chart-primary)
 
-Conversies tussen stappen worden NIET getoond op deze
-strip — daarvoor zie de Trend over tijd + Match-kwaliteit.`}
+Step-to-step conversions are NOT rendered on this
+strip — see Trend over time + Match quality for those.`}
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
