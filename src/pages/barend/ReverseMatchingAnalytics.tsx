@@ -186,6 +186,21 @@ export default function ReverseMatchingAnalytics() {
       </Card>
 
       {/* ============= 1. KPI strip ============= */}
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Funnel KPI's</h2>
+        <DevInfo
+          story={<>De 6 kerntegels tonen de hoofdstappen van de reverse-matching funnel: vacatures opgepakt → kandidaten gematched → doorgezet → voorgesteld → op gesprek → geplaatst. <strong>Barend</strong> wil één blik op de hele engine en direct weten of er ergens dropoff is.</>}
+          logic={`KPI tegels (6) — bron: reverseFunnelKpis in barendData.ts.
+Elke tegel:
+  • value (AnimatedNumber count-up)
+  • delta vs. vorige periode (DeltaBadge)
+  • subtitel met context (bv. "Door matching engine")
+  • tone bepaalt accent-kleur (primary/accent/gold/chart-primary)
+
+Conversies tussen stappen worden NIET getoond op deze
+strip — daarvoor zie de Trend over tijd + Match-kwaliteit.`}
+        />
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
         {reverseFunnelKpis.map((k, i) => {
           const Icon = iconMap[k.icon] ?? Briefcase;
