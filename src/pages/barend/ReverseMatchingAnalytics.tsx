@@ -457,6 +457,16 @@ uit max(roi) over de drie kanalen.`}
             title="Match-kwaliteit"
             subtitle="Kandidaten · Response · Doorgezet naar Sales"
             tone="chart-primary"
+            devStory={<>Als <strong>Barend</strong> wil ik valideren dat een hogere match-score ook leidt tot meer response en doorzet naar Sales — zo bewijs ik de waarde van het matching-algoritme.</>}
+            devLogic={`ComposedChart over 4 score-buckets (matchKwaliteitBuckets):
+  0–50 · 50–70 · 70–85 · 85–100
+
+  Bar  (links)  : aantal kandidaten in bucket
+  Line (rechts) : Response % en Doorgezet %
+
+Verwacht patroon: monotoon stijgend van zwak naar
+excellent. Conclusie-tekst onderaan vergelijkt 85-100
+vs 0-50 voor response- en doorzet-multiple.`}
           />
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
