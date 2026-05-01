@@ -170,7 +170,15 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
                     {showConversion && <td className="p-4 align-middle">{dc(bemPct, `pc-${row.source}-bem`, "percentage", false, prevBemPct(row.conversions, row.registrations, `pc-${row.source}-conv`, `pc-${row.source}-reg`))}</td>}
                     {showConversion && <td className="p-4 align-middle">{dc(row.cpr, `pc-${row.source}-cpr`, "currency", true)}</td>}
                     {showConversion && <td className="p-4 align-middle">{dc(row.cpc, `pc-${row.source}-cpc`, "currency", true)}</td>}
-                    <td className="p-4 align-middle">{dc(row.spend, `pc-${row.source}-spend`, "currency")}</td>
+                    <td className="p-4 align-middle">
+                      <EditableSpendCell
+                        spend={row.spend}
+                        manualSpend={manualSpends[row.source]}
+                        onSave={(v) => handleSaveSpend(row.source, v)}
+                      >
+                        {dc(manualSpends[row.source] ?? row.spend, `pc-${row.source}-spend`, "currency")}
+                      </EditableSpendCell>
+                    </td>
                   </tr>
                   );
                 })}
