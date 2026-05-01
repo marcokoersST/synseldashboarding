@@ -1,4 +1,4 @@
-import { useState, useMemo, ReactNode } from "react";
+import { useState, useMemo, ReactNode, Dispatch, SetStateAction } from "react";
 import { ConsultantLayout } from "@/components/consultant/ConsultantLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -95,6 +95,30 @@ function DevInfo({ story, logic }: { story: ReactNode; logic: ReactNode }) {
   );
 }
 
+/** Tile-local period switcher — pill tabs (7d/30d/90d/QTD/YTD), independent of global filter. */
+const TILE_PERIODS = ["7d", "30d", "90d", "QTD", "YTD"] as const;
+type TilePeriod = typeof TILE_PERIODS[number];
+function TilePeriodTabs({ value, onChange }: { value: TilePeriod; onChange: (v: TilePeriod) => void }) {
+  return (
+    <div className="inline-flex items-center rounded-full border border-border bg-muted/40 p-0.5">
+      {TILE_PERIODS.map(p => (
+        <button
+          key={p}
+          onClick={() => onChange(p)}
+          className={cn(
+            "px-2.5 py-1 text-[11px] font-semibold rounded-full transition-colors tabular-nums",
+            value === p
+              ? "bg-foreground text-background shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {p}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Reusable tile header — same gradient strip used across the project (TileHeader pattern). */
 function TileStrip({ icon: Icon, title, subtitle, right, tone = "primary", devStory, devLogic }: {
   icon: typeof Briefcase; title: string; subtitle?: string; right?: React.ReactNode; tone?: string;
@@ -124,6 +148,32 @@ export default function ReverseMatchingAnalytics() {
   const [funcSort, setFuncSort] = useState<keyof typeof functiegroepRows[number]>("vac");
   const [funcDir, setFuncDir] = useState<"asc" | "desc">("desc");
   const [compareMode, setCompareMode] = useState<"none" | "previous" | "year" | "custom">("none");
+
+  // Tile-local state — per-tile period + hidden series via legend toggle
+  const [trendPeriod, setTrendPeriod] = useState<TilePeriod>("YTD");
+  const [trendHidden, setTrendHidden] = useState<Set<string>>(new Set());
+  const [matchPeriod, setMatchPeriod] = useState<TilePeriod>("YTD");
+  const [matchHidden, setMatchHidden] = useState<Set<string>>(new Set());
+
+  const toggleHidden = (setter: Dispatch<SetStateAction<Set<string>>>, key: string) => {
+    setter(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  const sliceTrend = (n: number) => trendOverTimeData.slice(-n);
+  const trendData = useMemo(() => {
+    switch (trendPeriod) {
+      case "7d":  return sliceTrend(2);
+      case "30d": return sliceTrend(4);
+      case "90d": return sliceTrend(12);
+      case "QTD": return trendOverTimeData;
+      case "YTD": return trendOverTimeData;
+    }
+  }, [trendPeriod]);
+
 
   const compareLabels = {
     none: "Vergelijken",
@@ -432,8 +482,9 @@ Total label in donut centre = bronMixData.total.`}
           <TileStrip
             icon={TrendingUp}
             title="Trend over tijd"
-            subtitle="Outreach, responses, CVs, plaatsingen + omzet · 30d (globaal)"
+            subtitle={`Outreach, responses, CVs, plaatsingen + omzet · ${trendPeriod} (globaal)`}
             tone="primary"
+            right={<TilePeriodTabs value={trendPeriod} onChange={setTrendPeriod} />}
             devStory={<>As <strong>Barend</strong>, I want to see funnel activity and revenue over time to spot volume and conversion trends and recognise seasonal effects.</>}
             devLogic={`ComposedChart over 12 weeks (trendOverTimeData):
   Lines (left Y-axis):
@@ -444,12 +495,15 @@ Total label in donut centre = bronMixData.total.`}
   Area (right Y-axis):
     • Revenue (€)  — primary, with gradient fill
 
+Tile-local period state (overrides global filter): 7d/30d/90d/QTD/YTD slices the dataset client-side.
+Legend click toggles series visibility via hidden-set state — hidden lines render dimmed in the legend.
+
 Goal: quickly see whether a volume spike translates
 into revenue (expected lag of ~2-3 weeks).`}
           />
           <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={trendOverTimeData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <ComposedChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="omzetFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -461,15 +515,22 @@ into revenue (expected lag of ~2-3 weeks).`}
                 <YAxis yAxisId="left" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `€${v / 1000}k`} />
                 <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-                <Area yAxisId="right" type="monotone" dataKey="omzet" name="Omzet (€)" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#omzetFill)" />
-                <Line yAxisId="left" type="monotone" dataKey="outreach" name="Outreach" stroke="hsl(var(--chart-primary))" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="responses" name="Responses" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="cvs" name="CVs gedeeld" stroke="hsl(var(--gold))" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="plaatsingen" name="Plaatsingen" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, paddingTop: 8, cursor: "pointer" }}
+                  onClick={(e: any) => toggleHidden(setTrendHidden, e.dataKey)}
+                  formatter={(value: string, entry: any) => (
+                    <span style={{ opacity: trendHidden.has(entry.dataKey) ? 0.4 : 1, textDecoration: trendHidden.has(entry.dataKey) ? "line-through" : "none" }}>{value}</span>
+                  )}
+                />
+                <Area yAxisId="right" type="monotone" dataKey="omzet" name="Omzet (€)" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#omzetFill)" hide={trendHidden.has("omzet")} />
+                <Line yAxisId="left" type="monotone" dataKey="outreach" name="Outreach" stroke="hsl(var(--chart-primary))" strokeWidth={2} dot={false} hide={trendHidden.has("outreach")} />
+                <Line yAxisId="left" type="monotone" dataKey="responses" name="Responses" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} hide={trendHidden.has("responses")} />
+                <Line yAxisId="left" type="monotone" dataKey="cvs" name="CVs gedeeld" stroke="hsl(var(--gold))" strokeWidth={2} dot={false} hide={trendHidden.has("cvs")} />
+                <Line yAxisId="left" type="monotone" dataKey="plaatsingen" name="Plaatsingen" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} hide={trendHidden.has("plaatsingen")} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+
         </CardContent>
       </Card>
 
@@ -536,14 +597,18 @@ client-side from max(roi) across the three channels.`}
           <TileStrip
             icon={Gauge}
             title="Match-kwaliteit"
-            subtitle="Kandidaten · Response · Doorgezet naar Sales"
+            subtitle={`Kandidaten · Response · Doorgezet naar Sales · ${matchPeriod}`}
             tone="chart-primary"
+            right={<TilePeriodTabs value={matchPeriod} onChange={setMatchPeriod} />}
             devStory={<>As <strong>Barend</strong>, I want to validate that a higher match score also leads to more responses and forwards to Sales — that proves the value of the matching algorithm.</>}
             devLogic={`ComposedChart over 4 score buckets (matchKwaliteitBuckets):
   0–50 · 50–70 · 70–85 · 85–100
 
   Bar  (left)  : number of candidates in bucket
   Line (right) : Response % and Forwarded %
+
+Tile-local period state (overrides global filter): 7d/30d/90d/QTD/YTD.
+Legend click toggles series visibility via hidden-set state.
 
 Expected pattern: monotonically increasing from weak
 to excellent. Conclusion line below compares 85-100
@@ -557,13 +622,20 @@ vs 0-50 for the response and forward multipliers.`}
                 <YAxis yAxisId="left" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
                 <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-                <Bar yAxisId="left" dataKey="kandidaten" name="Kandidaten" fill="hsl(var(--chart-primary))" radius={[6, 6, 0, 0]} />
-                <Line yAxisId="right" type="monotone" dataKey="responsePct" name="Response %" stroke="hsl(var(--accent))" strokeWidth={2.5} />
-                <Line yAxisId="right" type="monotone" dataKey="doorgezetPct" name="Doorgezet %" stroke="hsl(var(--gold))" strokeWidth={2.5} />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, paddingTop: 8, cursor: "pointer" }}
+                  onClick={(e: any) => toggleHidden(setMatchHidden, e.dataKey)}
+                  formatter={(value: string, entry: any) => (
+                    <span style={{ opacity: matchHidden.has(entry.dataKey) ? 0.4 : 1, textDecoration: matchHidden.has(entry.dataKey) ? "line-through" : "none" }}>{value}</span>
+                  )}
+                />
+                <Bar yAxisId="left" dataKey="kandidaten" name="Kandidaten" fill="hsl(var(--chart-primary))" radius={[6, 6, 0, 0]} hide={matchHidden.has("kandidaten")} />
+                <Line yAxisId="right" type="monotone" dataKey="responsePct" name="Response %" stroke="hsl(var(--accent))" strokeWidth={2.5} hide={matchHidden.has("responsePct")} />
+                <Line yAxisId="right" type="monotone" dataKey="doorgezetPct" name="Doorgezet %" stroke="hsl(var(--gold))" strokeWidth={2.5} hide={matchHidden.has("doorgezetPct")} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+
           <p className="text-xs text-muted-foreground mt-3">
             <span className="font-semibold text-foreground">Excellent-bucket reageert 3.8× beter dan zwak-bucket</span>{" "}
             (31,4% vs 8,3%) — en wordt 9.8× vaker doorgezet naar Sales.
