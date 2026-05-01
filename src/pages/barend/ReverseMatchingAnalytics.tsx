@@ -498,6 +498,18 @@ vs 0-50 voor response- en doorzet-multiple.`}
             title="Functiegroep performance"
             subtitle="Gesorteerd op vacatures opgepakt"
             tone="primary"
+            devStory={<>Als <strong>Barend</strong> wil ik per functiegroep zien hoe de funnel scoort, zodat ik kan bepalen waar het algoritme of de outreach extra aandacht nodig heeft.</>}
+            devLogic={`Sorteerbare tabel (10 rijen) — bron: functiegroepRows.
+Kolommen: vac · gematched · geinteresseerd · voorgesteld
+· plaatsingen · fillRate · avgTime · omzet.
+
+Default sort: vac desc. toggleSort() wisselt richting
+op dezelfde kolom of zet een andere kolom op desc.
+
+Fill rate-kleur:
+  ≥ 30% → accent (groen)
+  ≥ 20% → foreground (neutraal)
+  < 20% → destructive (rood)`}
           />
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
