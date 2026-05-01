@@ -482,18 +482,18 @@ into revenue (expected lag of ~2-3 weeks).`}
             subtitle="Email · WhatsApp · LinkedIn"
             tone="accent"
             right={<Badge variant="outline" className="text-[10px]">Beste ROI: Email · 2070×</Badge>}
-            devStory={<>Als <strong>Barend</strong> wil ik per outreach-kanaal de response, kosten en ROI vergelijken om budget te kunnen verschuiven naar het meest winstgevende kanaal.</>}
-            devLogic={`Drie kanaalkaarten (kanaalPerformance):
+            devStory={<>As <strong>Barend</strong>, I want to compare response, cost and ROI per outreach channel so I can shift budget toward the most profitable one.</>}
+            devLogic={`Three channel cards (kanaalPerformance):
   Email     — Postmark
   WhatsApp  — Bird
   LinkedIn  — Unipile
 
-Per kaart: response rate (hero), sent, avg resp tijd,
-kosten/resp, plaatsingen, omzet, ROI.
+Per card: response rate (hero), sent, avg response time,
+cost per response, placements, revenue, ROI.
 
-ROI = omzet / outreach-kosten (gestandaardiseerd).
-Het "Beste ROI"-pill rechtsboven berekenen we client-side
-uit max(roi) over de drie kanalen.`}
+ROI = revenue / outreach cost (standardised).
+The "Best ROI" pill in the top right is computed
+client-side from max(roi) across the three channels.`}
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {kanaalPerformance.map(k => {
