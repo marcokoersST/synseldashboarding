@@ -1,13 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, ReactNode } from "react";
 import { ConsultantLayout } from "@/components/consultant/ConsultantLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
-import { DevNote } from "@/components/groeimodel/DevNote";
 import { cn } from "@/lib/utils";
+import { Info, AlertTriangle } from "lucide-react";
 import {
   Briefcase, Users, Send, Building2, MessageSquare, CheckCircle,
   PhoneOff, Clock, MessageSquareWarning, AlarmClock,
