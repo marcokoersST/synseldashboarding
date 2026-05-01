@@ -181,7 +181,22 @@ export default function ReverseMatchingAnalytics() {
               </SelectContent>
             </Select>
           ))}
-          <div className="ml-auto text-xs text-muted-foreground">Laatst ververst: 10:09</div>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Laatst ververst: 10:09</span>
+            <DevInfo
+              story={<>Als <strong>Barend</strong> wil ik snel wisselen tussen perioden en in- en uitzoomen op een specifieke vacature, functiegroep, bedrijf of consultant — zodat ik analyses zowel macro als micro kan uitvoeren.</>}
+              logic={`Filterbar — lokale React state per filter:
+  period (7d/30d/90d/QTD/YTD/Custom)
+  vacature, functiegroep, bedrijf, consultant.
+
+Default: 30d, alle dimensies = 'all'.
+UI volgt het ProductiviteitDashboard patroon
+(Tabs voor periode, Select voor categoriefilters).
+
+Toekomstig: filters propageren naar alle tegels via
+context i.p.v. herhaalde props.`}
+            />
+          </div>
         </CardContent>
       </Card>
 
