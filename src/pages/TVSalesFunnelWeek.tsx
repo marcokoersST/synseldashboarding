@@ -20,7 +20,7 @@ function WeekContent() {
     return (
       <div
         className="h-full w-full grid gap-2 overflow-hidden"
-        style={{ gridTemplateRows: "13fr 52fr 5fr 30fr" }}
+        style={{ gridTemplateRows: "11fr 42fr 5fr 42fr" }}
       >
         {/* KPI row */}
         <div className="flex items-stretch gap-1 min-h-0">
