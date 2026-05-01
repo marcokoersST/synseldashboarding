@@ -1,40 +1,105 @@
+# TV Mode Redesign — `/tv/sales-funnel-week`
 
-## Add "Dev info" buttons to TV Sales Funnel Week
+## Problem
 
-Add the existing `DevNote` component (red "Dev info" popover button) to every tile on `/tv/sales-funnel-week`, providing user stories and logic descriptions for the development team.
+In TV mode (fullscreen), the dashboard currently:
+- Uses tiny 10–11 px fonts unreadable on a 55" TV at viewing distance.
+- Has inner scrollbars in CandidatesPipeline, ConversionFormulasCard, and the unit-funnel wrapper, hiding data.
+- Auto-rotates units when there are too many to fit, requiring a viewer to wait to see all data.
+- Shows red "Dev info" buttons that don't belong on a public TV.
+- Replaces conversion-column headers with bare icons (Send, Crosshair, Repeat, etc.) with no visible legend in TV mode — the `Info` legend trigger is hidden when `compact` is true. Viewers can't tell what each icon means.
 
-### Tiles to annotate
+## Goal
 
-1. **SalesFunnelKPI** (top row, 5 cards) -- Add a single DevNote covering all KPI tiles, placed next to or below the KPI row
-2. **ConversionArrow** (between KPI tiles) -- Covered by the KPI DevNote
-3. **SalesFunnelFilterBar** -- Add DevNote explaining filter logic
-4. **UnitFunnelBreakdown** (main table) -- Add DevNote inside the tile
-5. **CallStats** (bottom-left) -- Add DevNote inside the tile
-6. **CandidatesPipeline** (bottom-center) -- Add DevNote inside the tile
-7. **ConversionFormulasCard** (bottom-right) -- Add DevNote inside the tile
+When `tv-mode` is active:
+- Every tile fits the viewport — **zero scrollbars anywhere**.
+- All data is visible at once — no rotation, no hover, no clicks needed.
+- Typography sized for ~3 m viewing distance on a 55" 1080p/4K TV.
+- Dev info buttons hidden in TV mode (still visible in normal preview).
+- A persistent, visible icon legend explains every conversion-column icon.
 
-### Implementation
+## Layout (TV mode only)
 
-**File: `src/pages/TVSalesFunnelWeek.tsx`**
-- Import `DevNote` from `@/components/groeimodel/DevNote`
-- Add a DevNote after the KPI row for the funnel metrics + conversion arrows
-- Add a DevNote after the filter bar explaining the filter controls
+Fixed CSS grid that occupies `h-screen` minus the small "Sluiten" bar:
 
-**Files: each tile component**
-- `src/components/tv/SalesFunnelKPI.tsx` -- No change (covered at page level)
-- `src/components/tv/UnitFunnelBreakdown.tsx` -- Add DevNote at bottom of tile with user story about unit-level funnel breakdown and drill-down to consultants
-- `src/components/tv/CallStats.tsx` -- Add DevNote describing call/mail activity tracking
-- `src/components/tv/CandidatesPipeline.tsx` -- Add DevNote describing candidate status distribution
-- `src/components/tv/ConversionFormulasCard.tsx` -- Add DevNote describing benchmark comparison logic
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ KPI ROW  (5 cards + 4 arrows)            ~13% height        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ UNIT FUNNEL BREAKDOWN (always fully expanded, all rows)     │
+│                                          ~52% height        │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│ ICON LEGEND STRIP — full width            ~5% height        │
+├─────────────────────────────────────────────────────────────┤
+│ CallStats        │ CandidatesPipeline │ ConversionFormulas  │
+│                                          ~30% height        │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### DevNote content style
-Each DevNote follows the pattern from Groeimodel:
-- **User story**: "As a user (manager/TV viewer), I want to see X, so that Y"
-- **Logic**: Technical description of data sources, calculations, and filter behavior
+## Per-tile changes
 
-### Files changed
-- `src/pages/TVSalesFunnelWeek.tsx`
-- `src/components/tv/UnitFunnelBreakdown.tsx`
-- `src/components/tv/CallStats.tsx`
-- `src/components/tv/CandidatesPipeline.tsx`
-- `src/components/tv/ConversionFormulasCard.tsx`
+### `TVSalesFunnelWeek.tsx`
+- Wrap page in `grid` with fixed fr ratios (e.g. `13fr 52fr 5fr 30fr`), `h-full overflow-hidden`.
+- Hide every `<DevNote>` on this page when `useTVCompact()` is true.
+- **New: ConversionIconLegend strip** between the unit table and the bottom row — visible only in TV mode. Renders all 11 entries from `conversionIconMap` as horizontal pills: `<Icon> Label — Formula`. Sized `text-sm` so it's readable from across the room. Single row, `flex flex-wrap justify-center gap-x-4 gap-y-1`.
+
+### `SalesFunnelKPI.tsx`
+- TV-mode font scale: label `text-base`, value bumped to `text-2xl`, delta pill `text-sm`.
+- Card padding `p-4`.
+
+### `UnitFunnelBreakdown.tsx`
+- **Remove rotation logic in TV mode** — always show all units expanded with all consultants.
+- Remove `overflow-x-auto`; use `table-fixed` with percentage column widths.
+- TV mode: header pills `text-sm`, body cells `text-sm`, consultant rows `text-xs`.
+- **Show text label next to icons** in column headers when in TV mode (replace icon-only headers with `icon + label`) so column meaning is explicit even before the legend strip is read.
+- Auto-tighten row padding (`useLayoutEffect` measuring container vs row count) to guarantee no overflow without a scrollbar.
+
+### `CallStats.tsx`
+- TV mode: KPIs `text-lg`, chip text `text-sm`, chart `flex-1 min-h-0`.
+- Ensure all flex children have `min-h-0` (no clipping).
+
+### `CandidatesPipeline.tsx`
+- **Remove `overflow-y-auto`** on the bars container.
+- Use `flex-1` + `justify-between` so 8 bars distribute evenly across available height.
+- TV mode: bar labels `text-sm`, count `text-base font-bold`, bar height `h-2.5`.
+
+### `ConversionFormulasCard.tsx`
+- **Remove `overflow-y-auto`** on the formula list.
+- Use `flex-1 grid grid-rows-[repeat(N,1fr)]` so all rows fit equally.
+- TV mode: row text `text-sm`, Actueel/Doel pills `text-base font-bold`.
+
+### Icon legend strip (new component)
+- File: `src/components/tv/ConversionIconLegend.tsx`.
+- Renders one row per entry from `conversionFormulas` (group + icon + short formula + benchmark) in a compact, horizontally-laid-out strip.
+- Background `bg-muted/30 rounded-lg`, padding `px-3 py-1.5`, separators `divide-x divide-border/40`.
+- Used only when `useTVCompact()` is true.
+
+### `DevNote` hiding
+- Wrap each `<DevNote ... />` call inside the TV components with `{!compact && (<DevNote ... />)}`. No edits to `DevNote` itself.
+
+### Global safety net (`src/index.css`)
+```css
+.tv-mode .overflow-y-auto,
+.tv-mode .overflow-x-auto,
+.tv-mode .overflow-auto { overflow: hidden !important; }
+```
+
+## Technical details
+
+- **No new dependencies, no data changes.**
+- Files touched:
+  - `src/pages/TVSalesFunnelWeek.tsx`
+  - `src/components/tv/SalesFunnelKPI.tsx`
+  - `src/components/tv/UnitFunnelBreakdown.tsx`
+  - `src/components/tv/CallStats.tsx`
+  - `src/components/tv/CandidatesPipeline.tsx`
+  - `src/components/tv/ConversionFormulasCard.tsx`
+  - `src/components/tv/ConversionIconLegend.tsx` (new)
+  - `src/index.css`
+- Behavior outside TV mode is unchanged (preview without fullscreen keeps DevNotes, current spacing, and current legend popover).
+
+## Out of scope
+
+- Other TV pages (`/tv/sales-funnel-period`, `/tv/heatmap`, `/tv/ranglijsten`, `/tv/beker`, `/tv/gedetacheerden`). Same pattern can be rolled out in a follow-up.

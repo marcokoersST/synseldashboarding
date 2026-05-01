@@ -24,8 +24,8 @@ export function SalesFunnelKPI({ metric, index }: SalesFunnelKPIProps) {
   return (
     <div
       className={cn(
-        "bg-card rounded-xl border border-border flex flex-col overflow-hidden animate-fade-in",
-        compact ? "p-2" : "p-3"
+        "bg-card rounded-xl border border-border flex flex-col overflow-hidden animate-fade-in h-full",
+        compact ? "p-3" : "p-3"
       )}
       style={{ animationDelay: `${index * 80}ms` }}
     >
@@ -33,18 +33,18 @@ export function SalesFunnelKPI({ metric, index }: SalesFunnelKPIProps) {
       <div
         className={cn(
           "flex items-center gap-1.5 rounded-t-xl bg-gradient-to-r from-primary/10 via-accent/5 to-transparent border-b border-border/50",
-          compact ? "-mx-2 -mt-2 mb-1.5 px-2 py-1" : "-mx-3 -mt-3 mb-2 px-3 py-1.5"
+          compact ? "-mx-3 -mt-3 mb-2 px-3 py-1.5" : "-mx-3 -mt-3 mb-2 px-3 py-1.5"
         )}
       >
-        <Icon className={cn("text-muted-foreground", compact ? "w-3 h-3" : "w-3.5 h-3.5")} />
-        <span className={cn("font-semibold text-foreground truncate", compact ? "text-[10px]" : "text-xs")}>
+        <Icon className={cn("text-muted-foreground", compact ? "w-4 h-4" : "w-3.5 h-3.5")} />
+        <span className={cn("font-semibold text-foreground truncate", compact ? "text-base" : "text-xs")}>
           {metric.label}
         </span>
       </div>
 
       {/* KPI badge */}
-      <div className="flex justify-center py-1">
-        <KPIBadge icon={Icon} value={metric.value} label="" tone={tone} compact={compact} />
+      <div className="flex-1 flex justify-center items-center py-1">
+        <KPIBadge icon={Icon} value={metric.value} label="" tone={tone} compact={false} size={compact ? "lg" : "md"} />
       </div>
 
       {/* Delta pill */}
@@ -52,11 +52,11 @@ export function SalesFunnelKPI({ metric, index }: SalesFunnelKPIProps) {
         <span
           className={cn(
             "inline-flex items-center gap-1 rounded-full font-semibold",
-            compact ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-[11px]",
+            compact ? "px-2.5 py-1 text-sm" : "px-2 py-0.5 text-[11px]",
             isPositive ? "bg-accent/10 text-accent" : "bg-destructive/10 text-destructive"
           )}
         >
-          {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+          {isPositive ? <TrendingUp className={compact ? "w-4 h-4" : "w-3 h-3"} /> : <TrendingDown className={compact ? "w-4 h-4" : "w-3 h-3"} />}
           {isPositive ? "+" : ""}{metric.change}%
           <span className="text-muted-foreground font-normal ml-0.5">{compact ? "v.p." : "v. periode"}</span>
         </span>

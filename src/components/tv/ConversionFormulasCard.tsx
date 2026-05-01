@@ -38,6 +38,11 @@ export function ConversionFormulasCard({ data }: ConversionFormulasCardProps = {
     return "—";
   });
 
+  // Grid template: in TV mode, every formula row shares the available height equally.
+  const listStyle = compact
+    ? { gridTemplateRows: `repeat(${conversionFormulas.length}, minmax(0, 1fr))` }
+    : undefined;
+
   return (
     <div className={cn("bg-card rounded-xl border border-border h-full overflow-hidden flex flex-col", compact ? "p-3" : "p-5")}>
       <TileHeader
@@ -50,7 +55,7 @@ export function ConversionFormulasCard({ data }: ConversionFormulasCardProps = {
       <div className={cn(
         "grid items-center rounded-md bg-muted/20 text-muted-foreground font-medium uppercase tracking-wide",
         compact
-          ? "grid-cols-[16px_110px_1fr_56px_56px] gap-2 text-[9px] px-1.5 py-1 mb-1"
+          ? "grid-cols-[20px_130px_1fr_70px_70px] gap-2 text-xs px-2 py-1.5 mb-1.5"
           : "grid-cols-[16px_130px_1fr_64px_64px] gap-3 text-[10px] px-2 py-1.5 mb-1.5"
       )}>
         <span />
@@ -60,7 +65,13 @@ export function ConversionFormulasCard({ data }: ConversionFormulasCardProps = {
         <span className="text-right">Doel</span>
       </div>
 
-      <div className={cn("overflow-y-auto flex-1", compact ? "space-y-1" : "space-y-1.5")}>
+      <div
+        className={cn(
+          "flex-1 min-h-0",
+          compact ? "grid gap-1" : "space-y-1.5"
+        )}
+        style={listStyle}
+      >
         {conversionFormulas.map((f, i) => {
           const actualStr = actuals[i];
           const actualNum = parseFloat(actualStr);
@@ -74,19 +85,19 @@ export function ConversionFormulasCard({ data }: ConversionFormulasCardProps = {
               className={cn(
                 "grid items-center rounded-md",
                 compact
-                  ? "grid-cols-[16px_110px_1fr_56px_56px] gap-2 text-[11px] px-1.5 py-1"
+                  ? "grid-cols-[20px_130px_1fr_70px_70px] gap-2 text-sm px-2 py-1 bg-muted/10"
                   : "grid-cols-[16px_130px_1fr_64px_64px] gap-3 text-xs px-2 py-1 bg-muted/10"
               )}
             >
-              <span className="rounded-full bg-muted/60 w-4 h-4 flex items-center justify-center">
-                <IconComp className="text-muted-foreground w-2.5 h-2.5" />
+              <span className={cn("rounded-full bg-muted/60 flex items-center justify-center", compact ? "w-5 h-5" : "w-4 h-4")}>
+                <IconComp className={cn("text-muted-foreground", compact ? "w-3 h-3" : "w-2.5 h-2.5")} />
               </span>
-              <span className="text-muted-foreground">{f.group}</span>
+              <span className="text-muted-foreground truncate">{f.group}</span>
               <span className="font-medium text-foreground truncate">{f.formula}</span>
-              <span className={cn("text-right font-bold tabular-nums rounded-full px-1.5 py-0.5", status)}>
+              <span className={cn("text-right font-bold tabular-nums rounded-full px-1.5 py-0.5", status, compact && "text-base")}>
                 {actualStr}
               </span>
-              <span className="text-right text-muted-foreground tabular-nums rounded-full px-1.5 py-0.5 border border-border/40">
+              <span className={cn("text-right text-muted-foreground tabular-nums rounded-full px-1.5 py-0.5 border border-border/40", compact && "text-base")}>
                 {f.benchmark.replace("≥ ", "")}
               </span>
             </div>
@@ -94,9 +105,10 @@ export function ConversionFormulasCard({ data }: ConversionFormulasCardProps = {
         })}
       </div>
 
-      <DevNote
-        story={<><strong>As a user (manager/TV viewer)</strong>, I want to see the key conversion ratios compared against benchmark targets, <strong>so that</strong> I can instantly judge which parts of the funnel are under- or over-performing.</>}
-        logic={`Each row represents a conversion formula defined in
+      {!compact && (
+        <DevNote
+          story={<><strong>As a user (manager/TV viewer)</strong>, I want to see the key conversion ratios compared against benchmark targets, <strong>so that</strong> I can instantly judge which parts of the funnel are under- or over-performing.</>}
+          logic={`Each row represents a conversion formula defined in
 ConversionLegend.ts — e.g. "Inschr. %" = Ingeschreven
 ÷ Toegewezen × 100.
 
@@ -114,7 +126,8 @@ conversionFormulas (e.g. "≥ 60%").
 
 When period data is passed via the data prop, the card
 recalculates against period totals instead of week.`}
-      />
+        />
+      )}
     </div>
   );
 }

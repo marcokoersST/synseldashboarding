@@ -227,6 +227,13 @@
     box-shadow: none;
   }
 
+  /* TV mode safety net: never show inner scrollbars on a TV display */
+  .tv-mode .overflow-y-auto,
+  .tv-mode .overflow-x-auto,
+  .tv-mode .overflow-auto {
+    overflow: hidden !important;
+  }
+
   /* TV mode: top-3 wave animation on rank icons */
   @keyframes tv-wave {
     0%, 20%, 100% { transform: translateY(0); }
