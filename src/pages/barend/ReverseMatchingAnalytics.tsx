@@ -597,14 +597,18 @@ client-side from max(roi) across the three channels.`}
           <TileStrip
             icon={Gauge}
             title="Match-kwaliteit"
-            subtitle="Kandidaten · Response · Doorgezet naar Sales"
+            subtitle={`Kandidaten · Response · Doorgezet naar Sales · ${matchPeriod}`}
             tone="chart-primary"
+            right={<TilePeriodTabs value={matchPeriod} onChange={setMatchPeriod} />}
             devStory={<>As <strong>Barend</strong>, I want to validate that a higher match score also leads to more responses and forwards to Sales — that proves the value of the matching algorithm.</>}
             devLogic={`ComposedChart over 4 score buckets (matchKwaliteitBuckets):
   0–50 · 50–70 · 70–85 · 85–100
 
   Bar  (left)  : number of candidates in bucket
   Line (right) : Response % and Forwarded %
+
+Tile-local period state (overrides global filter): 7d/30d/90d/QTD/YTD.
+Legend click toggles series visibility via hidden-set state.
 
 Expected pattern: monotonically increasing from weak
 to excellent. Conclusion line below compares 85-100
@@ -618,13 +622,20 @@ vs 0-50 for the response and forward multipliers.`}
                 <YAxis yAxisId="left" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
                 <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-                <Bar yAxisId="left" dataKey="kandidaten" name="Kandidaten" fill="hsl(var(--chart-primary))" radius={[6, 6, 0, 0]} />
-                <Line yAxisId="right" type="monotone" dataKey="responsePct" name="Response %" stroke="hsl(var(--accent))" strokeWidth={2.5} />
-                <Line yAxisId="right" type="monotone" dataKey="doorgezetPct" name="Doorgezet %" stroke="hsl(var(--gold))" strokeWidth={2.5} />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, paddingTop: 8, cursor: "pointer" }}
+                  onClick={(e: any) => toggleHidden(setMatchHidden, e.dataKey)}
+                  formatter={(value: string, entry: any) => (
+                    <span style={{ opacity: matchHidden.has(entry.dataKey) ? 0.4 : 1, textDecoration: matchHidden.has(entry.dataKey) ? "line-through" : "none" }}>{value}</span>
+                  )}
+                />
+                <Bar yAxisId="left" dataKey="kandidaten" name="Kandidaten" fill="hsl(var(--chart-primary))" radius={[6, 6, 0, 0]} hide={matchHidden.has("kandidaten")} />
+                <Line yAxisId="right" type="monotone" dataKey="responsePct" name="Response %" stroke="hsl(var(--accent))" strokeWidth={2.5} hide={matchHidden.has("responsePct")} />
+                <Line yAxisId="right" type="monotone" dataKey="doorgezetPct" name="Doorgezet %" stroke="hsl(var(--gold))" strokeWidth={2.5} hide={matchHidden.has("doorgezetPct")} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+
           <p className="text-xs text-muted-foreground mt-3">
             <span className="font-semibold text-foreground">Excellent-bucket reageert 3.8× beter dan zwak-bucket</span>{" "}
             (31,4% vs 8,3%) — en wordt 9.8× vaker doorgezet naar Sales.
