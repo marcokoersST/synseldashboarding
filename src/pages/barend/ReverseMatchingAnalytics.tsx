@@ -174,6 +174,58 @@ export default function ReverseMatchingAnalytics() {
             ))}
           </div>
           <div className="h-6 w-px bg-border mx-1" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={compareActive ? "default" : "outline"}
+                size="sm"
+                className={cn(
+                  "h-9 px-3 text-xs gap-1.5",
+                  compareActive && "bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                {compareLabels[compareMode]}
+                {compareActive && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => { e.stopPropagation(); setCompareMode("none"); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setCompareMode("none"); } }}
+                    className="ml-1 -mr-1 rounded hover:bg-primary-foreground/20 p-0.5"
+                    aria-label="Vergelijking uitzetten"
+                  >
+                    <X className="w-3 h-3" />
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-56 p-2">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 pt-1 pb-2">
+                Vergelijken met
+              </div>
+              {([
+                ["none", "Geen vergelijking"],
+                ["previous", "Vorige periode"],
+                ["year", "Vorig jaar"],
+                ["custom", "Aangepast bereik…"],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setCompareMode(key)}
+                  className={cn(
+                    "w-full text-left text-xs px-2 py-1.5 rounded-md transition-colors",
+                    compareMode === key
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : "hover:bg-muted text-foreground"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
+          <div className="h-6 w-px bg-border mx-1" />
           {([
             ["Vacature", vacature, setVacature],
             ["Functiegroep", functiegroep, setFunctiegroep],
