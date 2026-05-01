@@ -59,9 +59,45 @@ function DeltaBadge({ change }: { change: number }) {
   );
 }
 
+/** Compact Dev info popover-knop — inline variant van DevNote voor in tile-headers. */
+function DevInfo({ story, logic }: { story: ReactNode; logic: ReactNode }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          size="sm"
+          className="h-7 px-2.5 text-xs gap-1.5 bg-red-600 hover:bg-red-700 text-white shrink-0"
+        >
+          <Info className="w-3.5 h-3.5" />
+          Dev info
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-96 text-xs space-y-3" align="end">
+        <div className="flex items-center gap-1.5 font-semibold text-foreground">
+          <Info className="w-3.5 h-3.5" />
+          For the development team
+        </div>
+        <div className="flex items-start gap-1.5 text-red-600 font-medium border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 rounded p-2">
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+          <span>Delete this button after development.</span>
+        </div>
+        <div className="space-y-1">
+          <div className="font-medium text-foreground/80">User story</div>
+          <p className="leading-relaxed text-muted-foreground">{story}</p>
+        </div>
+        <div className="space-y-1">
+          <div className="font-medium text-foreground/80">Logic</div>
+          <pre className="bg-muted/60 p-3 rounded text-[11px] leading-snug font-mono whitespace-pre-wrap text-foreground/90">{logic}</pre>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 /** Reusable tile header — same gradient strip used across the project (TileHeader pattern). */
-function TileStrip({ icon: Icon, title, subtitle, right, tone = "primary" }: {
+function TileStrip({ icon: Icon, title, subtitle, right, tone = "primary", devStory, devLogic }: {
   icon: typeof Briefcase; title: string; subtitle?: string; right?: React.ReactNode; tone?: string;
+  devStory?: ReactNode; devLogic?: ReactNode;
 }) {
   return (
     <div className="flex items-start gap-3 rounded-t-xl bg-gradient-to-r from-primary/10 via-accent/5 to-transparent border-b border-border/50 -mx-6 -mt-6 mb-4 px-6 py-3">
@@ -73,6 +109,7 @@ function TileStrip({ icon: Icon, title, subtitle, right, tone = "primary" }: {
         {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
       </div>
       {right}
+      {devStory && devLogic && <DevInfo story={devStory} logic={devLogic} />}
     </div>
   );
 }
