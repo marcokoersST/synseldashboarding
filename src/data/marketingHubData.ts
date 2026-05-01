@@ -80,9 +80,9 @@ export const paidChannelData: PaidChannelRow[] = [
   { source: "Technicus.nl", conversions: 45, registrations: 31, spend: 1500, unit: "Engineering", functiegroep: "Engineer" },
   { source: "Technicus.nl", conversions: 28, registrations: 18, spend: 900, unit: "Monteurs", functiegroep: "Monteur" },
   { source: "Technicus.nl", conversions: 15, registrations: 10, spend: 600, unit: "Operators", functiegroep: "Operator" },
-  { source: "Jobster", conversions: 52, registrations: 36, spend: 1800, unit: "Operators", functiegroep: "Operator" },
-  { source: "Jobster", conversions: 38, registrations: 25, spend: 1300, unit: "Monteurs", functiegroep: "Monteur" },
-  { source: "Jobster", conversions: 21, registrations: 14, spend: 800, unit: "Engineering", functiegroep: "Engineer" },
+  { source: "Jobster", conversions: 52, registrations: 36, spend: 0, unit: "Operators", functiegroep: "Operator" },
+  { source: "Jobster", conversions: 38, registrations: 25, spend: 0, unit: "Monteurs", functiegroep: "Monteur" },
+  { source: "Jobster", conversions: 21, registrations: 14, spend: 0, unit: "Engineering", functiegroep: "Engineer" },
   { source: "Meta", conversions: 96, registrations: 64, spend: 3200, unit: "Operators", functiegroep: "Operator" },
   { source: "Meta", conversions: 78, registrations: 52, spend: 2600, unit: "Monteurs", functiegroep: "Monteur" },
   { source: "Meta", conversions: 43, registrations: 28, spend: 1600, unit: "Engineering", functiegroep: "Engineer" },
@@ -113,9 +113,9 @@ export const jobboardData: JobboardRow[] = [
   { board: "Technicus.nl", category: "Monteur", conversions: 28, registrations: 18, spend: 900, unit: "Monteurs" },
   { board: "Technicus.nl", category: "Operator", conversions: 15, registrations: 10, spend: 600, unit: "Operators" },
   // Jobster
-  { board: "Jobster", category: "Monteur", conversions: 38, registrations: 25, spend: 1300, unit: "Monteurs" },
-  { board: "Jobster", category: "Operator", conversions: 52, registrations: 36, spend: 1800, unit: "Operators" },
-  { board: "Jobster", category: "Engineer", conversions: 21, registrations: 14, spend: 800, unit: "Engineering" },
+  { board: "Jobster", category: "Monteur", conversions: 38, registrations: 25, spend: 0, unit: "Monteurs" },
+  { board: "Jobster", category: "Operator", conversions: 52, registrations: 36, spend: 0, unit: "Operators" },
+  { board: "Jobster", category: "Engineer", conversions: 21, registrations: 14, spend: 0, unit: "Engineering" },
 ];
 
 export const paidSocialData: PaidSocialRow[] = [
