@@ -246,21 +246,21 @@ export default function ReverseMatchingAnalytics() {
           <div className="ml-auto flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Laatst ververst: 10:09</span>
             <DevInfo
-              story={<>Als <strong>Barend</strong> wil ik snel wisselen tussen perioden, in- en uitzoomen op een specifieke vacature, functiegroep, bedrijf of consultant, en de huidige periode kunnen vergelijken met vorige periode of vorig jaar.</>}
-              logic={`Filterbar — lokale React state per filter:
+              story={<>As <strong>Barend</strong>, I want to switch quickly between time periods, drill into a specific vacancy, job group, company or consultant, and compare the current period to the previous period or the same period last year.</>}
+              logic={`Filter bar — local React state per filter:
   period (7d/30d/90d/QTD/YTD/Custom)
   compareMode (none/previous/year/custom)
   vacature, functiegroep, bedrijf, consultant.
 
-Default: 30d, vergelijking uit, alle dimensies = 'all'.
-Compare-knop wordt 'gevuld' (primary) zodra een
-vergelijkmodus actief is, met X om snel te resetten.
+Defaults: 30d, comparison off, all dimensions = 'all'.
+The compare button switches to a filled (primary) style
+once a comparison mode is active, with an X to reset.
 
-UI volgt het ProductiviteitDashboard patroon
-(Tabs voor periode, Select voor categoriefilters).
+UI mirrors the ProductiviteitDashboard pattern
+(Tabs for period, Select for category filters).
 
-Toekomstig: filters + compareMode propageren naar
-alle tegels (delta = current - compare) via context.`}
+Future: filters + compareMode propagated to all tiles
+via context (delta = current - compare).`}
             />
           </div>
         </CardContent>
