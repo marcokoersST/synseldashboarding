@@ -363,7 +363,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
                 <div key={u.unit}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium">{u.unit}</span>
-                    <span className="text-muted-foreground">{u.registrations} bem. / {u.conversions} conv.</span>
+                    <span className="text-muted-foreground">{u.registrations} inschrijven / {u.conversions} conv.</span>
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
