@@ -386,7 +386,13 @@ Severity mapping:
   danger  → bg-destructive/5, border-destructive/30
 
 "Oldest waiting …" is derived from the oldest pending
-record per group (currently static in actieNodigTiles).`}
+record per group (currently static in actieNodigTiles).
+
+Click behaviour:
+  • Tiles open a slide-in candidate panel (Sheet, right side).
+  • Recruit CRM tiles (doorgezet-niet-gebeld, sla-2u-niet-gebeld) deeplink via the blue R-badge.
+  • Bird tiles (gereageerd-niet-doorgezet, sla-1u-geen-reactie) deeplink via the green WhatsApp icon.
+  • Live tiles (warning) reflect "now"; SLA tiles (danger) scope to the global period filter.`}
             />
             <div className="grid grid-cols-2 gap-3">
               {actieNodigTiles.map(tile => {
