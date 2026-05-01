@@ -149,6 +149,32 @@ export default function ReverseMatchingAnalytics() {
   const [funcDir, setFuncDir] = useState<"asc" | "desc">("desc");
   const [compareMode, setCompareMode] = useState<"none" | "previous" | "year" | "custom">("none");
 
+  // Tile-local state — per-tile period + hidden series via legend toggle
+  const [trendPeriod, setTrendPeriod] = useState<TilePeriod>("YTD");
+  const [trendHidden, setTrendHidden] = useState<Set<string>>(new Set());
+  const [matchPeriod, setMatchPeriod] = useState<TilePeriod>("YTD");
+  const [matchHidden, setMatchHidden] = useState<Set<string>>(new Set());
+
+  const toggleHidden = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) => {
+    setter(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  const sliceTrend = (n: number) => trendOverTimeData.slice(-n);
+  const trendData = useMemo(() => {
+    switch (trendPeriod) {
+      case "7d":  return sliceTrend(2);
+      case "30d": return sliceTrend(4);
+      case "90d": return sliceTrend(12);
+      case "QTD": return trendOverTimeData;
+      case "YTD": return trendOverTimeData;
+    }
+  }, [trendPeriod]);
+
+
   const compareLabels = {
     none: "Vergelijken",
     previous: "vs. vorige periode",
