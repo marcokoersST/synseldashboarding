@@ -28,7 +28,7 @@ export function ConversionFormulasCard({ data }: ConversionFormulasCardProps = {
     for (const g of columnGroups) {
       for (const sub of g.subs) {
         if (sub.type === "conv") {
-          if (g.group === f.group && sub.label === f.label) {
+          if (sub.label === f.label) {
             return getTotalValue(sub, rows);
           }
         }
