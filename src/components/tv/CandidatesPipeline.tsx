@@ -4,6 +4,7 @@ import { useTVCompact } from "./TVDashboardLayout";
 import { TileHeader } from "./TileHeader";
 import { KPIBadge } from "./KPIBadge";
 import { cn } from "@/lib/utils";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 export function CandidatesPipeline() {
   const compact = useTVCompact();
@@ -49,6 +50,25 @@ export function CandidatesPipeline() {
           </div>
         ))}
       </div>
+
+      <DevNote
+        story={<><strong>As a user (manager/TV viewer)</strong>, I want to see how many active candidates are currently in each pipeline stage, <strong>so that</strong> I can gauge the health of the candidate pool and identify stages that need attention.</>}
+        logic={`Hero counter at the top shows the total number of
+active candidates across all stages.
+
+Below it, 8 horizontal bars represent pipeline stages:
+  Op verdelen, Op inschrijven, In procedure,
+  Met uitnodigingen, Met gesprekken,
+  Op gesprek geweest, Procedures met dealsluiter,
+  Geplaatst.
+
+Each bar's width is proportional to the highest count
+(max-normalised). Colors are distinct per stage.
+
+Data source: candidatesInsides from tvData.ts.
+This is a snapshot — it does not change with the
+date filter, only with unit selection.`}
+      />
     </div>
   );
 }

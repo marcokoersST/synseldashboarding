@@ -5,6 +5,7 @@ import { useTVCompact } from "./TVDashboardLayout";
 import { TileHeader } from "./TileHeader";
 import { KPIBadge } from "./KPIBadge";
 import { cn } from "@/lib/utils";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 interface CallStatsProps {
   mode: "week" | "period";
@@ -105,9 +106,27 @@ export function CallStats({ mode }: CallStatsProps) {
             <Bar dataKey="mails" name="Acq. mails" fill="hsl(var(--gold))" radius={[6, 6, 0, 0]}>
               <LabelList dataKey="mails" position="top" fontSize={10} fill="hsl(var(--gold))" fontWeight={600} />
             </Bar>
-          </BarChart>
+       </BarChart>
         </ResponsiveContainer>
       </div>
+
+      <DevNote
+        story={<><strong>As a user (manager/TV viewer)</strong>, I want to see total outbound calls, call duration, gesprekken, acquisition mails and acquisition calls for the week, broken down by unit, <strong>so that</strong> I can track daily calling and mailing effort across the team.</>}
+        logic={`Five KPI badges at the top:
+  • Uitgaand — sum of daily outbound calls
+  • Gesprekstijd — total minutes converted to Hu:MMm
+  • Gesprekken — total gesprekken across units
+  • Acq. mails — acquisition mails from mailStats
+  • Acq. calls — acquisition calls per unit
+
+Per-unit chips break these numbers down by unit.
+
+Bar chart shows daily outbound calls (blue) and
+acquisition mails (gold) side by side.
+
+Mode prop switches between week data and period data
+from tvData.ts.`}
+      />
     </div>
   );
 }
