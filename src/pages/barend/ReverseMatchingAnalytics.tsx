@@ -353,6 +353,18 @@ Total-label in midden van donut = bronMixData.total.`}
             title="Trend over tijd"
             subtitle="Outreach, responses, CVs, plaatsingen + omzet · 30d (globaal)"
             tone="primary"
+            devStory={<>Als <strong>Barend</strong> wil ik de funnel-activiteit en omzet over tijd zien om volume- en conversie-trends te spotten en seizoenseffecten te herkennen.</>}
+            devLogic={`ComposedChart over 12 weken (trendOverTimeData):
+  Lines (links Y-as):
+    • Outreach     — chart-primary
+    • Responses    — accent
+    • CVs gedeeld  — gold
+    • Plaatsingen  — destructive
+  Area (rechts Y-as):
+    • Omzet (€)    — primary, met gradient fill
+
+Doel: snel zien of een volume-piek doorvertaalt naar
+omzet (lag van ~2-3 weken verwacht).`}
           />
           <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
