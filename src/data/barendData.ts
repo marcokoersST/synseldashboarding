@@ -55,10 +55,10 @@ export const actieNodigTiles = [
 export const bronMixData = {
   total: 2416,
   segments: [
-    { name: "Mail", value: 1240, share: 51.3, change: 4.2, color: "hsl(var(--chart-primary))" },
+    { name: "Mail", value: 1240, share: 51.3, change: 4.2, color: "hsl(var(--primary))" },
     { name: "Bird (WhatsApp)", value: 612, share: 25.3, change: 12.6, color: "hsl(var(--accent))" },
     { name: "Sollicitatie", value: 312, share: 12.9, change: 8.4, color: "hsl(var(--gold))" },
-    { name: "LinkedIn", value: 252, share: 10.4, change: 22.8, color: "hsl(var(--primary))" },
+    { name: "LinkedIn", value: 252, share: 10.4, change: 22.8, color: "hsl(var(--destructive))" },
   ],
 };
 
