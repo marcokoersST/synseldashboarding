@@ -114,6 +114,7 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     return Array.from(set).sort();
   }, []);
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set(allUnits));
+  const [unitViewMode, setUnitViewMode] = useState<"totaal" | "gemiddeld" | "mediaan">("totaal");
 
   const filteredConsultants = useMemo(
     () => inflowConsultantData.filter((c) => selectedUnits.has(c.unit)),
@@ -124,7 +125,36 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
     { inschrijvingen: 0, acquisitie: 0, prevInschrijvingen: 0, prevAcquisitie: 0 }
   ), [filteredConsultants]);
   const sourceTotals = useMemo(() => inflowSourceData.reduce((acc, s) => ({ inschrijvingen: acc.inschrijvingen + s.inschrijvingen, acquisitie: acc.acquisitie + s.acquisitie }), { inschrijvingen: 0, acquisitie: 0 }), []);
-  const unitChartData = useMemo(() => aggregateByUnit(filteredConsultants), [filteredConsultants]);
+
+  const unitChartData = useMemo(() => {
+    const baseData = aggregateByUnit(filteredConsultants);
+    if (unitViewMode === "totaal") return baseData;
+
+    const median = (arr: number[]) => {
+      const sorted = [...arr].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    };
+
+    return baseData.map(unitRow => {
+      const consultantsInUnit = filteredConsultants.filter(c => c.unit === unitRow.unit);
+      const count = consultantsInUnit.length || 1;
+
+      if (unitViewMode === "gemiddeld") {
+        return {
+          ...unitRow,
+          inschrijvingen: Math.round((unitRow.inschrijvingen / count) * 10) / 10,
+          acquisitie: Math.round((unitRow.acquisitie / count) * 10) / 10,
+        };
+      }
+      // mediaan
+      return {
+        ...unitRow,
+        inschrijvingen: median(consultantsInUnit.map(c => c.inschrijvingen)),
+        acquisitie: median(consultantsInUnit.map(c => c.acquisitie)),
+      };
+    });
+  }, [filteredConsultants, unitViewMode]);
   const previousInflowRegistrations = useMemo(
     () => getComparisonValue(consultantTotals.inschrijvingen, { dateRange, compareRange, seed: "overview-inflow-registrations" }),
     [consultantTotals.inschrijvingen, dateRange, compareRange],
