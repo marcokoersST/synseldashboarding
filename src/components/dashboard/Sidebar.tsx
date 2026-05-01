@@ -31,7 +31,8 @@ import {
    Building2,
     Sprout,
     Sparkles,
-    ShieldCheck
+    ShieldCheck,
+    Radar
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -237,6 +238,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const isOnConsultantPage = location.pathname.startsWith("/consultant/");
   const isOnHendrikPage = location.pathname.startsWith("/hendrik/");
   const isOnPeterJanPage = location.pathname.startsWith("/peter-jan/");
+  const isOnBarendPage = location.pathname.startsWith("/barend/");
   const isOnManagerPage = location.pathname.startsWith("/manager-dashboard");
   const isOnMarketingPage = location.pathname.startsWith("/marketing");
   const isOnCorporateRecruitmentPage = location.pathname.startsWith("/corporate-recruitment");
@@ -252,6 +254,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
     ...(isOnHendrikPage ? ["/hendrik/overzicht"] : []),
     ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
+    ...(isOnBarendPage ? ["/barend/reverse-matching"] : []),
     ...(isOnMarketingPage ? ["/marketing"] : []),
     ...(isOnManagerPage ? ["/manager-dashboard"] : []),
     ...(isOnCorporateRecruitmentPage ? ["/corporate-recruitment"] : []),
