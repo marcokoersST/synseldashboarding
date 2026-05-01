@@ -9,6 +9,7 @@ import { TileHeader } from "./TileHeader";
 import { cn } from "@/lib/utils";
 import { ChevronRight, ChevronDown, BarChart3 } from "lucide-react";
 import { useSalesFunnelFilters } from "@/contexts/SalesFunnelFiltersContext";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 const groupToneClasses: Record<string, string> = {
   "1. Inschrijvingen": "bg-primary/10 text-primary",
@@ -339,6 +340,33 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
           </TableRow>
         </TableBody>
       </Table>
+
+      <DevNote
+        story={<><strong>As a user (manager/TV viewer)</strong>, I want to see a detailed breakdown of funnel metrics per unit and per consultant, <strong>so that</strong> I can compare performance across teams and drill down into individual contributions.</>}
+        logic={`The table has 7 column groups covering the full funnel:
+  1. Inschrijvingen (Toegewezen, Ingeschreven, Inschr. %,
+     Intakes, Intake %)
+  2. Acquisitie (Acquisitie, Acq. %, Acq. ratio)
+  3. Voorstellen (Voorstellen, Voorst. %)
+  4. Uitnodigingen (Uitnodigingen, Uitn. %)
+  5. Gesprekken (Gesprekken, Gespr. %)
+  6. Vervolg (Vervolg, Vervolg %)
+  7. Geplaatst (Geplaatst, Plaatsing %)
+
+Column groups can be toggled visible/hidden via the
+filter bar. Conversion columns use color-coded rates:
+  ≥ 60 % → green, 30-59 % → amber, < 30 % → red.
+
+Each unit row can be expanded (chevron) to reveal
+individual consultant rows from consultantData.
+
+The Totaal row at the bottom sums all unit values
+and recalculates conversion percentages.
+
+Data source: weekUnitBreakdown / periodUnitBreakdown
+and weekConsultantFunnelData / periodConsultantFunnelData
+from tvData.ts.`}
+      />
     </div>
   );
 }
