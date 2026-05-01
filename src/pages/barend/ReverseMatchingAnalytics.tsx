@@ -1,13 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, ReactNode } from "react";
 import { ConsultantLayout } from "@/components/consultant/ConsultantLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
-import { DevNote } from "@/components/groeimodel/DevNote";
 import { cn } from "@/lib/utils";
+import { Info, AlertTriangle } from "lucide-react";
 import {
   Briefcase, Users, Send, Building2, MessageSquare, CheckCircle,
   PhoneOff, Clock, MessageSquareWarning, AlarmClock,
@@ -58,9 +59,45 @@ function DeltaBadge({ change }: { change: number }) {
   );
 }
 
+/** Compact Dev info popover-knop — inline variant van DevNote voor in tile-headers. */
+function DevInfo({ story, logic }: { story: ReactNode; logic: ReactNode }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          size="sm"
+          className="h-7 px-2.5 text-xs gap-1.5 bg-red-600 hover:bg-red-700 text-white shrink-0"
+        >
+          <Info className="w-3.5 h-3.5" />
+          Dev info
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-96 text-xs space-y-3" align="end">
+        <div className="flex items-center gap-1.5 font-semibold text-foreground">
+          <Info className="w-3.5 h-3.5" />
+          For the development team
+        </div>
+        <div className="flex items-start gap-1.5 text-red-600 font-medium border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 rounded p-2">
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+          <span>Delete this button after development.</span>
+        </div>
+        <div className="space-y-1">
+          <div className="font-medium text-foreground/80">User story</div>
+          <p className="leading-relaxed text-muted-foreground">{story}</p>
+        </div>
+        <div className="space-y-1">
+          <div className="font-medium text-foreground/80">Logic</div>
+          <pre className="bg-muted/60 p-3 rounded text-[11px] leading-snug font-mono whitespace-pre-wrap text-foreground/90">{logic}</pre>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 /** Reusable tile header — same gradient strip used across the project (TileHeader pattern). */
-function TileStrip({ icon: Icon, title, subtitle, right, tone = "primary" }: {
+function TileStrip({ icon: Icon, title, subtitle, right, tone = "primary", devStory, devLogic }: {
   icon: typeof Briefcase; title: string; subtitle?: string; right?: React.ReactNode; tone?: string;
+  devStory?: ReactNode; devLogic?: ReactNode;
 }) {
   return (
     <div className="flex items-start gap-3 rounded-t-xl bg-gradient-to-r from-primary/10 via-accent/5 to-transparent border-b border-border/50 -mx-6 -mt-6 mb-4 px-6 py-3">
@@ -72,6 +109,7 @@ function TileStrip({ icon: Icon, title, subtitle, right, tone = "primary" }: {
         {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
       </div>
       {right}
+      {devStory && devLogic && <DevInfo story={devStory} logic={devLogic} />}
     </div>
   );
 }
@@ -143,11 +181,41 @@ export default function ReverseMatchingAnalytics() {
               </SelectContent>
             </Select>
           ))}
-          <div className="ml-auto text-xs text-muted-foreground">Laatst ververst: 10:09</div>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Laatst ververst: 10:09</span>
+            <DevInfo
+              story={<>Als <strong>Barend</strong> wil ik snel wisselen tussen perioden en in- en uitzoomen op een specifieke vacature, functiegroep, bedrijf of consultant — zodat ik analyses zowel macro als micro kan uitvoeren.</>}
+              logic={`Filterbar — lokale React state per filter:
+  period (7d/30d/90d/QTD/YTD/Custom)
+  vacature, functiegroep, bedrijf, consultant.
+
+Default: 30d, alle dimensies = 'all'.
+UI volgt het ProductiviteitDashboard patroon
+(Tabs voor periode, Select voor categoriefilters).
+
+Toekomstig: filters propageren naar alle tegels via
+context i.p.v. herhaalde props.`}
+            />
+          </div>
         </CardContent>
       </Card>
 
       {/* ============= 1. KPI strip ============= */}
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Funnel KPI's</h2>
+        <DevInfo
+          story={<>De 6 kerntegels tonen de hoofdstappen van de reverse-matching funnel: vacatures opgepakt → kandidaten gematched → doorgezet → voorgesteld → op gesprek → geplaatst. <strong>Barend</strong> wil één blik op de hele engine en direct weten of er ergens dropoff is.</>}
+          logic={`KPI tegels (6) — bron: reverseFunnelKpis in barendData.ts.
+Elke tegel:
+  • value (AnimatedNumber count-up)
+  • delta vs. vorige periode (DeltaBadge)
+  • subtitel met context (bv. "Door matching engine")
+  • tone bepaalt accent-kleur (primary/accent/gold/chart-primary)
+
+Conversies tussen stappen worden NIET getoond op deze
+strip — daarvoor zie de Trend over tijd + Match-kwaliteit.`}
+        />
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
         {reverseFunnelKpis.map((k, i) => {
           const Icon = iconMap[k.icon] ?? Briefcase;
@@ -185,6 +253,20 @@ export default function ReverseMatchingAnalytics() {
               title="Actie nodig"
               subtitle="Kandidaten die wachten op een vervolgstap of binnen SLA opgevolgd moeten worden"
               tone="gold"
+              devStory={<>Als <strong>Barend</strong> wil ik direct zien welke kandidaten dreigen te verlopen door SLA-overschrijdingen, zodat Sales meteen ingrijpt en geen leads worden verspeeld.</>}
+              devLogic={`4 SLA-tegels:
+  • Doorgezet, nog niet gebeld (warning)
+  • > 2u niet gebeld (danger)   ← SLA breach call
+  • Gereageerd, nog niet doorgezet (warning)
+  • > 1u geen reactie (danger)  ← SLA breach response
+
+SLA-grenzen: 2u call-deadline · 1u response-deadline.
+Severity-mapping:
+  warning → bg-gold/6, border-gold/30
+  danger  → bg-destructive/5, border-destructive/30
+
+"Oudste wacht …" wordt afgeleid uit de oldest pending
+record per groep (nu nog statisch in actieNodigTiles).`}
             />
             <div className="grid grid-cols-2 gap-3">
               {actieNodigTiles.map(tile => {
@@ -227,6 +309,16 @@ export default function ReverseMatchingAnalytics() {
               title="Bron-mix"
               subtitle="Hoe kandidaten binnenkomen — eerste contactkanaal"
               tone="chart-primary"
+              devStory={<>Als <strong>Barend</strong> wil ik weten via welk kanaal kandidaten de funnel binnenkomen, zodat ik kan bepalen waar we extra in moeten investeren of juist moeten afschalen.</>}
+              devLogic={`Donut + legenda van bronMixData.segments:
+  Mail · Bird (WhatsApp) · Sollicitatie · LinkedIn
+
+Toont per segment:
+  value, share %, change vs. vorige periode.
+
+Kleuren: primary / accent / gold / destructive
+(volledig contrast — geen pastels uit bronontwerp).
+Total-label in midden van donut = bronMixData.total.`}
             />
             <div className="grid grid-cols-[200px_1fr] gap-6 items-center">
               <div className="relative h-[200px]">
@@ -276,6 +368,18 @@ export default function ReverseMatchingAnalytics() {
             title="Trend over tijd"
             subtitle="Outreach, responses, CVs, plaatsingen + omzet · 30d (globaal)"
             tone="primary"
+            devStory={<>Als <strong>Barend</strong> wil ik de funnel-activiteit en omzet over tijd zien om volume- en conversie-trends te spotten en seizoenseffecten te herkennen.</>}
+            devLogic={`ComposedChart over 12 weken (trendOverTimeData):
+  Lines (links Y-as):
+    • Outreach     — chart-primary
+    • Responses    — accent
+    • CVs gedeeld  — gold
+    • Plaatsingen  — destructive
+  Area (rechts Y-as):
+    • Omzet (€)    — primary, met gradient fill
+
+Doel: snel zien of een volume-piek doorvertaalt naar
+omzet (lag van ~2-3 weken verwacht).`}
           />
           <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -312,6 +416,18 @@ export default function ReverseMatchingAnalytics() {
             subtitle="Email · WhatsApp · LinkedIn"
             tone="accent"
             right={<Badge variant="outline" className="text-[10px]">Beste ROI: Email · 2070×</Badge>}
+            devStory={<>Als <strong>Barend</strong> wil ik per outreach-kanaal de response, kosten en ROI vergelijken om budget te kunnen verschuiven naar het meest winstgevende kanaal.</>}
+            devLogic={`Drie kanaalkaarten (kanaalPerformance):
+  Email     — Postmark
+  WhatsApp  — Bird
+  LinkedIn  — Unipile
+
+Per kaart: response rate (hero), sent, avg resp tijd,
+kosten/resp, plaatsingen, omzet, ROI.
+
+ROI = omzet / outreach-kosten (gestandaardiseerd).
+Het "Beste ROI"-pill rechtsboven berekenen we client-side
+uit max(roi) over de drie kanalen.`}
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {kanaalPerformance.map(k => {
@@ -356,6 +472,16 @@ export default function ReverseMatchingAnalytics() {
             title="Match-kwaliteit"
             subtitle="Kandidaten · Response · Doorgezet naar Sales"
             tone="chart-primary"
+            devStory={<>Als <strong>Barend</strong> wil ik valideren dat een hogere match-score ook leidt tot meer response en doorzet naar Sales — zo bewijs ik de waarde van het matching-algoritme.</>}
+            devLogic={`ComposedChart over 4 score-buckets (matchKwaliteitBuckets):
+  0–50 · 50–70 · 70–85 · 85–100
+
+  Bar  (links)  : aantal kandidaten in bucket
+  Line (rechts) : Response % en Doorgezet %
+
+Verwacht patroon: monotoon stijgend van zwak naar
+excellent. Conclusie-tekst onderaan vergelijkt 85-100
+vs 0-50 voor response- en doorzet-multiple.`}
           />
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -387,6 +513,18 @@ export default function ReverseMatchingAnalytics() {
             title="Functiegroep performance"
             subtitle="Gesorteerd op vacatures opgepakt"
             tone="primary"
+            devStory={<>Als <strong>Barend</strong> wil ik per functiegroep zien hoe de funnel scoort, zodat ik kan bepalen waar het algoritme of de outreach extra aandacht nodig heeft.</>}
+            devLogic={`Sorteerbare tabel (10 rijen) — bron: functiegroepRows.
+Kolommen: vac · gematched · geinteresseerd · voorgesteld
+· plaatsingen · fillRate · avgTime · omzet.
+
+Default sort: vac desc. toggleSort() wisselt richting
+op dezelfde kolom of zet een andere kolom op desc.
+
+Fill rate-kleur:
+  ≥ 30% → accent (groen)
+  ≥ 20% → foreground (neutraal)
+  < 20% → destructive (rood)`}
           />
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
@@ -441,6 +579,17 @@ export default function ReverseMatchingAnalytics() {
             title="Recruiter leaderboard"
             subtitle="Output, kwaliteit & omzet"
             tone="gold"
+            devStory={<>Als <strong>Barend</strong> wil ik per recruiter zien wie het meeste rendement haalt uit de matching engine, zodat best practices geborgd worden en achterblijvers gericht gecoacht.</>}
+            devLogic={`Tabel met 8 recruiters (recruiterLeaderboard).
+Kolommen: vac · plaats · respRate · fillRate ·
+tijdShortlist · pipeline · omzet.
+
+Top-3 highlight:
+  rank 1 → bg-gold/12 + Trophy gold
+  rank 2 → bg-primary/5 + Trophy muted
+  rank 3 → bg-accent/5 + Trophy accent
+
+Initialen-badge: Recruit CRM-stijl blauwe pill (#3B82F6).`}
           />
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
@@ -502,6 +651,19 @@ export default function ReverseMatchingAnalytics() {
             title="Financiële metrics"
             subtitle="Omzet, marge, pipeline & ROI · inclusief pipeline"
             tone="accent"
+            devStory={<>Als <strong>Barend</strong> wil ik de financiële vertaling van de matching engine zien — niet alleen activiteit maar harde euro's, marge, pipeline en ROI — om de business case naar directie te onderbouwen.</>}
+            devLogic={`4 financiële tegels (financieleMetrics):
+  • Omzet         (primary)
+  • Brutomarge    (accent)   — incl. marge %
+  • Pipeline      (chart-primary) — open vacatures
+  • ROI totaal    (gold)     — outreach kosten als basis
+
+Onder de tegels:
+  • BarChart 12 mnd omzet (monthlyRevenue)
+  • Mini ROI per kanaal-bars (roiPerKanaal)
+  • Footer met Kosten/plaatsing en Kosten/response.
+
+ROI = (omzet - kosten) / kosten, weergegeven als ×.`}
           />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
             {[
@@ -573,66 +735,6 @@ export default function ReverseMatchingAnalytics() {
         </CardContent>
       </Card>
 
-      {/* ============= Dev info ============= */}
-      <DevNote
-        story={
-          <>
-            <strong>Als Barend</strong> wil ik de reverse-matching engine end-to-end monitoren
-            (vacatures → match → doorzet → voorstel → gesprek → plaatsing) inclusief SLA-breaches
-            en kanaal-ROI in één scherm, <strong>zodat</strong> ik direct kan zien waar de pipeline
-            stagneert en welke kanalen het meeste rendement opleveren.
-          </>
-        }
-        logic={`Page-secties (top → bottom):
-
-  1. Filterbar — periode (7d/30d/90d/QTD/YTD/Custom) +
-     Vacature, Functiegroep, Bedrijf, Consultant.
-     Werkt via lokale state; UI is in lijn met de
-     ProductiviteitDashboard filterbar.
-
-  2. KPI strip (6) — funnel-stappen Vacatures opgepakt
-     → Geplaatst, met delta vs. vorige periode.
-
-  3. Actie nodig — 4 SLA-tegels:
-       • Doorgezet, nog niet gebeld (warning)
-       • > 2u niet gebeld (danger)
-       • Gereageerd, nog niet doorgezet (warning)
-       • > 1u geen reactie (danger)
-     SLA-grenzen: 2u call-deadline, 1u response-deadline.
-
-  4. Bron-mix — donut + legenda. Eerste contactkanaal
-     verdeeld over Mail, Bird (WhatsApp), Sollicitatie,
-     LinkedIn. Totaal 2.416 kandidaten.
-
-  5. Trend over tijd — ComposedChart 12 weken.
-     Lines: Outreach, Responses, CVs, Plaatsingen.
-     Area: Omzet (€) op rechter Y-as.
-
-  6. Kanaal performance — Email/WhatsApp/LinkedIn met
-     response rate, sent, avg resp tijd, kosten/resp,
-     plaatsingen, omzet, ROI.
-
-  7. Match-kwaliteit — combo bar + 2 lines per
-     kwaliteits-bucket (0-50, 50-70, 70-85, 85-100).
-     Excellent-bucket reageert 3.8× beter en wordt
-     9.8× vaker doorgezet.
-
-  8. Functiegroep tabel — sorteerbare tabel (10 rijen).
-     Default sort: vac. opgepakt desc. Fill rate
-     gekleurd: ≥30% accent, ≥20% neutraal, anders rood.
-
-  9. Recruiter leaderboard — top-3 met trofee + subtiele
-     gold/primary/accent achtergrond. Recruit CRM-stijl
-     blauwe initialen-badge.
-
- 10. Financiële metrics — Omzet / Brutomarge / Pipeline
-     / ROI tegels + 12-maands omzet BarChart + ROI per
-     kanaal mini-bars.
-
-Data source: src/data/barendData.ts (statisch mock,
-in lijn met de "static synchronized demo data" core
-rule).`}
-      />
     </ConsultantLayout>
   );
 }
