@@ -95,6 +95,30 @@ function DevInfo({ story, logic }: { story: ReactNode; logic: ReactNode }) {
   );
 }
 
+/** Tile-local period switcher — pill tabs (7d/30d/90d/QTD/YTD), independent of global filter. */
+const TILE_PERIODS = ["7d", "30d", "90d", "QTD", "YTD"] as const;
+type TilePeriod = typeof TILE_PERIODS[number];
+function TilePeriodTabs({ value, onChange }: { value: TilePeriod; onChange: (v: TilePeriod) => void }) {
+  return (
+    <div className="inline-flex items-center rounded-full border border-border bg-muted/40 p-0.5">
+      {TILE_PERIODS.map(p => (
+        <button
+          key={p}
+          onClick={() => onChange(p)}
+          className={cn(
+            "px-2.5 py-1 text-[11px] font-semibold rounded-full transition-colors tabular-nums",
+            value === p
+              ? "bg-foreground text-background shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {p}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Reusable tile header — same gradient strip used across the project (TileHeader pattern). */
 function TileStrip({ icon: Icon, title, subtitle, right, tone = "primary", devStory, devLogic }: {
   icon: typeof Briefcase; title: string; subtitle?: string; right?: React.ReactNode; tone?: string;
