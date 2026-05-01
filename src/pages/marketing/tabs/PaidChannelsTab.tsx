@@ -162,14 +162,15 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
               <tbody className="[&_tr:last-child]:border-0">
                 {rows.map((row) => {
                   const bemPct = row.conversions > 0 ? (row.registrations / row.conversions) * 100 : 0;
+                  const spendMissing = row.spend === 0 && manualSpends[row.source] === undefined;
                   return (
                   <tr key={row.source} className="border-b transition-colors hover:bg-muted/50">
                     <td className="p-4 align-middle font-medium">{row.source}</td>
                     <td className="p-4 align-middle">{dc(row.conversions, `pc-${row.source}-conv`)}</td>
                     <td className="p-4 align-middle">{dc(row.registrations, `pc-${row.source}-reg`)}</td>
                     {showConversion && <td className="p-4 align-middle">{dc(bemPct, `pc-${row.source}-bem`, "percentage", false, prevBemPct(row.conversions, row.registrations, `pc-${row.source}-conv`, `pc-${row.source}-reg`))}</td>}
-                    {showConversion && <td className="p-4 align-middle">{dc(row.cpr, `pc-${row.source}-cpr`, "currency", true)}</td>}
-                    {showConversion && <td className="p-4 align-middle">{dc(row.cpc, `pc-${row.source}-cpc`, "currency", true)}</td>}
+                    {showConversion && <td className="p-4 align-middle">{spendMissing ? <span className="text-red-500 text-xs font-medium">—</span> : dc(row.cpr, `pc-${row.source}-cpr`, "currency", true)}</td>}
+                    {showConversion && <td className="p-4 align-middle">{spendMissing ? <span className="text-red-500 text-xs font-medium">—</span> : dc(row.cpc, `pc-${row.source}-cpc`, "currency", true)}</td>}
                     <td className="p-4 align-middle">
                       <EditableSpendCell
                         spend={row.spend}

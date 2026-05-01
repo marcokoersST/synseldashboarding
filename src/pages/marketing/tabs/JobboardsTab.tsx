@@ -171,6 +171,7 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
                   const cpr = parent.registrations > 0 ? parent.spend / parent.registrations : 0;
                   const cpc = parent.conversions > 0 ? parent.spend / parent.conversions : 0;
                   const bemPct = parent.conversions > 0 ? (parent.registrations / parent.conversions) * 100 : 0;
+                  const parentSpendMissing = parent.spend === 0 && manualSpends[parent.board] === undefined;
                   return (
                     <React.Fragment key={parent.board}>
                       <tr className="border-b transition-colors cursor-pointer hover:bg-muted/50" onClick={() => toggle(parent.board)}>
@@ -183,8 +184,8 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
                         <td className="p-4 align-middle font-semibold">{dc(parent.conversions, `jb-${parent.board}-conv`)}</td>
                         <td className="p-4 align-middle font-semibold">{dc(parent.registrations, `jb-${parent.board}-reg`)}</td>
                         {showConversion && <td className="p-4 align-middle font-semibold">{dc(bemPct, `jb-${parent.board}-bem`, "percentage", false, prevBemPct(parent.conversions, parent.registrations, `jb-${parent.board}-conv`, `jb-${parent.board}-reg`))}</td>}
-                        {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpr, `jb-${parent.board}-cpr`, "currency", true)}</td>}
-                        {showConversion && <td className="p-4 align-middle font-semibold">{dc(cpc, `jb-${parent.board}-cpc`, "currency", true)}</td>}
+                        {showConversion && <td className="p-4 align-middle font-semibold">{parentSpendMissing ? <span className="text-red-500 text-xs font-medium">—</span> : dc(cpr, `jb-${parent.board}-cpr`, "currency", true)}</td>}
+                        {showConversion && <td className="p-4 align-middle font-semibold">{parentSpendMissing ? <span className="text-red-500 text-xs font-medium">—</span> : dc(cpc, `jb-${parent.board}-cpc`, "currency", true)}</td>}
                         <td className="p-4 align-middle font-semibold">
                           <EditableSpendCell
                             spend={parent.spend}
@@ -199,21 +200,23 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
                         const childCpr = child.registrations > 0 ? child.spend / child.registrations : 0;
                         const childCpc = child.conversions > 0 ? child.spend / child.conversions : 0;
                         const childBemPct = child.conversions > 0 ? (child.registrations / child.conversions) * 100 : 0;
+                        const childKey = `${parent.board}-${child.category}`;
+                        const childSpendMissing = child.spend === 0 && manualSpends[childKey] === undefined;
                         return (
-                          <tr key={`${parent.board}-${child.category}`} className="border-b transition-colors bg-muted/20">
+                          <tr key={childKey} className="border-b transition-colors bg-muted/20">
                             <td className="p-4 pl-10 align-middle text-muted-foreground">{child.category}</td>
                             <td className="p-4 align-middle">{dc(child.conversions, `jb-${parent.board}-${child.category}-conv`)}</td>
                             <td className="p-4 align-middle">{dc(child.registrations, `jb-${parent.board}-${child.category}-reg`)}</td>
                             {showConversion && <td className="p-4 align-middle">{dc(childBemPct, `jb-${parent.board}-${child.category}-bem`, "percentage", false, prevBemPct(child.conversions, child.registrations, `jb-${parent.board}-${child.category}-conv`, `jb-${parent.board}-${child.category}-reg`))}</td>}
-                            {showConversion && <td className="p-4 align-middle">{dc(childCpr, `jb-${parent.board}-${child.category}-cpr`, "currency", true)}</td>}
-                            {showConversion && <td className="p-4 align-middle">{dc(childCpc, `jb-${parent.board}-${child.category}-cpc`, "currency", true)}</td>}
+                            {showConversion && <td className="p-4 align-middle">{childSpendMissing ? <span className="text-red-500 text-xs font-medium">—</span> : dc(childCpr, `jb-${parent.board}-${child.category}-cpr`, "currency", true)}</td>}
+                            {showConversion && <td className="p-4 align-middle">{childSpendMissing ? <span className="text-red-500 text-xs font-medium">—</span> : dc(childCpc, `jb-${parent.board}-${child.category}-cpc`, "currency", true)}</td>}
                             <td className="p-4 align-middle">
                               <EditableSpendCell
                                 spend={child.spend}
-                                manualSpend={manualSpends[`${parent.board}-${child.category}`]}
-                                onSave={(v) => handleSaveSpend(`${parent.board}-${child.category}`, v)}
+                                manualSpend={manualSpends[childKey]}
+                                onSave={(v) => handleSaveSpend(childKey, v)}
                               >
-                                {dc(manualSpends[`${parent.board}-${child.category}`] ?? child.spend, `jb-${parent.board}-${child.category}-spend`, "currency")}
+                                {dc(manualSpends[childKey] ?? child.spend, `jb-${parent.board}-${child.category}-spend`, "currency")}
                               </EditableSpendCell>
                             </td>
                           </tr>
