@@ -155,6 +155,9 @@ export default function ReverseMatchingAnalytics() {
   const [trendHidden, setTrendHidden] = useState<Set<string>>(new Set());
   const [matchPeriod, setMatchPeriod] = useState<TilePeriod>("YTD");
   const [matchHidden, setMatchHidden] = useState<Set<string>>(new Set());
+  const [openTile, setOpenTile] = useState<string | null>(null);
+  const openTileMeta = openTile ? actieNodigTiles.find(t => t.key === openTile) : null;
+  const openTileCandidates = openTile ? actieNodigCandidates[openTile] ?? [] : [];
 
   const toggleHidden = (setter: Dispatch<SetStateAction<Set<string>>>, key: string) => {
     setter(prev => {
