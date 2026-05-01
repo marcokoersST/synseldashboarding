@@ -24,6 +24,11 @@ const JobboardsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Props)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [showConversion, setShowConversion] = useState(false);
   const [chartView, setChartView] = useState<"unit" | "functiegroep">("unit");
+  const [manualSpends, setManualSpends] = useState<Record<string, number>>({});
+
+  const handleSaveSpend = useCallback((key: string, value: number) => {
+    setManualSpends(prev => ({ ...prev, [key]: value }));
+  }, []);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof jobboardData>();
