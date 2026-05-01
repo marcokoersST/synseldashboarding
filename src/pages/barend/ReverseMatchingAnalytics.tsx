@@ -717,19 +717,19 @@ Initials badge: Recruit CRM-style blue pill (#3B82F6).`}
             title="Financiële metrics"
             subtitle="Omzet, marge, pipeline & ROI · inclusief pipeline"
             tone="accent"
-            devStory={<>Als <strong>Barend</strong> wil ik de financiële vertaling van de matching engine zien — niet alleen activiteit maar harde euro's, marge, pipeline en ROI — om de business case naar directie te onderbouwen.</>}
-            devLogic={`4 financiële tegels (financieleMetrics):
-  • Omzet         (primary)
-  • Brutomarge    (accent)   — incl. marge %
-  • Pipeline      (chart-primary) — open vacatures
-  • ROI totaal    (gold)     — outreach kosten als basis
+            devStory={<>As <strong>Barend</strong>, I want to see the financial translation of the matching engine — not just activity but hard euros, margin, pipeline and ROI — to back the business case to leadership.</>}
+            devLogic={`4 financial tiles (financieleMetrics):
+  • Revenue       (primary)
+  • Gross margin  (accent)        — incl. margin %
+  • Pipeline      (chart-primary) — open vacancies
+  • Total ROI     (gold)          — outreach cost as basis
 
-Onder de tegels:
-  • BarChart 12 mnd omzet (monthlyRevenue)
-  • Mini ROI per kanaal-bars (roiPerKanaal)
-  • Footer met Kosten/plaatsing en Kosten/response.
+Below the tiles:
+  • BarChart 12 mo revenue (monthlyRevenue)
+  • Mini ROI per channel bars (roiPerKanaal)
+  • Footer with Cost/placement and Cost/response.
 
-ROI = (omzet - kosten) / kosten, weergegeven als ×.`}
+ROI = (revenue - cost) / cost, displayed as ×.`}
           />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
             {[
