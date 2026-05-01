@@ -294,6 +294,16 @@ record per groep (nu nog statisch in actieNodigTiles).`}
               title="Bron-mix"
               subtitle="Hoe kandidaten binnenkomen — eerste contactkanaal"
               tone="chart-primary"
+              devStory={<>Als <strong>Barend</strong> wil ik weten via welk kanaal kandidaten de funnel binnenkomen, zodat ik kan bepalen waar we extra in moeten investeren of juist moeten afschalen.</>}
+              devLogic={`Donut + legenda van bronMixData.segments:
+  Mail · Bird (WhatsApp) · Sollicitatie · LinkedIn
+
+Toont per segment:
+  value, share %, change vs. vorige periode.
+
+Kleuren: primary / accent / gold / destructive
+(volledig contrast — geen pastels uit bronontwerp).
+Total-label in midden van donut = bronMixData.total.`}
             />
             <div className="grid grid-cols-[200px_1fr] gap-6 items-center">
               <div className="relative h-[200px]">
