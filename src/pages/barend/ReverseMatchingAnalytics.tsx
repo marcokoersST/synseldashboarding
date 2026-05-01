@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { cn } from "@/lib/utils";
-import { Info, AlertTriangle } from "lucide-react";
+import { Info, AlertTriangle, ExternalLink, Radio } from "lucide-react";
 import {
   Briefcase, Users, Send, Building2, MessageSquare, CheckCircle,
   PhoneOff, Clock, MessageSquareWarning, AlarmClock,
@@ -22,7 +23,7 @@ import {
   PieChart, Pie, Cell,
 } from "recharts";
 import {
-  reverseFunnelKpis, actieNodigTiles, bronMixData, trendOverTimeData,
+  reverseFunnelKpis, actieNodigTiles, actieNodigCandidates, bronMixData, trendOverTimeData,
   kanaalPerformance, matchKwaliteitBuckets, functiegroepRows,
   recruiterLeaderboard, financieleMetrics, monthlyRevenue, roiPerKanaal,
   periodOptions, type PeriodOption,
