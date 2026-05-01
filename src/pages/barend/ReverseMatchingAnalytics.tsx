@@ -720,66 +720,6 @@ ROI = (omzet - kosten) / kosten, weergegeven als ×.`}
         </CardContent>
       </Card>
 
-      {/* ============= Dev info ============= */}
-      <DevNote
-        story={
-          <>
-            <strong>Als Barend</strong> wil ik de reverse-matching engine end-to-end monitoren
-            (vacatures → match → doorzet → voorstel → gesprek → plaatsing) inclusief SLA-breaches
-            en kanaal-ROI in één scherm, <strong>zodat</strong> ik direct kan zien waar de pipeline
-            stagneert en welke kanalen het meeste rendement opleveren.
-          </>
-        }
-        logic={`Page-secties (top → bottom):
-
-  1. Filterbar — periode (7d/30d/90d/QTD/YTD/Custom) +
-     Vacature, Functiegroep, Bedrijf, Consultant.
-     Werkt via lokale state; UI is in lijn met de
-     ProductiviteitDashboard filterbar.
-
-  2. KPI strip (6) — funnel-stappen Vacatures opgepakt
-     → Geplaatst, met delta vs. vorige periode.
-
-  3. Actie nodig — 4 SLA-tegels:
-       • Doorgezet, nog niet gebeld (warning)
-       • > 2u niet gebeld (danger)
-       • Gereageerd, nog niet doorgezet (warning)
-       • > 1u geen reactie (danger)
-     SLA-grenzen: 2u call-deadline, 1u response-deadline.
-
-  4. Bron-mix — donut + legenda. Eerste contactkanaal
-     verdeeld over Mail, Bird (WhatsApp), Sollicitatie,
-     LinkedIn. Totaal 2.416 kandidaten.
-
-  5. Trend over tijd — ComposedChart 12 weken.
-     Lines: Outreach, Responses, CVs, Plaatsingen.
-     Area: Omzet (€) op rechter Y-as.
-
-  6. Kanaal performance — Email/WhatsApp/LinkedIn met
-     response rate, sent, avg resp tijd, kosten/resp,
-     plaatsingen, omzet, ROI.
-
-  7. Match-kwaliteit — combo bar + 2 lines per
-     kwaliteits-bucket (0-50, 50-70, 70-85, 85-100).
-     Excellent-bucket reageert 3.8× beter en wordt
-     9.8× vaker doorgezet.
-
-  8. Functiegroep tabel — sorteerbare tabel (10 rijen).
-     Default sort: vac. opgepakt desc. Fill rate
-     gekleurd: ≥30% accent, ≥20% neutraal, anders rood.
-
-  9. Recruiter leaderboard — top-3 met trofee + subtiele
-     gold/primary/accent achtergrond. Recruit CRM-stijl
-     blauwe initialen-badge.
-
- 10. Financiële metrics — Omzet / Brutomarge / Pipeline
-     / ROI tegels + 12-maands omzet BarChart + ROI per
-     kanaal mini-bars.
-
-Data source: src/data/barendData.ts (statisch mock,
-in lijn met de "static synchronized demo data" core
-rule).`}
-      />
     </ConsultantLayout>
   );
 }
