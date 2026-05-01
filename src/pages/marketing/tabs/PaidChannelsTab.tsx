@@ -31,6 +31,11 @@ const PaidChannelsTab = ({ dateRange, compareRange, deltaMode = "percent" }: Pro
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [showConversion, setShowConversion] = useState(false);
   const [chartView, setChartView] = useState<"unit" | "functiegroep">("unit");
+  const [manualSpends, setManualSpends] = useState<Record<string, number>>({});
+
+  const handleSaveSpend = useCallback((source: string, value: number) => {
+    setManualSpends(prev => ({ ...prev, [source]: value }));
+  }, []);
 
   const rows = useMemo(() => {
     const agg = aggregatePaidChannels(paidChannelData).map(r => ({
