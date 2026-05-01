@@ -891,6 +891,99 @@ ROI = (revenue - cost) / cost, displayed as ×.`}
         </CardContent>
       </Card>
 
+      {/* ============= Actie nodig — slide-in candidate panel ============= */}
+      <Sheet open={openTile !== null} onOpenChange={(o) => !o && setOpenTile(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl p-0 flex flex-col">
+          {openTileMeta && (() => {
+            const Icon = iconMap[openTileMeta.icon] ?? AlarmClock;
+            const danger = openTileMeta.severity === "danger";
+            const isLive = openTileMeta.dataSource === "live";
+            const isRecruit = openTileMeta.target === "recruitcrm";
+            return (
+              <>
+                <SheetHeader className={cn(
+                  "p-6 border-b",
+                  danger ? "bg-destructive/5 border-destructive/20" : "bg-[hsl(var(--gold)/0.06)] border-[hsl(var(--gold)/0.25)]"
+                )}>
+                  <div className="flex items-start gap-3">
+                    <span className={cn(
+                      "w-10 h-10 rounded-md flex items-center justify-center shrink-0",
+                      danger ? "bg-destructive/10 text-destructive" : "bg-[hsl(var(--gold)/0.15)] text-[hsl(var(--gold-dark))]"
+                    )}>
+                      <Icon className="w-5 h-5" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <SheetTitle className="text-base font-semibold text-foreground">{openTileMeta.label}</SheetTitle>
+                      <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+                        {openTileCandidates.length} {openTileMeta.subject} · {openTileMeta.detail}
+                      </SheetDescription>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className={cn(
+                          "inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full",
+                          isLive ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground"
+                        )}>
+                          {isLive ? <><Radio className="w-3 h-3" />Live data</> : <><Clock className="w-3 h-3" />Binnen periode {period}</>}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                          Deeplink: {isRecruit ? "Recruit CRM" : "Bird (WhatsApp)"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </SheetHeader>
+                <div className="flex-1 overflow-auto">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-card border-b border-border z-10">
+                      <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        <th className="text-left px-4 py-2.5 font-semibold">Kandidaat</th>
+                        <th className="text-left px-2 py-2.5 font-semibold">Vacature</th>
+                        <th className="text-left px-2 py-2.5 font-semibold">Consultant</th>
+                        <th className="text-right px-2 py-2.5 font-semibold">Wacht</th>
+                        <th className="text-center px-4 py-2.5 font-semibold">{isRecruit ? "CRM" : "Bird"}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {openTileCandidates.map((c) => (
+                        <tr key={c.id} className="border-b border-border/50 hover:bg-muted/40 transition-colors">
+                          <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{c.name}</td>
+                          <td className="px-2 py-2 text-muted-foreground truncate max-w-[200px]" title={c.vacature}>{c.vacature}</td>
+                          <td className="px-2 py-2 text-muted-foreground whitespace-nowrap">{c.consultant}</td>
+                          <td className={cn("px-2 py-2 text-right tabular-nums font-semibold whitespace-nowrap", danger ? "text-destructive" : "text-foreground")}>{c.waitFor}</td>
+                          <td className="px-4 py-2 text-center">
+                            {isRecruit ? (
+                              <a href="#" target="_blank" rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center w-7 h-7 rounded bg-[#0066FF]/10 hover:bg-[#0066FF]/25 transition-colors"
+                                title="Open in Recruit CRM"
+                                onClick={(e) => e.stopPropagation()}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                  <rect width="24" height="24" rx="4" fill="#0066FF" />
+                                  <text x="12" y="17" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold" fontFamily="Arial, sans-serif">R</text>
+                                </svg>
+                              </a>
+                            ) : (
+                              <a href="#" target="_blank" rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center w-7 h-7 rounded bg-[#25D366]/15 hover:bg-[#25D366]/30 transition-colors"
+                                title="Open conversatie in Bird"
+                                onClick={(e) => e.stopPropagation()}>
+                                <Smartphone className="w-3.5 h-3.5 text-[#128C7E]" />
+                              </a>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="px-6 py-3 border-t border-border bg-muted/30 text-[11px] text-muted-foreground flex items-center justify-between">
+                  <span>Klik op de {isRecruit ? "blauwe R" : "groene Bird"} -knop om naar het kandidaat profiel te springen.</span>
+                  <span className="tabular-nums">{openTileCandidates.length} resultaten</span>
+                </div>
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
+
     </ConsultantLayout>
   );
 }
