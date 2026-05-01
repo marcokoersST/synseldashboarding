@@ -636,6 +636,19 @@ Initialen-badge: Recruit CRM-stijl blauwe pill (#3B82F6).`}
             title="Financiële metrics"
             subtitle="Omzet, marge, pipeline & ROI · inclusief pipeline"
             tone="accent"
+            devStory={<>Als <strong>Barend</strong> wil ik de financiële vertaling van de matching engine zien — niet alleen activiteit maar harde euro's, marge, pipeline en ROI — om de business case naar directie te onderbouwen.</>}
+            devLogic={`4 financiële tegels (financieleMetrics):
+  • Omzet         (primary)
+  • Brutomarge    (accent)   — incl. marge %
+  • Pipeline      (chart-primary) — open vacatures
+  • ROI totaal    (gold)     — outreach kosten als basis
+
+Onder de tegels:
+  • BarChart 12 mnd omzet (monthlyRevenue)
+  • Mini ROI per kanaal-bars (roiPerKanaal)
+  • Footer met Kosten/plaatsing en Kosten/response.
+
+ROI = (omzet - kosten) / kosten, weergegeven als ×.`}
           />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
             {[
