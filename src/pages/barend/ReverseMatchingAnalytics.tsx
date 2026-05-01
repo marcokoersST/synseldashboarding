@@ -392,14 +392,17 @@ record per group (currently static in actieNodigTiles).`}
               {actieNodigTiles.map(tile => {
                 const Icon = iconMap[tile.icon] ?? AlarmClock;
                 const danger = tile.severity === "danger";
+                const isLive = tile.dataSource === "live";
                 return (
-                  <div
+                  <button
                     key={tile.key}
+                    type="button"
+                    onClick={() => setOpenTile(tile.key)}
                     className={cn(
-                      "rounded-lg border p-4",
+                      "rounded-lg border p-4 text-left transition-all hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       danger
-                        ? "bg-destructive/5 border-destructive/30"
-                        : "bg-[hsl(var(--gold)/0.06)] border-[hsl(var(--gold)/0.3)]"
+                        ? "bg-destructive/5 border-destructive/30 hover:border-destructive/60"
+                        : "bg-[hsl(var(--gold)/0.06)] border-[hsl(var(--gold)/0.3)] hover:border-[hsl(var(--gold)/0.6)]"
                     )}
                   >
                     <div className="flex items-start justify-between mb-2">
@@ -415,7 +418,18 @@ record per group (currently static in actieNodigTiles).`}
                       <span className="text-xs text-muted-foreground">{tile.subject}</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">{tile.detail}</p>
-                  </div>
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/50">
+                      <span className={cn(
+                        "inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider",
+                        isLive ? "text-accent" : "text-muted-foreground"
+                      )}>
+                        {isLive ? <><Radio className="w-3 h-3" />Live data</> : <><Clock className="w-3 h-3" />Binnen periode {period}</>}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
+                        Open lijst <ExternalLink className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </button>
                 );
               })}
             </div>
