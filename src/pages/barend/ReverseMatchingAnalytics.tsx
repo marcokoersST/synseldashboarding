@@ -564,6 +564,17 @@ Fill rate-kleur:
             title="Recruiter leaderboard"
             subtitle="Output, kwaliteit & omzet"
             tone="gold"
+            devStory={<>Als <strong>Barend</strong> wil ik per recruiter zien wie het meeste rendement haalt uit de matching engine, zodat best practices geborgd worden en achterblijvers gericht gecoacht.</>}
+            devLogic={`Tabel met 8 recruiters (recruiterLeaderboard).
+Kolommen: vac · plaats · respRate · fillRate ·
+tijdShortlist · pipeline · omzet.
+
+Top-3 highlight:
+  rank 1 → bg-gold/12 + Trophy gold
+  rank 2 → bg-primary/5 + Trophy muted
+  rank 3 → bg-accent/5 + Trophy accent
+
+Initialen-badge: Recruit CRM-stijl blauwe pill (#3B82F6).`}
           />
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
