@@ -579,18 +579,18 @@ vs 0-50 for the response and forward multipliers.`}
             title="Functiegroep performance"
             subtitle="Gesorteerd op vacatures opgepakt"
             tone="primary"
-            devStory={<>Als <strong>Barend</strong> wil ik per functiegroep zien hoe de funnel scoort, zodat ik kan bepalen waar het algoritme of de outreach extra aandacht nodig heeft.</>}
-            devLogic={`Sorteerbare tabel (10 rijen) — bron: functiegroepRows.
-Kolommen: vac · gematched · geinteresseerd · voorgesteld
-· plaatsingen · fillRate · avgTime · omzet.
+            devStory={<>As <strong>Barend</strong>, I want to see how the funnel performs per job group, so I can decide where the algorithm or outreach needs extra attention.</>}
+            devLogic={`Sortable table (10 rows) — source: functiegroepRows.
+Columns: vac · matched · interested · proposed
+· placements · fillRate · avgTime · revenue.
 
-Default sort: vac desc. toggleSort() wisselt richting
-op dezelfde kolom of zet een andere kolom op desc.
+Default sort: vac desc. toggleSort() flips direction
+on the same column or sets a new column to desc.
 
-Fill rate-kleur:
-  ≥ 30% → accent (groen)
-  ≥ 20% → foreground (neutraal)
-  < 20% → destructive (rood)`}
+Fill rate colour:
+  ≥ 30% → accent (green)
+  ≥ 20% → foreground (neutral)
+  < 20% → destructive (red)`}
           />
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
