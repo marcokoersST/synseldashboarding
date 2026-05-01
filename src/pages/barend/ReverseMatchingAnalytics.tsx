@@ -246,21 +246,21 @@ export default function ReverseMatchingAnalytics() {
           <div className="ml-auto flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Laatst ververst: 10:09</span>
             <DevInfo
-              story={<>Als <strong>Barend</strong> wil ik snel wisselen tussen perioden, in- en uitzoomen op een specifieke vacature, functiegroep, bedrijf of consultant, en de huidige periode kunnen vergelijken met vorige periode of vorig jaar.</>}
-              logic={`Filterbar — lokale React state per filter:
+              story={<>As <strong>Barend</strong>, I want to switch quickly between time periods, drill into a specific vacancy, job group, company or consultant, and compare the current period to the previous period or the same period last year.</>}
+              logic={`Filter bar — local React state per filter:
   period (7d/30d/90d/QTD/YTD/Custom)
   compareMode (none/previous/year/custom)
   vacature, functiegroep, bedrijf, consultant.
 
-Default: 30d, vergelijking uit, alle dimensies = 'all'.
-Compare-knop wordt 'gevuld' (primary) zodra een
-vergelijkmodus actief is, met X om snel te resetten.
+Defaults: 30d, comparison off, all dimensions = 'all'.
+The compare button switches to a filled (primary) style
+once a comparison mode is active, with an X to reset.
 
-UI volgt het ProductiviteitDashboard patroon
-(Tabs voor periode, Select voor categoriefilters).
+UI mirrors the ProductiviteitDashboard pattern
+(Tabs for period, Select for category filters).
 
-Toekomstig: filters + compareMode propageren naar
-alle tegels (delta = current - compare) via context.`}
+Future: filters + compareMode propagated to all tiles
+via context (delta = current - compare).`}
             />
           </div>
         </CardContent>
@@ -270,16 +270,16 @@ alle tegels (delta = current - compare) via context.`}
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Funnel KPI's</h2>
         <DevInfo
-          story={<>De 6 kerntegels tonen de hoofdstappen van de reverse-matching funnel: vacatures opgepakt → kandidaten gematched → doorgezet → voorgesteld → op gesprek → geplaatst. <strong>Barend</strong> wil één blik op de hele engine en direct weten of er ergens dropoff is.</>}
-          logic={`KPI tegels (6) — bron: reverseFunnelKpis in barendData.ts.
-Elke tegel:
+          story={<>The 6 hero tiles show the main stages of the reverse-matching funnel: vacancies picked up → candidates matched → forwarded → proposed → interviewed → placed. <strong>Barend</strong> wants a single glance at the whole engine and to immediately spot any drop-off.</>}
+          logic={`KPI tiles (6) — source: reverseFunnelKpis in barendData.ts.
+Per tile:
   • value (AnimatedNumber count-up)
-  • delta vs. vorige periode (DeltaBadge)
-  • subtitel met context (bv. "Door matching engine")
-  • tone bepaalt accent-kleur (primary/accent/gold/chart-primary)
+  • delta vs. previous period (DeltaBadge)
+  • subtitle with context (e.g. "Via matching engine")
+  • tone drives accent colour (primary/accent/gold/chart-primary)
 
-Conversies tussen stappen worden NIET getoond op deze
-strip — daarvoor zie de Trend over tijd + Match-kwaliteit.`}
+Step-to-step conversions are NOT rendered on this
+strip — see Trend over time + Match quality for those.`}
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
@@ -319,20 +319,20 @@ strip — daarvoor zie de Trend over tijd + Match-kwaliteit.`}
               title="Actie nodig"
               subtitle="Kandidaten die wachten op een vervolgstap of binnen SLA opgevolgd moeten worden"
               tone="gold"
-              devStory={<>Als <strong>Barend</strong> wil ik direct zien welke kandidaten dreigen te verlopen door SLA-overschrijdingen, zodat Sales meteen ingrijpt en geen leads worden verspeeld.</>}
-              devLogic={`4 SLA-tegels:
-  • Doorgezet, nog niet gebeld (warning)
-  • > 2u niet gebeld (danger)   ← SLA breach call
-  • Gereageerd, nog niet doorgezet (warning)
-  • > 1u geen reactie (danger)  ← SLA breach response
+              devStory={<>As <strong>Barend</strong>, I want to instantly see which candidates risk falling out of the funnel because of SLA breaches, so Sales can intervene immediately and no leads are wasted.</>}
+              devLogic={`4 SLA tiles:
+  • Forwarded, not yet called (warning)
+  • > 2h not called (danger)        ← SLA breach call
+  • Replied, not yet forwarded (warning)
+  • > 1h no response (danger)       ← SLA breach response
 
-SLA-grenzen: 2u call-deadline · 1u response-deadline.
-Severity-mapping:
+SLA thresholds: 2h call deadline · 1h response deadline.
+Severity mapping:
   warning → bg-gold/6, border-gold/30
   danger  → bg-destructive/5, border-destructive/30
 
-"Oudste wacht …" wordt afgeleid uit de oldest pending
-record per groep (nu nog statisch in actieNodigTiles).`}
+"Oldest waiting …" is derived from the oldest pending
+record per group (currently static in actieNodigTiles).`}
             />
             <div className="grid grid-cols-2 gap-3">
               {actieNodigTiles.map(tile => {
@@ -375,16 +375,16 @@ record per groep (nu nog statisch in actieNodigTiles).`}
               title="Bron-mix"
               subtitle="Hoe kandidaten binnenkomen — eerste contactkanaal"
               tone="chart-primary"
-              devStory={<>Als <strong>Barend</strong> wil ik weten via welk kanaal kandidaten de funnel binnenkomen, zodat ik kan bepalen waar we extra in moeten investeren of juist moeten afschalen.</>}
-              devLogic={`Donut + legenda van bronMixData.segments:
-  Mail · Bird (WhatsApp) · Sollicitatie · LinkedIn
+              devStory={<>As <strong>Barend</strong>, I want to know which channel candidates are entering the funnel through, so I can decide where to invest more or scale back.</>}
+              devLogic={`Donut + legend from bronMixData.segments:
+  Mail · Bird (WhatsApp) · Application · LinkedIn
 
-Toont per segment:
-  value, share %, change vs. vorige periode.
+Per segment shows:
+  value, share %, change vs. previous period.
 
-Kleuren: primary / accent / gold / destructive
-(volledig contrast — geen pastels uit bronontwerp).
-Total-label in midden van donut = bronMixData.total.`}
+Colours: primary / accent / gold / destructive
+(full contrast — no pastels from source design).
+Total label in donut centre = bronMixData.total.`}
             />
             <div className="grid grid-cols-[200px_1fr] gap-6 items-center">
               <div className="relative h-[200px]">
@@ -434,18 +434,18 @@ Total-label in midden van donut = bronMixData.total.`}
             title="Trend over tijd"
             subtitle="Outreach, responses, CVs, plaatsingen + omzet · 30d (globaal)"
             tone="primary"
-            devStory={<>Als <strong>Barend</strong> wil ik de funnel-activiteit en omzet over tijd zien om volume- en conversie-trends te spotten en seizoenseffecten te herkennen.</>}
-            devLogic={`ComposedChart over 12 weken (trendOverTimeData):
-  Lines (links Y-as):
+            devStory={<>As <strong>Barend</strong>, I want to see funnel activity and revenue over time to spot volume and conversion trends and recognise seasonal effects.</>}
+            devLogic={`ComposedChart over 12 weeks (trendOverTimeData):
+  Lines (left Y-axis):
     • Outreach     — chart-primary
     • Responses    — accent
-    • CVs gedeeld  — gold
-    • Plaatsingen  — destructive
-  Area (rechts Y-as):
-    • Omzet (€)    — primary, met gradient fill
+    • CVs shared   — gold
+    • Placements   — destructive
+  Area (right Y-axis):
+    • Revenue (€)  — primary, with gradient fill
 
-Doel: snel zien of een volume-piek doorvertaalt naar
-omzet (lag van ~2-3 weken verwacht).`}
+Goal: quickly see whether a volume spike translates
+into revenue (expected lag of ~2-3 weeks).`}
           />
           <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -482,18 +482,18 @@ omzet (lag van ~2-3 weken verwacht).`}
             subtitle="Email · WhatsApp · LinkedIn"
             tone="accent"
             right={<Badge variant="outline" className="text-[10px]">Beste ROI: Email · 2070×</Badge>}
-            devStory={<>Als <strong>Barend</strong> wil ik per outreach-kanaal de response, kosten en ROI vergelijken om budget te kunnen verschuiven naar het meest winstgevende kanaal.</>}
-            devLogic={`Drie kanaalkaarten (kanaalPerformance):
+            devStory={<>As <strong>Barend</strong>, I want to compare response, cost and ROI per outreach channel so I can shift budget toward the most profitable one.</>}
+            devLogic={`Three channel cards (kanaalPerformance):
   Email     — Postmark
   WhatsApp  — Bird
   LinkedIn  — Unipile
 
-Per kaart: response rate (hero), sent, avg resp tijd,
-kosten/resp, plaatsingen, omzet, ROI.
+Per card: response rate (hero), sent, avg response time,
+cost per response, placements, revenue, ROI.
 
-ROI = omzet / outreach-kosten (gestandaardiseerd).
-Het "Beste ROI"-pill rechtsboven berekenen we client-side
-uit max(roi) over de drie kanalen.`}
+ROI = revenue / outreach cost (standardised).
+The "Best ROI" pill in the top right is computed
+client-side from max(roi) across the three channels.`}
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {kanaalPerformance.map(k => {
@@ -538,16 +538,16 @@ uit max(roi) over de drie kanalen.`}
             title="Match-kwaliteit"
             subtitle="Kandidaten · Response · Doorgezet naar Sales"
             tone="chart-primary"
-            devStory={<>Als <strong>Barend</strong> wil ik valideren dat een hogere match-score ook leidt tot meer response en doorzet naar Sales — zo bewijs ik de waarde van het matching-algoritme.</>}
-            devLogic={`ComposedChart over 4 score-buckets (matchKwaliteitBuckets):
+            devStory={<>As <strong>Barend</strong>, I want to validate that a higher match score also leads to more responses and forwards to Sales — that proves the value of the matching algorithm.</>}
+            devLogic={`ComposedChart over 4 score buckets (matchKwaliteitBuckets):
   0–50 · 50–70 · 70–85 · 85–100
 
-  Bar  (links)  : aantal kandidaten in bucket
-  Line (rechts) : Response % en Doorgezet %
+  Bar  (left)  : number of candidates in bucket
+  Line (right) : Response % and Forwarded %
 
-Verwacht patroon: monotoon stijgend van zwak naar
-excellent. Conclusie-tekst onderaan vergelijkt 85-100
-vs 0-50 voor response- en doorzet-multiple.`}
+Expected pattern: monotonically increasing from weak
+to excellent. Conclusion line below compares 85-100
+vs 0-50 for the response and forward multipliers.`}
           />
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -579,18 +579,18 @@ vs 0-50 voor response- en doorzet-multiple.`}
             title="Functiegroep performance"
             subtitle="Gesorteerd op vacatures opgepakt"
             tone="primary"
-            devStory={<>Als <strong>Barend</strong> wil ik per functiegroep zien hoe de funnel scoort, zodat ik kan bepalen waar het algoritme of de outreach extra aandacht nodig heeft.</>}
-            devLogic={`Sorteerbare tabel (10 rijen) — bron: functiegroepRows.
-Kolommen: vac · gematched · geinteresseerd · voorgesteld
-· plaatsingen · fillRate · avgTime · omzet.
+            devStory={<>As <strong>Barend</strong>, I want to see how the funnel performs per job group, so I can decide where the algorithm or outreach needs extra attention.</>}
+            devLogic={`Sortable table (10 rows) — source: functiegroepRows.
+Columns: vac · matched · interested · proposed
+· placements · fillRate · avgTime · revenue.
 
-Default sort: vac desc. toggleSort() wisselt richting
-op dezelfde kolom of zet een andere kolom op desc.
+Default sort: vac desc. toggleSort() flips direction
+on the same column or sets a new column to desc.
 
-Fill rate-kleur:
-  ≥ 30% → accent (groen)
-  ≥ 20% → foreground (neutraal)
-  < 20% → destructive (rood)`}
+Fill rate colour:
+  ≥ 30% → accent (green)
+  ≥ 20% → foreground (neutral)
+  < 20% → destructive (red)`}
           />
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
@@ -645,17 +645,17 @@ Fill rate-kleur:
             title="Recruiter leaderboard"
             subtitle="Output, kwaliteit & omzet"
             tone="gold"
-            devStory={<>Als <strong>Barend</strong> wil ik per recruiter zien wie het meeste rendement haalt uit de matching engine, zodat best practices geborgd worden en achterblijvers gericht gecoacht.</>}
-            devLogic={`Tabel met 8 recruiters (recruiterLeaderboard).
-Kolommen: vac · plaats · respRate · fillRate ·
-tijdShortlist · pipeline · omzet.
+            devStory={<>As <strong>Barend</strong>, I want to see per recruiter who gets the most out of the matching engine, so best practices can be shared and laggards can be coached specifically.</>}
+            devLogic={`Table with 8 recruiters (recruiterLeaderboard).
+Columns: vac · placements · respRate · fillRate ·
+shortlistTime · pipeline · revenue.
 
 Top-3 highlight:
   rank 1 → bg-gold/12 + Trophy gold
   rank 2 → bg-primary/5 + Trophy muted
   rank 3 → bg-accent/5 + Trophy accent
 
-Initialen-badge: Recruit CRM-stijl blauwe pill (#3B82F6).`}
+Initials badge: Recruit CRM-style blue pill (#3B82F6).`}
           />
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
@@ -717,19 +717,19 @@ Initialen-badge: Recruit CRM-stijl blauwe pill (#3B82F6).`}
             title="Financiële metrics"
             subtitle="Omzet, marge, pipeline & ROI · inclusief pipeline"
             tone="accent"
-            devStory={<>Als <strong>Barend</strong> wil ik de financiële vertaling van de matching engine zien — niet alleen activiteit maar harde euro's, marge, pipeline en ROI — om de business case naar directie te onderbouwen.</>}
-            devLogic={`4 financiële tegels (financieleMetrics):
-  • Omzet         (primary)
-  • Brutomarge    (accent)   — incl. marge %
-  • Pipeline      (chart-primary) — open vacatures
-  • ROI totaal    (gold)     — outreach kosten als basis
+            devStory={<>As <strong>Barend</strong>, I want to see the financial translation of the matching engine — not just activity but hard euros, margin, pipeline and ROI — to back the business case to leadership.</>}
+            devLogic={`4 financial tiles (financieleMetrics):
+  • Revenue       (primary)
+  • Gross margin  (accent)        — incl. margin %
+  • Pipeline      (chart-primary) — open vacancies
+  • Total ROI     (gold)          — outreach cost as basis
 
-Onder de tegels:
-  • BarChart 12 mnd omzet (monthlyRevenue)
-  • Mini ROI per kanaal-bars (roiPerKanaal)
-  • Footer met Kosten/plaatsing en Kosten/response.
+Below the tiles:
+  • BarChart 12 mo revenue (monthlyRevenue)
+  • Mini ROI per channel bars (roiPerKanaal)
+  • Footer with Cost/placement and Cost/response.
 
-ROI = (omzet - kosten) / kosten, weergegeven als ×.`}
+ROI = (revenue - cost) / cost, displayed as ×.`}
           />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
             {[
