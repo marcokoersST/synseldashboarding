@@ -645,17 +645,17 @@ Fill rate colour:
             title="Recruiter leaderboard"
             subtitle="Output, kwaliteit & omzet"
             tone="gold"
-            devStory={<>Als <strong>Barend</strong> wil ik per recruiter zien wie het meeste rendement haalt uit de matching engine, zodat best practices geborgd worden en achterblijvers gericht gecoacht.</>}
-            devLogic={`Tabel met 8 recruiters (recruiterLeaderboard).
-Kolommen: vac · plaats · respRate · fillRate ·
-tijdShortlist · pipeline · omzet.
+            devStory={<>As <strong>Barend</strong>, I want to see per recruiter who gets the most out of the matching engine, so best practices can be shared and laggards can be coached specifically.</>}
+            devLogic={`Table with 8 recruiters (recruiterLeaderboard).
+Columns: vac · placements · respRate · fillRate ·
+shortlistTime · pipeline · revenue.
 
 Top-3 highlight:
   rank 1 → bg-gold/12 + Trophy gold
   rank 2 → bg-primary/5 + Trophy muted
   rank 3 → bg-accent/5 + Trophy accent
 
-Initialen-badge: Recruit CRM-stijl blauwe pill (#3B82F6).`}
+Initials badge: Recruit CRM-style blue pill (#3B82F6).`}
           />
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
