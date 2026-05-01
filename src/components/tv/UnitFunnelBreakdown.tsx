@@ -147,46 +147,13 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
   // Expand state per unit
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  // TV-mode auto rotation
-  const [rotationIdx, setRotationIdx] = useState(0);
-
+  // TV mode: always show all units fully expanded — no rotation, no scroll.
   useEffect(() => {
     if (!compact) return;
-    if (rows.length === 0) return;
-    if (rows.length === 1) {
-      // Single unit always expanded
-      setExpanded({ [rows[0].unit]: true });
-      return;
-    }
-    // Try to expand all
     const allExpanded: Record<string, boolean> = {};
     rows.forEach(r => allExpanded[r.unit] = true);
     setExpanded(allExpanded);
   }, [compact, rows.map(r => r.unit).join(",")]);
-
-  // Rotation: only kicks in when in tv mode and there are >1 units AND there isn't enough room.
-  // We approximate "not enough room" by toggling rotation when consultants total > a threshold.
-  useEffect(() => {
-    if (!compact || rows.length <= 1) return;
-    const totalConsultants = rows.reduce((s, r) => s + (consultantsByUnit[r.unit]?.length ?? 0), 0);
-    // Heuristic: rotate when many rows would be needed
-    if (totalConsultants <= 18) return;
-    const interval = Math.max(3, filters.rotationSec) * 1000;
-    const id = setInterval(() => {
-      setRotationIdx(i => (i + 1) % rows.length);
-    }, interval);
-    return () => clearInterval(id);
-  }, [compact, rows.length, filters.rotationSec, rows.map(r => r.unit).join(",")]);
-
-  useEffect(() => {
-    if (!compact || rows.length <= 1) return;
-    const totalConsultants = rows.reduce((s, r) => s + (consultantsByUnit[r.unit]?.length ?? 0), 0);
-    if (totalConsultants <= 18) return;
-    // Only the rotated one is expanded
-    const exp: Record<string, boolean> = {};
-    rows.forEach((r, i) => exp[r.unit] = i === rotationIdx);
-    setExpanded(exp);
-  }, [rotationIdx, compact, rows.length]);
 
   const toggle = (unit: string) => setExpanded(e => ({ ...e, [unit]: !e[unit] }));
 
