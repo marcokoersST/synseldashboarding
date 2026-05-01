@@ -375,16 +375,16 @@ record per group (currently static in actieNodigTiles).`}
               title="Bron-mix"
               subtitle="Hoe kandidaten binnenkomen — eerste contactkanaal"
               tone="chart-primary"
-              devStory={<>Als <strong>Barend</strong> wil ik weten via welk kanaal kandidaten de funnel binnenkomen, zodat ik kan bepalen waar we extra in moeten investeren of juist moeten afschalen.</>}
-              devLogic={`Donut + legenda van bronMixData.segments:
-  Mail · Bird (WhatsApp) · Sollicitatie · LinkedIn
+              devStory={<>As <strong>Barend</strong>, I want to know which channel candidates are entering the funnel through, so I can decide where to invest more or scale back.</>}
+              devLogic={`Donut + legend from bronMixData.segments:
+  Mail · Bird (WhatsApp) · Application · LinkedIn
 
-Toont per segment:
-  value, share %, change vs. vorige periode.
+Per segment shows:
+  value, share %, change vs. previous period.
 
-Kleuren: primary / accent / gold / destructive
-(volledig contrast — geen pastels uit bronontwerp).
-Total-label in midden van donut = bronMixData.total.`}
+Colours: primary / accent / gold / destructive
+(full contrast — no pastels from source design).
+Total label in donut centre = bronMixData.total.`}
             />
             <div className="grid grid-cols-[200px_1fr] gap-6 items-center">
               <div className="relative h-[200px]">
