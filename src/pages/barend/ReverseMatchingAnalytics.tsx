@@ -123,6 +123,15 @@ export default function ReverseMatchingAnalytics() {
   const [consultant, setConsultant] = useState("all");
   const [funcSort, setFuncSort] = useState<keyof typeof functiegroepRows[number]>("vac");
   const [funcDir, setFuncDir] = useState<"asc" | "desc">("desc");
+  const [compareMode, setCompareMode] = useState<"none" | "previous" | "year" | "custom">("none");
+
+  const compareLabels = {
+    none: "Vergelijken",
+    previous: "vs. vorige periode",
+    year: "vs. vorig jaar",
+    custom: "vs. aangepast",
+  } as const;
+  const compareActive = compareMode !== "none";
 
   const sortedFunctiegroep = useMemo(() => {
     const rows = [...functiegroepRows];
