@@ -5,6 +5,7 @@ import { columnGroups, getTotalValue } from "./UnitFunnelBreakdown";
 import { TileHeader } from "./TileHeader";
 import { cn } from "@/lib/utils";
 import { weekUnitBreakdown, UnitFunnelRow } from "@/data/tvData";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 function statusClasses(actual: number, benchmark: number) {
   if (actual >= benchmark) return "bg-accent/10 text-accent";
@@ -92,6 +93,28 @@ export function ConversionFormulasCard({ data }: ConversionFormulasCardProps = {
           );
         })}
       </div>
+
+      <DevNote
+        story={<><strong>As a user (manager/TV viewer)</strong>, I want to see the key conversion ratios compared against benchmark targets, <strong>so that</strong> I can instantly judge which parts of the funnel are under- or over-performing.</>}
+        logic={`Each row represents a conversion formula defined in
+ConversionLegend.ts — e.g. "Inschr. %" = Ingeschreven
+÷ Toegewezen × 100.
+
+The "Actueel" column computes the ratio from the Totaal
+row of the UnitFunnelBreakdown data (sum across all
+visible units).
+
+Color coding of the Actueel pill:
+  ≥ benchmark → green (accent)
+  ≥ 70% of benchmark → neutral
+  < 70% of benchmark → red (destructive)
+
+The "Doel" column shows the static benchmark from
+conversionFormulas (e.g. "≥ 60%").
+
+When period data is passed via the data prop, the card
+recalculates against period totals instead of week.`}
+      />
     </div>
   );
 }
