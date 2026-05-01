@@ -482,8 +482,9 @@ Total label in donut centre = bronMixData.total.`}
           <TileStrip
             icon={TrendingUp}
             title="Trend over tijd"
-            subtitle="Outreach, responses, CVs, plaatsingen + omzet · 30d (globaal)"
+            subtitle={`Outreach, responses, CVs, plaatsingen + omzet · ${trendPeriod} (globaal)`}
             tone="primary"
+            right={<TilePeriodTabs value={trendPeriod} onChange={setTrendPeriod} />}
             devStory={<>As <strong>Barend</strong>, I want to see funnel activity and revenue over time to spot volume and conversion trends and recognise seasonal effects.</>}
             devLogic={`ComposedChart over 12 weeks (trendOverTimeData):
   Lines (left Y-axis):
@@ -494,12 +495,15 @@ Total label in donut centre = bronMixData.total.`}
   Area (right Y-axis):
     • Revenue (€)  — primary, with gradient fill
 
+Tile-local period state (overrides global filter): 7d/30d/90d/QTD/YTD slices the dataset client-side.
+Legend click toggles series visibility via hidden-set state — hidden lines render dimmed in the legend.
+
 Goal: quickly see whether a volume spike translates
 into revenue (expected lag of ~2-3 weeks).`}
           />
           <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={trendOverTimeData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <ComposedChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="omzetFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -511,15 +515,22 @@ into revenue (expected lag of ~2-3 weeks).`}
                 <YAxis yAxisId="left" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `€${v / 1000}k`} />
                 <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-                <Area yAxisId="right" type="monotone" dataKey="omzet" name="Omzet (€)" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#omzetFill)" />
-                <Line yAxisId="left" type="monotone" dataKey="outreach" name="Outreach" stroke="hsl(var(--chart-primary))" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="responses" name="Responses" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="cvs" name="CVs gedeeld" stroke="hsl(var(--gold))" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="plaatsingen" name="Plaatsingen" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, paddingTop: 8, cursor: "pointer" }}
+                  onClick={(e: any) => toggleHidden(setTrendHidden, e.dataKey)}
+                  formatter={(value: string, entry: any) => (
+                    <span style={{ opacity: trendHidden.has(entry.dataKey) ? 0.4 : 1, textDecoration: trendHidden.has(entry.dataKey) ? "line-through" : "none" }}>{value}</span>
+                  )}
+                />
+                <Area yAxisId="right" type="monotone" dataKey="omzet" name="Omzet (€)" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#omzetFill)" hide={trendHidden.has("omzet")} />
+                <Line yAxisId="left" type="monotone" dataKey="outreach" name="Outreach" stroke="hsl(var(--chart-primary))" strokeWidth={2} dot={false} hide={trendHidden.has("outreach")} />
+                <Line yAxisId="left" type="monotone" dataKey="responses" name="Responses" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} hide={trendHidden.has("responses")} />
+                <Line yAxisId="left" type="monotone" dataKey="cvs" name="CVs gedeeld" stroke="hsl(var(--gold))" strokeWidth={2} dot={false} hide={trendHidden.has("cvs")} />
+                <Line yAxisId="left" type="monotone" dataKey="plaatsingen" name="Plaatsingen" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} hide={trendHidden.has("plaatsingen")} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+
         </CardContent>
       </Card>
 
