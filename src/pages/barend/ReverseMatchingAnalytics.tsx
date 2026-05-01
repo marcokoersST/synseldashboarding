@@ -155,7 +155,7 @@ export default function ReverseMatchingAnalytics() {
   const [matchPeriod, setMatchPeriod] = useState<TilePeriod>("YTD");
   const [matchHidden, setMatchHidden] = useState<Set<string>>(new Set());
 
-  const toggleHidden = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) => {
+  const toggleHidden = (setter: Dispatch<SetStateAction<Set<string>>>, key: string) => {
     setter(prev => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key); else next.add(key);
