@@ -401,6 +401,18 @@ omzet (lag van ~2-3 weken verwacht).`}
             subtitle="Email · WhatsApp · LinkedIn"
             tone="accent"
             right={<Badge variant="outline" className="text-[10px]">Beste ROI: Email · 2070×</Badge>}
+            devStory={<>Als <strong>Barend</strong> wil ik per outreach-kanaal de response, kosten en ROI vergelijken om budget te kunnen verschuiven naar het meest winstgevende kanaal.</>}
+            devLogic={`Drie kanaalkaarten (kanaalPerformance):
+  Email     — Postmark
+  WhatsApp  — Bird
+  LinkedIn  — Unipile
+
+Per kaart: response rate (hero), sent, avg resp tijd,
+kosten/resp, plaatsingen, omzet, ROI.
+
+ROI = omzet / outreach-kosten (gestandaardiseerd).
+Het "Beste ROI"-pill rechtsboven berekenen we client-side
+uit max(roi) over de drie kanalen.`}
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {kanaalPerformance.map(k => {
