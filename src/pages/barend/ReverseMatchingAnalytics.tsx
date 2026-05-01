@@ -14,6 +14,7 @@ import {
   PhoneOff, Clock, MessageSquareWarning, AlarmClock,
   TrendingUp, TrendingDown, Filter, Mail, Smartphone, Linkedin,
   ArrowUpDown, Trophy, Wallet, Percent, PiggyBank, Gauge, Radar,
+  ArrowLeftRight, X,
 } from "lucide-react";
 import {
   ResponsiveContainer, ComposedChart, Line, Area, Bar, BarChart,
@@ -122,6 +123,15 @@ export default function ReverseMatchingAnalytics() {
   const [consultant, setConsultant] = useState("all");
   const [funcSort, setFuncSort] = useState<keyof typeof functiegroepRows[number]>("vac");
   const [funcDir, setFuncDir] = useState<"asc" | "desc">("desc");
+  const [compareMode, setCompareMode] = useState<"none" | "previous" | "year" | "custom">("none");
+
+  const compareLabels = {
+    none: "Vergelijken",
+    previous: "vs. vorige periode",
+    year: "vs. vorig jaar",
+    custom: "vs. aangepast",
+  } as const;
+  const compareActive = compareMode !== "none";
 
   const sortedFunctiegroep = useMemo(() => {
     const rows = [...functiegroepRows];
@@ -164,6 +174,58 @@ export default function ReverseMatchingAnalytics() {
             ))}
           </div>
           <div className="h-6 w-px bg-border mx-1" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={compareActive ? "default" : "outline"}
+                size="sm"
+                className={cn(
+                  "h-9 px-3 text-xs gap-1.5",
+                  compareActive && "bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                {compareLabels[compareMode]}
+                {compareActive && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => { e.stopPropagation(); setCompareMode("none"); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setCompareMode("none"); } }}
+                    className="ml-1 -mr-1 rounded hover:bg-primary-foreground/20 p-0.5"
+                    aria-label="Vergelijking uitzetten"
+                  >
+                    <X className="w-3 h-3" />
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-56 p-2">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 pt-1 pb-2">
+                Vergelijken met
+              </div>
+              {([
+                ["none", "Geen vergelijking"],
+                ["previous", "Vorige periode"],
+                ["year", "Vorig jaar"],
+                ["custom", "Aangepast bereik…"],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setCompareMode(key)}
+                  className={cn(
+                    "w-full text-left text-xs px-2 py-1.5 rounded-md transition-colors",
+                    compareMode === key
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : "hover:bg-muted text-foreground"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
+          <div className="h-6 w-px bg-border mx-1" />
           {([
             ["Vacature", vacature, setVacature],
             ["Functiegroep", functiegroep, setFunctiegroep],
@@ -184,17 +246,21 @@ export default function ReverseMatchingAnalytics() {
           <div className="ml-auto flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Laatst ververst: 10:09</span>
             <DevInfo
-              story={<>Als <strong>Barend</strong> wil ik snel wisselen tussen perioden en in- en uitzoomen op een specifieke vacature, functiegroep, bedrijf of consultant — zodat ik analyses zowel macro als micro kan uitvoeren.</>}
+              story={<>Als <strong>Barend</strong> wil ik snel wisselen tussen perioden, in- en uitzoomen op een specifieke vacature, functiegroep, bedrijf of consultant, en de huidige periode kunnen vergelijken met vorige periode of vorig jaar.</>}
               logic={`Filterbar — lokale React state per filter:
   period (7d/30d/90d/QTD/YTD/Custom)
+  compareMode (none/previous/year/custom)
   vacature, functiegroep, bedrijf, consultant.
 
-Default: 30d, alle dimensies = 'all'.
+Default: 30d, vergelijking uit, alle dimensies = 'all'.
+Compare-knop wordt 'gevuld' (primary) zodra een
+vergelijkmodus actief is, met X om snel te resetten.
+
 UI volgt het ProductiviteitDashboard patroon
 (Tabs voor periode, Select voor categoriefilters).
 
-Toekomstig: filters propageren naar alle tegels via
-context i.p.v. herhaalde props.`}
+Toekomstig: filters + compareMode propageren naar
+alle tegels (delta = current - compare) via context.`}
             />
           </div>
         </CardContent>
