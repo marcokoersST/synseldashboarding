@@ -22,6 +22,8 @@ export const actieNodigTiles = [
     detail: "Oudste wacht 5u 18m",
     severity: "warning" as const,
     icon: "PhoneOff",
+    target: "recruitcrm" as const,
+    dataSource: "live" as const,
   },
   {
     key: "sla-2u-niet-gebeld",
@@ -31,6 +33,8 @@ export const actieNodigTiles = [
     detail: "Sales heeft kandidaat op naam",
     severity: "danger" as const,
     icon: "Clock",
+    target: "recruitcrm" as const,
+    dataSource: "period" as const,
   },
   {
     key: "gereageerd-niet-doorgezet",
@@ -40,6 +44,8 @@ export const actieNodigTiles = [
     detail: "Oudste wacht 3u 16m",
     severity: "warning" as const,
     icon: "MessageSquareWarning",
+    target: "bird" as const,
+    dataSource: "live" as const,
   },
   {
     key: "sla-1u-geen-reactie",
@@ -49,8 +55,54 @@ export const actieNodigTiles = [
     detail: "Reactie van kandidaat onbeantwoord",
     severity: "danger" as const,
     icon: "AlarmClock",
+    target: "bird" as const,
+    dataSource: "period" as const,
   },
 ];
+
+// Mock candidate lists per Actie-nodig tile.
+const _firstNames = ["Jasper","Lotte","Daan","Sanne","Tim","Eva","Mark","Iris","Ruben","Noa","Bas","Fleur","Sven","Lieke","Joris","Marit","Pim","Anouk","Wout","Britt","Roel","Esther","Tom","Maud","Niels","Sophie","Koen","Janneke","Stijn","Mila","Bram","Lara","Gijs","Yara","Mees","Roos","Cas","Tess","Luuk","Demi","Finn","Sara","Jens","Nina","Thijs","Femke","Jelle","Maaike","Hugo","Anne"];
+const _lastNames  = ["de Vries","Jansen","van den Berg","Bakker","Visser","Smit","Meijer","de Boer","Mulder","de Groot","Bos","Vos","Peters","Hendriks","van Dijk","Dekker","Brouwer","de Wit","Dijkstra","Kuipers","Willems","Verhoeven","Maas","Bosman","Koning"];
+const _vacatures  = ["Senior Java Developer · ABN AMRO","Cloud Architect · Bol.com","Data Engineer · Coolblue","Scrum Master · ING","DevOps Engineer · KPN","Security Specialist · Rabobank","Product Owner · Adyen","Full-stack Developer · Picnic","SAP Consultant · Philips","React Lead · Booking.com","Project Manager · NS","Test Automation Engineer · Achmea","Business Analyst · Aegon","Network Engineer · Vodafone"];
+const _consultants = ["Pieter de Wit","Mariska Bos","Hendrik van Loon","Lisa Kramer","Tom de Bruin","Sanne Hofman","Bart Meijer","Eline Vos","Ruben Smit","Femke de Lange"];
+
+function _genCandidates(seed: number, count: number, maxWaitMin: number) {
+  const out: { id: string; name: string; vacature: string; consultant: string; waitFor: string; toewijzing: string }[] = [];
+  const rng = (n: number) => {
+    seed = (seed * 9301 + 49297 + n) % 233280;
+    return seed / 233280;
+  };
+  for (let i = 0; i < count; i++) {
+    const fn = _firstNames[Math.floor(rng(i) * _firstNames.length)];
+    const ln = _lastNames[Math.floor(rng(i + 1) * _lastNames.length)];
+    const vac = _vacatures[Math.floor(rng(i + 2) * _vacatures.length)];
+    const con = _consultants[Math.floor(rng(i + 3) * _consultants.length)];
+    const totalMin = Math.floor(rng(i + 4) * maxWaitMin) + 5;
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    const waitFor = h > 0 ? `${h}u ${m}m` : `${m}m`;
+    const dateOffset = Math.floor(rng(i + 5) * 14);
+    const d = new Date(); d.setDate(d.getDate() - dateOffset);
+    const toewijzing = `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    out.push({ id: `c-${i + 1}`, name: `${fn} ${ln}`, vacature: vac, consultant: con, waitFor, toewijzing });
+  }
+  // Sort: longest waiting first
+  return out.sort((a, b) => {
+    const parse = (s: string) => {
+      const h = /(\d+)u/.exec(s); const m = /(\d+)m/.exec(s);
+      return (h ? +h[1] * 60 : 0) + (m ? +m[1] : 0);
+    };
+    return parse(b.waitFor) - parse(a.waitFor);
+  });
+}
+
+export const actieNodigCandidates: Record<string, ReturnType<typeof _genCandidates>> = {
+  "doorgezet-niet-gebeld":      _genCandidates(11, 47, 318), // up to 5u 18m
+  "sla-2u-niet-gebeld":         _genCandidates(23, 12, 480), // 2u-8u
+  "gereageerd-niet-doorgezet":  _genCandidates(37, 84, 196), // up to 3u 16m
+  "sla-1u-geen-reactie":        _genCandidates(53, 31, 360), // 1u+
+};
+
 
 export const bronMixData = {
   total: 2416,

@@ -1,50 +1,56 @@
 ## Goal
 
-Make the chart tiles on **Reverse Matching Analytics** match the originals shown in the screenshots:
+Make the four "Actie nodig" tiles on the Reverse Matching Analytics dashboard clickable. Each one opens a slide-in panel with a candidate list. Each row has a deeplink action button:
 
-1. **Per-tile period selector** (7d · 30d · 90d · QTD · YTD pills) inside the tile header — independent of the global filter bar period.
-2. **Clickable legend** so the user can show/hide individual lines (Outreach, Responses, CVs gedeeld, Plaatsingen, Omzet) directly from the chart.
-3. Keep the current branding (TileStrip header, Card, gradient strip, Dev info popover) — only add the missing controls.
+| Tile | Deeplink button |
+|---|---|
+| Doorgezet, nog niet gebeld | **Recruit CRM** (blue R badge) |
+| SLA breach: > 2u niet gebeld | **Recruit CRM** (blue R badge) |
+| Gereageerd, nog niet doorgezet | **Bird** (WhatsApp) |
+| SLA breach: > 1u geen reactie | **Bird** (WhatsApp) |
 
-Apply the same pattern to the **Match-kwaliteit** tile (per-tile period + toggleable Kandidaten / Response% / Doorgezet%).
+Add a clear data-source label per tile:
+- "Doorgezet, nog niet gebeld" + "Gereageerd, nog niet doorgezet" → **Live data**
+- Both SLA breach tiles → **"Binnen geselecteerde periode"** (uses the global period filter from the filter bar)
 
 ## Changes
 
-**File:** `src/pages/barend/ReverseMatchingAnalytics.tsx`
-
-### 1. New small subcomponent `TilePeriodTabs`
-Pill-style toggle group (matching screenshot: rounded-full, dark active state) with values `7d | 30d | 90d | QTD | YTD`. Rendered via the existing `right` slot of `TileStrip`, so layout/branding is preserved.
-
-### 2. Per-tile state
-Inside `ReverseMatchingAnalytics`, add:
+### 1. Mock candidate data — `src/data/barendData.ts`
+Add an `actieNodigCandidates` map keyed by tile key. Each entry: array of candidates with:
 ```ts
-const [trendPeriod, setTrendPeriod] = useState<"7d"|"30d"|"90d"|"QTD"|"YTD">("YTD");
-const [trendHidden, setTrendHidden] = useState<Set<string>>(new Set());
-const [matchPeriod, setMatchPeriod] = useState<...>("YTD");
-const [matchHidden, setMatchHidden] = useState<Set<string>>(new Set());
+{ name, vacature, consultant, waitingFor, recruitCrmId, birdThreadId }
 ```
-The hidden-set is toggled when the user clicks a legend entry.
+Generate enough rows per tile to match the displayed count (47/12/84/31), with realistic Dutch names, vacancies and consultants drawn from existing mock pools.
 
-### 3. Filter `trendOverTimeData` by period
-Lightweight slice of the existing 12-week dataset:
-- `7d` → last 1 point, `30d` → last 4, `90d` → last 12, `QTD`/`YTD` → all available.
-(Real backend filtering is out of scope; we just slice mock data so the UI reacts.)
+Update `actieNodigTiles` entries with two new fields:
+- `target: "recruitcrm" | "bird"` — drives the deeplink button styling
+- `dataSource: "live" | "period"` — drives the small label under the count
 
-### 4. Trend over tijd — wire up
-- Update subtitle dynamically to reflect selected period (e.g. `... · YTD (globaal)`).
-- Pass a custom `Legend content` renderer (or use `onClick` handler) that toggles the series in `trendHidden`.
-- For each `<Line>` / `<Area>`, set `hide={trendHidden.has(dataKey)}`.
-- Active legend dots render dimmed (opacity-40) when hidden, matching standard chart UX.
+### 2. Reusable side panel — inline in `ReverseMatchingAnalytics.tsx`
+Use the existing `Sheet` component (shadcn) opened from the right, ~520px wide. Header reuses the tile's icon + title + count, plus a small badge: "Live data" (green) or `"Binnen periode: ${period}"` (neutral). Body is a scrollable table:
 
-### 5. Match-kwaliteit — same treatment
-- Add `TilePeriodTabs` to its header.
-- Make the three series (Kandidaten bar, Response% line, Doorgezet% line) toggleable via legend.
+```
+Kandidaat | Vacature | Consultant | Wacht | →
+```
 
-### 6. Dev info update
-Append to the existing `devLogic` strings of both tiles:
-- "Tile-local period state (overrides global filter)."
-- "Legend click toggles series visibility via hidden-set state."
+The last column renders either:
+- the existing **R-badge anchor** (`bg-[#0066FF]/10`, blue rounded square with white "R") for Recruit CRM tiles, or
+- a green WhatsApp/Bird square (`bg-[#25D366]/10` with `MessageSquare` icon) for the Bird tiles.
+
+Hover row highlight; clicking the badge opens `#` (mock deeplink) in a new tab.
+
+### 3. Wire up tile click in `ReverseMatchingAnalytics.tsx`
+- Convert each tile from `<div>` to `<button>`-styled card with hover: `hover:border-foreground/20 hover:shadow-sm cursor-pointer transition`.
+- Local state `const [openTile, setOpenTile] = useState<string | null>(null)`.
+- Clicking a tile sets the key → opens the Sheet; close clears it.
+- Add the tiny "Live data" / "Binnen periode" label under `detail` so the user can see the source at a glance even without opening the panel.
+
+### 4. Dev info update
+Append to the SLA `devLogic`:
+- "Tiles are clickable — open a slide-in candidate list."
+- "Recruit CRM tiles deeplink via R-badge; Bird tiles via WhatsApp icon."
+- "Live tiles always reflect now; SLA tiles scope to the global period filter."
 
 ## Out of scope
-- No changes to global filter bar, KPI strip, Kanaal performance cards, tables, or data file (`barendData.ts`).
-- No real backend wiring — slicing remains client-side mock.
+- Actual integration with Recruit CRM / Bird APIs — links remain `#` placeholders for the demo.
+- Filtering or sorting controls inside the panel (table is plain list).
