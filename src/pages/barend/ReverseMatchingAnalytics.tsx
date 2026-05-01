@@ -538,16 +538,16 @@ client-side from max(roi) across the three channels.`}
             title="Match-kwaliteit"
             subtitle="Kandidaten · Response · Doorgezet naar Sales"
             tone="chart-primary"
-            devStory={<>Als <strong>Barend</strong> wil ik valideren dat een hogere match-score ook leidt tot meer response en doorzet naar Sales — zo bewijs ik de waarde van het matching-algoritme.</>}
-            devLogic={`ComposedChart over 4 score-buckets (matchKwaliteitBuckets):
+            devStory={<>As <strong>Barend</strong>, I want to validate that a higher match score also leads to more responses and forwards to Sales — that proves the value of the matching algorithm.</>}
+            devLogic={`ComposedChart over 4 score buckets (matchKwaliteitBuckets):
   0–50 · 50–70 · 70–85 · 85–100
 
-  Bar  (links)  : aantal kandidaten in bucket
-  Line (rechts) : Response % en Doorgezet %
+  Bar  (left)  : number of candidates in bucket
+  Line (right) : Response % and Forwarded %
 
-Verwacht patroon: monotoon stijgend van zwak naar
-excellent. Conclusie-tekst onderaan vergelijkt 85-100
-vs 0-50 voor response- en doorzet-multiple.`}
+Expected pattern: monotonically increasing from weak
+to excellent. Conclusion line below compares 85-100
+vs 0-50 for the response and forward multipliers.`}
           />
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
