@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { ChevronDown, ChevronRight, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
@@ -8,6 +8,7 @@ import DeltaCell from "@/components/marketing/DeltaCell";
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import { jobboardData, aggregateByUnit, aggregateByFunctiegroep, totals as calcTotals, formatCurrency, deltaPercent, MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
+import EditableSpendCell from "@/components/marketing/EditableSpendCell";
 
 interface Props {
   dateRange: DateRange;
