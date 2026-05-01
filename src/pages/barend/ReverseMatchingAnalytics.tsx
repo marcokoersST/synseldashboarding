@@ -1,4 +1,4 @@
-import { useState, useMemo, ReactNode } from "react";
+import { useState, useMemo, ReactNode, Dispatch, SetStateAction } from "react";
 import { ConsultantLayout } from "@/components/consultant/ConsultantLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
