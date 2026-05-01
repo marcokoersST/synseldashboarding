@@ -332,7 +332,19 @@ const OverviewTab = ({ dateRange, compareRange, onTabChange }: Props) => {
 
       {/* Inflow unit chart */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Inflow per Unit</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Inflow per Unit</CardTitle>
+          <Select value={unitViewMode} onValueChange={(v) => setUnitViewMode(v as "totaal" | "gemiddeld" | "mediaan")}>
+            <SelectTrigger className="w-[200px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="totaal">Totaal</SelectItem>
+              <SelectItem value="gemiddeld">Gemiddeld per consultant</SelectItem>
+              <SelectItem value="mediaan">Mediaan per consultant</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={unitChartData} margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
