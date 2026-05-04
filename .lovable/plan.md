@@ -1,102 +1,192 @@
 
-# Funnel Quality Dashboard (Barend)
+# Funnel Operations Dashboard (Barend)
 
-A new 5-screen analytics dashboard answering: *"Dragen heractiveringen bij aan plaatsingen?"* Built under `Dashboards Barend` and made responsive across laptop, monitor and TV using the same fluid CSS pattern we just applied to `/tv/sales-funnel-week`.
+Vervangt het bestaande **Funnel Quality**-dashboard volledig. **Eén dashboard, één pagina, met tabs** — geen rollen, **strikt read-only**. Geen knoppen die data wijzigen. Elke kandidaat-, recruiter- en consultantnaam is een deeplink naar RecruitCRM met extern-link-icoon ernaast.
 
-All statistics (KM curves, log-rank p-values, Cox coefficients, hazard ratios, confidence intervals) are precomputed mock outputs in a static data file — no runtime stats engine, no new dependencies.
+## Navigatie & routing
 
-## Routes & navigation
-
-Add to sidebar under `Dashboards Barend` (collapsible parent already exists):
+In `Dashboards Barend` wordt de volledige `Funnel Quality`-tak (5 sub-pagina's) verwijderd. Er komt **één enkel sidebar-item**:
 
 ```text
 Dashboards Barend
-├─ Reverse Matching Analytics       (existing)
-└─ Funnel Quality                   (new parent, auto-expands)
-   ├─ Trend & Stagnatie             /barend/funnel-quality/trend
-   ├─ Cohort Survival               /barend/funnel-quality/survival
-   ├─ Mix-impact                    /barend/funnel-quality/mix-impact
-   ├─ Segmentatie                   /barend/funnel-quality/segmentatie
-   └─ Statistische Output           /barend/funnel-quality/stats
+├─ Reverse Matching Analytics            (bestaand)
+└─ Funnel Operations                     (nieuw, één pagina)
+       /barend/funnel-ops?tab=...
 ```
 
-Each screen shares a top filter bar (period, vacaturetitel cluster, regio, kanaal, plaatsbaarheidscore range, type) via a new `FunnelQualityFiltersContext` — selections persist across screens within a session (sessionStorage).
+Tabs op de pagina (URL synct via `?tab=`):
 
-## Screens
+```text
+[ Overzicht ] [ Instroom ] [ Distributie ] [ Forecast ] [ Opvolging ] [ Watchlist ] [ Dev info ]
+```
 
-**Screen 1 — Trend & Stagnatie**
-- Stacked bar chart (Recharts) jan-2023 → mrt-2026, mounded by month: nieuw (groen #10b981) onder, heractivering (oranje #f97316) boven; secondary y-axis line: plaatsingen (paars #8b5cf6).
-- Indexed trendlines (jan-2023 = 100): inschrijvingen totaal / nieuw / plaatsingen — visualises divergence.
-- Three insight tiles: gem. mix-shift/jaar, plaatsingen geannualiseerd vs 2023, mock p-value mix-trend.
+- **Overzicht** = hoofd-stuurinformatie, toont in één oogopslag de status van alle gebieden.
+- **Instroom** combineert A1 (volume) + A2 (kwaliteit) als sub-secties.
+- **Distributie** combineert B3 (snelheid) + B4 (juistheid) als sub-secties.
+- **Forecast** = scherm B5.
+- **Opvolging** combineert C6 (bel-discipline) + C7 (opvolg-SLA), met interne sub-tabs (mobile-friendly).
+- **Watchlist** = scherm D8.
+- **Dev info** = mock-data, schema, deeplink-formats, SLA-matrix, kleurensysteem.
 
-**Screen 2 — Cohort Survival**
-- Two Kaplan-Meier curves (nieuw vs heractivering) on `<LineChart>` with `<Area>` confidence bands; vertical median lines; legend with mediaan-tijd labels.
-- Log-rank result block: χ², p-value, interpretation badge (significant/niet).
-- Cohort heatmap: 38 inschrijvingsmaanden × {0, 3, 6, 9, 12} maand-leeftijd, conversie% as cell value, white→purple ramp. Tabs `Nieuw` / `Heractivering`.
-- Click row → side panel `Cohort detail`: n, mix %, cluster verdeling, plaatsbaarheidscore distribution (mini-histogram).
+Tabs blijven persistent via `?tab=` in de URL zodat deeplinks per tab werken.
 
-**Screen 3 — Mix-impact**
-- Counterfactual barchart per kwartaal: werkelijke plaatsingen vs "mix-stabiel 2023" scenario; gap labelled.
-- Mix-slider (two `<Slider>` inputs): nieuw/maand & heractivering/maand → live recompute expected plaatsingen using fixed cohortconv constants. Sub-200ms because pure JS.
-- Stacked area: % aandeel heractivering over tijd with annotations at first month >40% and >50%.
+## Tab 1 — Overzicht (hoofd-stuurinformatie)
 
-**Screen 4 — Segmentatie**
-- Small-multiples grid (5 mini KM-curves, one per cluster) — visual Simpson's-paradox check.
-- Forest plot: HR per (cluster × regio) segment with 95% CI; vertical line at HR=1; bars left of 1 highlighted.
-- Bubble chart: x = cohortconv 6m nieuw, y = cohortconv 6m heractivering, size = n, color = cluster; diagonaal `y=x` reference.
+Doel: in één scherm zien of de operatie loopt en waar het knelt. Geen drill-downs, alleen samenvattingen + links naar de juiste deep-dive-tab.
 
-**Screen 5 — Statistische Output**
-- Cox-modeloutput tabel: coëfficiënt, HR, 95% CI, p-value voor type, plaatsbaarheidscore, NLQF, jaren_ervaring, regio, cluster, marktindex.
-- Schoenfeld residuals plot (mock scatter per covariate).
-- Model fit cards: concordance index, AIC, n events, n censored.
-- Methodologie-blok (3 alinea's) + Download CSV-knop (client-side blob).
+**Boven:** 6 KPI-tegels met groen/oranje/rood drempels uit briefing §4:
+1. Instroom volume (week vs doel)
+2. Instroom kwaliteit (gem. plaatsbaarheidscore)
+3. % binnen contact-SLA (alle tiers)
+4. % bel-discipline 6/6
+5. Distributie-fit (huidige vs ideale match)
+6. Forecast deze maand vs doel
 
-## Responsiveness (laptop → 4K)
+Tegels zijn klikbaar → springen naar de bijbehorende tab.
 
-Apply the same pattern we introduced in `TVDashboardLayout.tsx`:
-- Each screen wrapped in a `@container` (`containerType: 'inline-size'`).
-- Replace fixed `text-xs/sm/base` and `gap-2/3/4` with `clamp()` classes (`text-[clamp(0.75rem,1.1cqi,1rem)]`, `gap-[clamp(0.5rem,1cqi,1.25rem)]`).
-- Charts use `<ResponsiveContainer width="100%" height="100%">`; Recharts tick `fontSize: Math.round(width/40)`.
-- `min-h-0` / `min-w-0` on every nested flex/grid child to prevent overflow.
-- KPI tiles use the existing `KPIBadge` (already container-query-driven after the prior task).
-- TV mode (`?fullscreen=true`) reuses `TVDashboardLayout` so any screen can be cast to TV; same compact rules via `useTVCompact()`.
+**Midden — Mini-overzichten (3 kolommen, compact):**
+- Mini sparkline instroom 8w + bron-mix donut.
+- SLA-status per tier (5 horizontale balken: % binnen) + bel-discipline per dagdeel.
+- Distributie-fit gauge + forecast P50 vs doel.
 
-## Files
+**Onder — Acties vandaag** (compact, max 15 regels, "Bekijk alle" → Watchlist-tab):
+Gecombineerde lijst van kandidaten met SLA-overschrijding of dreigende belrondes. Per regel: kandidaatnaam (deeplink + extern-link-icoon), tier-badge, welke SLA verlopen is, hoe lang verlopen, recruiter (deeplink), consultant (deeplink).
 
-**New**
-- `src/data/funnelQualityData.ts` — all mock data: monthly trend series, cohort heatmap matrices (nieuw/heractivering), KM survival points (with CI bands), log-rank result, counterfactual scenarios, mix-slider conversion constants, segment HRs, Cox-model rows, Schoenfeld points, fit stats.
-- `src/contexts/FunnelQualityFiltersContext.tsx` — period, clusters, regio, kanaal, score range, type; sessionStorage sync.
-- `src/components/funnel-quality/FunnelQualityLayout.tsx` — shared shell + filter bar + sub-tabs.
-- `src/components/funnel-quality/FilterBar.tsx`
-- `src/components/funnel-quality/InfoTooltip.tsx` — reusable (i)-tooltip with KPI definitions from §4.
-- `src/components/funnel-quality/KMChart.tsx`
-- `src/components/funnel-quality/CohortHeatmap.tsx`
-- `src/components/funnel-quality/CohortDetailPanel.tsx`
-- `src/components/funnel-quality/CounterfactualChart.tsx`
-- `src/components/funnel-quality/MixSlider.tsx`
-- `src/components/funnel-quality/ForestPlot.tsx`
-- `src/components/funnel-quality/BubbleScatter.tsx`
-- `src/components/funnel-quality/CoxTable.tsx`
-- `src/components/funnel-quality/SchoenfeldPlot.tsx`
-- `src/pages/barend/funnel-quality/Trend.tsx`
-- `src/pages/barend/funnel-quality/Survival.tsx`
-- `src/pages/barend/funnel-quality/MixImpact.tsx`
-- `src/pages/barend/funnel-quality/Segmentatie.tsx`
-- `src/pages/barend/funnel-quality/Stats.tsx`
+**Rechtsonder — Forecast-tegel:** verwachte plaatsingen huidige distributie vs ideale distributie, één optimalisatie-potentie-getal.
 
-**Modified**
-- `src/App.tsx` — lazy-load 5 routes.
-- `src/components/dashboard/Sidebar.tsx` — add `Funnel Quality` parent with 5 sub-items inside `Dashboards Barend`; extend auto-expand list.
-- `mem://index.md` + new `mem://features/dashboards-barend/funnel-quality` memory.
+## Tab 2 — Instroom
 
-## Acceptance criteria mapping
-- §8.5 stagnation visible on Screen 1 ✓ (gap between stacked bars and plaatsingen line tuned in mock).
-- §8.6 KM diff with p<0.01 ✓ (hard-coded p=0.003).
-- §8.7 ≥80 plaatsingen/jaar gap ✓ (counterfactual mock = 96 in 2025).
-- §8.8 4 of 5 clusters HR<1 voor heractivering ✓.
-- §8.9 Cox type-effect p<0.001 ✓ (hard-coded p=0.0004).
-- §8.10 cross-screen filters ✓ via context.
-- §8.11 cohort drill-down ✓.
-- §8.12 mix-slider <200ms ✓ pure JS.
-- §8.13 KPI tooltips ✓ via `InfoTooltip`.
-- §8.14 CSV export ✓ blob download.
+Twee sub-secties onder elkaar (geen aparte routes; gewoon stacked).
+
+**Sectie A1 · Volume**
+- Lijn-/staafgrafiek per dag (laatste 8 weken), stacked nieuw vs bestaand.
+- Uitklapbare bron-treeview (5 top-level: jobscan / open_cv / cv_database / reactivering / linkedin) met aantallen, % nieuw vs bestaand, conversie naar 'ingeschreven'.
+- Filter business unit.
+
+**Sectie A2 · Kwaliteit**
+- Hero-statement: gem. plaatsbaarheidscore deze week, % ≥75, delta vs vorige week.
+- 3 histograms: scoreverdeling totaal / nieuw / bestaand (5/15/30/35/15 over D/C/B/A/A+).
+- Heatmap business unit × functiegroep (gem. score + n), toggle totaal/nieuw/bestaand. Cel-klik opent rechts side-panel met kandidatenlijst (deeplinks).
+- Onderaan: top-kandidaten 7 dagen (score ≥75).
+
+## Tab 3 — Distributie
+
+**Sectie B3 · Snelheid**
+- 3 lead-time meters (gauge): toewijzen, eerste contact, eerste gesprek; p50/p90 per tier.
+- Histogram tijd-tot-toewijzing per tier met SLA-grens.
+
+**Sectie B4 · Juistheid**
+- Hit-rate matrix: rijen = consultants, kolommen = top-20 genormaliseerde vacaturetitels, cel = hit-rate % met `n=` annotatie, lichtgrijs→donkergroen ramp, n<5 grijs.
+- Toggle **Historisch totaal / Voortschrijdend 12w**.
+- Grote optimalisatie-tegel: huidige plaatsingen vs ideale + delta.
+- Mismatch-actielijst (deeplinks naar kandidaat én consultant).
+
+## Tab 4 — Forecast
+
+- Hoofdgetal verwachte plaatsingen huidige distributie + verwachte plaatsingen optimale distributie.
+- 3 scenario-cards (P10/P50/P90).
+- Lijngrafiek 12m historie + 3m forecast met onzekerheidsband.
+- Bijdrage-tabel per business unit × functiegroep.
+
+## Tab 5 — Opvolging (mobile-friendly)
+
+Interne tabs `[ Bel-discipline ] [ Opvolg-SLA ]` zodat op mobiel maar één scherm tegelijk getoond wordt.
+
+**Bel-discipline (C6)**
+- Per recruiter (30 stuks) een kandidaat-grid: rijen = kandidaten, 6 kolommen = belmomenten (08:30/12:00/17:00 × dag 1/2). Cel = ingekleurd bolletje (groen=succesvol, oranje=poging zonder gehoor, rood=gemist). WhatsApp/voicemail-iconen bij dag 1 ochtend.
+- Header per recruiter: % 6/6 voltooid (~70%), totale pogingen, recruiter-naam = deeplink.
+- Filterbalk recruiter / dag / business unit. Bel-data is **niet aanpasbaar**.
+
+**Opvolg-SLA (C7)**
+- 5 metric cards: % binnen contact-SLA per tier (A+/A/B/C/D).
+- Histogram tijd-tot-eerste-contact per tier met SLA-grens.
+- Recruiter-leaderboard (toegewezen, % contact-SLA, % gesprek-SLA, openstaande overschrijdingen).
+- Twee actielijsten (contact verlopen/dreigend; gesprek-SLA), beide met deeplinks. A+ binnen 30 min auto-rood.
+
+## Tab 6 — Watchlist
+
+4 categorie-secties met collapsible tabellen + deeplinks:
+1. Hoge score, lange tijd zonder contact
+2. Verlopen SLA's > 24u
+3. Bel-discipline incompleet (>2 gemiste momenten)
+4. Geen statuswijziging > 7d sinds toewijzing
+
+## Tab 7 — Dev info
+
+- Mock-data setup: 5.000 kandidaten in pijp, 30 recruiters, 25 consultants, score-verdeling 5/15/30/35/15%, bron-mix 30/15/20/25/10%, bel-discipline ~70% haalt 6/6.
+- Data-schema (`candidates`, `call_attempts`, `recruiters`, `consultants`, `placements`) zoals in briefing §11.
+- SLA-matrix (§4) als referentie-tabel.
+- Kleurensysteem (SLA groen/oranje/rood; tiers A+ rood / A oranje / B blauw / C groen / D grijs).
+- Deeplink-formats: `https://app.recruitcrm.io/candidates/{id}` en `https://app.recruitcrm.io/users/{id}`.
+- Verwijzing naar `funnelOperationsData.ts` als single source of truth.
+- Out-of-scope-lijst (§16) en read-only constraint expliciet benoemd.
+
+## Gedeelde componenten
+
+- **CandidateLink** — naam + extern-link-icoon (lucide `ExternalLink`), opent kandidaat-RCRM in nieuw tabblad.
+- **UserLink** — idem voor recruiters/consultants.
+- **TierBadge** — A+ rood, A oranje, B blauw, C groen, D grijs.
+- **SLAStatusPill** — groen (binnen) / oranje (>80% verstreken) / rood (verlopen), toont 'nog 23 min' of 'verlopen 1u 14min'.
+- **FunnelOpsFilterBar** — period, business unit, tier, bron, recruiter, consultant; via `FunnelOpsFiltersContext` met sessionStorage.
+- Vlakke surfaces (Linear/Notion/Vercel-stijl), donkere modus, geen gradients/shadows.
+
+## Mock-data generator
+
+`src/data/funnelOperationsData.ts` — deterministisch (gefixeerde seed):
+- 5.000 kandidaten met `candidate_id`, NL-naam, type (nieuw 60% / bestaand 40%), score 0-100 met verdeling 5/15/30/35/15% over D/C/B/A/A+, business unit (4), genormaliseerde functiegroep (~10), bron (5 met mix 30/15/20/25/10%), status, timestamps, recruiter_id, consultant_id.
+- 30 recruiters, 25 consultants (NL-namen, `user_id`).
+- 6 `call_attempts` per kandidaat over 2 dagen; ~70% volledig 6/6.
+- Hit-rate matrix afgeleid uit historische plaatsingen per consultant × genormaliseerde titel — beide weergaven (historisch + voortschrijdend 12w).
+- Pre-berekende KPI-aggregaten en actielijsten.
+
+Helpers: `getSLAStatus()`, `getActionList()`, `getOptimalDistribution()`, `getForecast()`.
+
+## Bestanden
+
+**Verwijderen**
+- `src/data/funnelQualityData.ts`
+- `src/contexts/FunnelQualityFiltersContext.tsx`
+- `src/components/funnel-quality/` (volledige map)
+- `src/pages/barend/funnel-quality/` (volledige map)
+
+**Nieuw**
+- `src/data/funnelOperationsData.ts`
+- `src/contexts/FunnelOpsFiltersContext.tsx`
+- `src/pages/barend/FunnelOperations.tsx` (één pagina met `<Tabs>` shadcn component, URL-sync via `useSearchParams`)
+- `src/components/funnel-ops/FilterBar.tsx`
+- `src/components/funnel-ops/CandidateLink.tsx`
+- `src/components/funnel-ops/UserLink.tsx`
+- `src/components/funnel-ops/TierBadge.tsx`
+- `src/components/funnel-ops/SLAStatusPill.tsx`
+- `src/components/funnel-ops/KPITile.tsx`
+- `src/components/funnel-ops/ActionList.tsx`
+- `src/components/funnel-ops/SourceTreeView.tsx`
+- `src/components/funnel-ops/ScoreHistogram.tsx`
+- `src/components/funnel-ops/QualityHeatmap.tsx`
+- `src/components/funnel-ops/HitRateMatrix.tsx`
+- `src/components/funnel-ops/OptimizationTile.tsx`
+- `src/components/funnel-ops/CallDisciplineGrid.tsx`
+- `src/components/funnel-ops/SLALeaderboard.tsx`
+- `src/components/funnel-ops/WatchlistSection.tsx`
+- `src/components/funnel-ops/tabs/OverviewTab.tsx`
+- `src/components/funnel-ops/tabs/InstroomTab.tsx`
+- `src/components/funnel-ops/tabs/DistributieTab.tsx`
+- `src/components/funnel-ops/tabs/ForecastTab.tsx`
+- `src/components/funnel-ops/tabs/OpvolgingTab.tsx`
+- `src/components/funnel-ops/tabs/WatchlistTab.tsx`
+- `src/components/funnel-ops/tabs/DevInfoTab.tsx`
+
+**Gewijzigd**
+- `src/App.tsx` — verwijder 5 funnel-quality routes, voeg één route toe: `/barend/funnel-ops` (lazy).
+- `src/components/dashboard/Sidebar.tsx` — vervang `Funnel Quality` parent + 5 sub-items door één item `Funnel Operations`.
+- `mem://index.md` — verwijder funnel-quality memory, voeg funnel-operations memory toe.
+
+## Acceptatiecriteria
+
+- Eén pagina, alle stuurinformatie zichtbaar via tabs; Overzicht-tab geeft de volledige status zonder verder klikken.
+- Geen enkele knop, formulier of context-menu wijzigt data; alle interactieve elementen zijn navigatie, filter, deeplink of drill-down (read-only side-panel).
+- Elke kandidaat-, recruiter- en consultantnaam toont extern-link-icoon en opent RCRM in nieuw tabblad (`target="_blank" rel="noopener noreferrer"`).
+- Mock-data is deterministisch en consistent over alle tabs via één data-file.
+- Tab Opvolging is bruikbaar op viewport ≤ 640px (interne sub-tabs i.p.v. side-by-side).
+- Donkere modus volledig ondersteund (semantische tokens uit `index.css`).
+- Dev-tab documenteert mock-volumes, schema, SLA-matrix en deeplink-formats.
