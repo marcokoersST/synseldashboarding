@@ -20,7 +20,10 @@ function Section({ title, desc, items, info }: { title: string; desc: string; it
             <div className="text-xs text-muted-foreground">{desc}</div>
           </div>
         </div>
-        <span className="text-xs tabular-nums bg-muted rounded-full px-2 py-0.5">{items.length}</span>
+        <span className="flex items-center gap-2">
+          <span className="text-xs tabular-nums bg-muted rounded-full px-2 py-0.5">{items.length}</span>
+          <span onClick={(e) => e.stopPropagation()}><TileInfo {...info} /></span>
+        </span>
       </button>
       {open && (
         <table className="w-full text-xs">
