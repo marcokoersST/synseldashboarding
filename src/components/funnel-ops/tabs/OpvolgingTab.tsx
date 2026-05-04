@@ -67,7 +67,7 @@ export function OpvolgingTab() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">SLA-leaderboard recruiters</h3>
-            <TileInfo title="SLA-leaderboard" what="Per recruiter: aantal toegewezen kandidaten, % binnen contact-SLA en gesprek-SLA, en aantal verlopen." formula="zie recruiterSLAStats() — alle aggregaties per recruiter.id" source="recruiterSLAStats()" />
+            <TileInfo title="SLA leaderboard" what="Per recruiter: number of assigned candidates, % within contact-SLA, % within first-conversation SLA, and number of breaches. Surfaces individual workload and quality." formula="see recruiterSLAStats() — all aggregates grouped by recruiter.id" source="recruiterSLAStats()" />
           </div>
           <SLALeaderboard />
         </Card>
