@@ -1,12 +1,17 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { forecastSeries, kpis, UNITS_REF, FUNCTIEGROEPEN_REF, candidates } from "@/data/funnelOperationsData";
+import { TileInfo } from "../TileInfo";
+import { OptimalReassignPanel } from "../OptimalReassignPanel";
+import { MousePointerClick } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function ForecastTab() {
+  const [openReassign, setOpenReassign] = useState(false);
   const series = forecastSeries();
   const fcst = kpis.forecastMaand;
 
-  // contribution table
   const open = candidates.filter(c => c.status !== "geplaatst" && c.status !== "afgesloten");
   const rows = UNITS_REF.flatMap(unit => FUNCTIEGROEPEN_REF.slice(0, 5).map(fg => {
     const subset = open.filter(c => c.unit === unit && c.functiegroep === fg);
@@ -18,17 +23,61 @@ export function ForecastTab() {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="p-4 border-l-4 border-l-success">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (huidige distributie)</div>
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (huidige distributie)</div>
+            <TileInfo
+              title="Verwacht — huidige distributie (P50)"
+              what="Mediane verwachting op basis van de huidige consultant-toewijzingen en historische hit-rates."
+              formula={`P50 = Σ (open_kandidaten × hit_rate(consultant, functiegroep))\nWaarde: ${fcst.p50}`}
+              source="kpis.forecastMaand.p50"
+              notes="Hard-coded mock-output; in productie komt dit uit het forecast-model."
+            />
+          </div>
           <div className="text-3xl font-bold tabular-nums">{fcst.p50}</div>
           <div className="text-xs text-muted-foreground">vs maanddoel {fcst.goal}</div>
         </Card>
-        <Card className="p-4 border-l-4 border-l-orange-500">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (optimale distributie)</div>
+
+        <Card
+          role="button"
+          tabIndex={0}
+          aria-label="Toon herverdeel-suggesties"
+          onClick={() => setOpenReassign(true)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpenReassign(true); } }}
+          className={cn(
+            "p-4 border-l-4 border-l-orange-500 cursor-pointer transition-all",
+            "hover:bg-orange-500/5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40",
+          )}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (optimale distributie)</div>
+            <TileInfo
+              title="Verwacht — optimale distributie"
+              what="Maximale forecast wanneer elke open kandidaat aan zijn best-passende consultant wordt toegewezen."
+              formula={`Optimaal = Σ (open_kandidaten × max_hit_rate(*, functiegroep))\nWaarde: ${fcst.ideal}\nPotentie: +${fcst.ideal - fcst.p50}`}
+              source="kpis.forecastMaand.ideal · optimalReassignments()"
+              notes="Capaciteit per consultant in deze ronde gemaximeerd op 8 nieuwe matches."
+            />
+          </div>
           <div className="text-3xl font-bold tabular-nums">{fcst.ideal}</div>
-          <div className="text-xs text-orange-500">+{fcst.ideal - fcst.p50} potentie</div>
+          <div className="text-xs text-orange-500 flex items-center gap-1">
+            +{fcst.ideal - fcst.p50} potentie
+            <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground ml-1">
+              <MousePointerClick className="w-3 h-3" /> klik voor herverdeel-lijst
+            </span>
+          </div>
         </Card>
+
         <Card className="p-4">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Scenario's</div>
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Scenario's</div>
+            <TileInfo
+              title="Scenario's P10 / P50 / P90"
+              what="Pessimistisch / verwacht / optimistisch scenario voor deze maand."
+              formula={`P10 = P50 − 18\nP50 = ${fcst.p50}\nP90 = P50 + 22`}
+              source="forecastSeries() laatste 3 maanden"
+              notes="Bandbreedte gebaseerd op historische standaardafwijking van ±15%."
+            />
+          </div>
           <div className="grid grid-cols-3 gap-2 mt-2 text-center">
             <div><div className="text-[10px] text-muted-foreground">P10</div><div className="text-lg font-semibold tabular-nums">{fcst.p50 - 18}</div></div>
             <div><div className="text-[10px] text-muted-foreground">P50</div><div className="text-lg font-semibold tabular-nums">{fcst.p50}</div></div>
@@ -38,7 +87,16 @@ export function ForecastTab() {
       </div>
 
       <Card className="p-4">
-        <div className="text-sm font-medium mb-2">Plaatsingen — 12 maanden historie + 3 maanden forecast</div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm font-medium">Plaatsingen — 12 maanden historie + 3 maanden forecast</div>
+          <TileInfo
+            title="Historie + forecast lijn"
+            what="Werkelijke plaatsingen per maand (afgelopen 12) en P50/P10–P90-band voor de komende 3 maanden."
+            formula="actual = som(status='geplaatst' per maand)\nP10/P50/P90 = forecastmodel-output"
+            source="forecastSeries()"
+            notes="Mock-data; periodes vóór mei 2026 zijn deterministisch gegenereerd."
+          />
+        </div>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={series} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
@@ -56,7 +114,16 @@ export function ForecastTab() {
       </Card>
 
       <Card className="overflow-hidden">
-        <div className="px-4 py-3 border-b border-border text-sm font-semibold">Bijdrage deze maand · open kandidaten × verwachte conversie</div>
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <div className="text-sm font-semibold">Bijdrage deze maand · open kandidaten × verwachte conversie</div>
+          <TileInfo
+            title="Bijdragetabel"
+            what="Top-12 combinaties van Unit × Functiegroep gerangschikt op verwachte plaatsingen deze maand."
+            formula="verw_conv = 0.08 + (gem_score / 1000)\nverw_plaats = open_kandidaten × verw_conv"
+            source="candidates filtered op status ≠ geplaatst/afgesloten"
+            notes="Eenvoudige conversie-proxy, niet het echte model."
+          />
+        </div>
         <table className="w-full text-xs">
           <thead className="text-muted-foreground bg-muted/20">
             <tr>
@@ -80,6 +147,8 @@ export function ForecastTab() {
           </tbody>
         </table>
       </Card>
+
+      <OptimalReassignPanel open={openReassign} onOpenChange={setOpenReassign} />
     </div>
   );
 }

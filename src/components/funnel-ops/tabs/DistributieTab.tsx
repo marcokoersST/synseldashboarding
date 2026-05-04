@@ -4,6 +4,7 @@ import { leadTimeMeters, kpis, getActionList, TIER_COLOR } from "@/data/funnelOp
 import type { Tier } from "@/data/funnelOperationsData";
 import { ActionList } from "../ActionList";
 import { TrendingUp } from "lucide-react";
+import { TileInfo } from "../TileInfo";
 
 export function DistributieTab() {
   const meters = leadTimeMeters();
@@ -18,7 +19,10 @@ export function DistributieTab() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {(["Toewijzen","Eerste contact","Eerste gesprek"] as const).map((label, idx) => (
             <Card key={label} className="p-4">
-              <div className="text-xs text-muted-foreground mb-2">{label} · lead-time per tier</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs text-muted-foreground">{label} · lead-time per tier</div>
+                <TileInfo title={`${label} · lead-time`} what={`P50/P90 lead-time per tier voor de stap "${label.toLowerCase()}".`} formula="p50 = mediaan(uren); p90 = 90e percentiel\nbalk-vulling = waarde / SLA × 100" source="leadTimeMeters()" notes="Tier-SLA's komen uit SLA_MATRIX." />
+              </div>
               <div className="space-y-1.5">
                 {meters.map(m => {
                   const value = idx === 1 ? m.p50 : idx === 2 ? m.p90 : m.p50 / 2;
@@ -48,7 +52,10 @@ export function DistributieTab() {
           <div className="flex items-center gap-3">
             <TrendingUp className="w-8 h-8 text-orange-500" />
             <div className="flex-1">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">Optimalisatie-potentie</div>
+              <div className="flex items-center justify-between">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Optimalisatie-potentie</div>
+                <TileInfo title="Optimalisatie-potentie" what="Verschil tussen huidige plaatsingen en het ideaal bij optimale consultant-routing." formula="ideal = actual × 1.18\npotentie = ideal − actual" source="kpis.distributieFit" notes="Op het Forecast-tabblad kan je per kandidaat zien wie naar wie moet." />
+              </div>
               <div className="text-xl font-semibold">
                 Huidige plaatsingen: <span className="tabular-nums">{dist.actual}</span> · ideale distributie: <span className="tabular-nums">{dist.ideal}</span>{" "}
                 <span className="text-orange-500">(+{dist.ideal - dist.actual})</span>
@@ -58,12 +65,21 @@ export function DistributieTab() {
           </div>
         </Card>
 
-        <HitRateMatrix />
+        <Card className="p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold">Hit-rate matrix · consultant × functiegroep</h3>
+            <TileInfo title="Hit-rate matrix" what="Historische conversie-percentage per consultant en functiegroep. Cellen met n<5 worden niet getoond." formula="hit_rate = geplaatst / toegewezen × 100" source="hitRateMatrix(mode)" notes="Toggle 'historisch' vs '12-weeks rollend' toont stabiliteit van de scores." />
+          </div>
+          <HitRateMatrix />
+        </Card>
 
         <Card className="overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-semibold">Mismatch-actielijst</h3>
-            <p className="text-xs text-muted-foreground">Kandidaten waar een betere consultant-match beschikbaar was. Klik door naar RCRM voor actie.</p>
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold">Mismatch-actielijst</h3>
+              <p className="text-xs text-muted-foreground">Kandidaten waar een betere consultant-match beschikbaar was. Klik door naar RCRM voor actie.</p>
+            </div>
+            <TileInfo title="Mismatch-actielijst" what="Kandidaten waar de huidige consultant-match suboptimaal is en de SLA dreigt of verloopt." formula="getActionList(8) — gesorteerd op urgentie" source="getActionList()" />
           </div>
           <ActionList rows={mismatch} />
         </Card>

@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
+import { TileInfo, type TileInfoProps } from "./TileInfo";
 
 type Status = "groen" | "oranje" | "rood" | "neutraal";
 
@@ -11,6 +12,7 @@ interface Props {
   status?: Status;
   onClick?: () => void;
   className?: string;
+  info?: TileInfoProps;
 }
 
 const STATUS_BORDER: Record<Status, string> = {
@@ -27,7 +29,7 @@ const STATUS_DOT: Record<Status, string> = {
   neutraal: "bg-muted-foreground",
 };
 
-export function KPITile({ label, value, sub, status = "neutraal", onClick, className }: Props) {
+export function KPITile({ label, value, sub, status = "neutraal", onClick, className, info }: Props) {
   return (
     <Card
       onClick={onClick}
@@ -39,11 +41,14 @@ export function KPITile({ label, value, sub, status = "neutraal", onClick, class
       )}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className={cn("w-1.5 h-1.5 rounded-full", STATUS_DOT[status])} />
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", STATUS_DOT[status])} />
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground truncate">{label}</span>
         </div>
-        {onClick && <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />}
+        <div className="flex items-center gap-1">
+          {info && <TileInfo {...info} />}
+          {onClick && <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />}
+        </div>
       </div>
       <div className="text-2xl font-bold tabular-nums">{value}</div>
       {sub && <div className="text-xs text-muted-foreground">{sub}</div>}

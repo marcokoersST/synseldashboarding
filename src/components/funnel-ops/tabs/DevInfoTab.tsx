@@ -4,6 +4,15 @@ import { SLA_MATRIX, candidates, recruiters, consultants, callAttempts } from "@
 export function DevInfoTab() {
   return (
     <div className="space-y-4 max-w-4xl">
+      <Card className="p-5 space-y-2 border-l-4 border-l-primary">
+        <h2 className="text-base font-semibold">Per-tegel uitleg</h2>
+        <p className="text-sm text-muted-foreground">
+          Detail over wat een specifieke tegel toont, hoe deze berekend is en uit welke mock-bron de data komt
+          vind je via het <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-border bg-muted/50 text-xs">ⓘ</span>-icoon
+          rechtsboven in elke tegel. Deze pagina bevat alleen globale info.
+        </p>
+      </Card>
+
       <Card className="p-5 space-y-2">
         <h2 className="text-base font-semibold">Read-only constraint</h2>
         <p className="text-sm text-muted-foreground">

@@ -6,6 +6,7 @@ import { SLALeaderboard } from "../SLALeaderboard";
 import { ActionList } from "../ActionList";
 import { tierContactStats, getActionList, TIER_COLOR, candidates, SLA_MATRIX } from "@/data/funnelOperationsData";
 import type { Tier } from "@/data/funnelOperationsData";
+import { TileInfo } from "../TileInfo";
 
 export function OpvolgingTab() {
   const [sub, setSub] = useState<"bel" | "sla">("bel");
@@ -37,36 +38,55 @@ export function OpvolgingTab() {
       </TabsList>
 
       <TabsContent value="bel" className="space-y-3">
-        <Card className="p-3 text-xs text-muted-foreground">
-          6 belmomenten over 2 dagen (08:30 / 12:00 / 17:00). Groen = succesvol contact, oranje = poging zonder gehoor, rood = niet uitgevoerd. Bel-data is niet aanpasbaar in dit dashboard.
+        <Card className="p-3 flex items-start justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            6 belmomenten over 2 dagen (08:30 / 12:00 / 17:00). Groen = succesvol contact, oranje = poging zonder gehoor, rood = niet uitgevoerd. Bel-data is niet aanpasbaar in dit dashboard.
+          </p>
+          <TileInfo title="Bel-discipline grid" what="Per kandidaat per recruiter een 6-cel grid met de status van elk belmoment." formula="6 momenten = 2 dagen × 3 dagdelen (ochtend/middag/avond)" source="recruiterCallGrids() · callAttempts" notes="Mock-aanname: ~70% van kandidaten haalt 6/6 uitgevoerd." />
         </Card>
         <CallDisciplineGrid />
       </TabsContent>
 
       <TabsContent value="sla" className="space-y-4">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-          {tierStats.map(t => (
-            <Card key={t.tier} className="p-3 border-l-4" style={{ borderLeftColor: TIER_COLOR[t.tier as Tier] }}>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">Tier {t.tier}</div>
-              <div className="text-2xl font-bold tabular-nums">{t.pct}%</div>
-              <div className="text-[11px] text-muted-foreground">binnen contact-SLA · n={t.n}</div>
-            </Card>
-          ))}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold">SLA-score per tier</h3>
+            <TileInfo title="SLA per tier" what="Contact-SLA score per tier (A+ tot D)." formula="in_SLA / contacted × 100 per tier" source="tierContactStats()" notes="Strenge venster voor A+: 2 uur." />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            {tierStats.map(t => (
+              <Card key={t.tier} className="p-3 border-l-4" style={{ borderLeftColor: TIER_COLOR[t.tier as Tier] }}>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Tier {t.tier}</div>
+                <div className="text-2xl font-bold tabular-nums">{t.pct}%</div>
+                <div className="text-[11px] text-muted-foreground">binnen contact-SLA · n={t.n}</div>
+              </Card>
+            ))}
+          </div>
         </div>
 
-        <SLALeaderboard />
+        <Card className="p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold">SLA-leaderboard recruiters</h3>
+            <TileInfo title="SLA-leaderboard" what="Per recruiter: aantal toegewezen kandidaten, % binnen contact-SLA en gesprek-SLA, en aantal verlopen." formula="zie recruiterSLAStats() — alle aggregaties per recruiter.id" source="recruiterSLAStats()" />
+          </div>
+          <SLALeaderboard />
+        </Card>
 
         <Card className="overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-semibold">Contact-SLA verlopen of dreigend</h3>
-            <p className="text-xs text-muted-foreground">A+ binnen 30 minuten van toewijzing automatisch rood.</p>
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold">Contact-SLA verlopen of dreigend</h3>
+              <p className="text-xs text-muted-foreground">A+ binnen 30 minuten van toewijzing automatisch rood.</p>
+            </div>
+            <TileInfo title="Contact-SLA actielijst" what="Open kandidaten waarvan de contact-SLA verlopen is of binnen 20% van de deadline zit." formula="getActionList(15) gefilterd op contact-SLA" source="getActionList()" />
           </div>
           <ActionList rows={contactRows} />
         </Card>
 
         <Card className="overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <h3 className="text-sm font-semibold">Gesprek-SLA verlopen of dreigend</h3>
+            <TileInfo title="Gesprek-SLA actielijst" what="Kandidaten die wel contact hebben gehad maar de gesprek-deadline naderen of overschreden zijn." formula="filter: pctElapsed ≥ 0.8 op SLA_MATRIX[tier].gesprekH" source="candidates × SLA_MATRIX" />
           </div>
           <ActionList rows={gesprekRows} />
         </Card>
