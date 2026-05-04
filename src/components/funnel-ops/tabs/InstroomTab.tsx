@@ -82,7 +82,7 @@ export function InstroomTab() {
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div className="text-sm font-semibold">Top kandidaten laatste 7 dagen (score ≥75)</div>
-            <TileInfo title="Top kandidaten" what="De 12 hoogst-scorende kandidaten van afgelopen week. Klik op een naam → opent in RecruitCRM." formula="filter: score ≥ 75 én toegewezen ≤ 7d geleden\nsort: score desc · top 12" source="candidates" />
+            <TileInfo title="Top candidates" what="The 12 highest-scoring candidates that entered the funnel in the last 7 days. Click a name to open the candidate profile in RecruitCRM." formula="filter: score ≥ 75 AND assigned ≤ 7d ago\nsort: score desc · top 12" source="candidates" />
           </div>
           <table className="w-full text-xs">
             <thead className="text-muted-foreground bg-muted/20">
