@@ -6,8 +6,9 @@ import type { Candidate } from "@/data/funnelOperationsData";
 import { CandidateLink, UserLink } from "../CandidateLink";
 import { TierBadge } from "../TierBadge";
 import { recruiterById, consultantById } from "@/data/funnelOperationsData";
+import { TileInfo, type TileInfoProps } from "../TileInfo";
 
-function Section({ title, desc, items }: { title: string; desc: string; items: Candidate[] }) {
+function Section({ title, desc, items, info }: { title: string; desc: string; items: Candidate[]; info: TileInfoProps }) {
   const [open, setOpen] = useState(true);
   return (
     <Card className="overflow-hidden">
