@@ -40,7 +40,10 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
         <Card className="p-4 space-y-3">
           <div className="flex items-baseline justify-between">
             <h3 className="text-sm font-semibold">Instroom (4 weken)</h3>
-            <button onClick={() => goTo("instroom")} className="text-xs text-primary hover:underline">Bekijk →</button>
+            <div className="flex items-center gap-1">
+              <TileInfo title="Instroom (4 weken)" what="Dagelijkse instroom gesplitst naar nieuw vs bestaand kandidaat." formula="bucket per dag uit candidates.toegewezenOp" source="dailyInstroom" notes="Type-mix nieuw/bestaand: 60/40." />
+              <button onClick={() => goTo("instroom")} className="text-xs text-primary hover:underline">Bekijk →</button>
+            </div>
           </div>
           <div className="h-32">
             <ResponsiveContainer width="100%" height="100%">
