@@ -21,12 +21,18 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
     <div className="space-y-4">
       {/* 6 KPI tiles */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KPITile label="Instroom volume" value={`${kpis.instroomVolume.value}`} sub={`${kpis.instroomVolume.pct}% van weekdoel ${kpis.instroomVolume.goal}`} status={statusFromPct(kpis.instroomVolume.pct)} onClick={() => goTo("instroom")} />
-        <KPITile label="Instroom kwaliteit" value={`${kpis.instroomKwaliteit.value}`} sub={`Δ ${kpis.instroomKwaliteit.value - kpis.instroomKwaliteit.prev > 0 ? "+" : ""}${kpis.instroomKwaliteit.value - kpis.instroomKwaliteit.prev} vs vorige week`} status={kpis.instroomKwaliteit.value >= 70 ? "groen" : kpis.instroomKwaliteit.value >= 60 ? "oranje" : "rood"} onClick={() => goTo("instroom")} />
-        <KPITile label="Contact-SLA" value={`${kpis.contactSLA.pct}%`} sub="binnen SLA, alle tiers" status={statusFromPct(kpis.contactSLA.pct, 90, 75)} onClick={() => goTo("opvolging")} />
-        <KPITile label="Bel-discipline" value={`${kpis.belDiscipline.pct}%`} sub="kandidaten met 6/6 belmomenten" status={statusFromPct(kpis.belDiscipline.pct, 75, 60)} onClick={() => goTo("opvolging")} />
-        <KPITile label="Distributie-fit" value={`${dist.pct}%`} sub={`${dist.actual} van ${dist.ideal} optimaal`} status={statusFromPct(dist.pct, 95, 85)} onClick={() => goTo("distributie")} />
-        <KPITile label="Forecast deze maand" value={`${fcst.p50}`} sub={`P50 vs doel ${fcst.goal} · ideaal ${fcst.ideal}`} status={statusFromPct(Math.round((fcst.p50 / fcst.goal) * 100), 100, 85)} onClick={() => goTo("forecast")} />
+        <KPITile label="Instroom volume" value={`${kpis.instroomVolume.value}`} sub={`${kpis.instroomVolume.pct}% van weekdoel ${kpis.instroomVolume.goal}`} status={statusFromPct(kpis.instroomVolume.pct)} onClick={() => goTo("instroom")}
+          info={{ title: "Instroom volume", what: "Aantal nieuw toegewezen kandidaten in de afgelopen 7 dagen.", formula: "telling: candidates.toegewezenOp ≥ NOW − 7d", source: "kpis.instroomVolume", notes: "Weekdoel staat hard op 700." }} />
+        <KPITile label="Instroom kwaliteit" value={`${kpis.instroomKwaliteit.value}`} sub={`Δ ${kpis.instroomKwaliteit.value - kpis.instroomKwaliteit.prev > 0 ? "+" : ""}${kpis.instroomKwaliteit.value - kpis.instroomKwaliteit.prev} vs vorige week`} status={kpis.instroomKwaliteit.value >= 70 ? "groen" : kpis.instroomKwaliteit.value >= 60 ? "oranje" : "rood"} onClick={() => goTo("instroom")}
+          info={{ title: "Instroom kwaliteit", what: "Gemiddelde plaatsbaarheidscore (0-100) van kandidaten van afgelopen week.", formula: "avg(score) over instroom afgelopen 7d\nΔ = deze week − vorige week", source: "kpis.instroomKwaliteit", notes: "Score-buckets: D 0-34 · C 35-54 · B 55-74 · A 75-89 · A+ 90-100." }} />
+        <KPITile label="Contact-SLA" value={`${kpis.contactSLA.pct}%`} sub="binnen SLA, alle tiers" status={statusFromPct(kpis.contactSLA.pct, 90, 75)} onClick={() => goTo("opvolging")}
+          info={{ title: "Contact-SLA", what: "Aandeel gecontacteerde kandidaten dat binnen het SLA-venster van zijn tier is bereikt.", formula: "in_SLA / contacted × 100", source: "SLA_MATRIX × candidates.eersteContactOp", notes: "Tier A+: 2u · A: 8u · B: 48u · C: 5d · D: 10d." }} />
+        <KPITile label="Bel-discipline" value={`${kpis.belDiscipline.pct}%`} sub="kandidaten met 6/6 belmomenten" status={statusFromPct(kpis.belDiscipline.pct, 75, 60)} onClick={() => goTo("opvolging")}
+          info={{ title: "Bel-discipline", what: "% kandidaten waar alle 6 belmomenten over 2 dagen zijn uitgevoerd.", formula: "kandidaten met 6/6 uitgevoerd / totaal", source: "callAttempts", notes: "Mock-aanname: ~70% haalt 6/6." }} />
+        <KPITile label="Distributie-fit" value={`${dist.pct}%`} sub={`${dist.actual} van ${dist.ideal} optimaal`} status={statusFromPct(dist.pct, 95, 85)} onClick={() => goTo("distributie")}
+          info={{ title: "Distributie-fit", what: "Verhouding tussen werkelijke plaatsingen en het ideaal bij optimale consultant-routing.", formula: "actual / ideal × 100\nideal = actual × 1.18", source: "kpis.distributieFit", notes: "Hit-rate per consultant × functiegroep wordt deterministisch gegenereerd." }} />
+        <KPITile label="Forecast deze maand" value={`${fcst.p50}`} sub={`P50 vs doel ${fcst.goal} · ideaal ${fcst.ideal}`} status={statusFromPct(Math.round((fcst.p50 / fcst.goal) * 100), 100, 85)} onClick={() => goTo("forecast")}
+          info={{ title: "Forecast deze maand", what: "Mediane verwachting (P50) plaatsingen voor deze maand.", formula: "P50 forecastmodel\nIdeaal = bij optimale herverdeling", source: "kpis.forecastMaand", notes: "Klik in 'Forecast' op de oranje tegel voor herverdeel-suggesties." }} />
       </div>
 
       {/* Mini overzichten */}
