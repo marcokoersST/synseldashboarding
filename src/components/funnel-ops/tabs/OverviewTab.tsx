@@ -1,11 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { KPITile, statusFromPct } from "../KPITile";
 import { ActionList } from "../ActionList";
+import { TileInfo } from "../TileInfo";
 import { kpis, getActionList, tierContactStats, dailyInstroom, sourceTree } from "@/data/funnelOperationsData";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as RTooltip, PieChart, Pie, Cell } from "recharts";
 import { TIER_COLOR } from "@/data/funnelOperationsData";
 import type { Tier } from "@/data/funnelOperationsData";
-import { Link } from "react-router-dom";
 
 const PIE_COLORS = ["hsl(45 70% 55%)", "hsl(210 70% 55%)", "hsl(160 50% 45%)", "hsl(280 60% 55%)", "hsl(0 60% 55%)"];
 
