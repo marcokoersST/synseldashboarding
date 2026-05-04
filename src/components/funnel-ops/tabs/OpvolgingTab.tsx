@@ -6,6 +6,7 @@ import { SLALeaderboard } from "../SLALeaderboard";
 import { ActionList } from "../ActionList";
 import { tierContactStats, getActionList, TIER_COLOR, candidates, SLA_MATRIX } from "@/data/funnelOperationsData";
 import type { Tier } from "@/data/funnelOperationsData";
+import { TileInfo } from "../TileInfo";
 
 export function OpvolgingTab() {
   const [sub, setSub] = useState<"bel" | "sla">("bel");
