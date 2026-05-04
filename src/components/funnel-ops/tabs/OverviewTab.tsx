@@ -43,7 +43,7 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
           <div className="flex items-baseline justify-between">
             <h3 className="text-sm font-semibold">Instroom (4 weken)</h3>
             <div className="flex items-center gap-1">
-              <TileInfo title="Instroom (4 weken)" what="Dagelijkse instroom gesplitst naar nieuw vs bestaand kandidaat." formula="bucket per dag uit candidates.toegewezenOp" source="dailyInstroom" notes="Type-mix nieuw/bestaand: 60/40." />
+              <TileInfo title="Inflow (4 weeks)" what="Daily inflow split by candidate type (new vs returning). Lets the team spot demand spikes and channel shifts." formula="bucket per day from candidates.toegewezenOp, split on candidate.type" source="dailyInstroom" notes="Mock mix new/returning: 60/40." />
               <button onClick={() => goTo("instroom")} className="text-xs text-primary hover:underline">Bekijk →</button>
             </div>
           </div>
