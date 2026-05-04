@@ -21,7 +21,10 @@ export function InstroomTab() {
       <section className="space-y-3">
         <h2 className="text-base font-semibold">A1 · Instroom volume</h2>
         <Card className="p-4">
-          <div className="text-xs font-medium text-muted-foreground mb-2">Instroom per dag (8 weken) — gestapeld nieuw / bestaand</div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xs font-medium text-muted-foreground">Instroom per dag (8 weken) — gestapeld nieuw / bestaand</div>
+            <TileInfo title="Instroom per dag" what="Stapelgrafiek met dagelijkse instroom van nieuwe en bestaande kandidaten over 8 weken." formula="bucket per dag uit candidates.toegewezenOp\nsplit op candidate.type" source="dailyInstroom" notes="Geseed met 1729 — getallen wijken bewust niet af tussen sessies." />
+          </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trend} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
