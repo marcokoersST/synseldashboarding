@@ -38,9 +38,12 @@ export default function FunnelOperations() {
               opvolg-discipline. Eén dashboard, geen rollen.
             </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider bg-muted text-muted-foreground border border-border rounded-full px-2.5 py-1">
-            <Lock className="w-3 h-3" /> Read-only · acties via RecruitCRM
-          </span>
+          <div className="flex items-center gap-2">
+            <DateRangeFilter />
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider bg-muted text-muted-foreground border border-border rounded-full px-2.5 py-1">
+              <Lock className="w-3 h-3" /> Read-only · acties via RecruitCRM
+            </span>
+          </div>
         </header>
 
         <Tabs value={current} onValueChange={goTo}>
