@@ -26,11 +26,11 @@ export function ForecastTab() {
           <div className="flex items-start justify-between gap-2">
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (huidige distributie)</div>
             <TileInfo
-              title="Verwacht — huidige distributie (P50)"
-              what="Mediane verwachting op basis van de huidige consultant-toewijzingen en historische hit-rates."
-              formula={`P50 = Σ (open_kandidaten × hit_rate(consultant, functiegroep))\nWaarde: ${fcst.p50}`}
+              title="Forecast — current distribution (P50)"
+              what="Median expected placements for this month given the current consultant assignments and their historical hit-rates per job family."
+              formula={`P50 = Σ ( open_candidates × hit_rate(consultant, job_family) )\nValue: ${fcst.p50}`}
               source="kpis.forecastMaand.p50"
-              notes="Hard-coded mock-output; in productie komt dit uit het forecast-model."
+              notes="Hard-coded mock output; in production this comes from the forecast model."
             />
           </div>
           <div className="text-3xl font-bold tabular-nums">{fcst.p50}</div>
