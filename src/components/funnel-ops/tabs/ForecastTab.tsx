@@ -71,11 +71,11 @@ export function ForecastTab() {
           <div className="flex items-start justify-between gap-2">
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Scenario's</div>
             <TileInfo
-              title="Scenario's P10 / P50 / P90"
-              what="Pessimistisch / verwacht / optimistisch scenario voor deze maand."
+              title="Scenarios P10 / P50 / P90"
+              what="Pessimistic / expected / optimistic placement scenarios for the current month. Used to communicate forecast uncertainty to stakeholders."
               formula={`P10 = P50 − 18\nP50 = ${fcst.p50}\nP90 = P50 + 22`}
-              source="forecastSeries() laatste 3 maanden"
-              notes="Bandbreedte gebaseerd op historische standaardafwijking van ±15%."
+              source="forecastSeries() — last 3 months"
+              notes="Bandwidth is based on a historical standard deviation of ±15%."
             />
           </div>
           <div className="grid grid-cols-3 gap-2 mt-2 text-center">
