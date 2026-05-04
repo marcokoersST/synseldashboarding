@@ -74,7 +74,7 @@ export function InstroomTab() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">Kwaliteit per Unit × Functiegroep</h3>
-            <TileInfo title="Kwaliteits-heatmap" what="Gemiddelde plaatsbaarheidscore per Business Unit en functiegroep." formula="cel = avg(score) waar unit=X en functiegroep=Y" source="qualityHeatmap(filter)" notes="Cellen met n<5 zijn licht uitgegrijsd." />
+            <TileInfo title="Quality heatmap" what="Average placeability score per Business Unit and job family. Reveals where strong demand meets weak supply (or vice versa)." formula="cell = avg(score) WHERE unit=X AND functiegroep=Y" source="qualityHeatmap(filter)" notes="Cells with n<5 are dimmed — too thin to draw conclusions." />
           </div>
           <QualityHeatmap />
         </div>
