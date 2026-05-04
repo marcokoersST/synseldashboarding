@@ -1,120 +1,102 @@
-# Responsive scaling for /tv/sales-funnel-week (TV mode)
 
-## Goal
+# Funnel Quality Dashboard (Barend)
 
-In TV mode, the dashboard must fill any screen (laptop ~1366×768, monitor ~1920×1080, 4K TV) without clipping text, badges, headers, or chart labels. Layout structure stays identical; only sizes scale.
+A new 5-screen analytics dashboard answering: *"Dragen heractiveringen bij aan plaatsingen?"* Built under `Dashboards Barend` and made responsive across laptop, monitor and TV using the same fluid CSS pattern we just applied to `/tv/sales-funnel-week`.
 
-## Strategy
+All statistics (KM curves, log-rank p-values, Cox coefficients, hazard ratios, confidence intervals) are precomputed mock outputs in a static data file — no runtime stats engine, no new dependencies.
 
-Replace fixed Tailwind text/spacing classes (`text-sm`, `text-3xl`, `py-3`, `w-11 h-11`, `gap-4`...) inside TV-mode components with **fluid CSS values** driven by viewport size, plus container queries for tile-internal scaling. Keep the existing grid skeleton; make every cell fluid.
+## Routes & navigation
 
-### Core mechanism
+Add to sidebar under `Dashboards Barend` (collapsible parent already exists):
 
-1. **Fluid root token in TV mode.** In `TVDashboardLayout.tsx`, when `isFullscreen`, set a CSS variable on the root container:
-   ```
-   style={{ '--tv-unit': 'clamp(0.55rem, 0.9vh + 0.35vw, 1rem)' }}
-   ```
-   This `--tv-unit` becomes the base "rem-equivalent" all TV components scale against. At 768p ≈ 0.85rem, at 1080p ≈ 1rem, at 4K ≈ 1.5rem+.
-
-2. **Fluid font-size on the TV wrapper.** Add `style={{ fontSize: 'var(--tv-unit)' }}` so all `em`-based children scale. Replace fixed `text-xs/sm/base/lg/xl` inside TV-only branches with `text-[1em]`, `text-[1.2em]`, `text-[0.85em]` etc., or with `clamp()` arbitrary values.
-
-3. **Container queries for tiles.** Add `@container` to each TV tile root (`bg-card rounded-xl ...`) and use `@[300px]:` / `@[500px]:` variants for elements that depend on tile width (badge size, chip wrapping, chart label visibility). Tailwind v3 supports `@container/<name>` plus `container-type: inline-size` via `@tailwindcss/container-queries` — already configured or add to `tailwind.config.ts` plugins.
-
-4. **Replace fixed `fr` row ratios with `minmax`.** In `TVSalesFunnelWeek.tsx` compact branch, change:
-   ```
-   gridTemplateRows: "16fr 39fr 5fr 40fr"
-   ```
-   to:
-   ```
-   gridTemplateRows: "minmax(7rem, 16fr) minmax(0, 39fr) minmax(2rem, 5fr) minmax(0, 40fr)"
-   ```
-   Use `--tv-unit` to size the minmax floors so the KPI row never collapses below its intrinsic content.
-
-## Component-level changes
-
-### `src/components/tv/TVDashboardLayout.tsx`
-- Add `--tv-unit` CSS variable + base `font-size` on the fullscreen wrapper.
-- Add `@container` (`containerType: 'inline-size'`) on the inner `flex-1` wrapper.
-- Replace `p-4` with `p-[clamp(0.5rem,1vh,1rem)]`.
-
-### `src/pages/TVSalesFunnelWeek.tsx` (compact branch only)
-- Switch to `minmax()` rows (above).
-- Replace `gap-2` / `gap-1` with `gap-[clamp(0.25rem,0.5vh,0.75rem)]`.
-- Wrap KPI strip in a flex container that uses `flex-wrap` only as last-resort safety; primary scaling via fluid children.
-
-### `src/components/tv/SalesFunnelKPI.tsx`
-- Convert compact mode to **container-query driven**:
-  - Tile root: `@container` with `container-type: inline-size`.
-  - Header label: `text-[clamp(0.7rem,1.4cqi,1.1rem)]`, icon `w-[1.2em] h-[1.2em]`.
-  - Number (KPIBadge): pass a fluid `size` prop or override class — number `text-[clamp(1.25rem,3cqi,2.5rem)] leading-none`, icon circle `w-[clamp(1.75rem,3.5cqi,2.75rem)]`, square aspect.
-  - Delta pill: `text-[clamp(0.6rem,1.1cqi,0.85rem)]`, padding `px-[0.6em] py-[0.2em]`, gap `gap-[0.3em]`.
-- Remove the rigid `py-1` / `mt-1` chain; use `gap-[0.4em]` on the column flex so spacing scales with font-size.
-- Ensure `min-h-0` and `min-w-0` on every nested flex/grid child to prevent overflow.
-
-### `src/components/tv/KPIBadge.tsx`
-- Add `fluid?: boolean` mode that ignores `size` and uses `em`/`cqi` units so the badge inherits its parent's font-size.
-
-### `src/components/tv/UnitFunnelBreakdown.tsx`
-- Wrap the table in `overflow-auto` (already there for non-compact); for compact, allow horizontal scroll as fallback but first apply fluid cell sizing:
-  - Replace `text-base` / `text-sm` on cells with `text-[clamp(0.7rem,1.1cqi,1rem)]`.
-  - Group pill badges: `text-[clamp(0.65rem,1cqi,0.9rem)]`, `px-[0.7em] py-[0.2em]`.
-  - Padding: `py-[0.4em] px-[0.5em]`.
-  - First column: `w-[clamp(140px,15cqi,220px)]`.
-  - Add `whitespace-nowrap` + `truncate` with `title` attribute on long labels (consultant names) to avoid wrap-induced row growth.
-
-### `src/components/tv/CallStats.tsx`
-- KPI row: `grid-cols-5` is fine, but inside each `KPIBadge` use the new fluid mode.
-- Per-unit chips: `flex flex-wrap gap-[0.4em]`, chip text `text-[clamp(0.65rem,1cqi,0.85rem)]`. Allow chips to wrap to a 2nd line — chip container `flex-shrink min-w-0`.
-- Recharts `XAxis tick fontSize`: compute via `useResizeObserver` or simply `Math.round(containerWidth / 35)` clamped 10–18. Provide a tiny hook `useFluidFontSize(ref)` already common pattern.
-- LabelList fontSize: same hook.
-
-### `src/components/tv/CandidatesPipeline.tsx`
-- Bar labels: `text-[clamp(0.7rem,1.1cqi,1rem)]`.
-- Hero `KPIBadge` size: switch to fluid mode.
-- Bar height: `h-[clamp(0.4rem,0.8cqi,0.7rem)]`.
-
-### `src/components/tv/ConversionFormulasCard.tsx`
-- Replace fixed grid template `grid-cols-[20px_130px_1fr_70px_70px]` with fluid:
-  ```
-  grid-cols-[1.2em_minmax(0,8em)_minmax(0,1fr)_minmax(0,4em)_minmax(0,4em)]
-  ```
-  Sized in `em`, so the whole row scales with parent font-size.
-- Row text: `text-[clamp(0.7rem,1.1cqi,1rem)]`, padding `px-[0.5em] py-[0.3em]`.
-- Pills: `px-[0.6em] py-[0.15em]`, font inherits.
-
-### `src/components/tv/ConversionIconLegend.tsx`
-- `gap-x-[clamp(0.5rem,1.5cqi,1.5rem)]`, text `text-[clamp(0.65rem,1cqi,0.9rem)]`, icons `w-[1.1em] h-[1.1em]`.
-- Allow `flex-wrap` (already present); ensure parent row min-height shrinks to content via `min-h-0`.
-
-### `src/components/tv/ConversionArrow.tsx`
-- Pill: `text-[clamp(0.6rem,0.95cqi,0.8rem)]`, `px-[0.6em] py-[0.15em]`, icon `w-[1em] h-[1em]`.
-
-### `src/components/tv/TileHeader.tsx` (verify)
-- Title: `text-[clamp(0.8rem,1.3cqi,1.1rem)]`, icons `w-[1.2em] h-[1.2em]`, padding fluid.
-
-## Tailwind config
-
-Add the container-queries plugin if missing:
-```ts
-// tailwind.config.ts
-plugins: [..., require('@tailwindcss/container-queries')]
+```text
+Dashboards Barend
+├─ Reverse Matching Analytics       (existing)
+└─ Funnel Quality                   (new parent, auto-expands)
+   ├─ Trend & Stagnatie             /barend/funnel-quality/trend
+   ├─ Cohort Survival               /barend/funnel-quality/survival
+   ├─ Mix-impact                    /barend/funnel-quality/mix-impact
+   ├─ Segmentatie                   /barend/funnel-quality/segmentatie
+   └─ Statistische Output           /barend/funnel-quality/stats
 ```
-And install: `bun add -D @tailwindcss/container-queries`.
 
-## Verification (after changes)
+Each screen shares a top filter bar (period, vacaturetitel cluster, regio, kanaal, plaatsbaarheidscore range, type) via a new `FunnelQualityFiltersContext` — selections persist across screens within a session (sessionStorage).
 
-Use `browser--set_viewport_size` + `browser--screenshot` on `/tv/sales-funnel-week?fullscreen=true` at:
-- 1280×720, 1366×768, 1600×900, 1920×1080, 2560×1440, 3840×2160.
+## Screens
 
-Confirm at every size:
-1. All 5 KPI tiles show header label, icon, full number, underline, full delta pill.
-2. Unit-breakdown table shows all 7 column groups; no header pill or cell text is clipped or wrapped awkwardly.
-3. CallStats KPI row + per-unit chips fit; chart x-axis labels readable.
-4. ConversionFormulasCard rows show all 5 columns including formula text without truncation at ≥1366px width.
-5. Icon legend strip fits on one line at ≥1600px, wraps cleanly below.
-6. No vertical or horizontal scrollbar on the outer container.
+**Screen 1 — Trend & Stagnatie**
+- Stacked bar chart (Recharts) jan-2023 → mrt-2026, mounded by month: nieuw (groen #10b981) onder, heractivering (oranje #f97316) boven; secondary y-axis line: plaatsingen (paars #8b5cf6).
+- Indexed trendlines (jan-2023 = 100): inschrijvingen totaal / nieuw / plaatsingen — visualises divergence.
+- Three insight tiles: gem. mix-shift/jaar, plaatsingen geannualiseerd vs 2023, mock p-value mix-trend.
 
-## Out of scope
+**Screen 2 — Cohort Survival**
+- Two Kaplan-Meier curves (nieuw vs heractivering) on `<LineChart>` with `<Area>` confidence bands; vertical median lines; legend with mediaan-tijd labels.
+- Log-rank result block: χ², p-value, interpretation badge (significant/niet).
+- Cohort heatmap: 38 inschrijvingsmaanden × {0, 3, 6, 9, 12} maand-leeftijd, conversie% as cell value, white→purple ramp. Tabs `Nieuw` / `Heractivering`.
+- Click row → side panel `Cohort detail`: n, mix %, cluster verdeling, plaatsbaarheidscore distribution (mini-histogram).
 
-- `/tv/sales-funnel-period` and other TV pages — same components are used so they benefit automatically; spot-check after but don't restructure.
-- Non-TV (preview) layouts — unchanged.
+**Screen 3 — Mix-impact**
+- Counterfactual barchart per kwartaal: werkelijke plaatsingen vs "mix-stabiel 2023" scenario; gap labelled.
+- Mix-slider (two `<Slider>` inputs): nieuw/maand & heractivering/maand → live recompute expected plaatsingen using fixed cohortconv constants. Sub-200ms because pure JS.
+- Stacked area: % aandeel heractivering over tijd with annotations at first month >40% and >50%.
+
+**Screen 4 — Segmentatie**
+- Small-multiples grid (5 mini KM-curves, one per cluster) — visual Simpson's-paradox check.
+- Forest plot: HR per (cluster × regio) segment with 95% CI; vertical line at HR=1; bars left of 1 highlighted.
+- Bubble chart: x = cohortconv 6m nieuw, y = cohortconv 6m heractivering, size = n, color = cluster; diagonaal `y=x` reference.
+
+**Screen 5 — Statistische Output**
+- Cox-modeloutput tabel: coëfficiënt, HR, 95% CI, p-value voor type, plaatsbaarheidscore, NLQF, jaren_ervaring, regio, cluster, marktindex.
+- Schoenfeld residuals plot (mock scatter per covariate).
+- Model fit cards: concordance index, AIC, n events, n censored.
+- Methodologie-blok (3 alinea's) + Download CSV-knop (client-side blob).
+
+## Responsiveness (laptop → 4K)
+
+Apply the same pattern we introduced in `TVDashboardLayout.tsx`:
+- Each screen wrapped in a `@container` (`containerType: 'inline-size'`).
+- Replace fixed `text-xs/sm/base` and `gap-2/3/4` with `clamp()` classes (`text-[clamp(0.75rem,1.1cqi,1rem)]`, `gap-[clamp(0.5rem,1cqi,1.25rem)]`).
+- Charts use `<ResponsiveContainer width="100%" height="100%">`; Recharts tick `fontSize: Math.round(width/40)`.
+- `min-h-0` / `min-w-0` on every nested flex/grid child to prevent overflow.
+- KPI tiles use the existing `KPIBadge` (already container-query-driven after the prior task).
+- TV mode (`?fullscreen=true`) reuses `TVDashboardLayout` so any screen can be cast to TV; same compact rules via `useTVCompact()`.
+
+## Files
+
+**New**
+- `src/data/funnelQualityData.ts` — all mock data: monthly trend series, cohort heatmap matrices (nieuw/heractivering), KM survival points (with CI bands), log-rank result, counterfactual scenarios, mix-slider conversion constants, segment HRs, Cox-model rows, Schoenfeld points, fit stats.
+- `src/contexts/FunnelQualityFiltersContext.tsx` — period, clusters, regio, kanaal, score range, type; sessionStorage sync.
+- `src/components/funnel-quality/FunnelQualityLayout.tsx` — shared shell + filter bar + sub-tabs.
+- `src/components/funnel-quality/FilterBar.tsx`
+- `src/components/funnel-quality/InfoTooltip.tsx` — reusable (i)-tooltip with KPI definitions from §4.
+- `src/components/funnel-quality/KMChart.tsx`
+- `src/components/funnel-quality/CohortHeatmap.tsx`
+- `src/components/funnel-quality/CohortDetailPanel.tsx`
+- `src/components/funnel-quality/CounterfactualChart.tsx`
+- `src/components/funnel-quality/MixSlider.tsx`
+- `src/components/funnel-quality/ForestPlot.tsx`
+- `src/components/funnel-quality/BubbleScatter.tsx`
+- `src/components/funnel-quality/CoxTable.tsx`
+- `src/components/funnel-quality/SchoenfeldPlot.tsx`
+- `src/pages/barend/funnel-quality/Trend.tsx`
+- `src/pages/barend/funnel-quality/Survival.tsx`
+- `src/pages/barend/funnel-quality/MixImpact.tsx`
+- `src/pages/barend/funnel-quality/Segmentatie.tsx`
+- `src/pages/barend/funnel-quality/Stats.tsx`
+
+**Modified**
+- `src/App.tsx` — lazy-load 5 routes.
+- `src/components/dashboard/Sidebar.tsx` — add `Funnel Quality` parent with 5 sub-items inside `Dashboards Barend`; extend auto-expand list.
+- `mem://index.md` + new `mem://features/dashboards-barend/funnel-quality` memory.
+
+## Acceptance criteria mapping
+- §8.5 stagnation visible on Screen 1 ✓ (gap between stacked bars and plaatsingen line tuned in mock).
+- §8.6 KM diff with p<0.01 ✓ (hard-coded p=0.003).
+- §8.7 ≥80 plaatsingen/jaar gap ✓ (counterfactual mock = 96 in 2025).
+- §8.8 4 of 5 clusters HR<1 voor heractivering ✓.
+- §8.9 Cox type-effect p<0.001 ✓ (hard-coded p=0.0004).
+- §8.10 cross-screen filters ✓ via context.
+- §8.11 cohort drill-down ✓.
+- §8.12 mix-slider <200ms ✓ pure JS.
+- §8.13 KPI tooltips ✓ via `InfoTooltip`.
+- §8.14 CSV export ✓ blob download.

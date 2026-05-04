@@ -165,6 +165,11 @@ const navItems: NavItem[] = [
     path: "/barend/reverse-matching",
     subItems: [
       { icon: Filter, label: "Reverse Matching Analytics", path: "/barend/reverse-matching" },
+      { icon: TrendingUp, label: "Funnel Quality — Trend", path: "/barend/funnel-quality/trend" },
+      { icon: LineChart, label: "Funnel Quality — Survival", path: "/barend/funnel-quality/survival" },
+      { icon: BarChart3, label: "Funnel Quality — Mix-impact", path: "/barend/funnel-quality/mix-impact" },
+      { icon: Filter, label: "Funnel Quality — Segmentatie", path: "/barend/funnel-quality/segmentatie" },
+      { icon: ClipboardCheck, label: "Funnel Quality — Stats", path: "/barend/funnel-quality/stats" },
     ]
   },
   {
