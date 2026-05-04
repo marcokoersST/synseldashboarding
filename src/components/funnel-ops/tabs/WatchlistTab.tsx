@@ -65,10 +65,14 @@ export function WatchlistTab() {
   const w = watchlist();
   return (
     <div className="space-y-3">
-      <Section title="Hoge score, lange tijd zonder contact" desc="Score ≥75 en >2 dagen na toewijzing zonder eerste contact." items={w.hoogScoreNoContact} />
-      <Section title="Verlopen SLA's > 24u" desc="Contact-SLA langer dan 24 uur over de deadline." items={w.verlopenSLA24} />
-      <Section title="Bel-discipline incompleet" desc="Meer dan 2 belmomenten gemist en kandidaat nog niet ingeschreven." items={w.belIncompleet} />
-      <Section title="Geen statuswijziging > 7 dagen" desc="Sinds toewijzing geen vooruitgang in status." items={w.geenStatus7d} />
+      <Section title="Hoge score, lange tijd zonder contact" desc="Score ≥75 en >2 dagen na toewijzing zonder eerste contact." items={w.hoogScoreNoContact}
+        info={{ title: "Hoge score zonder contact", what: "Sterke kandidaten waar nog geen recruiter heeft gebeld na 48u.", formula: "score ≥ 75 && eersteContactOp = null && (NOW − toegewezenOp) > 2d", source: "watchlist().hoogScoreNoContact" }} />
+      <Section title="Verlopen SLA's > 24u" desc="Contact-SLA langer dan 24 uur over de deadline." items={w.verlopenSLA24}
+        info={{ title: "Verlopen SLA > 24u", what: "Kandidaten waar contact-SLA al meer dan een dag is overschreden.", formula: "getContactSLA(c).status='verlopen' && (NOW − deadline) > 24u", source: "watchlist().verlopenSLA24" }} />
+      <Section title="Bel-discipline incompleet" desc="Meer dan 2 belmomenten gemist en kandidaat nog niet ingeschreven." items={w.belIncompleet}
+        info={{ title: "Bel-discipline incompleet", what: "Kandidaten met >2 gemiste belmomenten die nog niet zijn ingeschreven.", formula: "missed > 2 && status ∉ {ingeschreven, geplaatst}", source: "watchlist().belIncompleet" }} />
+      <Section title="Geen statuswijziging > 7 dagen" desc="Sinds toewijzing geen vooruitgang in status." items={w.geenStatus7d}
+        info={{ title: "Stilstand > 7 dagen", what: "Kandidaten die al een week op status 'toegewezen' staan zonder progressie.", formula: "status='toegewezen' && (NOW − toegewezenOp) > 7d", source: "watchlist().geenStatus7d" }} />
     </div>
   );
 }
