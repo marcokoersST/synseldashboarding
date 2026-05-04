@@ -90,11 +90,11 @@ export function ForecastTab() {
         <div className="flex items-center justify-between mb-2">
           <div className="text-sm font-medium">Plaatsingen — 12 maanden historie + 3 maanden forecast</div>
           <TileInfo
-            title="Historie + forecast lijn"
-            what="Werkelijke plaatsingen per maand (afgelopen 12) en P50/P10–P90-band voor de komende 3 maanden."
-            formula="actual = som(status='geplaatst' per maand)\nP10/P50/P90 = forecastmodel-output"
+            title="History + forecast line"
+            what="Actual placements per month for the last 12 months and the P50 line plus P10–P90 band for the next 3 months."
+            formula="actual = sum(status='placed' per month)\nP10/P50/P90 = forecast model output"
             source="forecastSeries()"
-            notes="Mock-data; periodes vóór mei 2026 zijn deterministisch gegenereerd."
+            notes="Mock data; periods before May 2026 are deterministically generated."
           />
         </div>
         <div className="h-72">
