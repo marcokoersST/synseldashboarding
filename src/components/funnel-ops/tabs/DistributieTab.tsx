@@ -22,6 +22,7 @@ export function DistributieTab() {
               <div className="flex items-center justify-between mb-2">
                 <div className="text-xs text-muted-foreground">{label} · lead-time per tier</div>
                 <TileInfo title={`${label} · lead-time`} what={`P50/P90 lead-time per tier voor de stap "${label.toLowerCase()}".`} formula="p50 = mediaan(uren); p90 = 90e percentiel\nbalk-vulling = waarde / SLA × 100" source="leadTimeMeters()" notes="Tier-SLA's komen uit SLA_MATRIX." />
+              </div>
               <div className="space-y-1.5">
                 {meters.map(m => {
                   const value = idx === 1 ? m.p50 : idx === 2 ? m.p90 : m.p50 / 2;
