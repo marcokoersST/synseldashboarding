@@ -76,10 +76,10 @@ export function DistributieTab() {
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold">Mismatch-actielijst</h3>
-              <p className="text-xs text-muted-foreground">Kandidaten waar een betere consultant-match beschikbaar was. Klik door naar RCRM voor actie.</p>
+              <h3 className="text-sm font-semibold">SLA-actielijst</h3>
+              <p className="text-xs text-muted-foreground">Kandidaten met een verlopen of dreigende Contact-SLA. Klik door naar RecruitCRM voor opvolging.</p>
             </div>
-            <TileInfo title="Mismatch-actielijst" what="Kandidaten waar de huidige consultant-match suboptimaal is en de SLA dreigt of verloopt." formula="getActionList(8) — gesorteerd op urgentie" source="getActionList()" />
+            <TileInfo title="SLA-actielijst" what="Kandidaten gesorteerd op SLA-urgentie (verlopen eerst, dan dreigend)." formula="getActionList(8) — sort by SLA-deadline asc" source="getActionList()" />
           </div>
           <ActionList rows={mismatch} />
         </Card>
