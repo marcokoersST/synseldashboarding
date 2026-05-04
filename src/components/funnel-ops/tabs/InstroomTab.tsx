@@ -23,7 +23,7 @@ export function InstroomTab() {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-xs font-medium text-muted-foreground">Instroom per dag (8 weken) — gestapeld nieuw / bestaand</div>
-            <TileInfo title="Instroom per dag" what="Stapelgrafiek met dagelijkse instroom van nieuwe en bestaande kandidaten over 8 weken." formula="bucket per dag uit candidates.toegewezenOp\nsplit op candidate.type" source="dailyInstroom" notes="Geseed met 1729 — getallen wijken bewust niet af tussen sessies." />
+            <TileInfo title="Daily inflow" what="Stacked bar chart of daily candidate inflow over 8 weeks, split by new vs returning candidates. Used to detect demand patterns and channel-mix shifts." formula="bucket per day from candidates.toegewezenOp\nsplit on candidate.type" source="dailyInstroom" notes="Seeded PRNG (seed 1729) — values are deliberately stable across sessions." />
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
