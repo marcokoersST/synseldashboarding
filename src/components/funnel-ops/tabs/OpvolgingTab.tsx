@@ -38,8 +38,11 @@ export function OpvolgingTab() {
       </TabsList>
 
       <TabsContent value="bel" className="space-y-3">
-        <Card className="p-3 text-xs text-muted-foreground">
-          6 belmomenten over 2 dagen (08:30 / 12:00 / 17:00). Groen = succesvol contact, oranje = poging zonder gehoor, rood = niet uitgevoerd. Bel-data is niet aanpasbaar in dit dashboard.
+        <Card className="p-3 flex items-start justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            6 belmomenten over 2 dagen (08:30 / 12:00 / 17:00). Groen = succesvol contact, oranje = poging zonder gehoor, rood = niet uitgevoerd. Bel-data is niet aanpasbaar in dit dashboard.
+          </p>
+          <TileInfo title="Bel-discipline grid" what="Per kandidaat per recruiter een 6-cel grid met de status van elk belmoment." formula="6 momenten = 2 dagen × 3 dagdelen (ochtend/middag/avond)" source="recruiterCallGrids() · callAttempts" notes="Mock-aanname: ~70% van kandidaten haalt 6/6 uitgevoerd." />
         </Card>
         <CallDisciplineGrid />
       </TabsContent>
