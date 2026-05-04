@@ -76,9 +76,9 @@ export function OpvolgingTab() {
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold">Contact-SLA verlopen of dreigend</h3>
-              <p className="text-xs text-muted-foreground">A+ binnen 30 minuten van toewijzing automatisch rood.</p>
+              <p className="text-xs text-muted-foreground">A+ candidates not contacted within 30 minutes of assignment are flagged red automatically.</p>
             </div>
-            <TileInfo title="Contact-SLA actielijst" what="Open kandidaten waarvan de contact-SLA verlopen is of binnen 20% van de deadline zit." formula="getActionList(15) gefilterd op contact-SLA" source="getActionList()" />
+            <TileInfo title="Contact-SLA action list" what="Open candidates whose contact-SLA is breached or within 20% of its deadline. Drives recruiter follow-up." formula="getActionList(15) filtered on contact-SLA" source="getActionList()" />
           </div>
           <ActionList rows={contactRows} />
         </Card>
