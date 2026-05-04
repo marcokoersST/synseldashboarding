@@ -41,7 +41,7 @@ export function InstroomTab() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-1">
             <div className="text-xs font-medium text-muted-foreground">Bron-treeview · volume per hoofdbron en sub-bron</div>
-            <TileInfo title="Bron-treeview" what="Hiërarchische telling van kandidaten per hoofdbron met sub-bronnen en conversie naar inschrijving." formula="conversie = ingeschreven / total × 100" source="sourceTree" />
+            <TileInfo title="Source tree" what="Hierarchical breakdown of candidate volume per main sourcing channel and its sub-channels, with conversion to registration. Helps identify which channels deliver effective volume." formula="conversion = registered / total × 100" source="sourceTree" />
           </div>
           <SourceTreeView />
         </Card>
