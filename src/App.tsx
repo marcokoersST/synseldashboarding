@@ -145,11 +145,7 @@ const App = () => (
               <Route path="/peter-jan/acquisitie-funnel" element={<PeterJanAcquisitieFunnel />} />
               <Route path="/peter-jan/omzet-dashboard" element={<PeterJanOmzetDashboard />} />
               <Route path="/barend/reverse-matching" element={<BarendReverseMatching />} />
-              <Route path="/barend/funnel-quality/trend" element={<BarendFQTrend />} />
-              <Route path="/barend/funnel-quality/survival" element={<BarendFQSurvival />} />
-              <Route path="/barend/funnel-quality/mix-impact" element={<BarendFQMixImpact />} />
-              <Route path="/barend/funnel-quality/segmentatie" element={<BarendFQSegmentatie />} />
-              <Route path="/barend/funnel-quality/stats" element={<BarendFQStats />} />
+              <Route path="/barend/funnel-ops" element={<BarendFunnelOps />} />
               <Route path="/marketing" element={<MarketingHub />} />
               <Route path="/marketing/inflow" element={<MarketingHub />} />
               <Route path="/marketing/inschrijvingen" element={<MarketingHub />} />
