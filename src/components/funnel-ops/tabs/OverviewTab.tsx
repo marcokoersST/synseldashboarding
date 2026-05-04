@@ -123,7 +123,7 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
             <p className="text-xs text-muted-foreground">Top {actionRows.length} kandidaten met SLA-overschrijding of dreigend. Open RecruitCRM in nieuw tabblad om te handelen.</p>
           </div>
           <div className="flex items-center gap-2">
-            <TileInfo title="Acties vandaag" what="Lijst van open kandidaten waarvan de contact-SLA verlopen is of binnen 20% van zijn deadline zit." formula="getContactSLA(c).status ∈ {verlopen, dreigend}\nsort: hoogste pctElapsed eerst" source="getActionList(15)" notes="Acties zelf gebeuren in RecruitCRM via deeplinks." />
+            <TileInfo title="Actions today" what="Open candidates whose contact-SLA is breached or within 20% of its deadline. Drives the recruiter team's daily call list." formula="getContactSLA(c).status ∈ {expired, at_risk}\nsort: highest pctElapsed first" source="getActionList(15)" notes="The actions themselves happen in RecruitCRM via the deeplinks." />
             <button onClick={() => goTo("watchlist")} className="text-xs text-primary hover:underline whitespace-nowrap">Bekijk volledige watchlist →</button>
           </div>
         </div>
