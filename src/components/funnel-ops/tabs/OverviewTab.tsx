@@ -65,7 +65,10 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
         <Card className="p-4 space-y-3">
           <div className="flex items-baseline justify-between">
             <h3 className="text-sm font-semibold">SLA per tier · % binnen contact</h3>
-            <button onClick={() => goTo("opvolging")} className="text-xs text-primary hover:underline">Bekijk →</button>
+            <div className="flex items-center gap-1">
+              <TileInfo title="SLA per tier" what="Contact-SLA score per tier (A+ tot D)." formula="in_SLA / contacted × 100 per tier" source="tierContactStats()" notes="A+ moet binnen 2u bereikt worden — kleinste foutmarge." />
+              <button onClick={() => goTo("opvolging")} className="text-xs text-primary hover:underline">Bekijk →</button>
+            </div>
           </div>
           <div className="space-y-1.5">
             {tierStats.map(t => (
