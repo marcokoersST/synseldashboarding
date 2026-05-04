@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { KPITile, statusFromPct } from "../KPITile";
 import { ActionList } from "../ActionList";
 import { TileInfo } from "../TileInfo";
+import { PeriodComparisonStrip } from "../PeriodComparisonStrip";
 import { kpis, getActionList, tierContactStats, dailyInstroom, sourceTree } from "@/data/funnelOperationsData";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as RTooltip, PieChart, Pie, Cell } from "recharts";
 import { TIER_COLOR } from "@/data/funnelOperationsData";
@@ -19,6 +20,7 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
 
   return (
     <div className="space-y-4">
+      <PeriodComparisonStrip />
       {/* 6 KPI tiles */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <KPITile label="Instroom volume" value={`${kpis.instroomVolume.value}`} sub={`${kpis.instroomVolume.pct}% van weekdoel ${kpis.instroomVolume.goal}`} status={statusFromPct(kpis.instroomVolume.pct)} onClick={() => goTo("instroom")}
