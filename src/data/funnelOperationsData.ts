@@ -1,0 +1,518 @@
+// Funnel Operations Dashboard — deterministic mock data
+// Single source of truth for all 7 tabs. Read-only.
+
+export type Tier = "A+" | "A" | "B" | "C" | "D";
+export type CandidateStatus =
+  | "nieuw"
+  | "toegewezen"
+  | "in_te_schrijven"
+  | "ingeschreven"
+  | "geplaatst"
+  | "afgesloten";
+export type CandidateType = "nieuw" | "bestaand";
+export type BusinessUnit = "Industrie" | "Installatietechniek" | "Utiliteit" | "Maritiem";
+export type SourceTopLevel = "jobscan" | "open_cv" | "cv_database" | "reactivering" | "linkedin";
+
+export interface Recruiter { id: string; naam: string; }
+export interface Consultant { id: string; naam: string; }
+
+export interface Candidate {
+  id: string;
+  naam: string;
+  type: CandidateType;
+  score: number;
+  tier: Tier;
+  unit: BusinessUnit;
+  functiegroep: string;
+  bron: SourceTopLevel;
+  subBron: string;
+  status: CandidateStatus;
+  recruiterId: string;
+  consultantId: string | null;
+  toegewezenOp: number;        // ms timestamp
+  eersteContactOp: number | null;
+  eersteGesprekOp: number | null;
+  ingeschrevenOp: number | null;
+}
+
+export interface CallAttempt {
+  candidateId: string;
+  recruiterId: string;
+  dagdeel: "ochtend" | "middag" | "avond";
+  dagOffset: 1 | 2;
+  uitgevoerd: boolean;
+  succesvol: boolean;
+  whatsapp: boolean;
+  voicemail: boolean;
+}
+
+// ---------- SLA matrix ----------
+export const SLA_MATRIX: Record<Tier, { toewijzenH: number; contactH: number; gesprekH: number }> = {
+  "A+": { toewijzenH: 1, contactH: 2, gesprekH: 24 },
+  A:   { toewijzenH: 4, contactH: 8, gesprekH: 48 },
+  B:   { toewijzenH: 24, contactH: 48, gesprekH: 24 * 5 },
+  C:   { toewijzenH: 24 * 3, contactH: 24 * 5, gesprekH: 24 * 10 },
+  D:   { toewijzenH: 24 * 7, contactH: 24 * 10, gesprekH: 24 * 14 },
+};
+
+export const TIER_COLOR: Record<Tier, string> = {
+  "A+": "hsl(var(--destructive))",
+  A:   "hsl(25 90% 55%)",
+  B:   "hsl(210 80% 55%)",
+  C:   "hsl(var(--success))",
+  D:   "hsl(var(--muted-foreground))",
+};
+
+// ---------- Deterministic PRNG ----------
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rng = mulberry32(1729);
+const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(rng() * arr.length)];
+const weighted = <T,>(items: readonly { v: T; w: number }[]): T => {
+  const total = items.reduce((s, x) => s + x.w, 0);
+  let r = rng() * total;
+  for (const it of items) { r -= it.w; if (r <= 0) return it.v; }
+  return items[items.length - 1].v;
+};
+
+// ---------- Reference data ----------
+const FIRST_NAMES = ["Jan","Pieter","Daan","Lars","Sven","Bas","Ruben","Tim","Tom","Niels","Jelle","Mark","Kevin","Robin","Joris","Wouter","Stef","Maarten","Erik","Roy","Sanne","Lotte","Emma","Eva","Anne","Lisa","Iris","Noa","Femke","Romy","Yara","Mila","Lars","Floor","Roos","Sara","Julia","Loes","Britt","Maud"];
+const LAST_NAMES = ["de Vries","Jansen","Bakker","Visser","Smit","Mulder","Bos","Peters","Hendriks","Dekker","van Dijk","Vermeer","de Boer","Kok","Brouwer","Meijer","de Jong","de Wit","Hoekstra","Koster","Willems","van Beek","Maas","Verhoeven","Prins","Huisman","Veenstra","Postma","Kuipers","de Graaf"];
+const FUNCTIEGROEPEN = ["Operator","Monteur","Engineer","Werkvoorbereider","Servicemonteur","Lasser","Elektromonteur","Pijpfitter","Projectleider","Tekenaar"];
+const UNITS: BusinessUnit[] = ["Industrie","Installatietechniek","Utiliteit","Maritiem"];
+
+const naamGen = () => `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
+
+// ---------- Recruiters & consultants ----------
+export const recruiters: Recruiter[] = Array.from({ length: 30 }, (_, i) => ({
+  id: `r${1000 + i}`, naam: naamGen(),
+}));
+export const consultants: Consultant[] = Array.from({ length: 25 }, (_, i) => ({
+  id: `c${2000 + i}`, naam: naamGen(),
+}));
+
+// ---------- Candidates (5000) ----------
+const SCORE_DIST: { v: Tier; w: number }[] = [
+  { v: "D", w: 5 }, { v: "C", w: 15 }, { v: "B", w: 30 }, { v: "A", w: 35 }, { v: "A+", w: 15 },
+];
+const SOURCE_DIST: { v: SourceTopLevel; w: number }[] = [
+  { v: "jobscan", w: 30 }, { v: "open_cv", w: 15 }, { v: "cv_database", w: 20 },
+  { v: "reactivering", w: 25 }, { v: "linkedin", w: 10 },
+];
+const SUB_BRONNEN: Record<SourceTopLevel, string[]> = {
+  jobscan: ["Online formulier","Werken Bij","Campagne LinkedIn","Campagne Meta"],
+  open_cv: ["Indeed","Werkzoeken.nl","NationaleVacaturebank"],
+  cv_database: ["Indeed CV","Monsterboard","Jobbird CV"],
+  reactivering: ["Heractivatie Q1","Heractivatie Q2","Wakker schudden"],
+  linkedin: ["LinkedIn Recruiter","Sales Navigator","Inmail"],
+};
+
+function tierToScore(t: Tier): number {
+  switch (t) {
+    case "A+": return 90 + Math.floor(rng() * 11);
+    case "A":  return 75 + Math.floor(rng() * 15);
+    case "B":  return 55 + Math.floor(rng() * 20);
+    case "C":  return 35 + Math.floor(rng() * 20);
+    case "D":  return Math.floor(rng() * 35);
+  }
+}
+
+const NOW = Date.UTC(2026, 4, 4, 9, 0, 0); // 2026-05-04 09:00 UTC (matches "Today" in app)
+const HOUR = 3600 * 1000;
+const DAY = 24 * HOUR;
+
+function genCandidate(i: number): Candidate {
+  const tier = weighted(SCORE_DIST);
+  const score = tierToScore(tier);
+  const type: CandidateType = rng() < 0.6 ? "nieuw" : "bestaand";
+  const unit = pick(UNITS);
+  const functiegroep = pick(FUNCTIEGROEPEN);
+  const bron = type === "bestaand" && rng() < 0.55 ? "reactivering" : weighted(SOURCE_DIST);
+  const subBron = pick(SUB_BRONNEN[bron]);
+  const recruiter = pick(recruiters);
+
+  // Most candidates were assigned in last 14 days; A+ tend to be very recent
+  const ageHours = tier === "A+" ? rng() * 8 : tier === "A" ? rng() * 48 : rng() * 14 * 24;
+  const toegewezenOp = NOW - ageHours * HOUR;
+
+  // Status progression
+  let status: CandidateStatus = "toegewezen";
+  let eersteContactOp: number | null = null;
+  let eersteGesprekOp: number | null = null;
+  let ingeschrevenOp: number | null = null;
+  let consultantId: string | null = null;
+
+  const sla = SLA_MATRIX[tier];
+  // ~78% get contacted within SLA (varies by tier)
+  const contactBaseRate = tier === "A+" ? 0.65 : tier === "A" ? 0.78 : tier === "B" ? 0.82 : 0.85;
+  if (rng() < contactBaseRate * 0.95) {
+    const overshoot = rng() < 0.7 ? rng() * sla.contactH : sla.contactH * (1 + rng() * 1.5);
+    eersteContactOp = toegewezenOp + overshoot * HOUR;
+    if (eersteContactOp > NOW) eersteContactOp = null;
+    if (eersteContactOp) status = "in_te_schrijven";
+  }
+  if (eersteContactOp && rng() < 0.7) {
+    const overshoot = rng() * sla.gesprekH;
+    eersteGesprekOp = eersteContactOp + overshoot * HOUR;
+    if (eersteGesprekOp > NOW) eersteGesprekOp = null;
+  }
+  if (eersteGesprekOp && rng() < 0.55) {
+    ingeschrevenOp = eersteGesprekOp + rng() * 2 * DAY;
+    if (ingeschrevenOp > NOW) ingeschrevenOp = null;
+    if (ingeschrevenOp) {
+      status = "ingeschreven";
+      consultantId = pick(consultants).id;
+      if (rng() < 0.18) status = "geplaatst";
+    }
+  }
+
+  return {
+    id: `k${10000 + i}`,
+    naam: naamGen(),
+    type, score, tier, unit, functiegroep, bron, subBron,
+    status, recruiterId: recruiter.id, consultantId,
+    toegewezenOp, eersteContactOp, eersteGesprekOp, ingeschrevenOp,
+  };
+}
+
+export const candidates: Candidate[] = Array.from({ length: 5000 }, (_, i) => genCandidate(i));
+
+// ---------- Call attempts: ~70% complete 6/6 ----------
+const DAG_DELEN: ("ochtend" | "middag" | "avond")[] = ["ochtend", "middag", "avond"];
+
+export const callAttempts: CallAttempt[] = (() => {
+  const out: CallAttempt[] = [];
+  for (const c of candidates) {
+    if (c.status === "nieuw") continue;
+    const fullSix = rng() < 0.70;
+    const partial = fullSix ? 6 : Math.floor(rng() * 6); // 0-5
+    let count = 0;
+    for (const dagOffset of [1, 2] as const) {
+      for (const dagdeel of DAG_DELEN) {
+        const uitgevoerd = count < partial;
+        const succesvol = uitgevoerd && rng() < 0.35;
+        const isFirst = dagOffset === 1 && dagdeel === "ochtend";
+        out.push({
+          candidateId: c.id,
+          recruiterId: c.recruiterId,
+          dagdeel, dagOffset, uitgevoerd, succesvol,
+          whatsapp: isFirst && uitgevoerd && rng() < 0.6,
+          voicemail: isFirst && uitgevoerd && !succesvol && rng() < 0.5,
+        });
+        count++;
+      }
+    }
+  }
+  return out;
+})();
+
+// ---------- Helpers ----------
+export const recruiterById = (id: string) => recruiters.find(r => r.id === id);
+export const consultantById = (id: string | null) => id ? consultants.find(c => c.id === id) : undefined;
+
+export function rcrmCandidateUrl(id: string) { return `https://app.recruitcrm.io/candidates/${id}`; }
+export function rcrmUserUrl(id: string) { return `https://app.recruitcrm.io/users/${id}`; }
+
+export type SLAStatus = "binnen" | "dreigend" | "verlopen" | "n/a";
+
+export interface SLAState {
+  status: SLAStatus;
+  label: string;        // e.g. "nog 23 min" or "verlopen 1u 14m"
+  pctElapsed: number;   // 0..>1
+}
+
+function fmtDuration(ms: number) {
+  const m = Math.round(Math.abs(ms) / 60000);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60); const mm = m % 60;
+  if (h < 24) return mm ? `${h}u ${mm}m` : `${h}u`;
+  const d = Math.floor(h / 24); const hh = h % 24;
+  return hh ? `${d}d ${hh}u` : `${d}d`;
+}
+
+export function getContactSLA(c: Candidate, now = NOW): SLAState {
+  const sla = SLA_MATRIX[c.tier];
+  const deadline = c.toegewezenOp + sla.contactH * HOUR;
+  if (c.eersteContactOp) {
+    return c.eersteContactOp <= deadline
+      ? { status: "binnen", label: "binnen SLA", pctElapsed: (c.eersteContactOp - c.toegewezenOp) / (sla.contactH * HOUR) }
+      : { status: "verlopen", label: `contact ${fmtDuration(c.eersteContactOp - deadline)} te laat`, pctElapsed: 1.2 };
+  }
+  const elapsed = now - c.toegewezenOp;
+  const pct = elapsed / (sla.contactH * HOUR);
+  if (pct >= 1) return { status: "verlopen", label: `verlopen ${fmtDuration(elapsed - sla.contactH * HOUR)}`, pctElapsed: pct };
+  if (pct >= 0.8) return { status: "dreigend", label: `nog ${fmtDuration(deadline - now)}`, pctElapsed: pct };
+  return { status: "binnen", label: `nog ${fmtDuration(deadline - now)}`, pctElapsed: pct };
+}
+
+export function getGesprekSLA(c: Candidate, now = NOW): SLAState {
+  const sla = SLA_MATRIX[c.tier];
+  const deadline = c.toegewezenOp + sla.gesprekH * HOUR;
+  if (c.eersteGesprekOp) {
+    return c.eersteGesprekOp <= deadline
+      ? { status: "binnen", label: "binnen SLA", pctElapsed: (c.eersteGesprekOp - c.toegewezenOp) / (sla.gesprekH * HOUR) }
+      : { status: "verlopen", label: `gesprek ${fmtDuration(c.eersteGesprekOp - deadline)} te laat`, pctElapsed: 1.2 };
+  }
+  const elapsed = now - c.toegewezenOp;
+  const pct = elapsed / (sla.gesprekH * HOUR);
+  if (pct >= 1) return { status: "verlopen", label: `verlopen ${fmtDuration(elapsed - sla.gesprekH * HOUR)}`, pctElapsed: pct };
+  if (pct >= 0.8) return { status: "dreigend", label: `nog ${fmtDuration(deadline - now)}`, pctElapsed: pct };
+  return { status: "binnen", label: `nog ${fmtDuration(deadline - now)}`, pctElapsed: pct };
+}
+
+// ---------- Aggregates ----------
+export interface KPIs {
+  instroomVolume: { value: number; goal: number; pct: number };
+  instroomKwaliteit: { value: number; prev: number };
+  contactSLA: { pct: number };
+  belDiscipline: { pct: number }; // % candidates 6/6
+  distributieFit: { actual: number; ideal: number; pct: number };
+  forecastMaand: { p50: number; goal: number; ideal: number };
+}
+
+export const kpis: KPIs = (() => {
+  const weekAgo = NOW - 7 * DAY;
+  const week = candidates.filter(c => c.toegewezenOp >= weekAgo);
+  const prev = candidates.filter(c => c.toegewezenOp >= weekAgo - 7 * DAY && c.toegewezenOp < weekAgo);
+  const avgScore = (xs: Candidate[]) => xs.length ? Math.round(xs.reduce((s, c) => s + c.score, 0) / xs.length) : 0;
+
+  // bel discipline: % candidates with all 6 attempts uitgevoerd
+  const byCand = new Map<string, CallAttempt[]>();
+  for (const a of callAttempts) {
+    const arr = byCand.get(a.candidateId) ?? [];
+    arr.push(a); byCand.set(a.candidateId, arr);
+  }
+  let six = 0, total = 0;
+  for (const arr of byCand.values()) {
+    total++;
+    if (arr.length === 6 && arr.every(a => a.uitgevoerd)) six++;
+  }
+
+  const contacted = candidates.filter(c => c.eersteContactOp !== null);
+  const inSLA = contacted.filter(c => {
+    const sla = SLA_MATRIX[c.tier];
+    return c.eersteContactOp! <= c.toegewezenOp + sla.contactH * HOUR;
+  });
+
+  const placed = candidates.filter(c => c.status === "geplaatst").length;
+  const ideal = Math.round(placed * 1.18);
+
+  return {
+    instroomVolume: { value: week.length, goal: 700, pct: Math.round((week.length / 700) * 100) },
+    instroomKwaliteit: { value: avgScore(week), prev: avgScore(prev) },
+    contactSLA: { pct: contacted.length ? Math.round((inSLA.length / contacted.length) * 100) : 0 },
+    belDiscipline: { pct: total ? Math.round((six / total) * 100) : 0 },
+    distributieFit: { actual: placed, ideal, pct: Math.round((placed / ideal) * 100) },
+    forecastMaand: { p50: 142, goal: 160, ideal: 168 },
+  };
+})();
+
+// 8-week daily trend for instroom volume
+export const dailyInstroom = (() => {
+  const buckets = new Map<string, { dag: string; nieuw: number; bestaand: number }>();
+  const start = NOW - 56 * DAY;
+  for (let i = 0; i < 56; i++) {
+    const d = new Date(start + i * DAY);
+    const key = `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
+    buckets.set(key, { dag: key, nieuw: 0, bestaand: 0 });
+  }
+  for (const c of candidates) {
+    if (c.toegewezenOp < start) continue;
+    const d = new Date(c.toegewezenOp);
+    const key = `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
+    const b = buckets.get(key);
+    if (b) (c.type === "nieuw" ? b.nieuw++ : b.bestaand++);
+  }
+  return Array.from(buckets.values());
+})();
+
+// Source treeview aggregates
+export const sourceTree = (() => {
+  const map = new Map<SourceTopLevel, { total: number; nieuw: number; bestaand: number; ingeschreven: number; subs: Map<string, { total: number; ingeschreven: number }> }>();
+  for (const c of candidates) {
+    const node = map.get(c.bron) ?? { total: 0, nieuw: 0, bestaand: 0, ingeschreven: 0, subs: new Map() };
+    node.total++;
+    c.type === "nieuw" ? node.nieuw++ : node.bestaand++;
+    if (c.ingeschrevenOp) node.ingeschreven++;
+    const sub = node.subs.get(c.subBron) ?? { total: 0, ingeschreven: 0 };
+    sub.total++; if (c.ingeschrevenOp) sub.ingeschreven++;
+    node.subs.set(c.subBron, sub);
+    map.set(c.bron, node);
+  }
+  return Array.from(map.entries()).map(([bron, n]) => ({
+    bron,
+    total: n.total, nieuw: n.nieuw, bestaand: n.bestaand,
+    conversie: n.total ? Math.round((n.ingeschreven / n.total) * 100) : 0,
+    subs: Array.from(n.subs.entries()).map(([naam, s]) => ({
+      naam, total: s.total,
+      conversie: s.total ? Math.round((s.ingeschreven / s.total) * 100) : 0,
+    })).sort((a, b) => b.total - a.total),
+  }));
+})();
+
+// Score histogram per type
+export function scoreHistogram(filter: "totaal" | "nieuw" | "bestaand") {
+  const subset = candidates.filter(c => filter === "totaal" || c.type === filter);
+  const tiers: Tier[] = ["D","C","B","A","A+"];
+  return tiers.map(t => ({ tier: t, count: subset.filter(c => c.tier === t).length }));
+}
+
+// Heatmap: BU x functiegroep
+export function qualityHeatmap(filter: "totaal" | "nieuw" | "bestaand") {
+  return UNITS.map(unit => ({
+    unit,
+    cells: FUNCTIEGROEPEN.map(fg => {
+      const subset = candidates.filter(c => c.unit === unit && c.functiegroep === fg && (filter === "totaal" || c.type === filter));
+      const avg = subset.length ? Math.round(subset.reduce((s, c) => s + c.score, 0) / subset.length) : 0;
+      return { fg, avg, n: subset.length };
+    }),
+  }));
+}
+export const FUNCTIEGROEPEN_REF = FUNCTIEGROEPEN;
+export const UNITS_REF = UNITS;
+
+// Lead-time meters per tier
+export function leadTimeMeters() {
+  return (Object.keys(SLA_MATRIX) as Tier[]).map(tier => {
+    const subset = candidates.filter(c => c.tier === tier && c.eersteContactOp);
+    const times = subset.map(c => (c.eersteContactOp! - c.toegewezenOp) / HOUR).sort((a,b)=>a-b);
+    const p = (q: number) => times.length ? times[Math.floor(times.length * q)] : 0;
+    return { tier, n: times.length, p50: +p(0.5).toFixed(1), p90: +p(0.9).toFixed(1), sla: SLA_MATRIX[tier].contactH };
+  });
+}
+
+// Hit-rate matrix
+export function hitRateMatrix(mode: "historisch" | "voortschrijdend") {
+  const top = consultants.slice(0, 25);
+  const titles = FUNCTIEGROEPEN.slice(0, 10);
+  const seedShift = mode === "historisch" ? 0 : 17;
+  const local = mulberry32(42 + seedShift);
+  return top.map(con => ({
+    consultant: con,
+    cells: titles.map(title => {
+      const n = Math.floor(local() * 25);
+      const hitRate = n < 5 ? null : Math.round((0.05 + local() * 0.45) * 100);
+      return { title, n, hitRate };
+    }),
+  }));
+}
+export const HIT_RATE_TITLES = FUNCTIEGROEPEN.slice(0, 10);
+
+// Forecast historical line
+export function forecastSeries() {
+  const base = Date.UTC(2025, 4, 1);
+  const out: { maand: string; actual?: number; p50?: number; p10?: number; p90?: number }[] = [];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(base);
+    d.setUTCMonth(d.getUTCMonth() + i);
+    out.push({ maand: d.toLocaleString("nl-NL", { month: "short" }), actual: 100 + Math.round(Math.sin(i / 2) * 15) + i * 2 });
+  }
+  for (let i = 12; i < 15; i++) {
+    const d = new Date(base);
+    d.setUTCMonth(d.getUTCMonth() + i);
+    const m = d.toLocaleString("nl-NL", { month: "short" });
+    const p50 = 130 + (i - 12) * 5;
+    out.push({ maand: m, p50, p10: p50 - 18, p90: p50 + 22 });
+  }
+  return out;
+}
+
+// Action list (sla overschrijdingen of dreigend)
+export interface ActionRow {
+  candidate: Candidate;
+  reason: string;
+  overdue: string;
+  sla: SLAState;
+}
+
+export function getActionList(limit?: number): ActionRow[] {
+  const rows: ActionRow[] = [];
+  for (const c of candidates) {
+    if (c.status === "geplaatst" || c.status === "afgesloten") continue;
+    const sla = getContactSLA(c);
+    if (sla.status === "verlopen" || sla.status === "dreigend") {
+      rows.push({ candidate: c, reason: sla.status === "verlopen" ? "Contact-SLA verlopen" : "Contact-SLA dreigend", overdue: sla.label, sla });
+    }
+  }
+  rows.sort((a, b) => b.sla.pctElapsed - a.sla.pctElapsed);
+  return limit ? rows.slice(0, limit) : rows;
+}
+
+// Per-recruiter aggregates for SLA leaderboard
+export function recruiterSLAStats() {
+  return recruiters.map(r => {
+    const own = candidates.filter(c => c.recruiterId === r.id);
+    const contacted = own.filter(c => c.eersteContactOp !== null);
+    const inSLA = contacted.filter(c => c.eersteContactOp! <= c.toegewezenOp + SLA_MATRIX[c.tier].contactH * HOUR);
+    const gespr = own.filter(c => c.eersteGesprekOp !== null);
+    const inSLAGespr = gespr.filter(c => c.eersteGesprekOp! <= c.toegewezenOp + SLA_MATRIX[c.tier].gesprekH * HOUR);
+    const overdue = own.filter(c => getContactSLA(c).status === "verlopen").length;
+    return {
+      recruiter: r,
+      assigned: own.length,
+      pctContact: contacted.length ? Math.round((inSLA.length / contacted.length) * 100) : 0,
+      pctGesprek: gespr.length ? Math.round((inSLAGespr.length / gespr.length) * 100) : 0,
+      overdue,
+    };
+  }).sort((a, b) => b.assigned - a.assigned);
+}
+
+// Per-recruiter call grid
+export function recruiterCallGrids(recruiterFilter?: string) {
+  const result = recruiters
+    .filter(r => !recruiterFilter || r.id === recruiterFilter)
+    .map(r => {
+      const own = candidates.filter(c => c.recruiterId === r.id && c.status !== "nieuw").slice(0, 12);
+      const grids = own.map(c => {
+        const attempts = callAttempts.filter(a => a.candidateId === c.id);
+        return { candidate: c, attempts };
+      });
+      const six = grids.filter(g => g.attempts.length === 6 && g.attempts.every(a => a.uitgevoerd)).length;
+      const totalAttempts = grids.reduce((s, g) => s + g.attempts.filter(a => a.uitgevoerd).length, 0);
+      return { recruiter: r, grids, six, total: grids.length, totalAttempts };
+    });
+  return result;
+}
+
+// Per-tier contact SLA stats
+export function tierContactStats() {
+  return (Object.keys(SLA_MATRIX) as Tier[]).map(tier => {
+    const subset = candidates.filter(c => c.tier === tier);
+    const contacted = subset.filter(c => c.eersteContactOp !== null);
+    const inSLA = contacted.filter(c => c.eersteContactOp! <= c.toegewezenOp + SLA_MATRIX[c.tier].contactH * HOUR);
+    return {
+      tier, n: subset.length,
+      pct: contacted.length ? Math.round((inSLA.length / contacted.length) * 100) : 0,
+    };
+  });
+}
+
+// Watchlist categories
+export function watchlist() {
+  const hoogScoreNoContact = candidates.filter(c =>
+    c.score >= 75 && !c.eersteContactOp && (NOW - c.toegewezenOp) > 2 * DAY
+  ).slice(0, 25);
+  const verlopenSLA24 = candidates.filter(c => {
+    const s = getContactSLA(c);
+    return s.status === "verlopen" && (NOW - (c.toegewezenOp + SLA_MATRIX[c.tier].contactH * HOUR)) > 24 * HOUR;
+  }).slice(0, 25);
+  const belIncompleet = candidates.filter(c => {
+    const a = callAttempts.filter(x => x.candidateId === c.id);
+    const missed = a.filter(x => !x.uitgevoerd).length;
+    return missed > 2 && c.status !== "ingeschreven" && c.status !== "geplaatst";
+  }).slice(0, 25);
+  const geenStatus7d = candidates.filter(c =>
+    c.status === "toegewezen" && (NOW - c.toegewezenOp) > 7 * DAY
+  ).slice(0, 25);
+  return { hoogScoreNoContact, verlopenSLA24, belIncompleet, geenStatus7d };
+}
+
+export const NOW_TS = NOW;
