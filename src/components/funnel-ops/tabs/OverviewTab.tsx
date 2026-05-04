@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { KPITile, statusFromPct } from "../KPITile";
 import { ActionList } from "../ActionList";
 import { TileInfo } from "../TileInfo";
+import { PeriodComparisonStrip } from "../PeriodComparisonStrip";
 import { kpis, getActionList, tierContactStats, dailyInstroom, sourceTree } from "@/data/funnelOperationsData";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as RTooltip, PieChart, Pie, Cell } from "recharts";
 import { TIER_COLOR } from "@/data/funnelOperationsData";
