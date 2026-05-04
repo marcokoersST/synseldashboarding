@@ -51,11 +51,11 @@ export function ForecastTab() {
           <div className="flex items-start justify-between gap-2">
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (optimale distributie)</div>
             <TileInfo
-              title="Verwacht — optimale distributie"
-              what="Maximale forecast wanneer elke open kandidaat aan zijn best-passende consultant wordt toegewezen."
-              formula={`Optimaal = Σ (open_kandidaten × max_hit_rate(*, functiegroep))\nWaarde: ${fcst.ideal}\nPotentie: +${fcst.ideal - fcst.p50}`}
+              title="Forecast — optimal distribution"
+              what="Maximum forecast achievable when every open candidate is routed to the best-fitting consultant. The gap vs P50 is the optimisation upside."
+              formula={`Optimal = Σ ( open_candidates × max_hit_rate(*, job_family) )\nValue: ${fcst.ideal}\nUpside: +${fcst.ideal - fcst.p50}`}
               source="kpis.forecastMaand.ideal · optimalReassignments()"
-              notes="Capaciteit per consultant in deze ronde gemaximeerd op 8 nieuwe matches."
+              notes="Capacity per consultant in this round capped at 8 new matches."
             />
           </div>
           <div className="text-3xl font-bold tabular-nums">{fcst.ideal}</div>
