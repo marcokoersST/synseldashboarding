@@ -85,8 +85,8 @@ export function OpvolgingTab() {
 
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Gesprek-SLA verlopen of dreigend</h3>
-            <TileInfo title="Gesprek-SLA actielijst" what="Kandidaten die wel contact hebben gehad maar de gesprek-deadline naderen of overschreden zijn." formula="filter: pctElapsed ≥ 0.8 op SLA_MATRIX[tier].gesprekH" source="candidates × SLA_MATRIX" />
+            <h3 className="text-sm font-semibold">First-conversation SLA — breached or at risk</h3>
+            <TileInfo title="Conversation-SLA action list" what="Candidates that were contacted but whose first-conversation deadline is approaching or breached. Indicates handover risk between recruiter and consultant." formula="filter: pctElapsed ≥ 0.8 against SLA_MATRIX[tier].gesprekH" source="candidates × SLA_MATRIX" />
           </div>
           <ActionList rows={gesprekRows} />
         </Card>
