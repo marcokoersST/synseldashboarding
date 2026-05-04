@@ -602,3 +602,35 @@ export function optimalReassignments(): ReassignSuggestion[] {
   }
   return out;
 }
+
+// ---------- Range-based aggregations (for date filter & comparison) ----------
+export interface RangeStats {
+  instroom: number;
+  avgScore: number;
+  contacted: number;
+  contactInSLA: number;
+  contactSLApct: number;
+  geplaatst: number;
+}
+
+export function rangeStats(from: number, to: number): RangeStats {
+  const subset = candidates.filter(c => c.toegewezenOp >= from && c.toegewezenOp < to);
+  const contacted = subset.filter(c => c.eersteContactOp !== null);
+  const inSLA = contacted.filter(c =>
+    c.eersteContactOp! <= c.toegewezenOp + SLA_MATRIX[c.tier].contactH * HOUR
+  );
+  const placed = candidates.filter(c =>
+    c.ingeschrevenOp !== null && c.ingeschrevenOp >= from && c.ingeschrevenOp < to && c.status === "geplaatst"
+  );
+  const avgScore = subset.length
+    ? Math.round(subset.reduce((s, c) => s + c.score, 0) / subset.length)
+    : 0;
+  return {
+    instroom: subset.length,
+    avgScore,
+    contacted: contacted.length,
+    contactInSLA: inSLA.length,
+    contactSLApct: contacted.length ? Math.round((inSLA.length / contacted.length) * 100) : 0,
+    geplaatst: placed.length,
+  };
+}
