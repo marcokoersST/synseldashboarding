@@ -1,56 +1,29 @@
-## Goal
+## Problem
 
-Make the four "Actie nodig" tiles on the Reverse Matching Analytics dashboard clickable. Each one opens a slide-in panel with a candidate list. Each row has a deeplink action button:
+On `/tv/sales-funnel-week` in TV (fullscreen) mode, the top KPI scorecards (Inschrijvingen, Acquisities, Voorstellen, Gesprekken, Plaatsingen) are visibly cropped — the big number and delta pill get clipped at the bottom of the tile.
 
-| Tile | Deeplink button |
-|---|---|
-| Doorgezet, nog niet gebeld | **Recruit CRM** (blue R badge) |
-| SLA breach: > 2u niet gebeld | **Recruit CRM** (blue R badge) |
-| Gereageerd, nog niet doorgezet | **Bird** (WhatsApp) |
-| SLA breach: > 1u geen reactie | **Bird** (WhatsApp) |
+Root cause: in `src/pages/TVSalesFunnelWeek.tsx` the compact grid allocates only `11fr` of `100fr` (~11% of viewport height) to the KPI row, while `SalesFunnelKPI` + `KPIBadge` render at "lg" size (w-11 icon circle, text-3xl number, py-1 spacing, gradient header py-1.5, delta pill py-1 text-sm). The combined intrinsic height exceeds the row height at 1080p, so `overflow-hidden` clips it.
 
-Add a clear data-source label per tile:
-- "Doorgezet, nog niet gebeld" + "Gereageerd, nog niet doorgezet" → **Live data**
-- Both SLA breach tiles → **"Binnen geselecteerde periode"** (uses the global period filter from the filter bar)
+## Fix
 
-## Changes
+Two coordinated tweaks:
 
-### 1. Mock candidate data — `src/data/barendData.ts`
-Add an `actieNodigCandidates` map keyed by tile key. Each entry: array of candidates with:
-```ts
-{ name, vacature, consultant, waitingFor, recruitCrmId, birdThreadId }
-```
-Generate enough rows per tile to match the displayed count (47/12/84/31), with realistic Dutch names, vacancies and consultants drawn from existing mock pools.
+### 1. `src/pages/TVSalesFunnelWeek.tsx`
+Give the KPI row more breathing room in the compact grid. Change `gridTemplateRows` from `"11fr 42fr 5fr 42fr"` to roughly `"16fr 39fr 5fr 40fr"` (KPI row ~+45% taller, unit-breakdown and bottom row each shrink ~3fr — still plenty for those tiles).
 
-Update `actieNodigTiles` entries with two new fields:
-- `target: "recruitcrm" | "bird"` — drives the deeplink button styling
-- `dataSource: "live" | "period"` — drives the small label under the count
+### 2. `src/components/tv/SalesFunnelKPI.tsx`
+Make the compact (TV) variant fit comfortably:
+- Reduce vertical padding on the gradient header (`py-1.5` → `py-1`) and on the delta pill (`py-1 text-sm` → `py-0.5 text-xs`) in compact mode.
+- Pass `size="md"` instead of `"lg"` to `KPIBadge` when compact (text-2xl number, w-9 icon circle) — still very readable on a 4K TV.
+- Center the badge with `justify-center` on the flex container and remove the extra `py-1` so the content uses the full available height without overflowing.
 
-### 2. Reusable side panel — inline in `ReverseMatchingAnalytics.tsx`
-Use the existing `Sheet` component (shadcn) opened from the right, ~520px wide. Header reuses the tile's icon + title + count, plus a small badge: "Live data" (green) or `"Binnen periode: ${period}"` (neutral). Body is a scrollable table:
+No other tiles or routes are affected (TVSalesFunnelPeriod uses the same component but its layout already has more KPI room; verify with one screenshot after change).
 
-```
-Kandidaat | Vacature | Consultant | Wacht | →
-```
+## Verification
 
-The last column renders either:
-- the existing **R-badge anchor** (`bg-[#0066FF]/10`, blue rounded square with white "R") for Recruit CRM tiles, or
-- a green WhatsApp/Bird square (`bg-[#25D366]/10` with `MessageSquare` icon) for the Bird tiles.
+After changes, navigate to `/tv/sales-funnel-week`, enter TV mode, and screenshot. Confirm: header label, icon circle, number, underline, and delta pill all visible inside each tile with no clipping.
 
-Hover row highlight; clicking the badge opens `#` (mock deeplink) in a new tab.
+## Files
 
-### 3. Wire up tile click in `ReverseMatchingAnalytics.tsx`
-- Convert each tile from `<div>` to `<button>`-styled card with hover: `hover:border-foreground/20 hover:shadow-sm cursor-pointer transition`.
-- Local state `const [openTile, setOpenTile] = useState<string | null>(null)`.
-- Clicking a tile sets the key → opens the Sheet; close clears it.
-- Add the tiny "Live data" / "Binnen periode" label under `detail` so the user can see the source at a glance even without opening the panel.
-
-### 4. Dev info update
-Append to the SLA `devLogic`:
-- "Tiles are clickable — open a slide-in candidate list."
-- "Recruit CRM tiles deeplink via R-badge; Bird tiles via WhatsApp icon."
-- "Live tiles always reflect now; SLA tiles scope to the global period filter."
-
-## Out of scope
-- Actual integration with Recruit CRM / Bird APIs — links remain `#` placeholders for the demo.
-- Filtering or sorting controls inside the panel (table is plain list).
+- `src/pages/TVSalesFunnelWeek.tsx`
+- `src/components/tv/SalesFunnelKPI.tsx`
