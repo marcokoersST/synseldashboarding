@@ -68,7 +68,7 @@ export function DistributieTab() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">Hit-rate matrix · consultant × functiegroep</h3>
-            <TileInfo title="Hit-rate matrix" what="Historische conversie-percentage per consultant en functiegroep. Cellen met n<5 worden niet getoond." formula="hit_rate = geplaatst / toegewezen × 100" source="hitRateMatrix(mode)" notes="Toggle 'historisch' vs '12-weeks rollend' toont stabiliteit van de scores." />
+            <TileInfo title="Hit-rate matrix" what="Historical conversion percentage per consultant and job family. Cells with n<5 are hidden to avoid drawing conclusions on thin data." formula="hit_rate = placed / assigned × 100" source="hitRateMatrix(mode)" notes="Toggle 'historical' vs '12-week rolling' to inspect the stability of the scores." />
           </div>
           <HitRateMatrix />
         </Card>
