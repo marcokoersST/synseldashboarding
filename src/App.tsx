@@ -62,11 +62,7 @@ const PeterJanOmzetDashboard = lazy(() => import("./pages/peter-jan/OmzetDashboa
 
 // Barend dashboards
 const BarendReverseMatching = lazy(() => import("./pages/barend/ReverseMatchingAnalytics"));
-const BarendFQTrend = lazy(() => import("./pages/barend/funnel-quality/Trend"));
-const BarendFQSurvival = lazy(() => import("./pages/barend/funnel-quality/Survival"));
-const BarendFQMixImpact = lazy(() => import("./pages/barend/funnel-quality/MixImpact"));
-const BarendFQSegmentatie = lazy(() => import("./pages/barend/funnel-quality/Segmentatie"));
-const BarendFQStats = lazy(() => import("./pages/barend/funnel-quality/Stats"));
+const BarendFunnelOps = lazy(() => import("./pages/barend/FunnelOperations"));
 
 // Marketing dashboards
 const MarketingHub = lazy(() => import("./pages/marketing/MarketingHub"));
