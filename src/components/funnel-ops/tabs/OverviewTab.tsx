@@ -87,7 +87,10 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
         <Card className="p-4 space-y-3">
           <div className="flex items-baseline justify-between">
             <h3 className="text-sm font-semibold">Bron-mix &amp; forecast</h3>
-            <button onClick={() => goTo("forecast")} className="text-xs text-primary hover:underline">Bekijk →</button>
+            <div className="flex items-center gap-1">
+              <TileInfo title="Bron-mix & forecast" what="Verdeling van kandidaten over de 5 hoofdbronnen plus deze maands forecast." formula="bron-aandeel: count(candidates per bron) / totaal" source="sourceTree · kpis.forecastMaand" notes="Mock-mix jobscan/open_cv/cv_database/reactivering/linkedin: 30/15/20/25/10." />
+              <button onClick={() => goTo("forecast")} className="text-xs text-primary hover:underline">Bekijk →</button>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-2 items-center">
             <div className="h-28">
