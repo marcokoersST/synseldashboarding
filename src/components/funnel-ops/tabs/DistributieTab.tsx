@@ -54,7 +54,7 @@ export function DistributieTab() {
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">Optimalisatie-potentie</div>
-                <TileInfo title="Optimalisatie-potentie" what="Verschil tussen huidige plaatsingen en het ideaal bij optimale consultant-routing." formula="ideal = actual × 1.18\npotentie = ideal − actual" source="kpis.distributieFit" notes="Op het Forecast-tabblad kan je per kandidaat zien wie naar wie moet." />
+                <TileInfo title="Optimisation potential" what="Gap between current placements and the ideal placements that would result from optimal consultant routing. Quantifies the cost of mis-assignments." formula="ideal = actual × 1.18\npotential = ideal − actual" source="kpis.distributieFit" notes="The Forecast tab shows per-candidate which consultant should pick them up." />
               </div>
               <div className="text-xl font-semibold">
                 Huidige plaatsingen: <span className="tabular-nums">{dist.actual}</span> · ideale distributie: <span className="tabular-nums">{dist.ideal}</span>{" "}
