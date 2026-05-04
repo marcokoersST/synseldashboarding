@@ -516,3 +516,89 @@ export function watchlist() {
 }
 
 export const NOW_TS = NOW;
+
+// ---------- Optimal reassignments (Forecast → ideale distributie) ----------
+export interface ReassignSuggestion {
+  candidate: Candidate;
+  fromConsultant: Consultant | null;
+  toConsultant: Consultant;
+  currentHitRate: number;
+  suggestedHitRate: number;
+  uplift: number;
+  expectedExtraPlacements: number;
+  reden: string;
+}
+
+export function optimalReassignments(): ReassignSuggestion[] {
+  // Build a deterministic hit-rate table: consultant × functiegroep
+  const local = mulberry32(91);
+  const hitTable = new Map<string, number>(); // key consultantId|functiegroep
+  for (const co of consultants) {
+    for (const fg of FUNCTIEGROEPEN) {
+      // Each consultant has 2-3 strong functiegroepen and the rest weak.
+      const strong = local() < 0.28;
+      const rate = strong ? 0.30 + local() * 0.20 : 0.05 + local() * 0.12;
+      hitTable.set(`${co.id}|${fg}`, +(rate * 100).toFixed(1));
+    }
+  }
+  const getRate = (cid: string | null, fg: string) =>
+    cid ? (hitTable.get(`${cid}|${fg}`) ?? 8) : 8;
+
+  // Open candidates A+/A/B
+  const open = candidates.filter(
+    c => (c.tier === "A+" || c.tier === "A" || c.tier === "B") &&
+         c.status !== "geplaatst" && c.status !== "afgesloten"
+  );
+
+  const capacity = new Map<string, number>(); // consultant capacity in this round
+  const suggestions: ReassignSuggestion[] = [];
+
+  // Sort candidates by tier priority then score
+  const tierWeight: Record<Tier, number> = { "A+": 4, A: 3, B: 2, C: 1, D: 0 };
+  const queue = [...open].sort((a, b) => tierWeight[b.tier] - tierWeight[a.tier] || b.score - a.score);
+
+  for (const cand of queue) {
+    const currentRate = getRate(cand.consultantId, cand.functiegroep);
+    // Find best consultant on this functiegroep with capacity left
+    let best: { co: Consultant; rate: number } | null = null;
+    for (const co of consultants) {
+      if (co.id === cand.consultantId) continue;
+      if ((capacity.get(co.id) ?? 0) >= 8) continue;
+      const r = getRate(co.id, cand.functiegroep);
+      if (!best || r > best.rate) best = { co, rate: r };
+    }
+    if (!best) continue;
+    const uplift = +(best.rate - currentRate).toFixed(1);
+    if (uplift < 5) continue;
+
+    const fromCon = cand.consultantId ? consultants.find(c => c.id === cand.consultantId) ?? null : null;
+    const tierMult = cand.tier === "A+" ? 1.4 : cand.tier === "A" ? 1.1 : 0.85;
+    const extra = +((uplift / 100) * tierMult).toFixed(2);
+
+    suggestions.push({
+      candidate: cand,
+      fromConsultant: fromCon,
+      toConsultant: best.co,
+      currentHitRate: currentRate,
+      suggestedHitRate: best.rate,
+      uplift,
+      expectedExtraPlacements: extra,
+      reden: fromCon
+        ? `${best.co.naam} heeft ${best.rate}% hit-rate op ${cand.functiegroep}-rollen vs ${currentRate}% bij ${fromCon.naam}.`
+        : `Nog niet toegewezen — ${best.co.naam} heeft ${best.rate}% hit-rate op ${cand.functiegroep}.`,
+    });
+    capacity.set(best.co.id, (capacity.get(best.co.id) ?? 0) + 1);
+  }
+
+  // Sort by extra placements desc and cap at potency
+  suggestions.sort((a, b) => b.expectedExtraPlacements - a.expectedExtraPlacements);
+  const target = kpis.forecastMaand.ideal - kpis.forecastMaand.p50;
+  const out: ReassignSuggestion[] = [];
+  let total = 0;
+  for (const s of suggestions) {
+    out.push(s);
+    total += s.expectedExtraPlacements;
+    if (total >= target) break;
+  }
+  return out;
+}
