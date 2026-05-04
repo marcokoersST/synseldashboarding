@@ -51,7 +51,7 @@ export function OpvolgingTab() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">SLA-score per tier</h3>
-            <TileInfo title="SLA per tier" what="Contact-SLA score per tier (A+ tot D)." formula="in_SLA / contacted × 100 per tier" source="tierContactStats()" notes="Strenge venster voor A+: 2 uur." />
+            <TileInfo title="SLA per tier" what="Contact-SLA score per candidate tier (A+ down to D). Used to verify that the highest-value candidates are actually being prioritised." formula="in_SLA / contacted × 100, grouped by tier" source="tierContactStats()" notes="Strict window for A+: 2 hours from assignment." />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {tierStats.map(t => (
