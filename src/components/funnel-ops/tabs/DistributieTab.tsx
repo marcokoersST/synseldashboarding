@@ -4,6 +4,7 @@ import { leadTimeMeters, kpis, getActionList, TIER_COLOR } from "@/data/funnelOp
 import type { Tier } from "@/data/funnelOperationsData";
 import { ActionList } from "../ActionList";
 import { TrendingUp } from "lucide-react";
+import { TileInfo } from "../TileInfo";
 
 export function DistributieTab() {
   const meters = leadTimeMeters();
