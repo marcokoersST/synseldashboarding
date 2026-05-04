@@ -63,7 +63,7 @@ export function InstroomTab() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">Score-verdeling per type</h3>
-            <TileInfo title="Score-verdeling" what="Aantal kandidaten per tier (D t/m A+) gesplitst over totaal, nieuw en bestaand." formula="bucket op tier-veld\nA+: 90-100 · A: 75-89 · B: 55-74 · C: 35-54 · D: 0-34" source="scoreHistogram(filter)" notes="Score-distributie mock: 5/15/30/35/15." />
+            <TileInfo title="Score distribution" what="Number of candidates per tier (D through A+), broken down by total, new and returning candidates. Used to monitor whether sourcing keeps producing the expected quality mix." formula="bucket on tier field\nA+: 90-100 · A: 75-89 · B: 55-74 · C: 35-54 · D: 0-34" source="scoreHistogram(filter)" notes="Mock distribution: 5/15/30/35/15." />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <ScoreHistogram filter="totaal" title="Score-verdeling · totaal" />
