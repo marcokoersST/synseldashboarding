@@ -62,10 +62,21 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
             ? "fixed inset-0 bg-white text-foreground overflow-hidden z-[9999] tv-mode"
             : ""
         )}
+        style={
+          isFullscreen
+            ? ({
+                ["--tv-unit" as any]: "clamp(0.55rem, 0.55vh + 0.35vw, 1.15rem)",
+                fontSize: "var(--tv-unit)",
+              } as React.CSSProperties)
+            : undefined
+        }
       >
-        <div className={cn(isFullscreen && "p-4 h-screen flex flex-col")}>
+        <div
+          className={cn(isFullscreen && "h-screen flex flex-col")}
+          style={isFullscreen ? { padding: "clamp(0.4rem, 0.9vh, 1rem)" } : undefined}
+        >
           {isFullscreen && (
-            <div className="flex items-center justify-end mb-2">
+            <div className="flex items-center justify-end" style={{ marginBottom: "clamp(0.25rem, 0.5vh, 0.5rem)" }}>
               <button
                 onClick={toggleFullscreen}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-secondary hover:bg-secondary/80 text-foreground border border-border"
@@ -78,7 +89,7 @@ export function TVDashboardLayout({ title, children }: TVDashboardLayoutProps) {
           {!isFullscreen && (
             <h1 className="text-2xl font-bold text-foreground mb-8">{title}</h1>
           )}
-          <div className={cn(isFullscreen && "flex-1 min-h-0 overflow-hidden")}>
+          <div className={cn(isFullscreen && "flex-1 min-h-0 overflow-hidden @container")}>
             {children}
           </div>
         </div>
