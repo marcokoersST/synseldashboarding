@@ -68,7 +68,7 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
           <div className="flex items-baseline justify-between">
             <h3 className="text-sm font-semibold">SLA per tier · % binnen contact</h3>
             <div className="flex items-center gap-1">
-              <TileInfo title="SLA per tier" what="Contact-SLA score per tier (A+ tot D)." formula="in_SLA / contacted × 100 per tier" source="tierContactStats()" notes="A+ moet binnen 2u bereikt worden — kleinste foutmarge." />
+              <TileInfo title="SLA per tier" what="Contact-SLA score per candidate tier (A+ down to D). Highlights where responsiveness lags for the most valuable cohorts." formula="in_SLA / contacted × 100, grouped by tier" source="tierContactStats()" notes="A+ must be reached within 2h — smallest tolerated margin." />
               <button onClick={() => goTo("opvolging")} className="text-xs text-primary hover:underline">Bekijk →</button>
             </div>
           </div>
