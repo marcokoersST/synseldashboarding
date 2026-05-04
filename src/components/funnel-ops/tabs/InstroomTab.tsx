@@ -60,15 +60,30 @@ export function InstroomTab() {
             </span>.
           </div>
         </Card>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <ScoreHistogram filter="totaal" title="Score-verdeling · totaal" />
-          <ScoreHistogram filter="nieuw" title="Score-verdeling · nieuw" />
-          <ScoreHistogram filter="bestaand" title="Score-verdeling · bestaand" />
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold">Score-verdeling per type</h3>
+            <TileInfo title="Score-verdeling" what="Aantal kandidaten per tier (D t/m A+) gesplitst over totaal, nieuw en bestaand." formula="bucket op tier-veld\nA+: 90-100 · A: 75-89 · B: 55-74 · C: 35-54 · D: 0-34" source="scoreHistogram(filter)" notes="Score-distributie mock: 5/15/30/35/15." />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <ScoreHistogram filter="totaal" title="Score-verdeling · totaal" />
+            <ScoreHistogram filter="nieuw" title="Score-verdeling · nieuw" />
+            <ScoreHistogram filter="bestaand" title="Score-verdeling · bestaand" />
+          </div>
         </div>
-        <QualityHeatmap />
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold">Kwaliteit per Unit × Functiegroep</h3>
+            <TileInfo title="Kwaliteits-heatmap" what="Gemiddelde plaatsbaarheidscore per Business Unit en functiegroep." formula="cel = avg(score) waar unit=X en functiegroep=Y" source="qualityHeatmap(filter)" notes="Cellen met n<5 zijn licht uitgegrijsd." />
+          </div>
+          <QualityHeatmap />
+        </div>
 
         <Card className="overflow-hidden">
-          <div className="px-4 py-3 border-b border-border text-sm font-semibold">Top kandidaten laatste 7 dagen (score ≥75)</div>
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div className="text-sm font-semibold">Top kandidaten laatste 7 dagen (score ≥75)</div>
+            <TileInfo title="Top kandidaten" what="De 12 hoogst-scorende kandidaten van afgelopen week. Klik op een naam → opent in RecruitCRM." formula="filter: score ≥ 75 én toegewezen ≤ 7d geleden\nsort: score desc · top 12" source="candidates" />
+          </div>
           <table className="w-full text-xs">
             <thead className="text-muted-foreground bg-muted/20">
               <tr>
