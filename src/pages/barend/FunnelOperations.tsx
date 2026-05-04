@@ -9,6 +9,7 @@ import { OpvolgingTab } from "@/components/funnel-ops/tabs/OpvolgingTab";
 import { WatchlistTab } from "@/components/funnel-ops/tabs/WatchlistTab";
 import { DevInfoTab } from "@/components/funnel-ops/tabs/DevInfoTab";
 import { Lock } from "lucide-react";
+import { DateRangeFilter } from "@/components/funnel-ops/DateRangeFilter";
 
 const TABS = [
   { value: "overzicht", label: "Overzicht" },
