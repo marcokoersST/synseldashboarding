@@ -23,7 +23,7 @@ export function InstroomTab() {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-xs font-medium text-muted-foreground">Instroom per dag (8 weken) — gestapeld nieuw / bestaand</div>
-            <TileInfo title="Instroom per dag" what="Stapelgrafiek met dagelijkse instroom van nieuwe en bestaande kandidaten over 8 weken." formula="bucket per dag uit candidates.toegewezenOp\nsplit op candidate.type" source="dailyInstroom" notes="Geseed met 1729 — getallen wijken bewust niet af tussen sessies." />
+            <TileInfo title="Daily inflow" what="Stacked bar chart of daily candidate inflow over 8 weeks, split by new vs returning candidates. Used to detect demand patterns and channel-mix shifts." formula="bucket per day from candidates.toegewezenOp\nsplit on candidate.type" source="dailyInstroom" notes="Seeded PRNG (seed 1729) — values are deliberately stable across sessions." />
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -41,7 +41,7 @@ export function InstroomTab() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-1">
             <div className="text-xs font-medium text-muted-foreground">Bron-treeview · volume per hoofdbron en sub-bron</div>
-            <TileInfo title="Bron-treeview" what="Hiërarchische telling van kandidaten per hoofdbron met sub-bronnen en conversie naar inschrijving." formula="conversie = ingeschreven / total × 100" source="sourceTree" />
+            <TileInfo title="Source tree" what="Hierarchical breakdown of candidate volume per main sourcing channel and its sub-channels, with conversion to registration. Helps identify which channels deliver effective volume." formula="conversion = registered / total × 100" source="sourceTree" />
           </div>
           <SourceTreeView />
         </Card>
@@ -63,7 +63,7 @@ export function InstroomTab() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">Score-verdeling per type</h3>
-            <TileInfo title="Score-verdeling" what="Aantal kandidaten per tier (D t/m A+) gesplitst over totaal, nieuw en bestaand." formula="bucket op tier-veld\nA+: 90-100 · A: 75-89 · B: 55-74 · C: 35-54 · D: 0-34" source="scoreHistogram(filter)" notes="Score-distributie mock: 5/15/30/35/15." />
+            <TileInfo title="Score distribution" what="Number of candidates per tier (D through A+), broken down by total, new and returning candidates. Used to monitor whether sourcing keeps producing the expected quality mix." formula="bucket on tier field\nA+: 90-100 · A: 75-89 · B: 55-74 · C: 35-54 · D: 0-34" source="scoreHistogram(filter)" notes="Mock distribution: 5/15/30/35/15." />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <ScoreHistogram filter="totaal" title="Score-verdeling · totaal" />
@@ -74,7 +74,7 @@ export function InstroomTab() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">Kwaliteit per Unit × Functiegroep</h3>
-            <TileInfo title="Kwaliteits-heatmap" what="Gemiddelde plaatsbaarheidscore per Business Unit en functiegroep." formula="cel = avg(score) waar unit=X en functiegroep=Y" source="qualityHeatmap(filter)" notes="Cellen met n<5 zijn licht uitgegrijsd." />
+            <TileInfo title="Quality heatmap" what="Average placeability score per Business Unit and job family. Reveals where strong demand meets weak supply (or vice versa)." formula="cell = avg(score) WHERE unit=X AND functiegroep=Y" source="qualityHeatmap(filter)" notes="Cells with n<5 are dimmed — too thin to draw conclusions." />
           </div>
           <QualityHeatmap />
         </div>
@@ -82,7 +82,7 @@ export function InstroomTab() {
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div className="text-sm font-semibold">Top kandidaten laatste 7 dagen (score ≥75)</div>
-            <TileInfo title="Top kandidaten" what="De 12 hoogst-scorende kandidaten van afgelopen week. Klik op een naam → opent in RecruitCRM." formula="filter: score ≥ 75 én toegewezen ≤ 7d geleden\nsort: score desc · top 12" source="candidates" />
+            <TileInfo title="Top candidates" what="The 12 highest-scoring candidates that entered the funnel in the last 7 days. Click a name to open the candidate profile in RecruitCRM." formula="filter: score ≥ 75 AND assigned ≤ 7d ago\nsort: score desc · top 12" source="candidates" />
           </div>
           <table className="w-full text-xs">
             <thead className="text-muted-foreground bg-muted/20">

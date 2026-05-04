@@ -26,11 +26,11 @@ export function ForecastTab() {
           <div className="flex items-start justify-between gap-2">
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (huidige distributie)</div>
             <TileInfo
-              title="Verwacht — huidige distributie (P50)"
-              what="Mediane verwachting op basis van de huidige consultant-toewijzingen en historische hit-rates."
-              formula={`P50 = Σ (open_kandidaten × hit_rate(consultant, functiegroep))\nWaarde: ${fcst.p50}`}
+              title="Forecast — current distribution (P50)"
+              what="Median expected placements for this month given the current consultant assignments and their historical hit-rates per job family."
+              formula={`P50 = Σ ( open_candidates × hit_rate(consultant, job_family) )\nValue: ${fcst.p50}`}
               source="kpis.forecastMaand.p50"
-              notes="Hard-coded mock-output; in productie komt dit uit het forecast-model."
+              notes="Hard-coded mock output; in production this comes from the forecast model."
             />
           </div>
           <div className="text-3xl font-bold tabular-nums">{fcst.p50}</div>
@@ -51,11 +51,11 @@ export function ForecastTab() {
           <div className="flex items-start justify-between gap-2">
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (optimale distributie)</div>
             <TileInfo
-              title="Verwacht — optimale distributie"
-              what="Maximale forecast wanneer elke open kandidaat aan zijn best-passende consultant wordt toegewezen."
-              formula={`Optimaal = Σ (open_kandidaten × max_hit_rate(*, functiegroep))\nWaarde: ${fcst.ideal}\nPotentie: +${fcst.ideal - fcst.p50}`}
+              title="Forecast — optimal distribution"
+              what="Maximum forecast achievable when every open candidate is routed to the best-fitting consultant. The gap vs P50 is the optimisation upside."
+              formula={`Optimal = Σ ( open_candidates × max_hit_rate(*, job_family) )\nValue: ${fcst.ideal}\nUpside: +${fcst.ideal - fcst.p50}`}
               source="kpis.forecastMaand.ideal · optimalReassignments()"
-              notes="Capaciteit per consultant in deze ronde gemaximeerd op 8 nieuwe matches."
+              notes="Capacity per consultant in this round capped at 8 new matches."
             />
           </div>
           <div className="text-3xl font-bold tabular-nums">{fcst.ideal}</div>
@@ -71,11 +71,11 @@ export function ForecastTab() {
           <div className="flex items-start justify-between gap-2">
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Scenario's</div>
             <TileInfo
-              title="Scenario's P10 / P50 / P90"
-              what="Pessimistisch / verwacht / optimistisch scenario voor deze maand."
+              title="Scenarios P10 / P50 / P90"
+              what="Pessimistic / expected / optimistic placement scenarios for the current month. Used to communicate forecast uncertainty to stakeholders."
               formula={`P10 = P50 − 18\nP50 = ${fcst.p50}\nP90 = P50 + 22`}
-              source="forecastSeries() laatste 3 maanden"
-              notes="Bandbreedte gebaseerd op historische standaardafwijking van ±15%."
+              source="forecastSeries() — last 3 months"
+              notes="Bandwidth is based on a historical standard deviation of ±15%."
             />
           </div>
           <div className="grid grid-cols-3 gap-2 mt-2 text-center">
@@ -90,11 +90,11 @@ export function ForecastTab() {
         <div className="flex items-center justify-between mb-2">
           <div className="text-sm font-medium">Plaatsingen — 12 maanden historie + 3 maanden forecast</div>
           <TileInfo
-            title="Historie + forecast lijn"
-            what="Werkelijke plaatsingen per maand (afgelopen 12) en P50/P10–P90-band voor de komende 3 maanden."
-            formula="actual = som(status='geplaatst' per maand)\nP10/P50/P90 = forecastmodel-output"
+            title="History + forecast line"
+            what="Actual placements per month for the last 12 months and the P50 line plus P10–P90 band for the next 3 months."
+            formula="actual = sum(status='placed' per month)\nP10/P50/P90 = forecast model output"
             source="forecastSeries()"
-            notes="Mock-data; periodes vóór mei 2026 zijn deterministisch gegenereerd."
+            notes="Mock data; periods before May 2026 are deterministically generated."
           />
         </div>
         <div className="h-72">
@@ -117,11 +117,11 @@ export function ForecastTab() {
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <div className="text-sm font-semibold">Bijdrage deze maand · open kandidaten × verwachte conversie</div>
           <TileInfo
-            title="Bijdragetabel"
-            what="Top-12 combinaties van Unit × Functiegroep gerangschikt op verwachte plaatsingen deze maand."
-            formula="verw_conv = 0.08 + (gem_score / 1000)\nverw_plaats = open_kandidaten × verw_conv"
-            source="candidates filtered op status ≠ geplaatst/afgesloten"
-            notes="Eenvoudige conversie-proxy, niet het echte model."
+            title="Contribution table"
+            what="Top-12 Unit × Job-family combinations ranked by expected placements this month. Helps prioritise where additional sourcing or capacity will move the needle."
+            formula="exp_conversion = 0.08 + (avg_score / 1000)\nexp_placements = open_candidates × exp_conversion"
+            source="candidates filtered on status ≠ placed/closed"
+            notes="Simple conversion proxy — not the production model."
           />
         </div>
         <table className="w-full text-xs">

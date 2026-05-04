@@ -42,7 +42,7 @@ export function OpvolgingTab() {
           <p className="text-xs text-muted-foreground">
             6 belmomenten over 2 dagen (08:30 / 12:00 / 17:00). Groen = succesvol contact, oranje = poging zonder gehoor, rood = niet uitgevoerd. Bel-data is niet aanpasbaar in dit dashboard.
           </p>
-          <TileInfo title="Bel-discipline grid" what="Per kandidaat per recruiter een 6-cel grid met de status van elk belmoment." formula="6 momenten = 2 dagen × 3 dagdelen (ochtend/middag/avond)" source="recruiterCallGrids() · callAttempts" notes="Mock-aanname: ~70% van kandidaten haalt 6/6 uitgevoerd." />
+          <TileInfo title="Call discipline grid" what="A 6-cell grid per candidate per recruiter showing the status of each scheduled call attempt. Measures process discipline, regardless of whether contact was made." formula="6 attempts = 2 days × 3 day-parts (morning/afternoon/evening)" source="recruiterCallGrids() · callAttempts" notes="Mock assumption: ~70% of candidates reach 6/6 executed." />
         </Card>
         <CallDisciplineGrid />
       </TabsContent>
@@ -51,7 +51,7 @@ export function OpvolgingTab() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">SLA-score per tier</h3>
-            <TileInfo title="SLA per tier" what="Contact-SLA score per tier (A+ tot D)." formula="in_SLA / contacted × 100 per tier" source="tierContactStats()" notes="Strenge venster voor A+: 2 uur." />
+            <TileInfo title="SLA per tier" what="Contact-SLA score per candidate tier (A+ down to D). Used to verify that the highest-value candidates are actually being prioritised." formula="in_SLA / contacted × 100, grouped by tier" source="tierContactStats()" notes="Strict window for A+: 2 hours from assignment." />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {tierStats.map(t => (
@@ -67,7 +67,7 @@ export function OpvolgingTab() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">SLA-leaderboard recruiters</h3>
-            <TileInfo title="SLA-leaderboard" what="Per recruiter: aantal toegewezen kandidaten, % binnen contact-SLA en gesprek-SLA, en aantal verlopen." formula="zie recruiterSLAStats() — alle aggregaties per recruiter.id" source="recruiterSLAStats()" />
+            <TileInfo title="SLA leaderboard" what="Per recruiter: number of assigned candidates, % within contact-SLA, % within first-conversation SLA, and number of breaches. Surfaces individual workload and quality." formula="see recruiterSLAStats() — all aggregates grouped by recruiter.id" source="recruiterSLAStats()" />
           </div>
           <SLALeaderboard />
         </Card>
@@ -76,17 +76,17 @@ export function OpvolgingTab() {
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold">Contact-SLA verlopen of dreigend</h3>
-              <p className="text-xs text-muted-foreground">A+ binnen 30 minuten van toewijzing automatisch rood.</p>
+              <p className="text-xs text-muted-foreground">A+ candidates not contacted within 30 minutes of assignment are flagged red automatically.</p>
             </div>
-            <TileInfo title="Contact-SLA actielijst" what="Open kandidaten waarvan de contact-SLA verlopen is of binnen 20% van de deadline zit." formula="getActionList(15) gefilterd op contact-SLA" source="getActionList()" />
+            <TileInfo title="Contact-SLA action list" what="Open candidates whose contact-SLA is breached or within 20% of its deadline. Drives recruiter follow-up." formula="getActionList(15) filtered on contact-SLA" source="getActionList()" />
           </div>
           <ActionList rows={contactRows} />
         </Card>
 
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Gesprek-SLA verlopen of dreigend</h3>
-            <TileInfo title="Gesprek-SLA actielijst" what="Kandidaten die wel contact hebben gehad maar de gesprek-deadline naderen of overschreden zijn." formula="filter: pctElapsed ≥ 0.8 op SLA_MATRIX[tier].gesprekH" source="candidates × SLA_MATRIX" />
+            <h3 className="text-sm font-semibold">First-conversation SLA — breached or at risk</h3>
+            <TileInfo title="Conversation-SLA action list" what="Candidates that were contacted but whose first-conversation deadline is approaching or breached. Indicates handover risk between recruiter and consultant." formula="filter: pctElapsed ≥ 0.8 against SLA_MATRIX[tier].gesprekH" source="candidates × SLA_MATRIX" />
           </div>
           <ActionList rows={gesprekRows} />
         </Card>

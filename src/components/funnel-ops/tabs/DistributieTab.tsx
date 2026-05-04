@@ -21,7 +21,7 @@ export function DistributieTab() {
             <Card key={label} className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="text-xs text-muted-foreground">{label} · lead-time per tier</div>
-                <TileInfo title={`${label} · lead-time`} what={`P50/P90 lead-time per tier voor de stap "${label.toLowerCase()}".`} formula="p50 = mediaan(uren); p90 = 90e percentiel\nbalk-vulling = waarde / SLA × 100" source="leadTimeMeters()" notes="Tier-SLA's komen uit SLA_MATRIX." />
+                <TileInfo title={`${label} · lead time`} what={`P50 and P90 lead time per tier for the "${label.toLowerCase()}" step. Reveals where the funnel slows down for the most valuable cohorts.`} formula="p50 = median(hours); p90 = 90th percentile\nbar fill = value / SLA × 100" source="leadTimeMeters()" notes="Tier SLAs are defined in SLA_MATRIX." />
               </div>
               <div className="space-y-1.5">
                 {meters.map(m => {
@@ -54,7 +54,7 @@ export function DistributieTab() {
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">Optimalisatie-potentie</div>
-                <TileInfo title="Optimalisatie-potentie" what="Verschil tussen huidige plaatsingen en het ideaal bij optimale consultant-routing." formula="ideal = actual × 1.18\npotentie = ideal − actual" source="kpis.distributieFit" notes="Op het Forecast-tabblad kan je per kandidaat zien wie naar wie moet." />
+                <TileInfo title="Optimisation potential" what="Gap between current placements and the ideal placements that would result from optimal consultant routing. Quantifies the cost of mis-assignments." formula="ideal = actual × 1.18\npotential = ideal − actual" source="kpis.distributieFit" notes="The Forecast tab shows per-candidate which consultant should pick them up." />
               </div>
               <div className="text-xl font-semibold">
                 Huidige plaatsingen: <span className="tabular-nums">{dist.actual}</span> · ideale distributie: <span className="tabular-nums">{dist.ideal}</span>{" "}
@@ -68,7 +68,7 @@ export function DistributieTab() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">Hit-rate matrix · consultant × functiegroep</h3>
-            <TileInfo title="Hit-rate matrix" what="Historische conversie-percentage per consultant en functiegroep. Cellen met n<5 worden niet getoond." formula="hit_rate = geplaatst / toegewezen × 100" source="hitRateMatrix(mode)" notes="Toggle 'historisch' vs '12-weeks rollend' toont stabiliteit van de scores." />
+            <TileInfo title="Hit-rate matrix" what="Historical conversion percentage per consultant and job family. Cells with n<5 are hidden to avoid drawing conclusions on thin data." formula="hit_rate = placed / assigned × 100" source="hitRateMatrix(mode)" notes="Toggle 'historical' vs '12-week rolling' to inspect the stability of the scores." />
           </div>
           <HitRateMatrix />
         </Card>
@@ -76,10 +76,10 @@ export function DistributieTab() {
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold">SLA-actielijst</h3>
-              <p className="text-xs text-muted-foreground">Kandidaten met een verlopen of dreigende Contact-SLA. Klik door naar RecruitCRM voor opvolging.</p>
+              <h3 className="text-sm font-semibold">SLA action list</h3>
+              <p className="text-xs text-muted-foreground">Candidates with a breached or imminent Contact-SLA. Open RecruitCRM in a new tab to follow up.</p>
             </div>
-            <TileInfo title="SLA-actielijst" what="Kandidaten gesorteerd op SLA-urgentie (verlopen eerst, dan dreigend)." formula="getActionList(8) — sort by SLA-deadline asc" source="getActionList()" />
+            <TileInfo title="SLA action list" what="Candidates ranked by SLA urgency (breached first, then at-risk). Drives the next-best-action queue for recruiters." formula="getActionList(8) — sort by SLA deadline asc" source="getActionList()" />
           </div>
           <ActionList rows={mismatch} />
         </Card>

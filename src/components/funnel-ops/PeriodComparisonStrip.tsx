@@ -53,11 +53,11 @@ export function PeriodComparisonStrip() {
           )}
         </div>
         <TileInfo
-          title="Periode-vergelijking"
-          what="Aggregaties voor de geselecteerde periode, inclusief delta vs de vergelijkperiode."
-          formula="rangeStats(from, to) — telt candidates.toegewezenOp binnen [from, to)."
+          title="Period comparison"
+          what="Aggregated metrics for the selected period plus delta vs the comparison period. Lets the team validate week-on-week or custom-window movement at a glance."
+          formula="rangeStats(from, to) — counts candidates.toegewezenOp within [from, to)."
           source="rangeStats() · FunnelOpsFiltersContext"
-          notes="Plaatsingen worden geteld op ingeschrevenOp, niet op toewijsdatum."
+          notes="Placements are counted on ingeschrevenOp, not on assignment date."
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
