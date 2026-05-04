@@ -117,11 +117,11 @@ export function ForecastTab() {
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <div className="text-sm font-semibold">Bijdrage deze maand · open kandidaten × verwachte conversie</div>
           <TileInfo
-            title="Bijdragetabel"
-            what="Top-12 combinaties van Unit × Functiegroep gerangschikt op verwachte plaatsingen deze maand."
-            formula="verw_conv = 0.08 + (gem_score / 1000)\nverw_plaats = open_kandidaten × verw_conv"
-            source="candidates filtered op status ≠ geplaatst/afgesloten"
-            notes="Eenvoudige conversie-proxy, niet het echte model."
+            title="Contribution table"
+            what="Top-12 Unit × Job-family combinations ranked by expected placements this month. Helps prioritise where additional sourcing or capacity will move the needle."
+            formula="exp_conversion = 0.08 + (avg_score / 1000)\nexp_placements = open_candidates × exp_conversion"
+            source="candidates filtered on status ≠ placed/closed"
+            notes="Simple conversion proxy — not the production model."
           />
         </div>
         <table className="w-full text-xs">
