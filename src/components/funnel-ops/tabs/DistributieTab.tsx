@@ -65,12 +65,21 @@ export function DistributieTab() {
           </div>
         </Card>
 
-        <HitRateMatrix />
+        <Card className="p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold">Hit-rate matrix · consultant × functiegroep</h3>
+            <TileInfo title="Hit-rate matrix" what="Historische conversie-percentage per consultant en functiegroep. Cellen met n<5 worden niet getoond." formula="hit_rate = geplaatst / toegewezen × 100" source="hitRateMatrix(mode)" notes="Toggle 'historisch' vs '12-weeks rollend' toont stabiliteit van de scores." />
+          </div>
+          <HitRateMatrix />
+        </Card>
 
         <Card className="overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-semibold">Mismatch-actielijst</h3>
-            <p className="text-xs text-muted-foreground">Kandidaten waar een betere consultant-match beschikbaar was. Klik door naar RCRM voor actie.</p>
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold">Mismatch-actielijst</h3>
+              <p className="text-xs text-muted-foreground">Kandidaten waar een betere consultant-match beschikbaar was. Klik door naar RCRM voor actie.</p>
+            </div>
+            <TileInfo title="Mismatch-actielijst" what="Kandidaten waar de huidige consultant-match suboptimaal is en de SLA dreigt of verloopt." formula="getActionList(8) — gesorteerd op urgentie" source="getActionList()" />
           </div>
           <ActionList rows={mismatch} />
         </Card>
