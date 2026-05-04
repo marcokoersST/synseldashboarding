@@ -42,7 +42,7 @@ export function OpvolgingTab() {
           <p className="text-xs text-muted-foreground">
             6 belmomenten over 2 dagen (08:30 / 12:00 / 17:00). Groen = succesvol contact, oranje = poging zonder gehoor, rood = niet uitgevoerd. Bel-data is niet aanpasbaar in dit dashboard.
           </p>
-          <TileInfo title="Bel-discipline grid" what="Per kandidaat per recruiter een 6-cel grid met de status van elk belmoment." formula="6 momenten = 2 dagen × 3 dagdelen (ochtend/middag/avond)" source="recruiterCallGrids() · callAttempts" notes="Mock-aanname: ~70% van kandidaten haalt 6/6 uitgevoerd." />
+          <TileInfo title="Call discipline grid" what="A 6-cell grid per candidate per recruiter showing the status of each scheduled call attempt. Measures process discipline, regardless of whether contact was made." formula="6 attempts = 2 days × 3 day-parts (morning/afternoon/evening)" source="recruiterCallGrids() · callAttempts" notes="Mock assumption: ~70% of candidates reach 6/6 executed." />
         </Card>
         <CallDisciplineGrid />
       </TabsContent>
