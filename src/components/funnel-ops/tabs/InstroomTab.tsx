@@ -6,6 +6,7 @@ import { dailyInstroom, kpis, candidates } from "@/data/funnelOperationsData";
 import { CandidateLink } from "../CandidateLink";
 import { TierBadge } from "../TierBadge";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { TileInfo } from "../TileInfo";
 
 export function InstroomTab() {
   const trend = dailyInstroom;
