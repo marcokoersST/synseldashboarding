@@ -1,56 +1,75 @@
-## Goal
+## Part 1 — `/tv/sales-funnel-week`: unify Kolommen + Subkolommen filter
 
-On `/tv/sales-funnel-week`, add a new filter that lets the user pick **which subcolumns** are visible inside the tile **"Uitsplitsing per Unit & Conversies"**. Conversion columns appear as toggleable options inside the same picker. This filter only affects that one tile — KPI cards, CallStats, Pipeline, Formulas etc. stay untouched.
+The current filter bar has **two separate popovers** for the same Unit Funnel table:
+- "Kolommen (N)" → toggle whole funnel-step groups
+- "Subkolommen (N/M)" → toggle individual sub-columns per step
 
-## UX
+Since they target the same data, merge them into **one popover** with a clear hierarchy.
 
-A new popover button is added to `SalesFunnelFilterBar.tsx`, next to the existing **"Kolommen (N)"** group filter:
-
-- Label: **"Subkolommen (N/M)"** with a `ListFilter` (or `SlidersHorizontal`) icon.
-- Content: each of the 7 funnel steps as a collapsible section. Inside each section, every subcolumn (value + conversion) shown as a checkbox, grouped visually:
-  - Plain values listed first.
-  - Conversion rows shown under a small "Conversies" sub-label with a `%` icon, so users immediately see they're toggling ratio columns.
-- Per-section "Alles aan / Alles uit" mini buttons (matches existing popover pattern from memory).
-- Footer button: **"Reset naar standaard"** which restores the default selection below.
-
-## Default selection (per spec)
-
-Mapped to the existing `columnGroups` keys in `src/components/tv/UnitFunnelBreakdown.tsx`:
+### New combined popover: "Tabelkolommen"
 
 ```text
-1. Inschrijvingen   → ingeschreven, conv(ingeschreven÷toegewezen), conv(intakes÷ingeschreven)
-2. Acquisitie       → acquisities, conv(acquisities÷ingeschreven)
-3. Voorstellen      → voorstellenPerKandidaat, voorstellenViaEmail, conv(voorstellenViaEmail÷ingeschreven)
-4. Uitnodigingen    → uitnodigingenTotaal, nietUitgenodigd, welUitgenodigd, conv(uitnodigingenTotaal÷acquisities)
-5. Gesprekken       → eersteGesprek, geenEersteGesprek, welEersteGesprek, conv(eersteGesprek÷acquisities)
-6. Vervolg          → vervolgGesprek, dealsluiter, conv(welEersteGesprek÷vervolgGesprek)
-7. Geplaatst        → geplaatst, gemDagenTotPlaatsing, conv(geplaatst÷ingeschreven), conv(geplaatst÷toegewezen)
+┌─ Tabelkolommen (12/24) ─────────────┐
+│  [Reset]    [Alles aan] [Alles uit] │
+├─────────────────────────────────────┤
+│ ☑ 1. Inschrijvingen        [aan|uit]│
+│   ☐ Toegewezen                      │
+│   ☑ Ingeschreven                    │
+│   ── Conversies ──                  │
+│   ☑ Inschr. ÷ Toegewezen            │
+│   ☑ Intake ÷ Ingeschreven           │
+├─────────────────────────────────────┤
+│ ☑ 2. Acquisitie            [aan|uit]│
+│   ...                               │
+└─────────────────────────────────────┘
 ```
 
-Note: `Toegewezen` (value column under Inschrijvingen) is **off by default** per spec but remains selectable. All other existing columns map 1:1 onto the spec.
+Behaviour:
+- **Group checkbox** at the top of each block toggles the *entire* group (replaces the old "Kolommen" popover). Indeterminate state when some subs are on.
+- **Sub-checkboxes** below toggle individual value & conversion columns (replaces the old "Subkolommen" popover).
+- Conversies sub-section keeps its dashed divider + `%` icon header.
+- Per-group inline `[Alles aan|uit]` mini-buttons.
+- Top bar: global `Reset naar standaard`, `Alles aan`, `Alles uit`.
+- Counter shows `visibleSubKeys.length / ALL_SUBKEYS.length`.
 
-## Technical changes
+### Implementation
 
-1. **`src/components/tv/UnitFunnelBreakdown.tsx`**
-   - Export a stable `subKey(sub: SubCol)` helper, e.g. `value:<key>` or `conv:<from>/<to>`.
-   - Export `DEFAULT_VISIBLE_SUBKEYS` built from the spec above.
-   - Filter `visibleGroups` further: each group's `subs` is filtered by `filters.visibleSubKeys`. Drop groups that end up with 0 subs.
+- **`SalesFunnelFilterBar.tsx`** — remove both existing Popovers; add one new `Popover` (button: `<Columns3/> Tabelkolommen (X/Y)`). Group toggle wires both `f.visibleColumnGroups` (so existing logic in `UnitFunnelBreakdown` keeps working) **and** flips all child subKeys on/off.
+- **`UnitFunnelBreakdown.tsx`** — no change; it already filters by both `visibleColumnGroups` and `visibleSubKeys`.
+- **Context** — unchanged.
 
-2. **`src/contexts/SalesFunnelFiltersContext.tsx`**
-   - Add `visibleSubKeys: string[]` + `setVisibleSubKeys`.
-   - Initialize with `DEFAULT_VISIBLE_SUBKEYS` (imported from UnitFunnelBreakdown, or co-located in a new `src/data/unitFunnelColumns.ts` to avoid circular import — preferred).
-   - Add to memoized context value.
+---
 
-3. **(new) `src/data/unitFunnelColumns.ts`** *(optional, recommended)*
-   - Move `columnGroups`, `SubCol`, `subKey()`, and `DEFAULT_VISIBLE_SUBKEYS` here so both the context and the table can import them without cycles. UnitFunnelBreakdown re-exports for backward compat.
+## Part 2 — `/marketing`: add "Inschrijvingen" tab
 
-4. **`src/components/tv/SalesFunnelFilterBar.tsx`**
-   - New `Popover` button "Subkolommen" rendering the grouped checkbox UI described above, wired to `f.visibleSubKeys` / `f.setVisibleSubKeys`.
-   - Section toggles + Reset button.
+The standalone page `src/pages/marketing/InschrijvingenDashboard.tsx` already implements the full Inschrijving Quality Monitor (KPIs + consultant table with compare logic). Goal: surface it as a **tab inside Marketing Hub** and align the visuals with the Synsel AI design (referenced screenshot).
 
-5. **No other tiles touched.** The KPI strip, CallStats, ConversionFormulasCard etc. don't read `visibleSubKeys`.
+### Tab integration
 
-## Out of scope
+- **`MarketingHub.tsx`** — append `{ id: "inschrijvingen", label: "Inschrijvingen" }` to the `tabs` array; add case to `renderTab()` rendering a new `<InschrijvingenTab />`.
+- **New `src/pages/marketing/tabs/InschrijvingenTab.tsx`** — body of the existing dashboard, but:
+  - Removes `ConsultantLayout` wrapper (Hub already provides chrome).
+  - Receives `dateRange`, `compareRange`, `deltaMode` from Hub props (replaces internal date picker + compare switch — Hub already exposes these via `DateFilterPanel`).
+  - Keeps consultant + unit selects in a small filter row above KPIs.
 
-- Period view (`TVSalesFunnelPeriod`) — same components are reused, so it will inherit the filter automatically; no extra work.
-- Persistence to localStorage (current filters are session-only; matches existing pattern).
+### Visual redesign to match Synsel AI reference
+
+From the reference screenshot:
+- White cards on light bg, subtle border, generous padding.
+- KPI tile: muted label top, **large bold number** (3xl), small icon badge top-right (clipboard / phone-off / check) inside a soft tinted square.
+- "% Niet Gebeld" — number in foreground, red micro-stat `↘ 41 van 244 niet gebeld` below.
+- "Doorgezet vs Afgewezen" — large green % next to red %, full-width segmented progress bar (emerald + red-orange).
+- Table — pill badges per cell colour-coded (green for Doorgezet, amber/red for Niet Gebeld by threshold, orange for Afgewezen). Centered numbers, header in muted grey, section title `Sales Consultant Overzicht` + subtitle.
+- Use existing semantic tokens (`bg-card`, `border-border`, `text-emerald-600`, `text-orange-500`, `text-red-500`) — no hardcoded hexes.
+- Keep `AnimatedNumber` for KPI counts where available for the Synsel feel.
+
+### Files
+
+- **Edit:** `src/components/tv/SalesFunnelFilterBar.tsx`
+- **Edit:** `src/pages/marketing/MarketingHub.tsx`
+- **Create:** `src/pages/marketing/tabs/InschrijvingenTab.tsx` (refactor of existing dashboard, redesigned visuals, reads props from Hub)
+- **Keep:** `src/pages/marketing/InschrijvingenDashboard.tsx` standalone route untouched (still reachable directly).
+
+### Out of scope
+- No new data sources — re-use `marketingInschrijvingenData.ts`.
+- Subkolommen filter context shape unchanged → period view (`TVSalesFunnelPeriod`) inherits unified filter automatically.

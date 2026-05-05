@@ -170,74 +170,73 @@ export function SalesFunnelFilterBar() {
         </PopoverContent>
       </Popover>
 
-      {/* Column groups (only for unit table) */}
+      {/* Combined Tabelkolommen popover (group + sub-column toggles) */}
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2 h-9">
             <Columns3 className="w-4 h-4" />
-            Kolommen ({f.visibleColumnGroups.length})
+            Tabelkolommen ({f.visibleSubKeys.length}/{ALL_SUBKEYS.length})
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64">
-          <p className="text-sm font-medium mb-2">Kolommen unit-tabel</p>
-          <div className="space-y-2">
-            {ALL_COLUMN_GROUPS.map(g => (
-              <label key={g} className="flex items-center gap-2 text-sm cursor-pointer">
-                <Checkbox
-                  checked={f.visibleColumnGroups.includes(g)}
-                  onCheckedChange={() => {
-                    const next = f.visibleColumnGroups.includes(g)
-                      ? f.visibleColumnGroups.filter(x => x !== g)
-                      : [...f.visibleColumnGroups, g];
-                    if (next.length === 0) return;
-                    f.setVisibleColumnGroups(next);
-                  }}
-                />
-                {g}
-              </label>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
-
-      {/* Subcolumns (only for unit table) */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2 h-9">
-            <SlidersHorizontal className="w-4 h-4" />
-            Subkolommen ({f.visibleSubKeys.length}/{ALL_SUBKEYS.length})
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 max-h-[480px] overflow-y-auto">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-medium">Subkolommen unit-tabel</p>
-            <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => f.setVisibleSubKeys([...DEFAULT_VISIBLE_SUBKEYS])}>
-              Reset
-            </Button>
+        <PopoverContent className="w-96 max-h-[520px] overflow-y-auto" align="start">
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-border">
+            <p className="text-sm font-medium">Tabelkolommen unit-tabel</p>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="text-xs h-6 px-2"
+                onClick={() => { f.setVisibleSubKeys([...DEFAULT_VISIBLE_SUBKEYS]); f.setVisibleColumnGroups([...ALL_COLUMN_GROUPS]); }}>
+                Reset
+              </Button>
+              <span className="text-muted-foreground text-xs">·</span>
+              <Button variant="ghost" size="sm" className="text-xs h-6 px-2"
+                onClick={() => { f.setVisibleSubKeys([...ALL_SUBKEYS]); f.setVisibleColumnGroups([...ALL_COLUMN_GROUPS]); }}>
+                Alles aan
+              </Button>
+              <span className="text-muted-foreground text-xs">·</span>
+              <Button variant="ghost" size="sm" className="text-xs h-6 px-2"
+                onClick={() => f.setVisibleSubKeys([])}>
+                Alles uit
+              </Button>
+            </div>
           </div>
           <div className="space-y-3">
             {columnGroups.map(g => {
               const groupKeys = g.subs.map(subKey);
-              const allOn = groupKeys.every(k => f.visibleSubKeys.includes(k));
+              const onCount = groupKeys.filter(k => f.visibleSubKeys.includes(k)).length;
+              const allOn = onCount === groupKeys.length;
+              const noneOn = onCount === 0;
+              const groupVisible = f.visibleColumnGroups.includes(g.group);
               const values = g.subs.filter(s => s.type === "value");
               const convs = g.subs.filter(s => s.type === "conv");
+
+              const setGroup = (on: boolean) => {
+                if (on) {
+                  f.setVisibleSubKeys(Array.from(new Set([...f.visibleSubKeys, ...groupKeys])));
+                  if (!groupVisible) f.setVisibleColumnGroups([...f.visibleColumnGroups, g.group]);
+                } else {
+                  f.setVisibleSubKeys(f.visibleSubKeys.filter(k => !groupKeys.includes(k)));
+                }
+              };
+
               return (
-                <div key={g.group} className="border-b border-border/40 pb-2 last:border-0">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-xs font-semibold text-foreground">{g.group}</p>
+                <div key={g.group} className="border border-border/60 rounded-md p-2.5">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={allOn ? true : noneOn ? false : "indeterminate"}
+                        onCheckedChange={() => setGroup(!allOn)}
+                      />
+                      <span className="text-xs font-semibold text-foreground">{g.group}</span>
+                      <span className="text-[10px] text-muted-foreground">({onCount}/{groupKeys.length})</span>
+                    </label>
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="sm" className="text-xs h-5 px-1.5"
-                        onClick={() => f.setVisibleSubKeys(Array.from(new Set([...f.visibleSubKeys, ...groupKeys])))}>
-                        Alles aan
-                      </Button>
+                        onClick={() => setGroup(true)}>aan</Button>
                       <span className="text-muted-foreground text-xs">·</span>
                       <Button variant="ghost" size="sm" className="text-xs h-5 px-1.5"
-                        onClick={() => f.setVisibleSubKeys(f.visibleSubKeys.filter(k => !groupKeys.includes(k)))}>
-                        Uit
-                      </Button>
+                        onClick={() => setGroup(false)}>uit</Button>
                     </div>
                   </div>
-                  <div className="space-y-1 pl-1">
+                  <div className="space-y-1 pl-6">
                     {values.map(s => {
                       const k = subKey(s);
                       return (
