@@ -7,8 +7,7 @@ import { DistributieTab } from "@/components/funnel-ops/tabs/DistributieTab";
 import { ForecastTab } from "@/components/funnel-ops/tabs/ForecastTab";
 import { OpvolgingTab } from "@/components/funnel-ops/tabs/OpvolgingTab";
 import { WatchlistTab } from "@/components/funnel-ops/tabs/WatchlistTab";
-import { DevInfoTab } from "@/components/funnel-ops/tabs/DevInfoTab";
-import { LayoutDashboard, Users, Shuffle, TrendingUp, PhoneCall, Eye, Code2, Activity } from "lucide-react";
+import { LayoutDashboard, Users, Shuffle, TrendingUp, PhoneCall, Eye, Activity } from "lucide-react";
 import { DateRangeFilter } from "@/components/funnel-ops/DateRangeFilter";
 
 const TABS = [
@@ -18,7 +17,6 @@ const TABS = [
   { value: "forecast", label: "Forecast", icon: TrendingUp },
   { value: "opvolging", label: "Opvolging", icon: PhoneCall },
   { value: "watchlist", label: "Watchlist", icon: Eye },
-  { value: "dev", label: "Dev info", icon: Code2 },
 ];
 
 export default function FunnelOperations() {
