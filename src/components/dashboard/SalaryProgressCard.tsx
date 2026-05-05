@@ -3,6 +3,7 @@ import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedProgress } from "@/components/animations/AnimatedProgress";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 
 interface SalaryProgressCardProps {
   delay?: number;
