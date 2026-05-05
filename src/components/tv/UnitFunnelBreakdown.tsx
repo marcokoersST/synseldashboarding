@@ -91,7 +91,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
   const toggle = (unit: string) => setExpanded(e => ({ ...e, [unit]: !e[unit] }));
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border animate-fade-in h-full flex flex-col", compact ? "p-3 overflow-hidden" : "p-5 overflow-x-auto")}>
+    <div className={cn("bg-card rounded-xl border border-border animate-fade-in h-full flex flex-col", compact ? "p-3 overflow-y-auto overflow-x-hidden" : "p-5 overflow-x-auto")}>
       <TileHeader
         icons={[{ icon: BarChart3, className: "text-primary" }]}
         title="Uitsplitsing per Unit & Conversies"
@@ -221,9 +221,9 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
               </React.Fragment>
             );
           })}
-          {/* Totals row */}
+          {/* Totals row — sticky to bottom in TV mode so it stays visible when expanded */}
           <TableRow className="border-t-2 border-border bg-primary/5">
-            <TableCell className={cn("font-bold text-primary", compact ? "py-2 text-base" : "")}>Totaal</TableCell>
+            <TableCell className={cn("font-bold text-primary border-t-2 border-border bg-primary/5", compact ? "py-2 text-base sticky bottom-0 z-10" : "")}>Totaal</TableCell>
             {visibleGroups.flatMap((g, gi) =>
               g.subs.map((sub, si) => {
                 const isConv = sub.type === "conv";
@@ -233,10 +233,10 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
                   <TableCell
                     key={`${gi}-${si}`}
                     className={cn(
-                      "text-center tabular-nums font-bold",
+                      "text-center tabular-nums font-bold border-t-2 border-border",
                       si === 0 && "border-l border-border/50",
-                      isConv ? cn("bg-muted/30", convRate !== null && rateColor(convRate)) : "",
-                      compact ? "py-2 text-sm px-1.5" : "text-[11px] px-1.5"
+                      isConv ? cn("bg-muted/60", convRate !== null && rateColor(convRate)) : "bg-primary/5",
+                      compact ? "py-2 text-sm px-1.5 sticky bottom-0 z-10" : "text-[11px] px-1.5"
                     )}
                   >
                     {val}
@@ -250,6 +250,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
 
       {!compact && (
         <DevNote
+          id={4}
           story={<><strong>As a user (manager/TV viewer)</strong>, I want to see a detailed breakdown of funnel metrics per unit and per consultant, <strong>so that</strong> I can compare performance across teams and drill down into individual contributions.</>}
           logic={"Table groups + per-unit / per-consultant breakdown. See ConversionLegend for icon meanings."}
         />
