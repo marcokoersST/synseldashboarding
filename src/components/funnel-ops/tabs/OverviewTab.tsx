@@ -93,22 +93,22 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
               </div>
               <div className="flex items-center gap-1">
                 <TileInfo
-                  title="SLA per tier · % binnen contact"
+                  title="SLA per tier · % contacted on time"
                   what={
-                    "Percentage kandidaten per tier dat op tijd is gebeld. We kijken naar alle kandidaten die in deze week op status '1 | Inschrijven' zijn gezet en checken of in de callrecordings een uitgaande poging valt binnen de tier-termijn."
+                    "Percentage of candidates per tier called within the tier-specific deadline. Looks at all candidates set to status '1 | Inschrijven' in this week and checks whether the call recordings contain an outbound attempt within that tier's deadline."
                   }
                   formula={
                     "per tier T:\n" +
-                    "  pct = count(c ∈ T met uitgaande call binnen tier_SLA(T)) / count(c ∈ T) × 100\n\n" +
-                    "Tier-termijnen (geldt voor het hele dashboard):\n" +
-                    "  85+    → 2× gebeld binnen 1 uur\n" +
-                    "  70-85  → gebeld binnen 1 uur\n" +
-                    "  50-70  → gebeld op het eerstvolgende belmoment\n" +
-                    "  30-50  → gebeld binnen 1 dag\n" +
-                    "  0-30   → gebeld binnen 2 dagen"
+                    "  pct = count(c ∈ T with outbound call within tier_SLA(T)) / count(c ∈ T) × 100\n\n" +
+                    "Tier deadlines (apply across the whole dashboard):\n" +
+                    "  85+    → called 2× within 1 hour\n" +
+                    "  70-85  → called within 1 hour\n" +
+                    "  50-70  → called at the next call slot\n" +
+                    "  30-50  → called within 1 day\n" +
+                    "  0-30   → called within 2 days"
                   }
-                  source="tierContactStats() · RecruitCRM callrecordings (uitgaande pogingen)"
-                  notes="Telt belpoging, niet daadwerkelijk gesprek. n = onTime/total in deze week."
+                  source="tierContactStats() · RecruitCRM call recordings (outbound attempts)"
+                  notes="Counts call attempt, not actual conversation. n = onTime/total in this week."
                 />
                 <button onClick={() => goTo("opvolging")} className="text-xs text-primary hover:underline">Bekijk →</button>
               </div>
