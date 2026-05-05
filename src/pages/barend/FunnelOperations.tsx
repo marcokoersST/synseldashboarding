@@ -42,6 +42,17 @@ export default function FunnelOperations() {
           </div>
           <div className="flex items-center gap-2">
             <DateRangeFilter />
+            {current === "overzicht" && (
+              <Link
+                to="/tv/funnel-ops-overzicht"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-background hover:bg-muted/50 text-xs transition-colors"
+              >
+                <Monitor className="w-3.5 h-3.5" />
+                TV Modus
+              </Link>
+            )}
           </div>
         </header>
 
