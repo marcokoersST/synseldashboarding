@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Medal, Flame, Rocket, TrendingUp, TrendingDown } from "lucide-react";
+import { Trophy, Medal, Flame, Rocket, TrendingUp, TrendingDown, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   allConsultantsList,
