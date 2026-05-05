@@ -48,19 +48,19 @@ export interface CallAttempt {
 
 // ---------- SLA matrix ----------
 export const SLA_MATRIX: Record<Tier, { toewijzenH: number; contactH: number; gesprekH: number }> = {
-  "85+": { toewijzenH: 1, contactH: 2, gesprekH: 24 },
-  A:   { toewijzenH: 4, contactH: 8, gesprekH: 48 },
-  B:   { toewijzenH: 24, contactH: 48, gesprekH: 24 * 5 },
-  C:   { toewijzenH: 24 * 3, contactH: 24 * 5, gesprekH: 24 * 10 },
-  D:   { toewijzenH: 24 * 7, contactH: 24 * 10, gesprekH: 24 * 14 },
+  "85+":  { toewijzenH: 1, contactH: 2, gesprekH: 24 },
+  "70-85": { toewijzenH: 4, contactH: 8, gesprekH: 48 },
+  "50-70": { toewijzenH: 24, contactH: 48, gesprekH: 24 * 5 },
+  "30-50": { toewijzenH: 24 * 3, contactH: 24 * 5, gesprekH: 24 * 10 },
+  "0-30":  { toewijzenH: 24 * 7, contactH: 24 * 10, gesprekH: 24 * 14 },
 };
 
 export const TIER_COLOR: Record<Tier, string> = {
-  "85+": "hsl(var(--destructive))",
-  A:   "hsl(25 90% 55%)",
-  B:   "hsl(210 80% 55%)",
-  C:   "hsl(var(--success))",
-  D:   "hsl(var(--muted-foreground))",
+  "85+":   "hsl(var(--destructive))",
+  "70-85": "hsl(25 90% 55%)",
+  "50-70": "hsl(210 80% 55%)",
+  "30-50": "hsl(var(--success))",
+  "0-30":  "hsl(var(--muted-foreground))",
 };
 
 // ---------- Deterministic PRNG ----------
