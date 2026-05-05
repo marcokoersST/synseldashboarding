@@ -178,7 +178,7 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
                 </ResponsiveContainer>
               </div>
               <div className="space-y-1.5">
-                <div className="text-xs text-muted-foreground">Doel</div>
+                <div className="text-xs text-muted-foreground">Verwacht aantal plaatsingen</div>
                 <div className="text-2xl font-bold tabular-nums">{fcst.goal}</div>
                 <div className="text-[11px] text-muted-foreground">ideaal {fcst.ideal}</div>
                 <div className="text-[11px] text-orange-500">+{fcst.ideal - fcst.goal} potentie bij optimale distributie</div>
