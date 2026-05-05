@@ -63,20 +63,21 @@ function WeekContent() {
     <div className="flex flex-col h-full gap-4">
       <SalesFunnelFilterBar />
       <DevNote
-        story={<><strong>As a user (manager/TV viewer)</strong>, I want to filter the Sales Funnel data by unit, consultant, date range, and visible column groups, <strong>so that</strong> I can focus on the exact slice of performance I need to analyse or present on TV.</>}
-        logic={`The filter bar provides four controls:
+        story={<><strong>As a manager / TV viewer</strong>, I want to scope the Sales Funnel by unit, consultant, date range and which table columns are visible, <strong>so that</strong> I can focus on the exact slice of performance I need to analyse or present.</>}
+        logic={`The filter bar exposes four controls, all wired through
+SalesFunnelFiltersContext so every tile below reacts in sync:
 
-  • Unit selector — multi-select popover with "Alle units"
-    default and batch toggle. Filters all tiles below.
-  • Consultant selector — depends on selected units, with
-    search and active/inactive toggle.
-  • Date range — calendar picker defining the rolling window
-    (default: Mon → Today).
-  • Column groups — checkboxes to show/hide funnel step
-    groups in the breakdown table (e.g. hide Acquisitie).
-
-All filters propagate through SalesFunnelFiltersContext
-so every child tile reacts to the same selection.`}
+  • Unit — multi-select popover, "Alle units" default,
+    "Alles aan / Alles uit" batch toggles.
+  • Consultant — depends on the selected units; supports
+    search and an active/inactive toggle.
+  • Date range — rolling window, default Monday → Today;
+    comparisons use the previous equal-length window.
+  • Tabelkolommen — unified popover that combines funnel-
+    step group toggles and per-sub-column checkboxes
+    (values + conversies). Toggling a group flips all its
+    child sub-keys. Top bar offers Reset / Alles aan /
+    Alles uit. Only affects the Unit Funnel breakdown.`}
       />
 
       {/* KPI tiles */}

@@ -1,75 +1,40 @@
-## Part 1 — `/tv/sales-funnel-week`: unify Kolommen + Subkolommen filter
+## Update Dev Info on /tv/sales-funnel-week
 
-The current filter bar has **two separate popovers** for the same Unit Funnel table:
-- "Kolommen (N)" → toggle whole funnel-step groups
-- "Subkolommen (N/M)" → toggle individual sub-columns per step
+Rewrite all DevNote contents on this page in **English**, in a **Business Analyst tone**, so the copy matches the actual current implementation (unified Tabelkolommen filter, KPI flow, unit breakdown table, bottom row tiles).
 
-Since they target the same data, merge them into **one popover** with a clear hierarchy.
+### Scope
 
-### New combined popover: "Tabelkolommen"
+Edit `src/pages/TVSalesFunnelWeek.tsx` only. Two existing DevNotes are rewritten and three new DevNotes are added so every section on the page has accurate dev documentation.
 
-```text
-┌─ Tabelkolommen (12/24) ─────────────┐
-│  [Reset]    [Alles aan] [Alles uit] │
-├─────────────────────────────────────┤
-│ ☑ 1. Inschrijvingen        [aan|uit]│
-│   ☐ Toegewezen                      │
-│   ☑ Ingeschreven                    │
-│   ── Conversies ──                  │
-│   ☑ Inschr. ÷ Toegewezen            │
-│   ☑ Intake ÷ Ingeschreven           │
-├─────────────────────────────────────┤
-│ ☑ 2. Acquisitie            [aan|uit]│
-│   ...                               │
-└─────────────────────────────────────┘
-```
+### DevNote rewrites
 
-Behaviour:
-- **Group checkbox** at the top of each block toggles the *entire* group (replaces the old "Kolommen" popover). Indeterminate state when some subs are on.
-- **Sub-checkboxes** below toggle individual value & conversion columns (replaces the old "Subkolommen" popover).
-- Conversies sub-section keeps its dashed divider + `%` icon header.
-- Per-group inline `[Alles aan|uit]` mini-buttons.
-- Top bar: global `Reset naar standaard`, `Alles aan`, `Alles uit`.
-- Counter shows `visibleSubKeys.length / ALL_SUBKEYS.length`.
+**1. Filter bar DevNote** (already exists)
+- Story: as a manager / TV viewer I filter the Sales Funnel by unit, consultant, date range and table columns to focus the slice I need.
+- Logic: describe the four controls — Unit multi-select with batch toggle, Consultant selector dependent on units, Date range (rolling Mon→Today default), and the new unified **Tabelkolommen** popover that combines group toggles and per-sub-column checkboxes (values + conversies) with Reset / Alles aan / Alles uit. Note that all filters propagate via `SalesFunnelFiltersContext`.
 
-### Implementation
+**2. KPI row DevNote** (already exists)
+- Story: as a viewer I see top-level funnel KPIs for the rolling week with step-to-step conversion arrows, so I can spot bottlenecks at a glance.
+- Logic: 5 KPI cards (Inschrijvingen → Acquisities → Voorstellen → Gesprekken → Plaatsingen), each showing absolute count + delta vs previous equal-length window; `ConversionArrow` between cards from `weekOverallConversions`; data from `weekFunnelMetrics` in `tvData.ts`.
 
-- **`SalesFunnelFilterBar.tsx`** — remove both existing Popovers; add one new `Popover` (button: `<Columns3/> Tabelkolommen (X/Y)`). Group toggle wires both `f.visibleColumnGroups` (so existing logic in `UnitFunnelBreakdown` keeps working) **and** flips all child subKeys on/off.
-- **`UnitFunnelBreakdown.tsx`** — no change; it already filters by both `visibleColumnGroups` and `visibleSubKeys`.
-- **Context** — unchanged.
+### New DevNotes to add
 
----
+**3. Unit breakdown DevNote** (after `<UnitFunnelBreakdown />`)
+- Story: as a manager I want to compare each unit across the full funnel and its conversion ratios, so I can identify which units lag on which step.
+- Logic: rows = units (filtered by `visibleUnits`), columns = 7 funnel-step groups from `unitFunnelColumns.ts` (Inschrijvingen, Acquisitie, Voorstellen, Uitnodigingen, Gesprekken, Vervolg, Geplaatst). Each group exposes value sub-columns and conversie sub-columns. Visibility driven by `visibleColumnGroups` + `visibleSubKeys` from context. Default hides `toegewezen` value column.
 
-## Part 2 — `/marketing`: add "Inschrijvingen" tab
+**4. Bottom row DevNote** (after the 3-column bottom grid)
+- Single DevNote covering all three tiles:
+  - **CallStats (week)** — telefonie volume, success rate, average call duration in `[H:M:S]` for the week.
+  - **CandidatesPipeline** — current open candidate count per pipeline stage.
+  - **ConversionFormulasCard** — reference card listing each conversie formula used in the breakdown table.
 
-The standalone page `src/pages/marketing/InschrijvingenDashboard.tsx` already implements the full Inschrijving Quality Monitor (KPIs + consultant table with compare logic). Goal: surface it as a **tab inside Marketing Hub** and align the visuals with the Synsel AI design (referenced screenshot).
+### Style
 
-### Tab integration
-
-- **`MarketingHub.tsx`** — append `{ id: "inschrijvingen", label: "Inschrijvingen" }` to the `tabs` array; add case to `renderTab()` rendering a new `<InschrijvingenTab />`.
-- **New `src/pages/marketing/tabs/InschrijvingenTab.tsx`** — body of the existing dashboard, but:
-  - Removes `ConsultantLayout` wrapper (Hub already provides chrome).
-  - Receives `dateRange`, `compareRange`, `deltaMode` from Hub props (replaces internal date picker + compare switch — Hub already exposes these via `DateFilterPanel`).
-  - Keeps consultant + unit selects in a small filter row above KPIs.
-
-### Visual redesign to match Synsel AI reference
-
-From the reference screenshot:
-- White cards on light bg, subtle border, generous padding.
-- KPI tile: muted label top, **large bold number** (3xl), small icon badge top-right (clipboard / phone-off / check) inside a soft tinted square.
-- "% Niet Gebeld" — number in foreground, red micro-stat `↘ 41 van 244 niet gebeld` below.
-- "Doorgezet vs Afgewezen" — large green % next to red %, full-width segmented progress bar (emerald + red-orange).
-- Table — pill badges per cell colour-coded (green for Doorgezet, amber/red for Niet Gebeld by threshold, orange for Afgewezen). Centered numbers, header in muted grey, section title `Sales Consultant Overzicht` + subtitle.
-- Use existing semantic tokens (`bg-card`, `border-border`, `text-emerald-600`, `text-orange-500`, `text-red-500`) — no hardcoded hexes.
-- Keep `AnimatedNumber` for KPI counts where available for the Synsel feel.
+- Reuse existing `<DevNote story={...} logic={...} />` component (red "Dev info" pill, popover with User story + Logic blocks).
+- All copy in English, BA register: short story (`As a [role], I want [...] so that [...]`) + concise bullet-style logic block.
 
 ### Files
 
-- **Edit:** `src/components/tv/SalesFunnelFilterBar.tsx`
-- **Edit:** `src/pages/marketing/MarketingHub.tsx`
-- **Create:** `src/pages/marketing/tabs/InschrijvingenTab.tsx` (refactor of existing dashboard, redesigned visuals, reads props from Hub)
-- **Keep:** `src/pages/marketing/InschrijvingenDashboard.tsx` standalone route untouched (still reachable directly).
+- Edit: `src/pages/TVSalesFunnelWeek.tsx`
 
-### Out of scope
-- No new data sources — re-use `marketingInschrijvingenData.ts`.
-- Subkolommen filter context shape unchanged → period view (`TVSalesFunnelPeriod`) inherits unified filter automatically.
+No other files, contexts, or data layers change.
