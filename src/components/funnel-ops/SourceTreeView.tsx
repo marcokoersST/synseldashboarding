@@ -26,7 +26,7 @@ export function SourceTreeView() {
             >
               <div className="col-span-5 flex items-center gap-1 font-medium">
                 {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                {BRON_LABELS[node.bron] ?? node.bron}
+                {SOURCE_LABELS[node.bron] ?? node.bron}
               </div>
               <div className="col-span-2 text-right tabular-nums">{node.total}</div>
               <div className="col-span-2 text-right tabular-nums">{pctNew}%</div>
