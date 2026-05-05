@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { ActionList } from "../ActionList";
+import { ActionTable } from "../ActionTable";
 import { TileInfo } from "../TileInfo";
 import { PeriodComparisonStrip } from "../PeriodComparisonStrip";
 import { kpis, getActionList, tierContactStats, dailyInstroom, sourceTree } from "@/data/funnelOperationsData";
@@ -171,16 +171,8 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
               <button onClick={() => goTo("watchlist")} className="text-xs text-primary hover:underline whitespace-nowrap">Volledige watchlist →</button>
             </div>
           </div>
-          {/* Sticky column header */}
-          <div className="grid grid-cols-12 items-center gap-2 py-1.5 px-2 text-[10px] uppercase tracking-wide text-muted-foreground bg-muted/30 border-b border-border sticky top-0 z-10">
-            <div className="col-span-3">Kandidaat</div>
-            <div className="col-span-3">Reden</div>
-            <div className="col-span-2">SLA</div>
-            <div className="col-span-2">Recruiter</div>
-            <div className="col-span-2">Consultant</div>
-          </div>
-          <div className="max-h-[560px] overflow-y-auto">
-            <ActionList rows={filteredActions} dense />
+          <div className="max-h-[620px] overflow-y-auto">
+            <ActionTable rows={filteredActions} dense />
           </div>
         </Card>
       </AnimatedCard>
