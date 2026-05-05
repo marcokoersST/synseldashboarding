@@ -7,7 +7,16 @@ import { ActionList } from "../ActionList";
 import { tierContactStats, getActionList, TIER_COLOR, candidates, SLA_MATRIX } from "@/data/funnelOperationsData";
 import type { Tier } from "@/data/funnelOperationsData";
 import { TileInfo } from "../TileInfo";
-import { PhoneCall, Trophy, Timer, AlertTriangle, MessageSquare } from "lucide-react";
+import { PhoneCall, Trophy, Timer, AlertTriangle, MessageSquare, Info } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+const TIER_SLA_RULE: Record<string, string> = {
+  "85+": "2× bellen binnen 1 uur",
+  "70-85": "1× bellen binnen 1 uur",
+  "50-70": "Bellen op eerstvolgende belmoment",
+  "30-50": "Bellen binnen 1 dag",
+  "0-30": "Bellen binnen 2 dagen",
+};
 
 export function OpvolgingTab() {
   const [sub, setSub] = useState<"bel" | "sla">("bel");
@@ -56,7 +65,24 @@ export function OpvolgingTab() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {tierStats.map(t => (
-              <Card key={t.tier} className="p-3 border-l-4" style={{ borderLeftColor: TIER_COLOR[t.tier as Tier] }}>
+              <Card key={t.tier} className="p-3 border-l-4 relative" style={{ borderLeftColor: TIER_COLOR[t.tier as Tier] }}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={`SLA-regel tier ${t.tier}`}
+                    >
+                      <Info className="w-3.5 h-3.5" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-64 text-xs space-y-1.5">
+                    <div className="font-semibold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full" style={{ background: TIER_COLOR[t.tier as Tier] }} />
+                      Tier {t.tier} — belregel
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">{TIER_SLA_RULE[t.tier]}</p>
+                  </PopoverContent>
+                </Popover>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">Tier {t.tier}</div>
                 <div className="text-2xl font-bold tabular-nums">{t.pct}%</div>
                 <div className="text-[11px] text-muted-foreground">op tijd gebeld · {t.onTime}/{t.total}</div>
