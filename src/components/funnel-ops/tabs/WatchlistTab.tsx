@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Eye } from "lucide-react";
 import { watchlist } from "@/data/funnelOperationsData";
 import type { Candidate } from "@/data/funnelOperationsData";
 import { CandidateLink, UserLink } from "../CandidateLink";
@@ -15,6 +15,7 @@ function Section({ title, desc, items, info }: { title: string; desc: string; it
       <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 text-left">
         <div className="flex items-center gap-2">
           {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          <Eye className="w-4 h-4 text-primary" />
           <div>
             <div className="text-sm font-semibold">{title}</div>
             <div className="text-xs text-muted-foreground">{desc}</div>
@@ -64,7 +65,7 @@ function Section({ title, desc, items, info }: { title: string; desc: string; it
 export function WatchlistTab() {
   const w = watchlist();
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 animate-fade-in">
       <Section title="Hoge score, lange tijd zonder contact" desc="Score ≥75 en >2 dagen na toewijzing zonder eerste contact." items={w.hoogScoreNoContact}
         info={{ title: "High score, no contact", what: "Strong candidates that have not been called by a recruiter within 48 hours of assignment. Highest opportunity-cost segment of the watchlist.", formula: "score ≥ 75 && eersteContactOp = null && (NOW − toegewezenOp) > 2d", source: "watchlist().hoogScoreNoContact" }} />
       <Section title="Verlopen SLA's > 24u" desc="Contact-SLA langer dan 24 uur over de deadline." items={w.verlopenSLA24}

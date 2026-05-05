@@ -3,7 +3,7 @@ import { HitRateMatrix } from "../HitRateMatrix";
 import { leadTimeMeters, kpis, getActionList, TIER_COLOR } from "@/data/funnelOperationsData";
 import type { Tier } from "@/data/funnelOperationsData";
 import { ActionList } from "../ActionList";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Gauge, Shuffle, LayoutGrid, AlertTriangle } from "lucide-react";
 import { TileInfo } from "../TileInfo";
 
 export function DistributieTab() {
@@ -12,10 +12,10 @@ export function DistributieTab() {
   const mismatch = getActionList(8);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* B3 — Snelheid */}
       <section className="space-y-3">
-        <h2 className="text-base font-semibold">B3 · Distributie-snelheid</h2>
+        <h2 className="text-base font-semibold flex items-center gap-2"><Gauge className="w-4 h-4 text-primary" />B3 · Distributie-snelheid</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {(["Toewijzen","Eerste contact","Eerste gesprek"] as const).map((label, idx) => (
             <Card key={label} className="p-4">
@@ -46,7 +46,7 @@ export function DistributieTab() {
 
       {/* B4 — Juistheid */}
       <section className="space-y-3">
-        <h2 className="text-base font-semibold">B4 · Distributie-juistheid</h2>
+        <h2 className="text-base font-semibold flex items-center gap-2"><Shuffle className="w-4 h-4 text-orange-500" />B4 · Distributie-juistheid</h2>
 
         <Card className="p-4 border-l-4 border-l-orange-500">
           <div className="flex items-center gap-3">
@@ -67,7 +67,7 @@ export function DistributieTab() {
 
         <Card className="p-3">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold">Hit-rate matrix · consultant × functiegroep</h3>
+            <h3 className="text-sm font-semibold flex items-center gap-2"><LayoutGrid className="w-4 h-4 text-primary" />Hit-rate matrix · consultant × functiegroep</h3>
             <TileInfo title="Hit-rate matrix" what="Historical conversion percentage per consultant and job family. Cells with n<5 are hidden to avoid drawing conclusions on thin data." formula="hit_rate = placed / assigned × 100" source="hitRateMatrix(mode)" notes="Toggle 'historical' vs '12-week rolling' to inspect the stability of the scores." />
           </div>
           <HitRateMatrix />
@@ -76,7 +76,7 @@ export function DistributieTab() {
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold">SLA action list</h3>
+              <h3 className="text-sm font-semibold flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-destructive" />SLA action list</h3>
               <p className="text-xs text-muted-foreground">Candidates with a breached or imminent Contact-SLA. Open RecruitCRM in a new tab to follow up.</p>
             </div>
             <TileInfo title="SLA action list" what="Candidates ranked by SLA urgency (breached first, then at-risk). Drives the next-best-action queue for recruiters." formula="getActionList(8) — sort by SLA deadline asc" source="getActionList()" />

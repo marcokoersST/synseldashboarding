@@ -4,7 +4,7 @@ import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, 
 import { forecastSeries, kpis, UNITS_REF, FUNCTIEGROEPEN_REF, candidates } from "@/data/funnelOperationsData";
 import { TileInfo } from "../TileInfo";
 import { OptimalReassignPanel } from "../OptimalReassignPanel";
-import { MousePointerClick } from "lucide-react";
+import { MousePointerClick, LineChart as LineIcon, Table as TableIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function ForecastTab() {
@@ -20,7 +20,7 @@ export function ForecastTab() {
   })).filter(r => r.open > 0).sort((a, b) => b.expect - a.expect).slice(0, 12);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="p-4 border-l-4 border-l-success">
           <div className="flex items-start justify-between gap-2">
@@ -88,7 +88,7 @@ export function ForecastTab() {
 
       <Card className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-sm font-medium">Plaatsingen — 12 maanden historie + 3 maanden forecast</div>
+          <div className="text-sm font-medium flex items-center gap-2"><LineIcon className="w-4 h-4 text-primary" />Plaatsingen — 12 maanden historie + 3 maanden forecast</div>
           <TileInfo
             title="History + forecast line"
             what="Actual placements per month for the last 12 months and the P50 line plus P10–P90 band for the next 3 months."
@@ -115,7 +115,7 @@ export function ForecastTab() {
 
       <Card className="overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <div className="text-sm font-semibold">Bijdrage deze maand · open kandidaten × verwachte conversie</div>
+          <div className="text-sm font-semibold flex items-center gap-2"><TableIcon className="w-4 h-4 text-primary" />Bijdrage deze maand · open kandidaten × verwachte conversie</div>
           <TileInfo
             title="Contribution table"
             what="Top-12 Unit × Job-family combinations ranked by expected placements this month. Helps prioritise where additional sourcing or capacity will move the needle."

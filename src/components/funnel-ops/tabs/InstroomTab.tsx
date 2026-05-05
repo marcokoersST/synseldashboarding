@@ -7,6 +7,7 @@ import { CandidateLink } from "../CandidateLink";
 import { TierBadge } from "../TierBadge";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { TileInfo } from "../TileInfo";
+import { BarChart3, GitBranch, LineChart as LineIcon, Grid3x3, Trophy } from "lucide-react";
 
 export function InstroomTab() {
   const trend = dailyInstroom;
@@ -16,10 +17,10 @@ export function InstroomTab() {
     .slice(0, 12);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* A1 — Volume */}
       <section className="space-y-3">
-        <h2 className="text-base font-semibold">A1 · Instroom volume</h2>
+        <h2 className="text-base font-semibold flex items-center gap-2"><LineIcon className="w-4 h-4 text-success" />A1 · Instroom volume</h2>
         <Card className="p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-xs font-medium text-muted-foreground">Instroom per dag (8 weken) — gestapeld nieuw / bestaand</div>
@@ -49,7 +50,7 @@ export function InstroomTab() {
 
       {/* A2 — Kwaliteit */}
       <section className="space-y-3">
-        <h2 className="text-base font-semibold">A2 · Instroom kwaliteit</h2>
+        <h2 className="text-base font-semibold flex items-center gap-2"><BarChart3 className="w-4 h-4 text-primary" />A2 · Instroom kwaliteit</h2>
         <Card className="p-5">
           <div className="text-xs uppercase tracking-wide text-muted-foreground">Hero</div>
           <div className="mt-1 text-2xl">
@@ -62,7 +63,7 @@ export function InstroomTab() {
         </Card>
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold">Score-verdeling per type</h3>
+            <h3 className="text-sm font-semibold flex items-center gap-2"><Grid3x3 className="w-4 h-4 text-primary" />Score-verdeling per type</h3>
             <TileInfo title="Score distribution" what="Number of candidates per tier (D through A+), broken down by total, new and returning candidates. Used to monitor whether sourcing keeps producing the expected quality mix." formula="bucket on tier field\nA+: 90-100 · A: 75-89 · B: 55-74 · C: 35-54 · D: 0-34" source="scoreHistogram(filter)" notes="Mock distribution: 5/15/30/35/15." />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -73,7 +74,7 @@ export function InstroomTab() {
         </div>
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold">Kwaliteit per Unit × Functiegroep</h3>
+            <h3 className="text-sm font-semibold flex items-center gap-2"><GitBranch className="w-4 h-4 text-primary" />Kwaliteit per Unit × Functiegroep</h3>
             <TileInfo title="Quality heatmap" what="Average placeability score per Business Unit and job family. Reveals where strong demand meets weak supply (or vice versa)." formula="cell = avg(score) WHERE unit=X AND functiegroep=Y" source="qualityHeatmap(filter)" notes="Cells with n<5 are dimmed — too thin to draw conclusions." />
           </div>
           <QualityHeatmap />
@@ -81,7 +82,7 @@ export function InstroomTab() {
 
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <div className="text-sm font-semibold">Top kandidaten laatste 7 dagen (score ≥75)</div>
+            <div className="text-sm font-semibold flex items-center gap-2"><Trophy className="w-4 h-4 text-amber-500" />Top kandidaten laatste 7 dagen (score ≥75)</div>
             <TileInfo title="Top candidates" what="The 12 highest-scoring candidates that entered the funnel in the last 7 days. Click a name to open the candidate profile in RecruitCRM." formula="filter: score ≥ 75 AND assigned ≤ 7d ago\nsort: score desc · top 12" source="candidates" />
           </div>
           <table className="w-full text-xs">

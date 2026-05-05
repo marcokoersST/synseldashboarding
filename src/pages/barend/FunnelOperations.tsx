@@ -8,17 +8,17 @@ import { ForecastTab } from "@/components/funnel-ops/tabs/ForecastTab";
 import { OpvolgingTab } from "@/components/funnel-ops/tabs/OpvolgingTab";
 import { WatchlistTab } from "@/components/funnel-ops/tabs/WatchlistTab";
 import { DevInfoTab } from "@/components/funnel-ops/tabs/DevInfoTab";
-import { Lock } from "lucide-react";
+import { LayoutDashboard, Users, Shuffle, TrendingUp, PhoneCall, Eye, Code2, Activity } from "lucide-react";
 import { DateRangeFilter } from "@/components/funnel-ops/DateRangeFilter";
 
 const TABS = [
-  { value: "overzicht", label: "Overzicht" },
-  { value: "instroom", label: "Instroom" },
-  { value: "distributie", label: "Distributie" },
-  { value: "forecast", label: "Forecast" },
-  { value: "opvolging", label: "Opvolging" },
-  { value: "watchlist", label: "Watchlist" },
-  { value: "dev", label: "Dev info" },
+  { value: "overzicht", label: "Overzicht", icon: LayoutDashboard },
+  { value: "instroom", label: "Instroom", icon: Users },
+  { value: "distributie", label: "Distributie", icon: Shuffle },
+  { value: "forecast", label: "Forecast", icon: TrendingUp },
+  { value: "opvolging", label: "Opvolging", icon: PhoneCall },
+  { value: "watchlist", label: "Watchlist", icon: Eye },
+  { value: "dev", label: "Dev info", icon: Code2 },
 ];
 
 export default function FunnelOperations() {
@@ -30,13 +30,16 @@ export default function FunnelOperations() {
     <FunnelOpsFiltersProvider>
       <div className="p-4 md:p-6 max-w-[1600px] mx-auto space-y-4">
         {/* Header */}
-        <header className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Funnel Operations</h1>
-            <p className="text-sm text-muted-foreground">
-              Stuurinformatie voor het hele Synsel-team — instroomkwaliteit, distributie-optimalisatie,
-              opvolg-discipline. Eén dashboard, geen rollen.
-            </p>
+        <header className="flex flex-wrap items-start justify-between gap-3 animate-fade-in">
+          <div className="flex items-start gap-3">
+            <Activity className="w-7 h-7 text-primary mt-1" />
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Funnel Operations</h1>
+              <p className="text-sm text-muted-foreground">
+                Stuurinformatie voor het hele Synsel-team — instroomkwaliteit, distributie-optimalisatie,
+                opvolg-discipline. Eén dashboard, geen rollen.
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <DateRangeFilter />
@@ -45,20 +48,24 @@ export default function FunnelOperations() {
 
         <Tabs value={current} onValueChange={goTo}>
           <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50">
-            {TABS.map(t => (
-              <TabsTrigger key={t.value} value={t.value} className="text-xs md:text-sm">
-                {t.label}
-              </TabsTrigger>
-            ))}
+            {TABS.map(t => {
+              const Icon = t.icon;
+              return (
+                <TabsTrigger key={t.value} value={t.value} className="text-xs md:text-sm flex items-center gap-1.5">
+                  <Icon className="w-3.5 h-3.5" />
+                  {t.label}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
 
-          <TabsContent value="overzicht" className="mt-4"><OverviewTab goTo={goTo} /></TabsContent>
-          <TabsContent value="instroom" className="mt-4"><InstroomTab /></TabsContent>
-          <TabsContent value="distributie" className="mt-4"><DistributieTab /></TabsContent>
-          <TabsContent value="forecast" className="mt-4"><ForecastTab /></TabsContent>
-          <TabsContent value="opvolging" className="mt-4"><OpvolgingTab /></TabsContent>
-          <TabsContent value="watchlist" className="mt-4"><WatchlistTab /></TabsContent>
-          <TabsContent value="dev" className="mt-4"><DevInfoTab /></TabsContent>
+          <TabsContent value="overzicht" className="mt-4 animate-fade-in"><OverviewTab goTo={goTo} /></TabsContent>
+          <TabsContent value="instroom" className="mt-4 animate-fade-in"><InstroomTab /></TabsContent>
+          <TabsContent value="distributie" className="mt-4 animate-fade-in"><DistributieTab /></TabsContent>
+          <TabsContent value="forecast" className="mt-4 animate-fade-in"><ForecastTab /></TabsContent>
+          <TabsContent value="opvolging" className="mt-4 animate-fade-in"><OpvolgingTab /></TabsContent>
+          <TabsContent value="watchlist" className="mt-4 animate-fade-in"><WatchlistTab /></TabsContent>
+          <TabsContent value="dev" className="mt-4 animate-fade-in"><DevInfoTab /></TabsContent>
         </Tabs>
       </div>
     </FunnelOpsFiltersProvider>

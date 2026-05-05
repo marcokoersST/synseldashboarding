@@ -16,6 +16,7 @@ import TVBekerDashboard from "./pages/TVBekerDashboard";
 import TVGedetacheerden from "./pages/TVGedetacheerden";
 import TVRanglijsten from "./pages/TVRanglijsten";
 import TVHeatmap from "./pages/TVHeatmap";
+import TVActiesVandaag from "./pages/TVActiesVandaag";
 import NotFound from "./pages/NotFound";
 import { lazy, Suspense } from "react";
 
@@ -109,6 +110,7 @@ const App = () => (
               <Route path="/tv/ranglijsten" element={<TVRanglijsten />} />
               <Route path="/tv/heatmap" element={<TVHeatmap />} />
               <Route path="/tv/ranglijsten-grafiek" element={<TVRanglijstenGrafiek />} />
+              <Route path="/tv/acties-vandaag" element={<TVActiesVandaag />} />
               <Route path="/consultant/geld-bonus" element={<GeldBonus />} />
               <Route path="/consultant/kpi-cockpit" element={<KPICockpit />} />
               <Route path="/consultant/sales-funnel" element={<SalesFunnel />} />

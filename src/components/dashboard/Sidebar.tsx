@@ -205,6 +205,7 @@ const navItems: NavItem[] = [
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
       { icon: Monitor, label: "Heatmap", path: "/tv/heatmap" },
       { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
+      { icon: Monitor, label: "Acties vandaag", path: "/tv/acties-vandaag" },
     ]
   },
   {
