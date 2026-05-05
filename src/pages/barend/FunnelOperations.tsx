@@ -7,8 +7,9 @@ import { DistributieTab } from "@/components/funnel-ops/tabs/DistributieTab";
 import { ForecastTab } from "@/components/funnel-ops/tabs/ForecastTab";
 import { OpvolgingTab } from "@/components/funnel-ops/tabs/OpvolgingTab";
 import { WatchlistTab } from "@/components/funnel-ops/tabs/WatchlistTab";
-import { LayoutDashboard, Users, Shuffle, TrendingUp, PhoneCall, Eye, Activity } from "lucide-react";
+import { LayoutDashboard, Users, Shuffle, TrendingUp, PhoneCall, Eye, Activity, Monitor } from "lucide-react";
 import { DateRangeFilter } from "@/components/funnel-ops/DateRangeFilter";
+import { Link } from "react-router-dom";
 
 const TABS = [
   { value: "overzicht", label: "Overzicht", icon: LayoutDashboard },
