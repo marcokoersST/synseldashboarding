@@ -559,7 +559,7 @@ export function optimalReassignments(): ReassignSuggestion[] {
   const suggestions: ReassignSuggestion[] = [];
 
   // Sort candidates by tier priority then score
-  const tierWeight: Record<Tier, number> = { "85+": 4, A: 3, B: 2, C: 1, D: 0 };
+  const tierWeight: Record<Tier, number> = { "85+": 4, "70-85": 3, "50-70": 2, "30-50": 1, "0-30": 0 };
   const queue = [...open].sort((a, b) => tierWeight[b.tier] - tierWeight[a.tier] || b.score - a.score);
 
   for (const cand of queue) {
