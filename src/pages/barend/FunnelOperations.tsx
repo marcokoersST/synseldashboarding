@@ -61,7 +61,11 @@ export default function FunnelOperations() {
             {TABS.map(t => {
               const Icon = t.icon;
               return (
-                <TabsTrigger key={t.value} value={t.value} className="text-xs md:text-sm flex items-center gap-1.5">
+                <TabsTrigger
+                  key={t.value}
+                  value={t.value}
+                  className="text-xs md:text-sm flex items-center gap-1.5 rounded-none border-b-2 border-transparent bg-transparent data-[state=active]:border-[hsl(45,86%,52%)] data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                >
                   <Icon className="w-3.5 h-3.5" />
                   {t.label}
                 </TabsTrigger>
