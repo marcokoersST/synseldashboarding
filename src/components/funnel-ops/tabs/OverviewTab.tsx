@@ -37,38 +37,39 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
     <div className="space-y-4 animate-fade-in">
       <PeriodComparisonStrip />
 
-      {/* Mini overzichten */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <AnimatedCard delay={0}>
-          <Card className="p-4 space-y-3 h-full hover:shadow-md transition-shadow">
-            <div className="flex items-baseline justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-success" />
-                <h3 className="text-sm font-semibold">Instroom (4 weken)</h3>
-              </div>
-              <div className="flex items-center gap-1">
-                <TileInfo title="Inflow (4 weeks)" what="Daily inflow split by candidate type (new vs returning). Lets the team spot demand spikes and channel shifts." formula="bucket per day from candidates.toegewezenOp, split on candidate.type" source="dailyInstroom" notes="Mock mix new/returning: 60/40." />
-                <button onClick={() => goTo("instroom")} className="text-xs text-primary hover:underline">Bekijk →</button>
-              </div>
+      {/* Instroom 4 weken — full width on top */}
+      <AnimatedCard delay={0}>
+        <Card className="p-4 space-y-3 hover:shadow-md transition-shadow">
+          <div className="flex items-baseline justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-success" />
+              <h3 className="text-sm font-semibold">Instroom (4 weken)</h3>
             </div>
-            <div className="h-32">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trend} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="dag" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} interval={6} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                  <RTooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 11 }} />
-                  <Line type="monotone" dataKey="nieuw" stroke="hsl(var(--success))" strokeWidth={2} dot={false} name="Nieuw" animationDuration={900} />
-                  <Line type="monotone" dataKey="bestaand" stroke="hsl(25 90% 55%)" strokeWidth={2} dot={false} name="Bestaand" animationDuration={900} />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="flex items-center gap-1">
+              <TileInfo title="Inflow (4 weeks)" what="Daily inflow split by candidate type (new vs returning). Lets the team spot demand spikes and channel shifts." formula="bucket per day from candidates.toegewezenOp, split on candidate.type" source="dailyInstroom" notes="Mock mix new/returning: 60/40." />
+              <button onClick={() => goTo("instroom")} className="text-xs text-primary hover:underline">Bekijk →</button>
             </div>
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success" /> Nieuw</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" /> Bestaand</span>
-            </div>
-          </Card>
-        </AnimatedCard>
+          </div>
+          <div className="h-40">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trend} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                <XAxis dataKey="dag" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} interval={3} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <RTooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 11 }} />
+                <Line type="monotone" dataKey="nieuw" stroke="hsl(var(--success))" strokeWidth={2} dot={false} name="Nieuw" animationDuration={900} />
+                <Line type="monotone" dataKey="bestaand" stroke="hsl(25 90% 55%)" strokeWidth={2} dot={false} name="Bestaand" animationDuration={900} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success" /> Nieuw</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" /> Bestaand</span>
+          </div>
+        </Card>
+      </AnimatedCard>
 
+      {/* SLA per tier + Bron-mix naast elkaar */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <AnimatedCard delay={80}>
           <Card className="p-4 space-y-3 h-full hover:shadow-md transition-shadow">
             <div className="flex items-baseline justify-between">
@@ -84,7 +85,7 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
             <div className="space-y-1.5">
               {tierStats.map(t => (
                 <div key={t.tier} className="flex items-center gap-2">
-                  <span className="text-xs font-semibold w-8" style={{ color: TIER_COLOR[t.tier as Tier] }}>{t.tier}</span>
+                  <span className="text-xs font-semibold w-12" style={{ color: TIER_COLOR[t.tier as Tier] }}>{t.tier}</span>
                   <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-700" style={{ width: `${t.pct}%`, background: t.pct >= 80 ? "hsl(var(--success))" : t.pct >= 60 ? "hsl(25 90% 55%)" : "hsl(var(--destructive))" }} />
                   </div>
@@ -109,10 +110,10 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 items-center">
-              <div className="h-28">
+              <div className="h-32">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={pieData} dataKey="value" innerRadius={28} outerRadius={50} paddingAngle={2} animationDuration={900}>
+                    <Pie data={pieData} dataKey="value" innerRadius={32} outerRadius={58} paddingAngle={2} animationDuration={900}>
                       {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                     </Pie>
                     <RTooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 11 }} />
