@@ -118,7 +118,7 @@ in src/data/tvData.ts.`}
         <UnitFunnelBreakdown />
       </div>
       <DevNote
-        id={4}
+        id={3}
         story={<><strong>As a manager</strong>, I want to compare every unit across the full funnel and its conversion ratios in one table, <strong>so that</strong> I can identify which units lag on which step and prioritise coaching.</>}
         logic={`Tile: "Uitsplitsing per Unit & Conversies".
 
