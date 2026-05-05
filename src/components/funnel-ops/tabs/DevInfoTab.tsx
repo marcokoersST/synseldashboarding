@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { SLA_MATRIX, candidates, recruiters, consultants, callAttempts } from "@/data/funnelOperationsData";
+import { Info, Lock, Database, Timer, Palette, Link2, FileCode, MinusCircle } from "lucide-react";
 
 export function DevInfoTab() {
   return (
