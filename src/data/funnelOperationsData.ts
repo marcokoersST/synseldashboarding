@@ -139,13 +139,13 @@ function genCandidate(i: number): Candidate {
   const subBron = pick(SUB_BRONNEN[bron]);
   const recruiter = pick(recruiters);
 
-  // Spread across ~8 weeks; high tiers stay recent so SLA timers remain realistic
+  // Spread across ~3 weeks; high tiers stay recent so SLA timers remain realistic
   const ageHours =
-    tier === "85+" ? rng() * 12 :
-    tier === "70-85"  ? rng() * 72 :
-    tier === "50-70"  ? rng() * 28 * 24 :
-    tier === "30-50"  ? rng() * 42 * 24 :
-                    rng() * 56 * 24;
+    tier === "85+"   ? rng() * 8 :
+    tier === "70-85" ? rng() * 36 :
+    tier === "50-70" ? rng() * 7 * 24 :
+    tier === "30-50" ? rng() * 14 * 24 :
+                       rng() * 21 * 24;
   const toegewezenOp = NOW - ageHours * HOUR;
 
   // Status progression
