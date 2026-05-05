@@ -163,7 +163,7 @@ function genCandidate(i: number): Candidate {
   const type: CandidateType = rng() < 0.6 ? "nieuw" : "bestaand";
   const unit = pick(UNITS);
   const functiegroep = pick(FUNCTIEGROEPEN);
-  const bron = type === "bestaand" && rng() < 0.55 ? "reactivering" : weighted(SOURCE_DIST);
+  const bron: SourceTopLevel = type === "bestaand" && rng() < 0.55 ? "reactivation" : weighted(SOURCE_DIST);
   const subBron = pick(SUB_BRONNEN[bron]);
   const recruiter = pick(recruiters);
 
