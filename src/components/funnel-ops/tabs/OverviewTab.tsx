@@ -47,19 +47,19 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
             </div>
             <div className="flex items-center gap-1">
               <TileInfo
-                title="Instroom (4 weken)"
+                title="Inflow (4 weeks)"
                 what={
-                  "Trendlijn van de instroom van kandidaten over tijd. Gaat om kandidaten die op status '1 | Inschrijven' zijn gekomen in RecruitCRM, opgesplitst naar Nieuw vs Bestaand.\n\n" +
-                  "Nieuw: kandidaat heeft nog nooit eerder op status Inschrijven gestaan.\n" +
-                  "Bestaand: kandidaat is opnieuw op status Inschrijven gekomen en heeft daar minimaal 1× eerder op gestaan."
+                  "Trend line of candidate inflow over time. Counts candidates that entered status '1 | Inschrijven' in RecruitCRM, split into New vs Returning.\n\n" +
+                  "New: candidate has never previously been on status Inschrijven.\n" +
+                  "Returning: candidate is back on status Inschrijven and has been on it at least once before."
                 }
                 formula={
-                  "per dag d in [today-28, today]:\n" +
-                  "  nieuw    = count(c | c.status = '1 | Inschrijven' op d ∧ geen eerdere Inschrijven-historie)\n" +
-                  "  bestaand = count(c | c.status = '1 | Inschrijven' op d ∧ ≥1 eerdere Inschrijven-historie)"
+                  "per day d in [today-28, today]:\n" +
+                  "  new       = count(c | c.status = '1 | Inschrijven' on d ∧ no prior Inschrijven history)\n" +
+                  "  returning = count(c | c.status = '1 | Inschrijven' on d ∧ ≥1 prior Inschrijven history)"
                 }
-                source="dailyInstroom · RecruitCRM kandidaat-status historie"
-                notes="Mock-mix Nieuw/Bestaand ≈ 60/40."
+                source="dailyInstroom · RecruitCRM candidate status history"
+                notes="Mock mix new/returning ≈ 60/40."
               />
               <button onClick={() => goTo("instroom")} className="text-xs text-primary hover:underline">Bekijk →</button>
             </div>
