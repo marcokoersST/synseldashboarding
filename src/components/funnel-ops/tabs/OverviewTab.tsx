@@ -90,7 +90,7 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
                     <div className="h-full rounded-full transition-all duration-700" style={{ width: `${t.pct}%`, background: t.pct >= 80 ? "hsl(var(--success))" : t.pct >= 60 ? "hsl(25 90% 55%)" : "hsl(var(--destructive))" }} />
                   </div>
                   <span className="text-xs tabular-nums w-10 text-right">{t.pct}%</span>
-                  <span className="text-[10px] text-muted-foreground w-12 text-right">n={t.n}</span>
+                  <span className="text-[10px] text-muted-foreground w-20 text-right tabular-nums">{t.onTime}/{t.total}</span>
                 </div>
               ))}
             </div>
