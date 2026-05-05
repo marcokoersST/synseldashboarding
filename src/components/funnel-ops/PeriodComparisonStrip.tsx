@@ -54,11 +54,23 @@ export function PeriodComparisonStrip() {
           )}
         </div>
         <TileInfo
-          title="Period comparison"
-          what="Aggregated metrics for the selected period plus delta vs the comparison period. Lets the team validate week-on-week or custom-window movement at a glance."
-          formula="rangeStats(from, to) — counts candidates.toegewezenOp within [from, to)."
-          source="rangeStats() · FunnelOpsFiltersContext"
-          notes="Placements are counted on ingeschrevenOp, not on assignment date."
+          title="5 blokken bovenaan"
+          what={
+            "Instroom: aantal kandidaten die in deze periode op kandidaat-status '1 | Inschrijven' zijn gekomen.\n\n" +
+            "Gem. score: gemiddelde plaatsbaarheidsscore (0-100) over alle kandidaten die in de periode op status Inschrijven zijn gezet.\n\n" +
+            "Gecontacteerd: aantal kandidaten waarmee daadwerkelijk een inschrijvingsgesprek is geweest (gebeld + opgenomen).\n\n" +
+            "Contact-SLA: % kandidaten waarbij binnen de tier-termijn een belpoging is gedaan (telt poging, niet daadwerkelijk gesprek).\n\n" +
+            "Verwachte plaatsingen: op basis van plaatsbaarheidsscore en volume voorspeld aantal plaatsingen voor deze instroom."
+          }
+          formula={
+            "instroom        = count(candidates where status = '1 | Inschrijven' in [from, to))\n" +
+            "avgScore        = mean(score) over instroom\n" +
+            "gecontacteerd   = count(candidates with inschrijvingsgesprek)\n" +
+            "contactSLApct   = poging_binnen_tier_SLA / instroom × 100\n" +
+            "verwacht        = Σ historische plaatsingsratio(functietitel, score-bucket) × instroom"
+          }
+          source="rangeStats() · FunnelOpsFiltersContext · RecruitCRM kandidaat-status + callrecordings"
+          notes="Verwachte plaatsingen vereist historische analyse van genormaliseerde functietitels × plaatsbaarheidsscore × werkelijke plaatsingen."
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
