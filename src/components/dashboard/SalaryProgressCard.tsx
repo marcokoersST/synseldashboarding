@@ -192,6 +192,10 @@ function BonusPanel({ delay }: { delay: number }) {
 export function SalaryProgressCard({ delay = 0 }: SalaryProgressCardProps) {
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Hoeveel salaris en bonus je tot nu toe verdient en hoe ver je nog van het volgende salaris- of bonusniveau af bent."
+        insight="Je ziet meteen hoeveel extra omzet of plaatsingen direct meer geld in je portemonnee opleveren."
+      />
       <div className="bg-card rounded-xl border border-border flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border">
         <SalaryPanel delay={delay} />
         <BonusPanel delay={delay + 100} />
