@@ -18,6 +18,7 @@ import TVRanglijsten from "./pages/TVRanglijsten";
 import TVHeatmap from "./pages/TVHeatmap";
 import TVActiesVandaag from "./pages/TVActiesVandaag";
 import TVFunnelOpsOverzicht from "./pages/TVFunnelOpsOverzicht";
+import TVFunnelOpsActies from "./pages/TVFunnelOpsActies";
 import NotFound from "./pages/NotFound";
 import { lazy, Suspense } from "react";
 
