@@ -33,7 +33,7 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
 
   const tierStats = tierContactStats();
   const trend = dailyInstroom.slice(-28);
-  const pieData = sourceTree.map(s => ({ name: s.bron, value: s.total }));
+  const pieData = sourceTree.map(s => ({ name: SOURCE_LABELS[s.bron] ?? s.bron, value: s.total }));
   const fcst = kpis.forecastMaand;
 
   return (
