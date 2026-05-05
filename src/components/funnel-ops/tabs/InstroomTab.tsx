@@ -42,7 +42,28 @@ export function InstroomTab() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-1">
             <div className="text-xs font-medium text-muted-foreground">Bron-treeview · volume per hoofdbron en sub-bron</div>
-            <TileInfo title="Source tree" what="Hierarchical breakdown of candidate volume per main sourcing channel and its sub-channels, with conversion to registration. Helps identify which channels deliver effective volume." formula="conversion = registered / total × 100" source="sourceTree" />
+            <TileInfo
+              title="Source treeview · volume per utm_medium"
+              what={
+                "Hierarchical breakdown of candidate volume per utm_medium and its sub-channel (utm_source). Per row: total volume, % new vs returning, average placeability score (0-100) and conversion to status Inschrijven.\n\n" +
+                "Mediums:\n" +
+                "  1. Jobboards paid       → utm_medium = paid_jobboard\n" +
+                "  2. Jobboards organic    → utm_medium = organic_jobboard\n" +
+                "  3. Paid social          → utm_medium = paid_social\n" +
+                "  4. Organic social       → utm_medium = organic_social\n" +
+                "  5. Reactivation         → utm_medium = app OR mail\n" +
+                "  6. Direct               → utm_medium = direct_mail OR direct_telefoon\n" +
+                "  7. CV databases         → utm_medium = cv_database\n" +
+                "  8. LinkedIn recruiter   → utm_medium = recruiter"
+              }
+              formula={
+                "totaal     = count(candidates with utm_medium = m)\n" +
+                "%nieuw     = count(type = nieuw) / totaal × 100\n" +
+                "score      = mean(placeability_score) over candidates in m\n" +
+                "conversie  = count(status reached '1 | Inschrijven') / totaal × 100"
+              }
+              source="sourceTree · RecruitCRM utm_medium / utm_source + placeability score"
+            />
           </div>
           <SourceTreeView />
         </Card>
