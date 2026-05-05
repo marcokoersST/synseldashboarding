@@ -221,7 +221,22 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
               >
                 <Monitor className="w-3 h-3" /> TV Modus
               </Link>
-              <TileInfo title="Actions today" what="Open candidates whose contact-SLA is breached or within 20% of its deadline. Drives the recruiter team's daily call list." formula="getContactSLA(c).status ∈ {expired, at_risk}\nsort: highest pctElapsed first" source="getActionList()" notes="The actions themselves happen in RecruitCRM via the deeplinks." />
+              <TileInfo
+                title="Acties vandaag"
+                what={
+                  "Detailoverzicht van kandidaten waarvan de contact-SLA bijna verloopt of al verlopen is. Klok start op het moment van Inschrijven; we tonen hoeveel tijd er nog overblijft of met hoeveel tijd de SLA is overschreden.\n\n" +
+                  "Per kandidaat zichtbaar: tier, hoeveel tijd nog/over, en de consultant op wie de kandidaat in RecruitCRM op naam staat (owner)."
+                }
+                formula={
+                  "deadline    = ingeschrevenOp + tier_SLA(c.tier)\n" +
+                  "tijd_over   = deadline − now      (positief = nog tijd, negatief = verlopen)\n" +
+                  "status      = verlopen   als now > deadline\n" +
+                  "            = dreigend  als (deadline − now) ≤ 20% × tier_SLA\n" +
+                  "sort: hoogste overschrijding eerst"
+                }
+                source="getActionList() · RecruitCRM kandidaat-status, ingeschrevenOp, owner"
+                notes="Acties zelf gebeuren in RecruitCRM via de deeplinks. Tier-termijnen identiek aan SLA per tier-tegel."
+              />
               <button onClick={() => goTo("watchlist")} className="text-xs text-primary hover:underline whitespace-nowrap">Volledige watchlist →</button>
             </div>
           </div>
