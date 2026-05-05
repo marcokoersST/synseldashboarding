@@ -4,7 +4,7 @@ import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, 
 import { forecastSeries, kpis, UNITS_REF, FUNCTIEGROEPEN_REF, candidates } from "@/data/funnelOperationsData";
 import { TileInfo } from "../TileInfo";
 import { OptimalReassignPanel } from "../OptimalReassignPanel";
-import { MousePointerClick, TrendingUp, Target, BarChart3, LineChart as LineIcon, Table as TableIcon } from "lucide-react";
+import { MousePointerClick, LineChart as LineIcon, Table as TableIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function ForecastTab() {
