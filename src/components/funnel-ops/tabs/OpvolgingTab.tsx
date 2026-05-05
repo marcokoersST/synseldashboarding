@@ -61,7 +61,24 @@ export function OpvolgingTab() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold flex items-center gap-2"><Timer className="w-4 h-4 text-orange-500" />SLA-score per tier</h3>
-            <TileInfo title="SLA per tier" what="Contact-SLA score per candidate tier (A+ down to D). Used to verify that the highest-value candidates are actually being prioritised." formula="in_SLA / contacted × 100, grouped by tier" source="tierContactStats()" notes="Strict window for A+: 2 hours from assignment." />
+            <TileInfo
+              title="SLA per tier · % contacted on time"
+              what={
+                "Per tier the percentage of candidates with an outbound call attempt within the tier-specific deadline. Counts call attempt, not actual conversation."
+              }
+              formula={
+                "per tier T:\n" +
+                "  pct = count(c ∈ T with outbound call within tier_SLA(T)) / count(c ∈ T) × 100\n\n" +
+                "Tier deadlines:\n" +
+                "  85+    → called 2× within 1 hour\n" +
+                "  70-85  → called 1× within 1 hour\n" +
+                "  50-70  → called at the next call slot\n" +
+                "  30-50  → called within 1 day\n" +
+                "  0-30   → called within 2 days"
+              }
+              source="tierContactStats() · RecruitCRM call recordings"
+              notes="Each tile has its own info icon showing the per-tier deadline."
+            />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {tierStats.map(t => (
