@@ -47,19 +47,19 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
             </div>
             <div className="flex items-center gap-1">
               <TileInfo
-                title="Instroom (4 weken)"
+                title="Inflow (4 weeks)"
                 what={
-                  "Trendlijn van de instroom van kandidaten over tijd. Gaat om kandidaten die op status '1 | Inschrijven' zijn gekomen in RecruitCRM, opgesplitst naar Nieuw vs Bestaand.\n\n" +
-                  "Nieuw: kandidaat heeft nog nooit eerder op status Inschrijven gestaan.\n" +
-                  "Bestaand: kandidaat is opnieuw op status Inschrijven gekomen en heeft daar minimaal 1× eerder op gestaan."
+                  "Trend line of candidate inflow over time. Counts candidates that entered status '1 | Inschrijven' in RecruitCRM, split into New vs Returning.\n\n" +
+                  "New: candidate has never previously been on status Inschrijven.\n" +
+                  "Returning: candidate is back on status Inschrijven and has been on it at least once before."
                 }
                 formula={
-                  "per dag d in [today-28, today]:\n" +
-                  "  nieuw    = count(c | c.status = '1 | Inschrijven' op d ∧ geen eerdere Inschrijven-historie)\n" +
-                  "  bestaand = count(c | c.status = '1 | Inschrijven' op d ∧ ≥1 eerdere Inschrijven-historie)"
+                  "per day d in [today-28, today]:\n" +
+                  "  new       = count(c | c.status = '1 | Inschrijven' on d ∧ no prior Inschrijven history)\n" +
+                  "  returning = count(c | c.status = '1 | Inschrijven' on d ∧ ≥1 prior Inschrijven history)"
                 }
-                source="dailyInstroom · RecruitCRM kandidaat-status historie"
-                notes="Mock-mix Nieuw/Bestaand ≈ 60/40."
+                source="dailyInstroom · RecruitCRM candidate status history"
+                notes="Mock mix new/returning ≈ 60/40."
               />
               <button onClick={() => goTo("instroom")} className="text-xs text-primary hover:underline">Bekijk →</button>
             </div>
@@ -93,22 +93,22 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
               </div>
               <div className="flex items-center gap-1">
                 <TileInfo
-                  title="SLA per tier · % binnen contact"
+                  title="SLA per tier · % contacted on time"
                   what={
-                    "Percentage kandidaten per tier dat op tijd is gebeld. We kijken naar alle kandidaten die in deze week op status '1 | Inschrijven' zijn gezet en checken of in de callrecordings een uitgaande poging valt binnen de tier-termijn."
+                    "Percentage of candidates per tier called within the tier-specific deadline. Looks at all candidates set to status '1 | Inschrijven' in this week and checks whether the call recordings contain an outbound attempt within that tier's deadline."
                   }
                   formula={
                     "per tier T:\n" +
-                    "  pct = count(c ∈ T met uitgaande call binnen tier_SLA(T)) / count(c ∈ T) × 100\n\n" +
-                    "Tier-termijnen (geldt voor het hele dashboard):\n" +
-                    "  85+    → 2× gebeld binnen 1 uur\n" +
-                    "  70-85  → gebeld binnen 1 uur\n" +
-                    "  50-70  → gebeld op het eerstvolgende belmoment\n" +
-                    "  30-50  → gebeld binnen 1 dag\n" +
-                    "  0-30   → gebeld binnen 2 dagen"
+                    "  pct = count(c ∈ T with outbound call within tier_SLA(T)) / count(c ∈ T) × 100\n\n" +
+                    "Tier deadlines (apply across the whole dashboard):\n" +
+                    "  85+    → called 2× within 1 hour\n" +
+                    "  70-85  → called within 1 hour\n" +
+                    "  50-70  → called at the next call slot\n" +
+                    "  30-50  → called within 1 day\n" +
+                    "  0-30   → called within 2 days"
                   }
-                  source="tierContactStats() · RecruitCRM callrecordings (uitgaande pogingen)"
-                  notes="Telt belpoging, niet daadwerkelijk gesprek. n = onTime/total in deze week."
+                  source="tierContactStats() · RecruitCRM call recordings (outbound attempts)"
+                  notes="Counts call attempt, not actual conversation. n = onTime/total in this week."
                 />
                 <button onClick={() => goTo("opvolging")} className="text-xs text-primary hover:underline">Bekijk →</button>
               </div>
@@ -137,28 +137,28 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
               </div>
               <div className="flex items-center gap-1">
                 <TileInfo
-                  title="Bron-mix & forecast"
+                  title="Source mix & forecast"
                   what={
-                    "Bron-mix: aantal kandidaten dat op status Inschrijven is gekomen, opgedeeld naar utm_medium.\n\n" +
+                    "Source mix: number of candidates that entered status Inschrijven, broken down by utm_medium.\n\n" +
                     "Mediums:\n" +
                     "  1. Jobboards paid       → utm_medium = paid_jobboard\n" +
-                    "  2. Jobboards organisch  → utm_medium = organic_jobboard\n" +
-                    "  3. Paid socials         → utm_medium = paid_social\n" +
+                    "  2. Jobboards organic    → utm_medium = organic_jobboard\n" +
+                    "  3. Paid social          → utm_medium = paid_social\n" +
                     "  4. Organic social       → utm_medium = organic_social\n" +
-                    "  5. Heractivatie         → utm_medium = app OF mail\n" +
-                    "  6. Direct               → utm_medium = direct_mail OF direct_telefoon\n" +
+                    "  5. Reactivation         → utm_medium = app OR mail\n" +
+                    "  6. Direct               → utm_medium = direct_mail OR direct_telefoon\n" +
                     "  7. CV databases         → utm_medium = cv_database\n" +
                     "  8. LinkedIn recruiter   → utm_medium = recruiter\n\n" +
-                    "Forecast P50: verwachte plaatsingen voor deze instroom (zelfde logica als de 5 blokken bovenaan).\n\n" +
-                    "Potentie bij optimale distributie: maximale aantal plaatsingen op basis van instroom × genormaliseerde functietitels × plaatsingsratio per consultant. Underline = +Δ tussen huidige forecast en theoretisch maximum."
+                    "Forecast P50: expected placements for this inflow (same logic as the top 5 KPI tiles).\n\n" +
+                    "Potential at optimal distribution: max number of placements based on inflow × normalised job titles × per-consultant placement ratio. Underlined value = +Δ between current forecast and theoretical maximum."
                   }
                   formula={
-                    "share(medium)   = count(candidates met utm_medium = medium) / total\n" +
-                    "forecastP50     = Σ historische plaatsingsratio(functietitel, score) × instroom\n" +
-                    "potentie        = max Σ plaatsingsratio(functietitel, consultant) − forecastP50"
+                    "share(medium)  = count(candidates with utm_medium = medium) / total\n" +
+                    "forecastP50    = Σ historical placement_ratio(job_title, score) × instroom\n" +
+                    "potential      = max Σ placement_ratio(job_title, consultant) − forecastP50"
                   }
-                  source="sourceTree · kpis.forecastMaand · RecruitCRM utm_medium + plaatsingshistorie"
-                  notes="Vereist genormaliseerde functietitels en per-consultant plaatsingsratio's voor de potentie-berekening."
+                  source="sourceTree · kpis.forecastMaand · RecruitCRM utm_medium + placement history"
+                  notes="Requires normalised job titles and per-consultant placement ratios for the potential calculation."
                 />
                 <button onClick={() => goTo("forecast")} className="text-xs text-primary hover:underline">Bekijk →</button>
               </div>
@@ -222,20 +222,20 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
                 <Monitor className="w-3 h-3" /> TV Modus
               </Link>
               <TileInfo
-                title="Acties vandaag"
+                title="Actions today"
                 what={
-                  "Detailoverzicht van kandidaten waarvan de contact-SLA bijna verloopt of al verlopen is. Klok start op het moment van Inschrijven; we tonen hoeveel tijd er nog overblijft of met hoeveel tijd de SLA is overschreden.\n\n" +
-                  "Per kandidaat zichtbaar: tier, hoeveel tijd nog/over, en de consultant op wie de kandidaat in RecruitCRM op naam staat (owner)."
+                  "Detail view of candidates whose contact-SLA is about to expire or has already expired. The clock starts at the moment of Inschrijven; we show how much time is left or by how much the SLA was breached.\n\n" +
+                  "Per candidate: tier, time remaining/overdue, and the consultant who owns the candidate in RecruitCRM."
                 }
                 formula={
                   "deadline    = ingeschrevenOp + tier_SLA(c.tier)\n" +
-                  "tijd_over   = deadline − now      (positief = nog tijd, negatief = verlopen)\n" +
-                  "status      = verlopen   als now > deadline\n" +
-                  "            = dreigend  als (deadline − now) ≤ 20% × tier_SLA\n" +
-                  "sort: hoogste overschrijding eerst"
+                  "time_left   = deadline − now      (positive = time left, negative = expired)\n" +
+                  "status      = expired   if now > deadline\n" +
+                  "            = at_risk   if (deadline − now) ≤ 20% × tier_SLA\n" +
+                  "sort: largest breach first"
                 }
-                source="getActionList() · RecruitCRM kandidaat-status, ingeschrevenOp, owner"
-                notes="Acties zelf gebeuren in RecruitCRM via de deeplinks. Tier-termijnen identiek aan SLA per tier-tegel."
+                source="getActionList() · RecruitCRM candidate status, ingeschrevenOp, owner"
+                notes="Actions themselves happen in RecruitCRM via the deeplinks. Tier deadlines identical to the SLA per tier tile."
               />
               <button onClick={() => goTo("watchlist")} className="text-xs text-primary hover:underline whitespace-nowrap">Volledige watchlist →</button>
             </div>
