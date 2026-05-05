@@ -11,7 +11,26 @@ export type CandidateStatus =
   | "afgesloten";
 export type CandidateType = "nieuw" | "bestaand";
 export type BusinessUnit = "Industrie" | "Installatietechniek" | "Utiliteit" | "Maritiem";
-export type SourceTopLevel = "jobscan" | "open_cv" | "cv_database" | "reactivering" | "linkedin";
+export type SourceTopLevel =
+  | "paid_jobboard"
+  | "organic_jobboard"
+  | "paid_social"
+  | "organic_social"
+  | "reactivation"
+  | "direct"
+  | "cv_database"
+  | "recruiter";
+
+export const SOURCE_LABELS: Record<SourceTopLevel, string> = {
+  paid_jobboard: "Jobboards paid",
+  organic_jobboard: "Jobboards organic",
+  paid_social: "Paid social",
+  organic_social: "Organic social",
+  reactivation: "Reactivation",
+  direct: "Direct",
+  cv_database: "CV databases",
+  recruiter: "LinkedIn recruiter",
+};
 
 export interface Recruiter { id: string; naam: string; }
 export interface Consultant { id: string; naam: string; }
@@ -104,15 +123,24 @@ const SCORE_DIST: { v: Tier; w: number }[] = [
   { v: "0-30", w: 5 }, { v: "30-50", w: 15 }, { v: "50-70", w: 30 }, { v: "70-85", w: 35 }, { v: "85+", w: 15 },
 ];
 const SOURCE_DIST: { v: SourceTopLevel; w: number }[] = [
-  { v: "jobscan", w: 30 }, { v: "open_cv", w: 15 }, { v: "cv_database", w: 20 },
-  { v: "reactivering", w: 25 }, { v: "linkedin", w: 10 },
+  { v: "paid_jobboard", w: 18 },
+  { v: "organic_jobboard", w: 12 },
+  { v: "paid_social", w: 14 },
+  { v: "organic_social", w: 8 },
+  { v: "reactivation", w: 20 },
+  { v: "direct", w: 6 },
+  { v: "cv_database", w: 14 },
+  { v: "recruiter", w: 8 },
 ];
 const SUB_BRONNEN: Record<SourceTopLevel, string[]> = {
-  jobscan: ["Online formulier","Werken Bij","Campagne LinkedIn","Campagne Meta"],
-  open_cv: ["Indeed","Werkzoeken.nl","NationaleVacaturebank"],
-  cv_database: ["Indeed CV","Monsterboard","Jobbird CV"],
-  reactivering: ["Heractivatie Q1","Heractivatie Q2","Wakker schudden"],
-  linkedin: ["LinkedIn Recruiter","Sales Navigator","Inmail"],
+  paid_jobboard: ["Indeed Sponsored","Monsterboard Premium","Nationale Vacaturebank Promo"],
+  organic_jobboard: ["Indeed Free","Werkzoeken.nl","Jobbird"],
+  paid_social: ["Meta Ads","TikTok Ads","LinkedIn Ads"],
+  organic_social: ["LinkedIn Post","Instagram Post","Facebook Post"],
+  reactivation: ["App push","Mail campagne Q1","Mail campagne Q2"],
+  direct: ["Direct mail","Direct telefoon"],
+  cv_database: ["Indeed CV","Monsterboard CV","Jobbird CV"],
+  recruiter: ["LinkedIn Recruiter","Sales Navigator","Inmail"],
 };
 
 function tierToScore(t: Tier): number {
@@ -135,7 +163,7 @@ function genCandidate(i: number): Candidate {
   const type: CandidateType = rng() < 0.6 ? "nieuw" : "bestaand";
   const unit = pick(UNITS);
   const functiegroep = pick(FUNCTIEGROEPEN);
-  const bron = type === "bestaand" && rng() < 0.55 ? "reactivering" : weighted(SOURCE_DIST);
+  const bron: SourceTopLevel = type === "bestaand" && rng() < 0.55 ? "reactivation" : weighted(SOURCE_DIST);
   const subBron = pick(SUB_BRONNEN[bron]);
   const recruiter = pick(recruiters);
 

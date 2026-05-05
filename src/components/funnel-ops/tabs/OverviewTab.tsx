@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { ActionTable } from "../ActionTable";
 import { TileInfo } from "../TileInfo";
 import { PeriodComparisonStrip } from "../PeriodComparisonStrip";
-import { kpis, getActionList, tierContactStats, dailyInstroom, sourceTree } from "@/data/funnelOperationsData";
+import { kpis, getActionList, tierContactStats, dailyInstroom, sourceTree, SOURCE_LABELS } from "@/data/funnelOperationsData";
 import { TIER_COLOR } from "@/data/funnelOperationsData";
 import type { Tier } from "@/data/funnelOperationsData";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as RTooltip, PieChart, Pie, Cell } from "recharts";
@@ -12,7 +12,10 @@ import { TrendingUp, Timer, PieChart as PieIcon, AlertTriangle, Monitor } from "
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
-const PIE_COLORS = ["hsl(45 70% 55%)", "hsl(210 70% 55%)", "hsl(160 50% 45%)", "hsl(280 60% 55%)", "hsl(0 60% 55%)"];
+const PIE_COLORS = [
+  "hsl(210 70% 55%)", "hsl(210 50% 70%)", "hsl(280 60% 55%)", "hsl(280 50% 70%)",
+  "hsl(160 50% 45%)", "hsl(45 70% 55%)", "hsl(25 90% 55%)", "hsl(0 60% 55%)",
+];
 
 type Filter = "alle" | "verlopen" | "dreigend";
 
@@ -30,7 +33,7 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
 
   const tierStats = tierContactStats();
   const trend = dailyInstroom.slice(-28);
-  const pieData = sourceTree.map(s => ({ name: s.bron, value: s.total }));
+  const pieData = sourceTree.map(s => ({ name: SOURCE_LABELS[s.bron] ?? s.bron, value: s.total }));
   const fcst = kpis.forecastMaand;
 
   return (
