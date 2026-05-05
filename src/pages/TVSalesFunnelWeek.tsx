@@ -63,6 +63,7 @@ function WeekContent() {
     <div className="flex flex-col h-full gap-4">
       <SalesFunnelFilterBar />
       <DevNote
+        id={1}
         story={<><strong>As a manager / TV viewer</strong>, I want to scope the Sales Funnel by unit, consultant, date range and which table columns are visible, <strong>so that</strong> I can focus on the exact slice of performance I need to analyse or present.</>}
         logic={`The filter bar exposes four controls, all wired through
 SalesFunnelFiltersContext so every tile below reacts in sync:
