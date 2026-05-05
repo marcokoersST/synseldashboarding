@@ -1,80 +1,49 @@
-## Update Tabelkolommen defaults & add missing sub-columns
+## Changes for `/tv/sales-funnel-week`
 
-Apply the user-specified default selection and add the columns that are missing from `unitFunnelColumns.ts` and the underlying data model.
+### 1. Add IDs to all DevNote buttons
 
-### 1. Data model — `src/data/tvData.ts`
+**`src/components/groeimodel/DevNote.tsx`** — add optional `id?: string | number` prop. When provided, render the trigger label as `Dev info #{id}` (instead of just `Dev info`) and show `#{id}` in the popover header next to "For the development team". This way every dev info button is referable.
 
-Add `voorstellenViaTelefoon: number` to `UnitFunnelRow`. Populate plausible values for every row in `weekUnitBreakdown`, `periodUnitBreakdown` and `consultantFunnelData` (≈ 60% of `voorstellenViaEmail`, rounded). Add `"voorstellenViaTelefoon"` to the `numericKeys` array in `buildConsultantRowsForUnit` so consultant-level data distributes automatically.
+### 2. Number every DevNote on the week page
 
-### 2. Column definitions — `src/data/unitFunnelColumns.ts`
+Assign sequential IDs so the user can reference them:
 
-Rebuild `columnGroups` to match the full spec:
+- `#1` — Filter bar (in `TVSalesFunnelWeek.tsx`)
+- `#2` — KPI row (in `TVSalesFunnelWeek.tsx`)
+- `#3` — Unit Funnel breakdown (in `UnitFunnelBreakdown.tsx`)
+- `#4` — Bottom row group note (in `TVSalesFunnelWeek.tsx`)
+- `#5` — CallStats tile (in `CallStats.tsx`)
+- `#6` — CandidatesPipeline tile (in `CandidatesPipeline.tsx`)
+- `#7` — ConversionFormulas tile (in `ConversionFormulasCard.tsx`)
 
-```
-1. Inschrijvingen
-   - value  toegewezen
-   - value  ingeschreven
-   - conv   ingeschreven ÷ toegewezen
-   - conv   intakes ÷ ingeschreven
+(IDs are hard-coded on each `<DevNote id={N} ... />` usage.)
 
-2. Acquisitie
-   - value  acquisities
-   - conv   acquisities ÷ ingeschreven
-   - conv   acquisities ÷ toegewezen
+### 3. Update the Kandidaten Insides DevNote (#6)
 
-3. Voorstellen
-   - value  voorstellenPerKandidaat   (Per kandidaat)
-   - value  voorstellenViaEmail       (Via email)
-   - value  voorstellenViaTelefoon    (Via telefoon)   NEW
-   - conv   voorstellenViaEmail ÷ ingeschreven
-   - conv   voorstellenViaTelefoon ÷ ingeschreven      NEW
+Rewrite the `story` + `logic` of the CandidatesPipeline DevNote to make explicit that:
+- The **hero counter** at the top shows `candidatesInsides.actief` — the **total amount of active candidates currently in the pipeline** (point-in-time snapshot, not period-bound).
+- The 8 bars below break that population down by current pipeline stage.
 
-4. Uitnodigingen
-   - value  uitnodigingenTotaal
-   - value  nietUitgenodigd
-   - value  welUitgenodigd
-   - conv   uitnodigingenTotaal ÷ acquisities
+### 4. Keep the Totaal row visible in TV mode when units are expanded
 
-5. Gesprekken
-   - value  eersteGesprek
-   - value  geenEersteGesprek
-   - value  welEersteGesprek
-   - conv   eersteGesprek ÷ acquisities
+In `UnitFunnelBreakdown.tsx`, the table currently lives inside `overflow-hidden` (TV/compact) and the totals row sits at the natural end of the body. When all units are expanded with consultants, the totals row gets pushed off-screen.
 
-6. Vervolg
-   - value  vervolgGesprek
-   - value  dealsluiter
-   - conv   welEersteGesprek ÷ vervolgGesprek
+Fix: make the totals row sticky to the bottom of the scroll/clip container in compact mode.
 
-7. Geplaatst
-   - value  geplaatst
-   - value  gemDagenTotPlaatsing
-   - conv   geplaatst ÷ ingeschreven
-   - conv   geplaatst ÷ toegewezen
-```
+- Wrap the table in a flex column where the body area scrolls (`overflow-y-auto`) and the totals stay pinned.
+- Simplest implementation: add `className="sticky bottom-0 z-10 bg-primary/5 backdrop-blur"` to the Totaal `TableRow` (and to its cells, since `<tr>` sticky in some browsers needs cell-level positioning). Apply `sticky bottom-0 bg-card` to each total `<TableCell>` with a top border to keep the visual divider.
+- Also switch the table container from `overflow-hidden` to `overflow-y-auto` in compact mode so rows can scroll under the pinned totals when they don't fit.
+- The header already uses default static positioning; leave it unchanged (sticky header is out of scope).
 
-Drop the existing "Voorst. totaal ÷ …" placeholder — spec leaves it open. Keep existing keys; only **Voorstellen** gains the new telefoon entries.
+### Files touched
+- `src/components/groeimodel/DevNote.tsx` — add `id` prop
+- `src/pages/TVSalesFunnelWeek.tsx` — pass `id={1|2|4}` to its three DevNotes
+- `src/components/tv/UnitFunnelBreakdown.tsx` — pass `id={3}`, sticky totals row, switch to `overflow-y-auto` in compact mode
+- `src/components/tv/CallStats.tsx` — pass `id={5}`
+- `src/components/tv/CandidatesPipeline.tsx` — pass `id={6}`, rewrite story/logic to clarify hero counter
+- `src/components/tv/ConversionFormulasCard.tsx` — pass `id={7}`
 
-### 3. Default selection — `DEFAULT_VISIBLE_SUBKEYS`
-
-Switch from "all on except `toegewezen`" to an explicit allow-list matching the spec:
-
-- Inschrijvingen: `ingeschreven`, `ingeschreven÷toegewezen`, `intakes÷ingeschreven`
-- Acquisitie: `acquisities`, `acquisities÷ingeschreven`
-- Voorstellen: `voorstellenPerKandidaat`, `voorstellenViaEmail`, `voorstellenViaEmail÷ingeschreven`
-- Uitnodigingen: `uitnodigingenTotaal`, `nietUitgenodigd`, `uitnodigingenTotaal÷acquisities`
-- Gesprekken: `eersteGesprek`, `geenEersteGesprek`, `eersteGesprek÷acquisities`
-- Vervolg: `vervolgGesprek`, `dealsluiter`, `welEersteGesprek÷vervolgGesprek`
-- Geplaatst: `geplaatst`, `gemDagenTotPlaatsing`, `geplaatst÷ingeschreven`, `geplaatst÷toegewezen`
-
-All other sub-keys (e.g. `toegewezen`, `acquisities÷toegewezen`, `welUitgenodigd`, `welEersteGesprek`, `voorstellenViaTelefoon`, both telefoon conversies) remain available in the popover but **off** by default.
-
-### 4. No other changes
-
-- `UnitFunnelBreakdown.tsx` already renders any sub-key that's visible — no edits needed.
-- `SalesFunnelFilterBar.tsx` already iterates `columnGroups` — picks up the new group entries automatically.
-- Consultant-level data inherits the new field via `numericKeys`.
-
-### Files
-
-- Edit: `src/data/tvData.ts`, `src/data/unitFunnelColumns.ts`
+### Out of scope
+- The period view (`/tv/sales-funnel-period`) — only the week page was requested.
+- Sticky header row.
+- Renumbering on other pages.

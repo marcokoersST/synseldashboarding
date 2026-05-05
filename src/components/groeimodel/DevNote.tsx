@@ -6,9 +6,10 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 interface DevNoteProps {
   story: ReactNode;
   logic: ReactNode;
+  id?: string | number;
 }
 
-export function DevNote({ story, logic }: DevNoteProps) {
+export function DevNote({ story, logic, id }: DevNoteProps) {
   return (
     <div className="mt-3 flex justify-end">
       <Popover>
