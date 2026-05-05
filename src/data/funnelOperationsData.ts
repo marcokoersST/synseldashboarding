@@ -494,7 +494,10 @@ export function tierContactStats() {
     const contacted = subset.filter(c => c.eersteContactOp !== null);
     const inSLA = contacted.filter(c => c.eersteContactOp! <= c.toegewezenOp + SLA_MATRIX[c.tier].contactH * HOUR);
     return {
-      tier, n: subset.length,
+      tier,
+      n: subset.length,
+      onTime: inSLA.length,
+      total: subset.length,
       pct: contacted.length ? Math.round((inSLA.length / contacted.length) * 100) : 0,
     };
   });
