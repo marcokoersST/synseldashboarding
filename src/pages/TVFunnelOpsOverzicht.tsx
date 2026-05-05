@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { TVDashboardLayout } from "@/components/tv/TVDashboardLayout";
 import {
-  getActionList,
-  recruiterById,
-  consultantById,
   TIER_COLOR,
   tierContactStats,
   dailyInstroom,
@@ -15,10 +12,7 @@ import {
   HOUR,
 } from "@/data/funnelOperationsData";
 import type { Tier } from "@/data/funnelOperationsData";
-import { TierBadge } from "@/components/funnel-ops/TierBadge";
-import { SLAStatusPill } from "@/components/funnel-ops/SLAStatusPill";
 import {
-  AlertTriangle,
   RefreshCw,
   TrendingUp,
   Timer,
