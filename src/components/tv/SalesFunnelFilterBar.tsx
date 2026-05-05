@@ -7,12 +7,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ChevronDown, CalendarIcon, Columns3, Timer } from "lucide-react";
+import { ChevronDown, CalendarIcon, Columns3, Timer, SlidersHorizontal, Percent } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ranglijstenFilters, allConsultantsList } from "@/data/ranglijstenData";
 import { useSalesFunnelFilters, ALL_COLUMN_GROUPS, ALL_UNITS } from "@/contexts/SalesFunnelFiltersContext";
+import { columnGroups, subKey, DEFAULT_VISIBLE_SUBKEYS, ALL_SUBKEYS } from "@/data/unitFunnelColumns";
 
 export function SalesFunnelFilterBar() {
   const f = useSalesFunnelFilters();
@@ -195,6 +196,95 @@ export function SalesFunnelFilterBar() {
                 {g}
               </label>
             ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Subcolumns (only for unit table) */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-2 h-9">
+            <SlidersHorizontal className="w-4 h-4" />
+            Subkolommen ({f.visibleSubKeys.length}/{ALL_SUBKEYS.length})
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 max-h-[480px] overflow-y-auto">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium">Subkolommen unit-tabel</p>
+            <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => f.setVisibleSubKeys([...DEFAULT_VISIBLE_SUBKEYS])}>
+              Reset
+            </Button>
+          </div>
+          <div className="space-y-3">
+            {columnGroups.map(g => {
+              const groupKeys = g.subs.map(subKey);
+              const allOn = groupKeys.every(k => f.visibleSubKeys.includes(k));
+              const values = g.subs.filter(s => s.type === "value");
+              const convs = g.subs.filter(s => s.type === "conv");
+              return (
+                <div key={g.group} className="border-b border-border/40 pb-2 last:border-0">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-xs font-semibold text-foreground">{g.group}</p>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" className="text-xs h-5 px-1.5"
+                        onClick={() => f.setVisibleSubKeys(Array.from(new Set([...f.visibleSubKeys, ...groupKeys])))}>
+                        Alles aan
+                      </Button>
+                      <span className="text-muted-foreground text-xs">·</span>
+                      <Button variant="ghost" size="sm" className="text-xs h-5 px-1.5"
+                        onClick={() => f.setVisibleSubKeys(f.visibleSubKeys.filter(k => !groupKeys.includes(k)))}>
+                        Uit
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-1 pl-1">
+                    {values.map(s => {
+                      const k = subKey(s);
+                      return (
+                        <label key={k} className="flex items-center gap-2 text-xs cursor-pointer">
+                          <Checkbox
+                            checked={f.visibleSubKeys.includes(k)}
+                            onCheckedChange={() => {
+                              f.setVisibleSubKeys(
+                                f.visibleSubKeys.includes(k)
+                                  ? f.visibleSubKeys.filter(x => x !== k)
+                                  : [...f.visibleSubKeys, k]
+                              );
+                            }}
+                          />
+                          {s.label}
+                        </label>
+                      );
+                    })}
+                    {convs.length > 0 && (
+                      <div className="mt-1.5 pt-1.5 border-t border-dashed border-border/40">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1">
+                          <Percent className="w-2.5 h-2.5" /> Conversies
+                        </p>
+                        {convs.map(s => {
+                          const k = subKey(s);
+                          return (
+                            <label key={k} className="flex items-center gap-2 text-xs cursor-pointer py-0.5">
+                              <Checkbox
+                                checked={f.visibleSubKeys.includes(k)}
+                                onCheckedChange={() => {
+                                  f.setVisibleSubKeys(
+                                    f.visibleSubKeys.includes(k)
+                                      ? f.visibleSubKeys.filter(x => x !== k)
+                                      : [...f.visibleSubKeys, k]
+                                  );
+                                }}
+                              />
+                              {s.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </PopoverContent>
       </Popover>
