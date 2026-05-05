@@ -1,40 +1,80 @@
-## Update Dev Info on /tv/sales-funnel-week
+## Update Tabelkolommen defaults & add missing sub-columns
 
-Rewrite all DevNote contents on this page in **English**, in a **Business Analyst tone**, so the copy matches the actual current implementation (unified Tabelkolommen filter, KPI flow, unit breakdown table, bottom row tiles).
+Apply the user-specified default selection and add the columns that are missing from `unitFunnelColumns.ts` and the underlying data model.
 
-### Scope
+### 1. Data model — `src/data/tvData.ts`
 
-Edit `src/pages/TVSalesFunnelWeek.tsx` only. Two existing DevNotes are rewritten and three new DevNotes are added so every section on the page has accurate dev documentation.
+Add `voorstellenViaTelefoon: number` to `UnitFunnelRow`. Populate plausible values for every row in `weekUnitBreakdown`, `periodUnitBreakdown` and `consultantFunnelData` (≈ 60% of `voorstellenViaEmail`, rounded). Add `"voorstellenViaTelefoon"` to the `numericKeys` array in `buildConsultantRowsForUnit` so consultant-level data distributes automatically.
 
-### DevNote rewrites
+### 2. Column definitions — `src/data/unitFunnelColumns.ts`
 
-**1. Filter bar DevNote** (already exists)
-- Story: as a manager / TV viewer I filter the Sales Funnel by unit, consultant, date range and table columns to focus the slice I need.
-- Logic: describe the four controls — Unit multi-select with batch toggle, Consultant selector dependent on units, Date range (rolling Mon→Today default), and the new unified **Tabelkolommen** popover that combines group toggles and per-sub-column checkboxes (values + conversies) with Reset / Alles aan / Alles uit. Note that all filters propagate via `SalesFunnelFiltersContext`.
+Rebuild `columnGroups` to match the full spec:
 
-**2. KPI row DevNote** (already exists)
-- Story: as a viewer I see top-level funnel KPIs for the rolling week with step-to-step conversion arrows, so I can spot bottlenecks at a glance.
-- Logic: 5 KPI cards (Inschrijvingen → Acquisities → Voorstellen → Gesprekken → Plaatsingen), each showing absolute count + delta vs previous equal-length window; `ConversionArrow` between cards from `weekOverallConversions`; data from `weekFunnelMetrics` in `tvData.ts`.
+```
+1. Inschrijvingen
+   - value  toegewezen
+   - value  ingeschreven
+   - conv   ingeschreven ÷ toegewezen
+   - conv   intakes ÷ ingeschreven
 
-### New DevNotes to add
+2. Acquisitie
+   - value  acquisities
+   - conv   acquisities ÷ ingeschreven
+   - conv   acquisities ÷ toegewezen
 
-**3. Unit breakdown DevNote** (after `<UnitFunnelBreakdown />`)
-- Story: as a manager I want to compare each unit across the full funnel and its conversion ratios, so I can identify which units lag on which step.
-- Logic: rows = units (filtered by `visibleUnits`), columns = 7 funnel-step groups from `unitFunnelColumns.ts` (Inschrijvingen, Acquisitie, Voorstellen, Uitnodigingen, Gesprekken, Vervolg, Geplaatst). Each group exposes value sub-columns and conversie sub-columns. Visibility driven by `visibleColumnGroups` + `visibleSubKeys` from context. Default hides `toegewezen` value column.
+3. Voorstellen
+   - value  voorstellenPerKandidaat   (Per kandidaat)
+   - value  voorstellenViaEmail       (Via email)
+   - value  voorstellenViaTelefoon    (Via telefoon)   NEW
+   - conv   voorstellenViaEmail ÷ ingeschreven
+   - conv   voorstellenViaTelefoon ÷ ingeschreven      NEW
 
-**4. Bottom row DevNote** (after the 3-column bottom grid)
-- Single DevNote covering all three tiles:
-  - **CallStats (week)** — telefonie volume, success rate, average call duration in `[H:M:S]` for the week.
-  - **CandidatesPipeline** — current open candidate count per pipeline stage.
-  - **ConversionFormulasCard** — reference card listing each conversie formula used in the breakdown table.
+4. Uitnodigingen
+   - value  uitnodigingenTotaal
+   - value  nietUitgenodigd
+   - value  welUitgenodigd
+   - conv   uitnodigingenTotaal ÷ acquisities
 
-### Style
+5. Gesprekken
+   - value  eersteGesprek
+   - value  geenEersteGesprek
+   - value  welEersteGesprek
+   - conv   eersteGesprek ÷ acquisities
 
-- Reuse existing `<DevNote story={...} logic={...} />` component (red "Dev info" pill, popover with User story + Logic blocks).
-- All copy in English, BA register: short story (`As a [role], I want [...] so that [...]`) + concise bullet-style logic block.
+6. Vervolg
+   - value  vervolgGesprek
+   - value  dealsluiter
+   - conv   welEersteGesprek ÷ vervolgGesprek
+
+7. Geplaatst
+   - value  geplaatst
+   - value  gemDagenTotPlaatsing
+   - conv   geplaatst ÷ ingeschreven
+   - conv   geplaatst ÷ toegewezen
+```
+
+Drop the existing "Voorst. totaal ÷ …" placeholder — spec leaves it open. Keep existing keys; only **Voorstellen** gains the new telefoon entries.
+
+### 3. Default selection — `DEFAULT_VISIBLE_SUBKEYS`
+
+Switch from "all on except `toegewezen`" to an explicit allow-list matching the spec:
+
+- Inschrijvingen: `ingeschreven`, `ingeschreven÷toegewezen`, `intakes÷ingeschreven`
+- Acquisitie: `acquisities`, `acquisities÷ingeschreven`
+- Voorstellen: `voorstellenPerKandidaat`, `voorstellenViaEmail`, `voorstellenViaEmail÷ingeschreven`
+- Uitnodigingen: `uitnodigingenTotaal`, `nietUitgenodigd`, `uitnodigingenTotaal÷acquisities`
+- Gesprekken: `eersteGesprek`, `geenEersteGesprek`, `eersteGesprek÷acquisities`
+- Vervolg: `vervolgGesprek`, `dealsluiter`, `welEersteGesprek÷vervolgGesprek`
+- Geplaatst: `geplaatst`, `gemDagenTotPlaatsing`, `geplaatst÷ingeschreven`, `geplaatst÷toegewezen`
+
+All other sub-keys (e.g. `toegewezen`, `acquisities÷toegewezen`, `welUitgenodigd`, `welEersteGesprek`, `voorstellenViaTelefoon`, both telefoon conversies) remain available in the popover but **off** by default.
+
+### 4. No other changes
+
+- `UnitFunnelBreakdown.tsx` already renders any sub-key that's visible — no edits needed.
+- `SalesFunnelFilterBar.tsx` already iterates `columnGroups` — picks up the new group entries automatically.
+- Consultant-level data inherits the new field via `numericKeys`.
 
 ### Files
 
-- Edit: `src/pages/TVSalesFunnelWeek.tsx`
-
-No other files, contexts, or data layers change.
+- Edit: `src/data/tvData.ts`, `src/data/unitFunnelColumns.ts`
