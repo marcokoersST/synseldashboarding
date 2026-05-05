@@ -364,14 +364,15 @@ export const dailyInstroom = (() => {
 
 // Source treeview aggregates
 export const sourceTree = (() => {
-  const map = new Map<SourceTopLevel, { total: number; nieuw: number; bestaand: number; ingeschreven: number; subs: Map<string, { total: number; ingeschreven: number }> }>();
+  const map = new Map<SourceTopLevel, { total: number; nieuw: number; bestaand: number; ingeschreven: number; scoreSum: number; subs: Map<string, { total: number; ingeschreven: number; scoreSum: number }> }>();
   for (const c of candidates) {
-    const node = map.get(c.bron) ?? { total: 0, nieuw: 0, bestaand: 0, ingeschreven: 0, subs: new Map() };
+    const node = map.get(c.bron) ?? { total: 0, nieuw: 0, bestaand: 0, ingeschreven: 0, scoreSum: 0, subs: new Map() };
     node.total++;
+    node.scoreSum += c.score;
     c.type === "nieuw" ? node.nieuw++ : node.bestaand++;
     if (c.ingeschrevenOp) node.ingeschreven++;
-    const sub = node.subs.get(c.subBron) ?? { total: 0, ingeschreven: 0 };
-    sub.total++; if (c.ingeschrevenOp) sub.ingeschreven++;
+    const sub = node.subs.get(c.subBron) ?? { total: 0, ingeschreven: 0, scoreSum: 0 };
+    sub.total++; sub.scoreSum += c.score; if (c.ingeschrevenOp) sub.ingeschreven++;
     node.subs.set(c.subBron, sub);
     map.set(c.bron, node);
   }
@@ -379,9 +380,11 @@ export const sourceTree = (() => {
     bron,
     total: n.total, nieuw: n.nieuw, bestaand: n.bestaand,
     conversie: n.total ? Math.round((n.ingeschreven / n.total) * 100) : 0,
+    avgScore: n.total ? Math.round(n.scoreSum / n.total) : 0,
     subs: Array.from(n.subs.entries()).map(([naam, s]) => ({
       naam, total: s.total,
       conversie: s.total ? Math.round((s.ingeschreven / s.total) * 100) : 0,
+      avgScore: s.total ? Math.round(s.scoreSum / s.total) : 0,
     })).sort((a, b) => b.total - a.total),
   }));
 })();
