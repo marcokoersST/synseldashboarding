@@ -92,7 +92,24 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
                 <h3 className="text-sm font-semibold">SLA per tier · % binnen contact</h3>
               </div>
               <div className="flex items-center gap-1">
-                <TileInfo title="SLA per tier" what="Contact-SLA score per candidate tier (A+ down to D). Highlights where responsiveness lags for the most valuable cohorts." formula="in_SLA / contacted × 100, grouped by tier" source="tierContactStats()" notes="A+ must be reached within 2h — smallest tolerated margin." />
+                <TileInfo
+                  title="SLA per tier · % binnen contact"
+                  what={
+                    "Percentage kandidaten per tier dat op tijd is gebeld. We kijken naar alle kandidaten die in deze week op status '1 | Inschrijven' zijn gezet en checken of in de callrecordings een uitgaande poging valt binnen de tier-termijn."
+                  }
+                  formula={
+                    "per tier T:\n" +
+                    "  pct = count(c ∈ T met uitgaande call binnen tier_SLA(T)) / count(c ∈ T) × 100\n\n" +
+                    "Tier-termijnen (geldt voor het hele dashboard):\n" +
+                    "  85+    → 2× gebeld binnen 1 uur\n" +
+                    "  70-85  → gebeld binnen 1 uur\n" +
+                    "  50-70  → gebeld op het eerstvolgende belmoment\n" +
+                    "  30-50  → gebeld binnen 1 dag\n" +
+                    "  0-30   → gebeld binnen 2 dagen"
+                  }
+                  source="tierContactStats() · RecruitCRM callrecordings (uitgaande pogingen)"
+                  notes="Telt belpoging, niet daadwerkelijk gesprek. n = onTime/total in deze week."
+                />
                 <button onClick={() => goTo("opvolging")} className="text-xs text-primary hover:underline">Bekijk →</button>
               </div>
             </div>
