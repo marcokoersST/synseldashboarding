@@ -99,6 +99,11 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
     [unitEntries]
   );
 
+  const selfEntry = useMemo(() => unitEntries.find((e) => e.name === selfName), [unitEntries, selfName]);
+  const selfValue = selfEntry?.value ?? 0;
+  const selfDone = selfEntry?.valueDone ?? 0;
+  const sharePct = unitTotal > 0 ? Math.round((selfValue / unitTotal) * 100) : 0;
+
   // Trend: based on company-wide column total (proxy for unit trend)
   const delta = useMemo(() => {
     if (!column.previousTotal || column.previousTotal === 0) return 0;
@@ -113,6 +118,11 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
     container.scrollTop = Math.max(0, target);
   }, [unitEntries]);
 
+  const unitSuffix =
+    column.title === "Inschrijvingen" ? "op naam"
+    : column.title === "Intakes" ? "intakes"
+    : cfg.doneLabel;
+
   return (
     <div className="rounded-md border border-border/60 bg-card/40 p-2 flex flex-col min-w-0 min-w-[150px]">
       {/* Header */}
@@ -120,33 +130,65 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
         <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
           {cfg.title}
         </div>
-        <div className="flex items-baseline gap-1.5 mt-0.5">
-          <span className="text-2xl font-bold tabular-nums leading-none">{unitTotal}</span>
-          {cfg.doneLabel && column.title !== "Niet begonnen" && (
-            <span className="text-[10px] text-muted-foreground truncate">
-              {column.title === "Inschrijvingen" ? "op naam" : column.title === "Intakes" ? "intakes" : cfg.doneLabel}
-            </span>
-          )}
-        </div>
-        {column.totalDone !== undefined && cfg.doneLabel && column.title !== "Intakes" && (
-          <div className="text-[10px] text-success mt-0.5 flex items-center gap-1">
-            <span>✓</span>
-            <span className="font-semibold tabular-nums">{unitTotalDone}</span>
-            <span className="text-muted-foreground">{cfg.doneLabel}</span>
-          </div>
-        )}
 
-        {/* Trend line */}
-        <div className="mt-1.5 flex items-center gap-1 text-[10px]">
-          {delta >= 0 ? (
-            <TrendingUp className="w-3 h-3 text-success" />
-          ) : (
-            <TrendingDown className="w-3 h-3 text-destructive" />
+        {/* UNIT block */}
+        <div className="mt-1">
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            Unit
+          </div>
+          <div className="flex items-baseline gap-1.5 mt-0.5">
+            <span className="text-2xl font-bold tabular-nums leading-none">{unitTotal}</span>
+            {unitSuffix && column.title !== "Niet begonnen" && (
+              <span className="text-[10px] text-muted-foreground truncate">{unitSuffix}</span>
+            )}
+          </div>
+          {column.totalDone !== undefined && cfg.doneLabel && column.title !== "Intakes" && (
+            <div className="text-[10px] text-success mt-0.5 flex items-center gap-1">
+              <span>✓</span>
+              <span className="font-semibold tabular-nums">{unitTotalDone}</span>
+              <span className="text-muted-foreground">{cfg.doneLabel}</span>
+            </div>
           )}
-          <span className={cn("font-semibold tabular-nums", delta >= 0 ? "text-success" : "text-destructive")}>
-            {delta >= 0 ? "+" : ""}{delta.toFixed(0)}%
-          </span>
-          <span className="text-muted-foreground">t.o.v. vorige periode</span>
+
+          {/* Trend line */}
+          <div className="mt-1.5 flex items-center gap-1 text-[10px]">
+            {delta >= 0 ? (
+              <TrendingUp className="w-3 h-3 text-success" />
+            ) : (
+              <TrendingDown className="w-3 h-3 text-destructive" />
+            )}
+            <span className={cn("font-semibold tabular-nums", delta >= 0 ? "text-success" : "text-destructive")}>
+              {delta >= 0 ? "+" : ""}{delta.toFixed(0)}%
+            </span>
+            <span className="text-muted-foreground">t.o.v. vorige periode</span>
+          </div>
+        </div>
+
+        {/* JIJ block */}
+        <div className="mt-1.5 pt-1.5 border-t border-gold/30">
+          <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-gold">
+            <Target className="w-2.5 h-2.5" />
+            <span>Jij</span>
+          </div>
+          <div className="flex items-baseline gap-1.5 mt-0.5">
+            <span className="text-lg font-bold tabular-nums leading-none text-gold">{selfValue}</span>
+            {unitSuffix && column.title !== "Niet begonnen" && (
+              <span className="text-[10px] text-muted-foreground truncate">{unitSuffix}</span>
+            )}
+          </div>
+          <div className="text-[10px] mt-0.5 flex items-center gap-1 flex-wrap">
+            {column.totalDone !== undefined && cfg.doneLabel && column.title !== "Intakes" && (
+              <>
+                <span className="text-success">✓</span>
+                <span className="font-semibold tabular-nums text-success">{selfDone}</span>
+                <span className="text-muted-foreground">{cfg.doneLabel}</span>
+                <span className="text-muted-foreground/60">·</span>
+              </>
+            )}
+            <span className="text-muted-foreground tabular-nums">
+              <span className="font-semibold text-foreground/80">{sharePct}%</span> van unit
+            </span>
+          </div>
         </div>
       </div>
 
