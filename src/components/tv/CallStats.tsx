@@ -112,6 +112,7 @@ export function CallStats({ mode }: CallStatsProps) {
 
       {!compact && (
         <DevNote
+          id={5}
           story={<><strong>As a user (manager/TV viewer)</strong>, I want to see total outbound calls, call duration, gesprekken, acquisition mails and acquisition calls for the week, broken down by unit, <strong>so that</strong> I can track daily calling and mailing effort across the team.</>}
           logic={`Five KPI badges at the top:
   • Uitgaand — sum of daily outbound calls

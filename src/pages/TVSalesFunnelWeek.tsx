@@ -95,6 +95,7 @@ SalesFunnelFiltersContext so every tile below reacts in sync:
         ))}
       </div>
       <DevNote
+        id={2}
         story={<><strong>As a manager / TV viewer</strong>, I want to see the top-level funnel KPIs for the rolling week at a glance, with conversion rates between each step, <strong>so that</strong> I can immediately spot bottlenecks or momentum across the recruitment pipeline.</>}
         logic={`Five KPI cards represent the main funnel steps:
 Inschrijvingen → Acquisities → Voorstellen →
@@ -117,6 +118,7 @@ in src/data/tvData.ts.`}
         <UnitFunnelBreakdown />
       </div>
       <DevNote
+        id={4}
         story={<><strong>As a manager</strong>, I want to compare every unit across the full funnel and its conversion ratios in one table, <strong>so that</strong> I can identify which units lag on which step and prioritise coaching.</>}
         logic={`Tile: "Uitsplitsing per Unit & Conversies".
 
@@ -147,6 +149,7 @@ Data source: weekUnitFunnelRows in src/data/tvData.ts.`}
         <ConversionFormulasCard />
       </div>
       <DevNote
+        id={8}
         story={<><strong>As a manager / TV viewer</strong>, I want supporting context next to the funnel — call activity, the live candidate pipeline and the conversie formulas — <strong>so that</strong> I can interpret the numbers above without leaving the screen.</>}
         logic={`Three tiles in the bottom row:
 
