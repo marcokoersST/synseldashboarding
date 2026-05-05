@@ -402,6 +402,8 @@ export const SUB_TO_PLATFORM: Record<string, string> = {
 export interface SourceCampaign {
   naam: string;
   total: number;
+  nieuw: number;
+  bestaand: number;
   conversie: number;
   avgScore: number;
 }
@@ -425,8 +427,8 @@ export interface SourceMedium {
 }
 
 export const sourceTree: SourceMedium[] = (() => {
-  type CampAgg = { total: number; ingeschreven: number; scoreSum: number };
-  type PlatAgg = { total: number; ingeschreven: number; scoreSum: number; camps: Map<string, CampAgg> };
+  type CampAgg = { total: number; nieuw: number; bestaand: number; ingeschreven: number; scoreSum: number };
+  type PlatAgg = { total: number; nieuw: number; bestaand: number; ingeschreven: number; scoreSum: number; camps: Map<string, CampAgg> };
   type MedAgg = { total: number; nieuw: number; bestaand: number; ingeschreven: number; scoreSum: number; plats: Map<string, PlatAgg> };
 
   const map = new Map<SourceTopLevel, MedAgg>();
@@ -438,11 +440,15 @@ export const sourceTree: SourceMedium[] = (() => {
     if (c.ingeschrevenOp) med.ingeschreven++;
 
     const platformNaam = SUB_TO_PLATFORM[c.subBron] ?? c.subBron;
-    const plat = med.plats.get(platformNaam) ?? { total: 0, ingeschreven: 0, scoreSum: 0, camps: new Map() };
-    plat.total++; plat.scoreSum += c.score; if (c.ingeschrevenOp) plat.ingeschreven++;
+    const plat = med.plats.get(platformNaam) ?? { total: 0, nieuw: 0, bestaand: 0, ingeschreven: 0, scoreSum: 0, camps: new Map() };
+    plat.total++; plat.scoreSum += c.score;
+    c.type === "nieuw" ? plat.nieuw++ : plat.bestaand++;
+    if (c.ingeschrevenOp) plat.ingeschreven++;
 
-    const camp = plat.camps.get(c.subBron) ?? { total: 0, ingeschreven: 0, scoreSum: 0 };
-    camp.total++; camp.scoreSum += c.score; if (c.ingeschrevenOp) camp.ingeschreven++;
+    const camp = plat.camps.get(c.subBron) ?? { total: 0, nieuw: 0, bestaand: 0, ingeschreven: 0, scoreSum: 0 };
+    camp.total++; camp.scoreSum += c.score;
+    c.type === "nieuw" ? camp.nieuw++ : camp.bestaand++;
+    if (c.ingeschrevenOp) camp.ingeschreven++;
     plat.camps.set(c.subBron, camp);
 
     med.plats.set(platformNaam, plat);
@@ -456,17 +462,22 @@ export const sourceTree: SourceMedium[] = (() => {
     platforms: Array.from(n.plats.entries()).map(([naam, p]) => ({
       naam,
       total: p.total,
+      nieuw: p.nieuw,
+      bestaand: p.bestaand,
       conversie: p.total ? Math.round((p.ingeschreven / p.total) * 100) : 0,
       avgScore: p.total ? Math.round(p.scoreSum / p.total) : 0,
       campaigns: Array.from(p.camps.entries()).map(([cnaam, c]) => ({
         naam: cnaam,
         total: c.total,
+        nieuw: c.nieuw,
+        bestaand: c.bestaand,
         conversie: c.total ? Math.round((c.ingeschreven / c.total) * 100) : 0,
         avgScore: c.total ? Math.round(c.scoreSum / c.total) : 0,
       })).sort((a, b) => b.total - a.total),
     })).sort((a, b) => b.total - a.total),
   }));
 })();
+
 
 // Score histogram per type
 export function scoreHistogram(filter: "totaal" | "nieuw" | "bestaand") {
