@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useMemo, ReactNode } from "react";
 import type { DateRange } from "react-day-picker";
 import { ranglijstenFilters, getCurrentWeekNumber, getCurrentPeriodNumber, allConsultantsList } from "@/data/ranglijstenData";
+import { DEFAULT_VISIBLE_SUBKEYS } from "@/data/unitFunnelColumns";
 
 export type ViewMode = "week" | "periode" | "custom";
 
@@ -31,6 +32,8 @@ interface SalesFunnelFiltersValue {
   setSelectedConsultants: (v: string[]) => void;
   visibleColumnGroups: string[];
   setVisibleColumnGroups: (v: string[]) => void;
+  visibleSubKeys: string[];
+  setVisibleSubKeys: (v: string[]) => void;
   rotationSec: number;
   setRotationSec: (v: number) => void;
   // Helpers
@@ -53,6 +56,7 @@ export function SalesFunnelFiltersProvider({ children, defaultViewMode = "week" 
   const [selectedUnits, setSelectedUnits] = useState<string[]>(["Alle units"]);
   const [selectedConsultants, setSelectedConsultants] = useState<string[]>(["Alle consultants"]);
   const [visibleColumnGroups, setVisibleColumnGroups] = useState<string[]>([...COLUMN_GROUP_TITLES]);
+  const [visibleSubKeys, setVisibleSubKeys] = useState<string[]>([...DEFAULT_VISIBLE_SUBKEYS]);
   const [rotationSec, setRotationSec] = useState<number>(12);
 
   const value = useMemo<SalesFunnelFiltersValue>(() => {
@@ -80,10 +84,11 @@ export function SalesFunnelFiltersProvider({ children, defaultViewMode = "week" 
       selectedUnits, setSelectedUnits,
       selectedConsultants, setSelectedConsultants,
       visibleColumnGroups, setVisibleColumnGroups,
+      visibleSubKeys, setVisibleSubKeys,
       rotationSec, setRotationSec,
       filterUnits, isUnitVisible, isConsultantVisible,
     };
-  }, [jaar, viewMode, selectedWeek, selectedPeriode, customRange, selectedUnits, selectedConsultants, visibleColumnGroups, rotationSec]);
+  }, [jaar, viewMode, selectedWeek, selectedPeriode, customRange, selectedUnits, selectedConsultants, visibleColumnGroups, visibleSubKeys, rotationSec]);
 
   return (
     <SalesFunnelFiltersContext.Provider value={value}>
