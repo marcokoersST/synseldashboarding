@@ -362,29 +362,106 @@ export const dailyInstroom = (() => {
   return Array.from(buckets.values());
 })();
 
-// Source treeview aggregates
-export const sourceTree = (() => {
-  const map = new Map<SourceTopLevel, { total: number; nieuw: number; bestaand: number; ingeschreven: number; scoreSum: number; subs: Map<string, { total: number; ingeschreven: number; scoreSum: number }> }>();
+// Mapping van campagne (subBron) → platform/tool waarmee de campagne is uitgevoerd.
+// Hierdoor krijgt de tree drie niveaus: medium → platform → campagne.
+export const SUB_TO_PLATFORM: Record<string, string> = {
+  // paid_jobboard
+  "Indeed Sponsored": "Indeed",
+  "Monsterboard Premium": "Monsterboard",
+  "Nationale Vacaturebank Promo": "Nationale Vacaturebank",
+  // organic_jobboard
+  "Indeed Free": "Indeed",
+  "Werkzoeken.nl": "Werkzoeken.nl",
+  "Jobbird": "Jobbird",
+  // paid_social
+  "Meta Ads": "Meta Business",
+  "TikTok Ads": "TikTok Ads Manager",
+  "LinkedIn Ads": "LinkedIn Campaign Manager",
+  // organic_social
+  "LinkedIn Post": "LinkedIn",
+  "Instagram Post": "Instagram",
+  "Facebook Post": "Facebook",
+  // reactivation
+  "App push": "Bird",
+  "Mail campagne Q1": "Brevo",
+  "Mail campagne Q2": "Brevo",
+  // direct
+  "Direct mail": "Brevo",
+  "Direct telefoon": "Bird",
+  // cv_database
+  "Indeed CV": "Indeed",
+  "Monsterboard CV": "Monsterboard",
+  "Jobbird CV": "Jobbird",
+  // recruiter
+  "LinkedIn Recruiter": "LinkedIn",
+  "Sales Navigator": "LinkedIn",
+  "Inmail": "LinkedIn",
+};
+
+// Source treeview aggregates — 3 niveaus: medium → platform → campagne
+export interface SourceCampaign {
+  naam: string;
+  total: number;
+  conversie: number;
+  avgScore: number;
+}
+export interface SourcePlatform {
+  naam: string;
+  total: number;
+  conversie: number;
+  avgScore: number;
+  campaigns: SourceCampaign[];
+}
+export interface SourceMedium {
+  bron: SourceTopLevel;
+  total: number;
+  nieuw: number;
+  bestaand: number;
+  conversie: number;
+  avgScore: number;
+  platforms: SourcePlatform[];
+}
+
+export const sourceTree: SourceMedium[] = (() => {
+  type CampAgg = { total: number; ingeschreven: number; scoreSum: number };
+  type PlatAgg = { total: number; ingeschreven: number; scoreSum: number; camps: Map<string, CampAgg> };
+  type MedAgg = { total: number; nieuw: number; bestaand: number; ingeschreven: number; scoreSum: number; plats: Map<string, PlatAgg> };
+
+  const map = new Map<SourceTopLevel, MedAgg>();
   for (const c of candidates) {
-    const node = map.get(c.bron) ?? { total: 0, nieuw: 0, bestaand: 0, ingeschreven: 0, scoreSum: 0, subs: new Map() };
-    node.total++;
-    node.scoreSum += c.score;
-    c.type === "nieuw" ? node.nieuw++ : node.bestaand++;
-    if (c.ingeschrevenOp) node.ingeschreven++;
-    const sub = node.subs.get(c.subBron) ?? { total: 0, ingeschreven: 0, scoreSum: 0 };
-    sub.total++; sub.scoreSum += c.score; if (c.ingeschrevenOp) sub.ingeschreven++;
-    node.subs.set(c.subBron, sub);
-    map.set(c.bron, node);
+    const med = map.get(c.bron) ?? { total: 0, nieuw: 0, bestaand: 0, ingeschreven: 0, scoreSum: 0, plats: new Map() };
+    med.total++;
+    med.scoreSum += c.score;
+    c.type === "nieuw" ? med.nieuw++ : med.bestaand++;
+    if (c.ingeschrevenOp) med.ingeschreven++;
+
+    const platformNaam = SUB_TO_PLATFORM[c.subBron] ?? c.subBron;
+    const plat = med.plats.get(platformNaam) ?? { total: 0, ingeschreven: 0, scoreSum: 0, camps: new Map() };
+    plat.total++; plat.scoreSum += c.score; if (c.ingeschrevenOp) plat.ingeschreven++;
+
+    const camp = plat.camps.get(c.subBron) ?? { total: 0, ingeschreven: 0, scoreSum: 0 };
+    camp.total++; camp.scoreSum += c.score; if (c.ingeschrevenOp) camp.ingeschreven++;
+    plat.camps.set(c.subBron, camp);
+
+    med.plats.set(platformNaam, plat);
+    map.set(c.bron, med);
   }
   return Array.from(map.entries()).map(([bron, n]) => ({
     bron,
     total: n.total, nieuw: n.nieuw, bestaand: n.bestaand,
     conversie: n.total ? Math.round((n.ingeschreven / n.total) * 100) : 0,
     avgScore: n.total ? Math.round(n.scoreSum / n.total) : 0,
-    subs: Array.from(n.subs.entries()).map(([naam, s]) => ({
-      naam, total: s.total,
-      conversie: s.total ? Math.round((s.ingeschreven / s.total) * 100) : 0,
-      avgScore: s.total ? Math.round(s.scoreSum / s.total) : 0,
+    platforms: Array.from(n.plats.entries()).map(([naam, p]) => ({
+      naam,
+      total: p.total,
+      conversie: p.total ? Math.round((p.ingeschreven / p.total) * 100) : 0,
+      avgScore: p.total ? Math.round(p.scoreSum / p.total) : 0,
+      campaigns: Array.from(p.camps.entries()).map(([cnaam, c]) => ({
+        naam: cnaam,
+        total: c.total,
+        conversie: c.total ? Math.round((c.ingeschreven / c.total) * 100) : 0,
+        avgScore: c.total ? Math.round(c.scoreSum / c.total) : 0,
+      })).sort((a, b) => b.total - a.total),
     })).sort((a, b) => b.total - a.total),
   }));
 })();
