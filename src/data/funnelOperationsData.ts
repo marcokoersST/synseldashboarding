@@ -11,7 +11,26 @@ export type CandidateStatus =
   | "afgesloten";
 export type CandidateType = "nieuw" | "bestaand";
 export type BusinessUnit = "Industrie" | "Installatietechniek" | "Utiliteit" | "Maritiem";
-export type SourceTopLevel = "jobscan" | "open_cv" | "cv_database" | "reactivering" | "linkedin";
+export type SourceTopLevel =
+  | "paid_jobboard"
+  | "organic_jobboard"
+  | "paid_social"
+  | "organic_social"
+  | "reactivation"
+  | "direct"
+  | "cv_database"
+  | "recruiter";
+
+export const SOURCE_LABELS: Record<SourceTopLevel, string> = {
+  paid_jobboard: "Jobboards paid",
+  organic_jobboard: "Jobboards organic",
+  paid_social: "Paid social",
+  organic_social: "Organic social",
+  reactivation: "Reactivation",
+  direct: "Direct",
+  cv_database: "CV databases",
+  recruiter: "LinkedIn recruiter",
+};
 
 export interface Recruiter { id: string; naam: string; }
 export interface Consultant { id: string; naam: string; }
