@@ -222,20 +222,20 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
                 <Monitor className="w-3 h-3" /> TV Modus
               </Link>
               <TileInfo
-                title="Acties vandaag"
+                title="Actions today"
                 what={
-                  "Detailoverzicht van kandidaten waarvan de contact-SLA bijna verloopt of al verlopen is. Klok start op het moment van Inschrijven; we tonen hoeveel tijd er nog overblijft of met hoeveel tijd de SLA is overschreden.\n\n" +
-                  "Per kandidaat zichtbaar: tier, hoeveel tijd nog/over, en de consultant op wie de kandidaat in RecruitCRM op naam staat (owner)."
+                  "Detail view of candidates whose contact-SLA is about to expire or has already expired. The clock starts at the moment of Inschrijven; we show how much time is left or by how much the SLA was breached.\n\n" +
+                  "Per candidate: tier, time remaining/overdue, and the consultant who owns the candidate in RecruitCRM."
                 }
                 formula={
                   "deadline    = ingeschrevenOp + tier_SLA(c.tier)\n" +
-                  "tijd_over   = deadline − now      (positief = nog tijd, negatief = verlopen)\n" +
-                  "status      = verlopen   als now > deadline\n" +
-                  "            = dreigend  als (deadline − now) ≤ 20% × tier_SLA\n" +
-                  "sort: hoogste overschrijding eerst"
+                  "time_left   = deadline − now      (positive = time left, negative = expired)\n" +
+                  "status      = expired   if now > deadline\n" +
+                  "            = at_risk   if (deadline − now) ≤ 20% × tier_SLA\n" +
+                  "sort: largest breach first"
                 }
-                source="getActionList() · RecruitCRM kandidaat-status, ingeschrevenOp, owner"
-                notes="Acties zelf gebeuren in RecruitCRM via de deeplinks. Tier-termijnen identiek aan SLA per tier-tegel."
+                source="getActionList() · RecruitCRM candidate status, ingeschrevenOp, owner"
+                notes="Actions themselves happen in RecruitCRM via the deeplinks. Tier deadlines identical to the SLA per tier tile."
               />
               <button onClick={() => goTo("watchlist")} className="text-xs text-primary hover:underline whitespace-nowrap">Volledige watchlist →</button>
             </div>
