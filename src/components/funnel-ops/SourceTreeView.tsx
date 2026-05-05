@@ -52,6 +52,7 @@ export function SourceTreeView() {
                 {node.platforms.map(p => {
                   const platKey = `${node.bron}::${p.naam}`;
                   const platOpen = openPlatforms.includes(platKey);
+                  const pPctNew = p.total ? Math.round((p.nieuw / p.total) * 100) : null;
                   return (
                     <div key={platKey}>
                       <button
@@ -63,21 +64,24 @@ export function SourceTreeView() {
                           {p.naam}
                         </div>
                         <div className="text-right tabular-nums">{p.total}</div>
-                        <div className="text-right tabular-nums text-muted-foreground">—</div>
-                        <div className="text-right tabular-nums text-muted-foreground">—</div>
+                        <div className="text-right tabular-nums">{pPctNew !== null ? `${pPctNew}%` : "—"}</div>
+                        <div className="text-right tabular-nums">{pPctNew !== null ? `${100 - pPctNew}%` : "—"}</div>
                         <div className={`text-right tabular-nums ${scoreClass(p.avgScore)}`}>{p.avgScore}</div>
                         <div className="text-right tabular-nums text-success">{p.conversie}%</div>
                       </button>
-                      {platOpen && p.campaigns.map(c => (
-                        <div key={c.naam} className={`${cols} px-3 py-1.5 pl-12 text-xs text-muted-foreground border-t border-border/50`}>
-                          <div>{c.naam}</div>
-                          <div className="text-right tabular-nums">{c.total}</div>
-                          <div className="text-right tabular-nums">—</div>
-                          <div className="text-right tabular-nums">—</div>
-                          <div className={`text-right tabular-nums ${scoreClass(c.avgScore)}`}>{c.avgScore}</div>
-                          <div className="text-right tabular-nums">{c.conversie}%</div>
-                        </div>
-                      ))}
+                      {platOpen && p.campaigns.map(c => {
+                        const cPctNew = c.total ? Math.round((c.nieuw / c.total) * 100) : null;
+                        return (
+                          <div key={c.naam} className={`${cols} px-3 py-1.5 pl-12 text-xs text-muted-foreground border-t border-border/50`}>
+                            <div>{c.naam}</div>
+                            <div className="text-right tabular-nums">{c.total}</div>
+                            <div className="text-right tabular-nums">{cPctNew !== null ? `${cPctNew}%` : "—"}</div>
+                            <div className="text-right tabular-nums">{cPctNew !== null ? `${100 - cPctNew}%` : "—"}</div>
+                            <div className={`text-right tabular-nums ${scoreClass(c.avgScore)}`}>{c.avgScore}</div>
+                            <div className="text-right tabular-nums">{c.conversie}%</div>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
