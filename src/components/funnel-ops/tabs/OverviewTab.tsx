@@ -152,13 +152,13 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
                     "  6. Direct               → utm_medium = direct_mail OR direct_telefoon\n" +
                     "  7. CV databases         → utm_medium = cv_database\n" +
                     "  8. LinkedIn recruiter   → utm_medium = recruiter\n\n" +
-                    "Forecast P50: expected placements for this inflow (same logic as the top 5 KPI tiles).\n\n" +
+                    "Expected placements: forecasted number of placements for this inflow (same logic as the top 5 KPI tiles).\n\n" +
                     "Potential at optimal distribution: max number of placements based on inflow × normalised job titles × per-consultant placement ratio. Underlined value = +Δ between current forecast and theoretical maximum."
                   }
                   formula={
                     "share(medium)  = count(candidates with utm_medium = medium) / total\n" +
-                    "forecastP50    = Σ historical placement_ratio(job_title, score) × instroom\n" +
-                    "potential      = max Σ placement_ratio(job_title, consultant) − forecastP50"
+                    "expected       = Σ historical placement_ratio(job_title, score) × instroom\n" +
+                    "potential      = max Σ placement_ratio(job_title, consultant) − expected"
                   }
                   source="sourceTree · kpis.forecastMaand · RecruitCRM utm_medium + placement history"
                   notes="Requires normalised job titles and per-consultant placement ratios for the potential calculation."
