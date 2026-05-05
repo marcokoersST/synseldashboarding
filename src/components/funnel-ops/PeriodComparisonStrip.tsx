@@ -54,23 +54,23 @@ export function PeriodComparisonStrip() {
           )}
         </div>
         <TileInfo
-          title="5 blokken bovenaan"
+          title="Top 5 KPI tiles"
           what={
-            "Instroom: aantal kandidaten die in deze periode op kandidaat-status '1 | Inschrijven' zijn gekomen.\n\n" +
-            "Gem. score: gemiddelde plaatsbaarheidsscore (0-100) over alle kandidaten die in de periode op status Inschrijven zijn gezet.\n\n" +
-            "Gecontacteerd: aantal kandidaten waarmee daadwerkelijk een inschrijvingsgesprek is geweest (gebeld + opgenomen).\n\n" +
-            "Contact-SLA: % kandidaten waarbij binnen de tier-termijn een belpoging is gedaan (telt poging, niet daadwerkelijk gesprek).\n\n" +
-            "Verwachte plaatsingen: op basis van plaatsbaarheidsscore en volume voorspeld aantal plaatsingen voor deze instroom."
+            "Instroom: number of candidates that entered candidate status '1 | Inschrijven' in this period.\n\n" +
+            "Gem. score: average placeability score (0-100) across all candidates set to status Inschrijven in the period.\n\n" +
+            "Gecontacteerd: number of candidates with an actual registration call (called + picked up).\n\n" +
+            "Contact-SLA: % of candidates with a call attempt within the tier-specific deadline (counts attempt, not actual conversation).\n\n" +
+            "Expected placements: forecasted number of placements for this inflow based on placeability score and volume."
           }
           formula={
-            "instroom        = count(candidates where status = '1 | Inschrijven' in [from, to))\n" +
-            "avgScore        = mean(score) over instroom\n" +
-            "gecontacteerd   = count(candidates with inschrijvingsgesprek)\n" +
-            "contactSLApct   = poging_binnen_tier_SLA / instroom × 100\n" +
-            "verwacht        = Σ historische plaatsingsratio(functietitel, score-bucket) × instroom"
+            "instroom       = count(candidates where status = '1 | Inschrijven' in [from, to))\n" +
+            "avgScore       = mean(score) over instroom\n" +
+            "gecontacteerd  = count(candidates with registration call)\n" +
+            "contactSLApct  = attempts_within_tier_SLA / instroom × 100\n" +
+            "expected       = Σ historical placement_ratio(job_title, score_bucket) × instroom"
           }
-          source="rangeStats() · FunnelOpsFiltersContext · RecruitCRM kandidaat-status + callrecordings"
-          notes="Verwachte plaatsingen vereist historische analyse van genormaliseerde functietitels × plaatsbaarheidsscore × werkelijke plaatsingen."
+          source="rangeStats() · FunnelOpsFiltersContext · RecruitCRM candidate status + call recordings"
+          notes="Expected placements requires historical analysis of normalised job titles × placeability score × actual placements."
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
