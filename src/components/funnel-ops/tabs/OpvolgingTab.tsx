@@ -7,6 +7,7 @@ import { ActionList } from "../ActionList";
 import { tierContactStats, getActionList, TIER_COLOR, candidates, SLA_MATRIX } from "@/data/funnelOperationsData";
 import type { Tier } from "@/data/funnelOperationsData";
 import { TileInfo } from "../TileInfo";
+import { PhoneCall, Trophy, Timer, AlertTriangle, MessageSquare } from "lucide-react";
 
 export function OpvolgingTab() {
   const [sub, setSub] = useState<"bel" | "sla">("bel");
@@ -31,10 +32,10 @@ export function OpvolgingTab() {
     }));
 
   return (
-    <Tabs value={sub} onValueChange={(v) => setSub(v as "bel" | "sla")} className="space-y-4">
+    <Tabs value={sub} onValueChange={(v) => setSub(v as "bel" | "sla")} className="space-y-4 animate-fade-in">
       <TabsList className="grid grid-cols-2 w-full max-w-md">
-        <TabsTrigger value="bel">Bel-discipline</TabsTrigger>
-        <TabsTrigger value="sla">Opvolg-SLA</TabsTrigger>
+        <TabsTrigger value="bel" className="flex items-center gap-1.5"><PhoneCall className="w-3.5 h-3.5" />Bel-discipline</TabsTrigger>
+        <TabsTrigger value="sla" className="flex items-center gap-1.5"><Timer className="w-3.5 h-3.5" />Opvolg-SLA</TabsTrigger>
       </TabsList>
 
       <TabsContent value="bel" className="space-y-3">
@@ -50,7 +51,7 @@ export function OpvolgingTab() {
       <TabsContent value="sla" className="space-y-4">
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold">SLA-score per tier</h3>
+            <h3 className="text-sm font-semibold flex items-center gap-2"><Timer className="w-4 h-4 text-orange-500" />SLA-score per tier</h3>
             <TileInfo title="SLA per tier" what="Contact-SLA score per candidate tier (A+ down to D). Used to verify that the highest-value candidates are actually being prioritised." formula="in_SLA / contacted × 100, grouped by tier" source="tierContactStats()" notes="Strict window for A+: 2 hours from assignment." />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
@@ -66,7 +67,7 @@ export function OpvolgingTab() {
 
         <Card className="p-3">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold">SLA-leaderboard recruiters</h3>
+            <h3 className="text-sm font-semibold flex items-center gap-2"><Trophy className="w-4 h-4 text-amber-500" />SLA-leaderboard recruiters</h3>
             <TileInfo title="SLA leaderboard" what="Per recruiter: number of assigned candidates, % within contact-SLA, % within first-conversation SLA, and number of breaches. Surfaces individual workload and quality." formula="see recruiterSLAStats() — all aggregates grouped by recruiter.id" source="recruiterSLAStats()" />
           </div>
           <SLALeaderboard />
@@ -75,7 +76,7 @@ export function OpvolgingTab() {
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold">Contact-SLA verlopen of dreigend</h3>
+              <h3 className="text-sm font-semibold flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-destructive" />Contact-SLA verlopen of dreigend</h3>
               <p className="text-xs text-muted-foreground">A+ candidates not contacted within 30 minutes of assignment are flagged red automatically.</p>
             </div>
             <TileInfo title="Contact-SLA action list" what="Open candidates whose contact-SLA is breached or within 20% of its deadline. Drives recruiter follow-up." formula="getActionList(15) filtered on contact-SLA" source="getActionList()" />
@@ -85,7 +86,7 @@ export function OpvolgingTab() {
 
         <Card className="overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <h3 className="text-sm font-semibold">First-conversation SLA — breached or at risk</h3>
+            <h3 className="text-sm font-semibold flex items-center gap-2"><MessageSquare className="w-4 h-4 text-primary" />First-conversation SLA — breached or at risk</h3>
             <TileInfo title="Conversation-SLA action list" what="Candidates that were contacted but whose first-conversation deadline is approaching or breached. Indicates handover risk between recruiter and consultant." formula="filter: pctElapsed ≥ 0.8 against SLA_MATRIX[tier].gesprekH" source="candidates × SLA_MATRIX" />
           </div>
           <ActionList rows={gesprekRows} />
