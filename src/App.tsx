@@ -112,6 +112,7 @@ const App = () => (
               <Route path="/tv/heatmap" element={<TVHeatmap />} />
               <Route path="/tv/ranglijsten-grafiek" element={<TVRanglijstenGrafiek />} />
               <Route path="/tv/acties-vandaag" element={<TVActiesVandaag />} />
+              <Route path="/tv/funnel-ops-overzicht" element={<TVFunnelOpsOverzicht />} />
               <Route path="/consultant/geld-bonus" element={<GeldBonus />} />
               <Route path="/consultant/kpi-cockpit" element={<KPICockpit />} />
               <Route path="/consultant/sales-funnel" element={<SalesFunnel />} />
