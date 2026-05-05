@@ -94,27 +94,50 @@ SalesFunnelFiltersContext so every tile below reacts in sync:
         ))}
       </div>
       <DevNote
-        story={<><strong>As a user (manager/TV viewer)</strong>, I want to see the top-level funnel KPIs for the current week at a glance, with conversion rates between each step, <strong>so that</strong> I can immediately spot bottlenecks or momentum in the recruitment pipeline.</>}
+        story={<><strong>As a manager / TV viewer</strong>, I want to see the top-level funnel KPIs for the rolling week at a glance, with conversion rates between each step, <strong>so that</strong> I can immediately spot bottlenecks or momentum across the recruitment pipeline.</>}
         logic={`Five KPI cards represent the main funnel steps:
 Inschrijvingen → Acquisities → Voorstellen →
 Gesprekken → Plaatsingen.
 
 Each card shows:
-  • The absolute count for the selected week.
-  • A percentage change vs. the previous equal-length
-    period (green = positive, red = negative).
+  • The absolute count for the selected window.
+  • Delta vs. the previous equal-length period
+    (green = positive, red = negative).
 
-Between each pair of cards a ConversionArrow displays
+Between each pair of cards, a ConversionArrow renders
 the step-to-step conversion rate.
 
 Data source: weekFunnelMetrics + weekOverallConversions
-from tvData.ts.`}
+in src/data/tvData.ts.`}
       />
 
       {/* Unit breakdown */}
       <div className="min-h-0 overflow-auto flex-1">
         <UnitFunnelBreakdown />
       </div>
+      <DevNote
+        story={<><strong>As a manager</strong>, I want to compare every unit across the full funnel and its conversion ratios in one table, <strong>so that</strong> I can identify which units lag on which step and prioritise coaching.</>}
+        logic={`Tile: "Uitsplitsing per Unit & Conversies".
+
+  • Rows = units, filtered by visibleUnits from
+    SalesFunnelFiltersContext.
+  • Columns = 7 funnel-step groups defined in
+    src/data/unitFunnelColumns.ts:
+      1. Inschrijvingen   2. Acquisitie
+      3. Voorstellen      4. Uitnodigingen
+      5. Gesprekken       6. Vervolg
+      7. Geplaatst
+  • Each group exposes "value" sub-columns (raw counts)
+    and "conv" sub-columns (ratio between two values,
+    rendered with %-icon and dashed divider).
+  • Visibility is driven by visibleColumnGroups +
+    visibleSubKeys in context. The unified Tabelkolommen
+    popover in the filter bar mutates both.
+  • Default selection hides the "Toegewezen" value column;
+    all other sub-keys are on by default.
+
+Data source: weekUnitFunnelRows in src/data/tvData.ts.`}
+      />
 
       {/* Bottom row */}
       <div className="grid grid-cols-3 gap-4 shrink-0">
@@ -122,6 +145,21 @@ from tvData.ts.`}
         <CandidatesPipeline />
         <ConversionFormulasCard />
       </div>
+      <DevNote
+        story={<><strong>As a manager / TV viewer</strong>, I want supporting context next to the funnel — call activity, the live candidate pipeline and the conversie formulas — <strong>so that</strong> I can interpret the numbers above without leaving the screen.</>}
+        logic={`Three tiles in the bottom row:
+
+  • CallStats (mode="week") — Telefonie volume for the
+    rolling week: total calls, success rate and average
+    call duration formatted as [H:M:S].
+  • CandidatesPipeline — current open candidate count
+    per pipeline stage; counts are point-in-time, not
+    period-bound.
+  • ConversionFormulasCard — static reference card
+    listing every conversie formula used in the Unit
+    Funnel breakdown (e.g. Inschr. % = Ingeschreven ÷
+    Toegewezen) so viewers can audit the ratios.`}
+      />
     </div>
   );
 }
