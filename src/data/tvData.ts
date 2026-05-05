@@ -183,6 +183,7 @@ export interface UnitFunnelRow {
   acquisities: number;
   voorstellenPerKandidaat: number;
   voorstellenViaEmail: number;
+  voorstellenViaTelefoon: number;
   uitnodigingenTotaal: number;
   nietUitgenodigd: number;
   welUitgenodigd: number;
