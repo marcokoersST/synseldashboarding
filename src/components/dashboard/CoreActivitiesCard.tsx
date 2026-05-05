@@ -72,6 +72,10 @@ interface CoreActivitiesCardProps {
 export function CoreActivitiesCard({ delay = 0 }: CoreActivitiesCardProps) {
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="De kernactiviteiten die je deze periode hebt gedaan: gesprekken, acquisities, voorstellen, intakes, etc."
+        insight="Direct zien of je dagelijkse 'moetjes' op koers liggen of dat je vandaag nog een tandje bij moet zetten."
+      />
       <div className="bg-card rounded-xl p-5 border border-border">
         <div className="mb-4">
           <h3 className="text-sm font-medium text-foreground">Kernactiviteiten</h3>

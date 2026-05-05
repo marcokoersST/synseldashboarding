@@ -467,6 +467,10 @@ export function RecruitmentFunnel({ delay = 0 }: RecruitmentFunnelProps) {
 
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Jouw recruitment-trechter: hoeveel kandidaten je in elke stap hebt (benaderd → gesprek → intake → plaatsing) en wat de conversie tussen die stappen is."
+        insight="Waar zit het lek? Zie meteen of je kandidaten verliest bij benaderen, het eerste gesprek, de intake of de plaatsing."
+      />
       <div ref={ref} className="bg-card rounded-xl p-5 border border-border">
         {/* Header */}
         <div className="flex items-start justify-between mb-1">

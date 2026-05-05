@@ -123,6 +123,10 @@ export function ReverseMatchingCard({ delay = 0 }: ReverseMatchingCardProps) {
 
   return (
     <AnimatedCard delay={delay} className="h-full">
+      <WatZieIkHier
+        what="Pitches die je richting klanten doet (kandidaten die je actief voorstelt), per fase: voorgesteld, geïnteresseerd, op gesprek, geplaatst."
+        insight="Zie meteen waar je pitches blijven hangen en welke klanten je nog na moet bellen."
+      />
       <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

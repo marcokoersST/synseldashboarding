@@ -1,5 +1,6 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { useState, useCallback, useRef } from "react";
@@ -187,6 +188,10 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Het aantal plaatsingen en gedetacheerden per periode, plus hoeveel kandidaten weer afhaken (afvallers)."
+        insight="Je ziet of je pipeline daadwerkelijk omzet wordt, of dat je veel kandidaten verliest die je weer moet vervangen."
+      />
       <div className="bg-card rounded-xl p-5 border border-border group flex flex-col">
         <div className="mb-4">
           {/* Row 1: Title | Percentage + Toggle */}

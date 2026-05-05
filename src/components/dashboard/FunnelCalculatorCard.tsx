@@ -70,6 +70,10 @@ export function FunnelCalculatorCard({ delay = 0 }: FunnelCalculatorCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Een rekentool die laat zien hoeveel acties (calls, gesprekken, intakes) je nodig hebt om je plaatsings-doel te halen."
+        insight="Stel een doel in en zie direct hoeveel telefoontjes en gesprekken je vandaag moet doen om dat doel te raken."
+      />
       <Card className="border border-border">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold">Wervingstrechter Calculator</CardTitle>

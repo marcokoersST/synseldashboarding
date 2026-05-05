@@ -20,6 +20,10 @@ export function PerformanceScoreCard({ delay = 0 }: PerformanceScoreCardProps) {
   
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Een totaalcijfer (1 t/m 10) dat al je belangrijkste prestaties van deze periode samenpakt."
+        insight="Snel zien hoe je het in totaal doet, zonder elk losstaand cijfer te checken."
+      />
       <div className="bg-card rounded-xl p-5 border border-border group">
         <div className="flex items-center justify-between mb-4">
           <div>
