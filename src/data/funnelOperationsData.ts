@@ -125,8 +125,8 @@ function tierToScore(t: Tier): number {
   }
 }
 
-const NOW = Date.UTC(2026, 4, 4, 9, 0, 0); // 2026-05-04 09:00 UTC (matches "Today" in app)
-const HOUR = 3600 * 1000;
+export const NOW = Date.UTC(2026, 4, 4, 9, 0, 0); // 2026-05-04 09:00 UTC (matches "Today" in app)
+export const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
 
 function genCandidate(i: number): Candidate {
