@@ -59,7 +59,7 @@ export function OpvolgingTab() {
               <Card key={t.tier} className="p-3 border-l-4" style={{ borderLeftColor: TIER_COLOR[t.tier as Tier] }}>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">Tier {t.tier}</div>
                 <div className="text-2xl font-bold tabular-nums">{t.pct}%</div>
-                <div className="text-[11px] text-muted-foreground">binnen contact-SLA · n={t.n}</div>
+                <div className="text-[11px] text-muted-foreground">op tijd gebeld · {t.onTime}/{t.total}</div>
               </Card>
             ))}
           </div>
