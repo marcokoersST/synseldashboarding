@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
-import { TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus, CalendarRange } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useFunnelOpsFilters } from "@/contexts/FunnelOpsFiltersContext";
 import { rangeStats } from "@/data/funnelOperationsData";
@@ -43,6 +43,7 @@ export function PeriodComparisonStrip() {
     <Card className="p-3">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3 text-xs">
+          <CalendarRange className="w-4 h-4 text-primary" />
           <span className="font-semibold">Periode:</span>
           <span className="tabular-nums">{fmtPeriod(filters.current.from, filters.current.to)}</span>
           {filters.compare && (
