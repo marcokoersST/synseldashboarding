@@ -136,7 +136,30 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
                 <h3 className="text-sm font-semibold">Bron-mix &amp; forecast</h3>
               </div>
               <div className="flex items-center gap-1">
-                <TileInfo title="Source mix & forecast" what="Distribution of candidates over the 5 main sourcing channels alongside the median monthly placement forecast." formula="share = count(candidates per source) / total\nforecast = kpis.forecastMaand.p50" source="sourceTree · kpis.forecastMaand" notes="Mock mix jobscan/open_cv/cv_database/reactivation/linkedin: 30/15/20/25/10." />
+                <TileInfo
+                  title="Bron-mix & forecast"
+                  what={
+                    "Bron-mix: aantal kandidaten dat op status Inschrijven is gekomen, opgedeeld naar utm_medium.\n\n" +
+                    "Mediums:\n" +
+                    "  1. Jobboards paid       → utm_medium = paid_jobboard\n" +
+                    "  2. Jobboards organisch  → utm_medium = organic_jobboard\n" +
+                    "  3. Paid socials         → utm_medium = paid_social\n" +
+                    "  4. Organic social       → utm_medium = organic_social\n" +
+                    "  5. Heractivatie         → utm_medium = app OF mail\n" +
+                    "  6. Direct               → utm_medium = direct_mail OF direct_telefoon\n" +
+                    "  7. CV databases         → utm_medium = cv_database\n" +
+                    "  8. LinkedIn recruiter   → utm_medium = recruiter\n\n" +
+                    "Forecast P50: verwachte plaatsingen voor deze instroom (zelfde logica als de 5 blokken bovenaan).\n\n" +
+                    "Potentie bij optimale distributie: maximale aantal plaatsingen op basis van instroom × genormaliseerde functietitels × plaatsingsratio per consultant. Underline = +Δ tussen huidige forecast en theoretisch maximum."
+                  }
+                  formula={
+                    "share(medium)   = count(candidates met utm_medium = medium) / total\n" +
+                    "forecastP50     = Σ historische plaatsingsratio(functietitel, score) × instroom\n" +
+                    "potentie        = max Σ plaatsingsratio(functietitel, consultant) − forecastP50"
+                  }
+                  source="sourceTree · kpis.forecastMaand · RecruitCRM utm_medium + plaatsingshistorie"
+                  notes="Vereist genormaliseerde functietitels en per-consultant plaatsingsratio's voor de potentie-berekening."
+                />
                 <button onClick={() => goTo("forecast")} className="text-xs text-primary hover:underline">Bekijk →</button>
               </div>
             </div>
