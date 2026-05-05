@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Target, Pencil, Sparkles, Plus, ChevronDown } from "lucide-react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { useForecastGoals } from "@/contexts/ForecastGoalsContext";
 import { cn } from "@/lib/utils";

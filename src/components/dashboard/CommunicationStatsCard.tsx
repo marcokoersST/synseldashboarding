@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
 import { 
