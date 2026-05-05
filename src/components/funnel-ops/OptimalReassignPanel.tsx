@@ -10,7 +10,7 @@ import { TierBadge } from "./TierBadge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-const TIERS: Tier[] = ["A+", "A", "B"];
+const TIERS: Tier[] = ["85+", "70-85", "50-70"];
 
 interface Props { open: boolean; onOpenChange: (o: boolean) => void; }
 

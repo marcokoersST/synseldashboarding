@@ -25,7 +25,7 @@ export default function TVActiesVandaag() {
   const dreigend = rows.filter(r => r.sla.status === "dreigend").length;
 
   const tierMix = useMemo(() => {
-    const tiers: Tier[] = ["A+", "A", "B", "C", "D"];
+    const tiers: Tier[] = ["85+", "70-85", "50-70", "30-50", "0-30"];
     return tiers.map(t => ({ tier: t, n: rows.filter(r => r.candidate.tier === t).length }));
   }, [rows]);
 

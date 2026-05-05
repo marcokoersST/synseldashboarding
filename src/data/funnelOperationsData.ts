@@ -1,7 +1,7 @@
 // Funnel Operations Dashboard — deterministic mock data
 // Single source of truth for all 7 tabs. Read-only.
 
-export type Tier = "A+" | "A" | "B" | "C" | "D";
+export type Tier = "85+" | "70-85" | "50-70" | "30-50" | "0-30";
 export type CandidateStatus =
   | "nieuw"
   | "toegewezen"
@@ -48,19 +48,19 @@ export interface CallAttempt {
 
 // ---------- SLA matrix ----------
 export const SLA_MATRIX: Record<Tier, { toewijzenH: number; contactH: number; gesprekH: number }> = {
-  "A+": { toewijzenH: 1, contactH: 2, gesprekH: 24 },
-  A:   { toewijzenH: 4, contactH: 8, gesprekH: 48 },
-  B:   { toewijzenH: 24, contactH: 48, gesprekH: 24 * 5 },
-  C:   { toewijzenH: 24 * 3, contactH: 24 * 5, gesprekH: 24 * 10 },
-  D:   { toewijzenH: 24 * 7, contactH: 24 * 10, gesprekH: 24 * 14 },
+  "85+":  { toewijzenH: 1, contactH: 2, gesprekH: 24 },
+  "70-85": { toewijzenH: 4, contactH: 8, gesprekH: 48 },
+  "50-70": { toewijzenH: 24, contactH: 48, gesprekH: 24 * 5 },
+  "30-50": { toewijzenH: 24 * 3, contactH: 24 * 5, gesprekH: 24 * 10 },
+  "0-30":  { toewijzenH: 24 * 7, contactH: 24 * 10, gesprekH: 24 * 14 },
 };
 
 export const TIER_COLOR: Record<Tier, string> = {
-  "A+": "hsl(var(--destructive))",
-  A:   "hsl(25 90% 55%)",
-  B:   "hsl(210 80% 55%)",
-  C:   "hsl(var(--success))",
-  D:   "hsl(var(--muted-foreground))",
+  "85+":   "hsl(var(--destructive))",
+  "70-85": "hsl(25 90% 55%)",
+  "50-70": "hsl(210 80% 55%)",
+  "30-50": "hsl(var(--success))",
+  "0-30":  "hsl(var(--muted-foreground))",
 };
 
 // ---------- Deterministic PRNG ----------
@@ -101,7 +101,7 @@ export const consultants: Consultant[] = Array.from({ length: 25 }, (_, i) => ({
 
 // ---------- Candidates (5000) ----------
 const SCORE_DIST: { v: Tier; w: number }[] = [
-  { v: "D", w: 5 }, { v: "C", w: 15 }, { v: "B", w: 30 }, { v: "A", w: 35 }, { v: "A+", w: 15 },
+  { v: "0-30", w: 5 }, { v: "30-50", w: 15 }, { v: "50-70", w: 30 }, { v: "70-85", w: 35 }, { v: "85+", w: 15 },
 ];
 const SOURCE_DIST: { v: SourceTopLevel; w: number }[] = [
   { v: "jobscan", w: 30 }, { v: "open_cv", w: 15 }, { v: "cv_database", w: 20 },
@@ -117,11 +117,11 @@ const SUB_BRONNEN: Record<SourceTopLevel, string[]> = {
 
 function tierToScore(t: Tier): number {
   switch (t) {
-    case "A+": return 90 + Math.floor(rng() * 11);
-    case "A":  return 75 + Math.floor(rng() * 15);
-    case "B":  return 55 + Math.floor(rng() * 20);
-    case "C":  return 35 + Math.floor(rng() * 20);
-    case "D":  return Math.floor(rng() * 35);
+    case "85+": return 90 + Math.floor(rng() * 11);
+    case "70-85":  return 75 + Math.floor(rng() * 15);
+    case "50-70":  return 55 + Math.floor(rng() * 20);
+    case "30-50":  return 35 + Math.floor(rng() * 20);
+    case "0-30":  return Math.floor(rng() * 35);
   }
 }
 
@@ -141,10 +141,10 @@ function genCandidate(i: number): Candidate {
 
   // Spread across ~8 weeks; high tiers stay recent so SLA timers remain realistic
   const ageHours =
-    tier === "A+" ? rng() * 12 :
-    tier === "A"  ? rng() * 72 :
-    tier === "B"  ? rng() * 28 * 24 :
-    tier === "C"  ? rng() * 42 * 24 :
+    tier === "85+" ? rng() * 12 :
+    tier === "70-85"  ? rng() * 72 :
+    tier === "50-70"  ? rng() * 28 * 24 :
+    tier === "30-50"  ? rng() * 42 * 24 :
                     rng() * 56 * 24;
   const toegewezenOp = NOW - ageHours * HOUR;
 
@@ -157,7 +157,7 @@ function genCandidate(i: number): Candidate {
 
   const sla = SLA_MATRIX[tier];
   // ~78% get contacted within SLA (varies by tier)
-  const contactBaseRate = tier === "A+" ? 0.65 : tier === "A" ? 0.78 : tier === "B" ? 0.82 : 0.85;
+  const contactBaseRate = tier === "85+" ? 0.65 : tier === "70-85" ? 0.78 : tier === "50-70" ? 0.82 : 0.85;
   if (rng() < contactBaseRate * 0.95) {
     const overshoot = rng() < 0.7 ? rng() * sla.contactH : sla.contactH * (1 + rng() * 1.5);
     eersteContactOp = toegewezenOp + overshoot * HOUR;
@@ -366,7 +366,7 @@ export const sourceTree = (() => {
 // Score histogram per type
 export function scoreHistogram(filter: "totaal" | "nieuw" | "bestaand") {
   const subset = candidates.filter(c => filter === "totaal" || c.type === filter);
-  const tiers: Tier[] = ["D","C","B","A","A+"];
+  const tiers: Tier[] = ["0-30","30-50","50-70","70-85","85+"];
   return tiers.map(t => ({ tier: t, count: subset.filter(c => c.tier === t).length }));
 }
 
@@ -551,7 +551,7 @@ export function optimalReassignments(): ReassignSuggestion[] {
 
   // Open candidates A+/A/B
   const open = candidates.filter(
-    c => (c.tier === "A+" || c.tier === "A" || c.tier === "B") &&
+    c => (c.tier === "85+" || c.tier === "70-85" || c.tier === "50-70") &&
          c.status !== "geplaatst" && c.status !== "afgesloten"
   );
 
@@ -559,7 +559,7 @@ export function optimalReassignments(): ReassignSuggestion[] {
   const suggestions: ReassignSuggestion[] = [];
 
   // Sort candidates by tier priority then score
-  const tierWeight: Record<Tier, number> = { "A+": 4, A: 3, B: 2, C: 1, D: 0 };
+  const tierWeight: Record<Tier, number> = { "85+": 4, "70-85": 3, "50-70": 2, "30-50": 1, "0-30": 0 };
   const queue = [...open].sort((a, b) => tierWeight[b.tier] - tierWeight[a.tier] || b.score - a.score);
 
   for (const cand of queue) {
@@ -577,7 +577,7 @@ export function optimalReassignments(): ReassignSuggestion[] {
     if (uplift < 5) continue;
 
     const fromCon = cand.consultantId ? consultants.find(c => c.id === cand.consultantId) ?? null : null;
-    const tierMult = cand.tier === "A+" ? 1.4 : cand.tier === "A" ? 1.1 : 0.85;
+    const tierMult = cand.tier === "85+" ? 1.4 : cand.tier === "70-85" ? 1.1 : 0.85;
     const extra = +((uplift / 100) * tierMult).toFixed(2);
 
     suggestions.push({
