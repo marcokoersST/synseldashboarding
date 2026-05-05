@@ -85,10 +85,9 @@ export function ActionTable({ rows, dense }: { rows: ActionRow[]; dense?: boolea
 
   const cols: { key: SortKey; label: string; span: string }[] = [
     { key: "tier", label: "Tier", span: "col-span-1" },
-    { key: "kandidaat", label: "Kandidaat", span: "col-span-3" },
-    { key: "reden", label: "Reden", span: "col-span-3" },
-    { key: "sla", label: "SLA", span: "col-span-2" },
-    { key: "consultant", label: "Consultant", span: "col-span-3" },
+    { key: "kandidaat", label: "Kandidaat", span: "col-span-4" },
+    { key: "sla", label: "SLA", span: "col-span-3" },
+    { key: "consultant", label: "Consultant", span: "col-span-4" },
   ];
 
   return (
@@ -150,7 +149,7 @@ export function ActionTable({ rows, dense }: { rows: ActionRow[]; dense?: boolea
         <div className="text-sm text-muted-foreground p-4">Geen acties — alle SLA's binnen.</div>
       )}
       <div className="divide-y divide-border">
-        {sorted.map(({ candidate: c, reason, sla, consultantName, consultantId }) => (
+        {sorted.map(({ candidate: c, sla, consultantName, consultantId }) => (
           <div key={c.id} className={`grid grid-cols-12 items-center gap-2 ${dense ? "py-1.5" : "py-2"} px-2 text-sm hover:bg-muted/30`}>
             <div className="col-span-1">
               <span
@@ -160,12 +159,11 @@ export function ActionTable({ rows, dense }: { rows: ActionRow[]; dense?: boolea
                 {c.tier}
               </span>
             </div>
-            <div className="col-span-3 min-w-0">
+            <div className="col-span-4 min-w-0">
               <CandidateLink id={c.id} name={c.naam} className="truncate" />
             </div>
-            <div className="col-span-3 text-muted-foreground truncate">{reason}</div>
-            <div className="col-span-2"><SLAStatusPill sla={sla} /></div>
-            <div className="col-span-3 text-xs truncate">
+            <div className="col-span-3"><SLAStatusPill sla={sla} /></div>
+            <div className="col-span-4 text-xs truncate">
               {consultantId ? <UserLink id={consultantId} name={consultantName} /> : <span className="text-muted-foreground">—</span>}
             </div>
           </div>
