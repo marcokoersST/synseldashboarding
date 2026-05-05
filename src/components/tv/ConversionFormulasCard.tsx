@@ -107,7 +107,7 @@ export function ConversionFormulasCard({ data }: ConversionFormulasCardProps = {
 
       {!compact && (
         <DevNote
-          id={7}
+          id={8}
           story={<><strong>As a user (manager/TV viewer)</strong>, I want to see the key conversion ratios compared against benchmark targets, <strong>so that</strong> I can instantly judge which parts of the funnel are under- or over-performing.</>}
           logic={`Each row represents a conversion formula defined in
 ConversionLegend.ts — e.g. "Inschr. %" = Ingeschreven
