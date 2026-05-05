@@ -63,7 +63,7 @@ export default function FunnelOperations() {
           <TabsContent value="forecast" className="mt-4 animate-fade-in"><ForecastTab /></TabsContent>
           <TabsContent value="opvolging" className="mt-4 animate-fade-in"><OpvolgingTab /></TabsContent>
           <TabsContent value="watchlist" className="mt-4 animate-fade-in"><WatchlistTab /></TabsContent>
-          <TabsContent value="dev" className="mt-4 animate-fade-in"><DevInfoTab /></TabsContent>
+          
         </Tabs>
       </div>
     </FunnelOpsFiltersProvider>
