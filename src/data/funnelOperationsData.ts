@@ -123,15 +123,24 @@ const SCORE_DIST: { v: Tier; w: number }[] = [
   { v: "0-30", w: 5 }, { v: "30-50", w: 15 }, { v: "50-70", w: 30 }, { v: "70-85", w: 35 }, { v: "85+", w: 15 },
 ];
 const SOURCE_DIST: { v: SourceTopLevel; w: number }[] = [
-  { v: "jobscan", w: 30 }, { v: "open_cv", w: 15 }, { v: "cv_database", w: 20 },
-  { v: "reactivering", w: 25 }, { v: "linkedin", w: 10 },
+  { v: "paid_jobboard", w: 18 },
+  { v: "organic_jobboard", w: 12 },
+  { v: "paid_social", w: 14 },
+  { v: "organic_social", w: 8 },
+  { v: "reactivation", w: 20 },
+  { v: "direct", w: 6 },
+  { v: "cv_database", w: 14 },
+  { v: "recruiter", w: 8 },
 ];
 const SUB_BRONNEN: Record<SourceTopLevel, string[]> = {
-  jobscan: ["Online formulier","Werken Bij","Campagne LinkedIn","Campagne Meta"],
-  open_cv: ["Indeed","Werkzoeken.nl","NationaleVacaturebank"],
-  cv_database: ["Indeed CV","Monsterboard","Jobbird CV"],
-  reactivering: ["Heractivatie Q1","Heractivatie Q2","Wakker schudden"],
-  linkedin: ["LinkedIn Recruiter","Sales Navigator","Inmail"],
+  paid_jobboard: ["Indeed Sponsored","Monsterboard Premium","Nationale Vacaturebank Promo"],
+  organic_jobboard: ["Indeed Free","Werkzoeken.nl","Jobbird"],
+  paid_social: ["Meta Ads","TikTok Ads","LinkedIn Ads"],
+  organic_social: ["LinkedIn Post","Instagram Post","Facebook Post"],
+  reactivation: ["App push","Mail campagne Q1","Mail campagne Q2"],
+  direct: ["Direct mail","Direct telefoon"],
+  cv_database: ["Indeed CV","Monsterboard CV","Jobbird CV"],
+  recruiter: ["LinkedIn Recruiter","Sales Navigator","Inmail"],
 };
 
 function tierToScore(t: Tier): number {
