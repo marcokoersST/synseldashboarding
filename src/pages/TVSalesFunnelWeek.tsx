@@ -149,7 +149,7 @@ Data source: weekUnitFunnelRows in src/data/tvData.ts.`}
         <ConversionFormulasCard />
       </div>
       <DevNote
-        id={4}
+        id={5}
         story={<><strong>As a manager / TV viewer</strong>, I want supporting context next to the funnel — call activity, the live candidate pipeline and the conversie formulas — <strong>so that</strong> I can interpret the numbers above without leaving the screen.</>}
         logic={`Three tiles in the bottom row:
 
