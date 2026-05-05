@@ -437,13 +437,18 @@ export function getActionList(limit?: number): ActionRow[] {
   const rows: ActionRow[] = [];
   for (const c of candidates) {
     if (c.status === "geplaatst" || c.status === "afgesloten") continue;
+    if (c.eersteContactOp) continue; // already contacted → not actionable
+    // Only consider recently assigned candidates so the list reflects "today"
+    if (NOW - c.toegewezenOp > 3 * DAY) continue;
     const sla = getContactSLA(c);
     if (sla.status === "verlopen" || sla.status === "dreigend") {
       rows.push({ candidate: c, reason: sla.status === "verlopen" ? "Contact-SLA verlopen" : "Contact-SLA dreigend", overdue: sla.label, sla });
     }
   }
   rows.sort((a, b) => b.sla.pctElapsed - a.sla.pctElapsed);
-  return limit ? rows.slice(0, limit) : rows;
+  // Cap to a realistic daily volume
+  const capped = rows.slice(0, 18);
+  return limit ? capped.slice(0, limit) : capped;
 }
 
 // Per-recruiter aggregates for SLA leaderboard
