@@ -65,7 +65,24 @@ export function OpvolgingTab() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {tierStats.map(t => (
-              <Card key={t.tier} className="p-3 border-l-4" style={{ borderLeftColor: TIER_COLOR[t.tier as Tier] }}>
+              <Card key={t.tier} className="p-3 border-l-4 relative" style={{ borderLeftColor: TIER_COLOR[t.tier as Tier] }}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={`SLA-regel tier ${t.tier}`}
+                    >
+                      <Info className="w-3.5 h-3.5" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-64 text-xs space-y-1.5">
+                    <div className="font-semibold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full" style={{ background: TIER_COLOR[t.tier as Tier] }} />
+                      Tier {t.tier} — belregel
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">{TIER_SLA_RULE[t.tier]}</p>
+                  </PopoverContent>
+                </Popover>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">Tier {t.tier}</div>
                 <div className="text-2xl font-bold tabular-nums">{t.pct}%</div>
                 <div className="text-[11px] text-muted-foreground">op tijd gebeld · {t.onTime}/{t.total}</div>
