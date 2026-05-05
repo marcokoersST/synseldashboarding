@@ -7,7 +7,16 @@ import { ActionList } from "../ActionList";
 import { tierContactStats, getActionList, TIER_COLOR, candidates, SLA_MATRIX } from "@/data/funnelOperationsData";
 import type { Tier } from "@/data/funnelOperationsData";
 import { TileInfo } from "../TileInfo";
-import { PhoneCall, Trophy, Timer, AlertTriangle, MessageSquare } from "lucide-react";
+import { PhoneCall, Trophy, Timer, AlertTriangle, MessageSquare, Info } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+const TIER_SLA_RULE: Record<string, string> = {
+  "85+": "2× bellen binnen 1 uur",
+  "70-85": "1× bellen binnen 1 uur",
+  "50-70": "Bellen op eerstvolgende belmoment",
+  "30-50": "Bellen binnen 1 dag",
+  "0-30": "Bellen binnen 2 dagen",
+};
 
 export function OpvolgingTab() {
   const [sub, setSub] = useState<"bel" | "sla">("bel");
