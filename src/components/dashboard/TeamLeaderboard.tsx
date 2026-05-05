@@ -1,6 +1,7 @@
 import { Crown, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedProgress } from "@/components/animations/AnimatedProgress";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
