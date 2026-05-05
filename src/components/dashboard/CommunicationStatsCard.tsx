@@ -212,6 +212,10 @@ export function CallsStatsCard({ delay = 0 }: CardProps) {
 
   return (
     <AnimatedCard delay={delay} className="h-full">
+      <WatZieIkHier
+        what="Hoeveel je hebt gebeld (in en uit), totale beltijd en hoe die telefonie verdeeld is over de deal-stages."
+        insight="Bel je genoeg en lang genoeg om resultaat te halen? Zie meteen waar je telefonie-energie heen gaat."
+      />
       <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -346,6 +350,10 @@ export function EmailStatsCard({ delay = 0 }: CardProps) {
 
   return (
     <AnimatedCard delay={delay} className="h-full">
+      <WatZieIkHier
+        what="Hoeveel mails je hebt verstuurd, geopend kregen, en hoe ze verdeeld zijn over de deal-stages."
+        insight="Volg je je kandidaten en klanten goed op via mail, of laat je kansen liggen?"
+      />
       <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
