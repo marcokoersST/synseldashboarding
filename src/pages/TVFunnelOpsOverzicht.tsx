@@ -106,9 +106,6 @@ export default function TVFunnelOpsOverzicht() {
   }));
   const fcst = kpis.forecastMaand;
 
-  const rows = useMemo(() => getActionList(), [updatedAt]);
-  const verlopen = rows.filter((r) => r.sla.status === "verlopen").length;
-  const dreigend = rows.filter((r) => r.sla.status === "dreigend").length;
 
   return (
     <TVDashboardLayout title="Funnel Operations · Overzicht">
