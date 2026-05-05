@@ -23,20 +23,23 @@ export function InstroomTab() {
         <h2 className="text-base font-semibold flex items-center gap-2"><LineIcon className="w-4 h-4 text-success" />A1 · Instroom volume</h2>
         <Card className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs font-medium text-muted-foreground">Instroom per dag (8 weken) — gestapeld nieuw / bestaand</div>
-            <TileInfo title="Daily inflow" what="Stacked bar chart of daily candidate inflow over 8 weeks, split by new vs returning candidates. Used to detect demand patterns and channel-mix shifts." formula="bucket per day from candidates.toegewezenOp\nsplit on candidate.type" source="dailyInstroom" notes="Seeded PRNG (seed 1729) — values are deliberately stable across sessions." />
+            <div className="text-xs font-medium text-muted-foreground">Instroom per dag (8 weken) — nieuw vs bestaand</div>
+            <TileInfo title="Daily inflow" what="Trend line chart of daily candidate inflow over 8 weeks, split by new vs returning candidates. Used to detect demand patterns and channel-mix shifts." formula="bucket per day from candidates.toegewezenOp\nsplit on candidate.type" source="dailyInstroom" notes="Seeded PRNG (seed 1729) — values are deliberately stable across sessions." />
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={trend} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <LineChart data={trend} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <XAxis dataKey="dag" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} interval={6} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 12 }} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="nieuw" stackId="a" fill="hsl(var(--success))" name="Nieuw" />
-                <Bar dataKey="bestaand" stackId="a" fill="hsl(25 90% 55%)" name="Bestaand" />
-              </BarChart>
+                <Line type="monotone" dataKey="nieuw" stroke="hsl(var(--success))" strokeWidth={2} dot={false} name="Nieuw" animationDuration={900} />
+                <Line type="monotone" dataKey="bestaand" stroke="hsl(25 90% 55%)" strokeWidth={2} dot={false} name="Bestaand" animationDuration={900} />
+              </LineChart>
             </ResponsiveContainer>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-2">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success" /> Nieuw</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" /> Bestaand</span>
           </div>
         </Card>
         <Card className="p-3">
