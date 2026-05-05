@@ -53,11 +53,15 @@ export function CandidatesPipeline() {
 
       {!compact && (
         <DevNote
-          story={<><strong>As a user (manager/TV viewer)</strong>, I want to see how many active candidates are currently in each pipeline stage, <strong>so that</strong> I can gauge the health of the candidate pool and identify stages that need attention.</>}
-          logic={`Hero counter at the top shows the total number of
-active candidates across all stages.
+          id={7}
+          story={<><strong>As a manager / TV viewer</strong>, I want a single big number that tells me how many candidates are <em>currently</em> active in the pipeline, plus a per-stage breakdown, <strong>so that</strong> I can immediately see the size and shape of the live candidate pool.</>}
+          logic={`Hero counter (top): candidatesInsides.actief —
+the TOTAL number of active candidates currently in
+the pipeline (point-in-time snapshot, not period-bound,
+not affected by the date filter).
 
-Below it, 8 horizontal bars represent pipeline stages:
+Below it, 8 horizontal bars break that same active
+population down by their current pipeline stage:
   Op verdelen, Op inschrijven, In procedure,
   Met uitnodigingen, Met gesprekken,
   Op gesprek geweest, Procedures met dealsluiter,
@@ -66,9 +70,9 @@ Below it, 8 horizontal bars represent pipeline stages:
 Each bar's width is proportional to the highest count
 (max-normalised). Colors are distinct per stage.
 
-Data source: candidatesInsides from tvData.ts.
-This is a snapshot — it does not change with the
-date filter, only with unit selection.`}
+Data source: candidatesInsides from src/data/tvData.ts.
+Reacts to unit selection only — never to the date
+filter, since it represents 'right now'.`}
         />
       )}
     </div>

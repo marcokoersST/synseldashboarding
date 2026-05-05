@@ -250,6 +250,7 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
 
       {!compact && (
         <DevNote
+          id={4}
           story={<><strong>As a user (manager/TV viewer)</strong>, I want to see a detailed breakdown of funnel metrics per unit and per consultant, <strong>so that</strong> I can compare performance across teams and drill down into individual contributions.</>}
           logic={"Table groups + per-unit / per-consultant breakdown. See ConversionLegend for icon meanings."}
         />
