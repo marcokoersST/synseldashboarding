@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";

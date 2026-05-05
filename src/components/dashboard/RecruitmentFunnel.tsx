@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
 import { cn } from "@/lib/utils";

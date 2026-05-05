@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";

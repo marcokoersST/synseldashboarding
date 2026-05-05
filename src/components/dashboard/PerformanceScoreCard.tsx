@@ -1,4 +1,5 @@
 import { TrendingUp } from "lucide-react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { AnimatedProgress } from "@/components/animations/AnimatedProgress";

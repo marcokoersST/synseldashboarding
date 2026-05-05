@@ -1,4 +1,5 @@
 import { FilePlus, UserPlus, FolderOpen, FolderClosed } from "lucide-react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { BarChart, Bar, ResponsiveContainer, Cell, Tooltip } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
