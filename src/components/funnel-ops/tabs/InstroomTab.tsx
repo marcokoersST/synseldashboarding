@@ -5,7 +5,7 @@ import { QualityHeatmap } from "../QualityHeatmap";
 import { dailyInstroom, kpis, candidates } from "@/data/funnelOperationsData";
 import { CandidateLink } from "../CandidateLink";
 import { TierBadge } from "../TierBadge";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { TileInfo } from "../TileInfo";
 import { BarChart3, GitBranch, LineChart as LineIcon, Grid3x3, Trophy } from "lucide-react";
 
