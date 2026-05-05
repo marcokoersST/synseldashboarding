@@ -137,28 +137,28 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
               </div>
               <div className="flex items-center gap-1">
                 <TileInfo
-                  title="Bron-mix & forecast"
+                  title="Source mix & forecast"
                   what={
-                    "Bron-mix: aantal kandidaten dat op status Inschrijven is gekomen, opgedeeld naar utm_medium.\n\n" +
+                    "Source mix: number of candidates that entered status Inschrijven, broken down by utm_medium.\n\n" +
                     "Mediums:\n" +
                     "  1. Jobboards paid       → utm_medium = paid_jobboard\n" +
-                    "  2. Jobboards organisch  → utm_medium = organic_jobboard\n" +
-                    "  3. Paid socials         → utm_medium = paid_social\n" +
+                    "  2. Jobboards organic    → utm_medium = organic_jobboard\n" +
+                    "  3. Paid social          → utm_medium = paid_social\n" +
                     "  4. Organic social       → utm_medium = organic_social\n" +
-                    "  5. Heractivatie         → utm_medium = app OF mail\n" +
-                    "  6. Direct               → utm_medium = direct_mail OF direct_telefoon\n" +
+                    "  5. Reactivation         → utm_medium = app OR mail\n" +
+                    "  6. Direct               → utm_medium = direct_mail OR direct_telefoon\n" +
                     "  7. CV databases         → utm_medium = cv_database\n" +
                     "  8. LinkedIn recruiter   → utm_medium = recruiter\n\n" +
-                    "Forecast P50: verwachte plaatsingen voor deze instroom (zelfde logica als de 5 blokken bovenaan).\n\n" +
-                    "Potentie bij optimale distributie: maximale aantal plaatsingen op basis van instroom × genormaliseerde functietitels × plaatsingsratio per consultant. Underline = +Δ tussen huidige forecast en theoretisch maximum."
+                    "Forecast P50: expected placements for this inflow (same logic as the top 5 KPI tiles).\n\n" +
+                    "Potential at optimal distribution: max number of placements based on inflow × normalised job titles × per-consultant placement ratio. Underlined value = +Δ between current forecast and theoretical maximum."
                   }
                   formula={
-                    "share(medium)   = count(candidates met utm_medium = medium) / total\n" +
-                    "forecastP50     = Σ historische plaatsingsratio(functietitel, score) × instroom\n" +
-                    "potentie        = max Σ plaatsingsratio(functietitel, consultant) − forecastP50"
+                    "share(medium)  = count(candidates with utm_medium = medium) / total\n" +
+                    "forecastP50    = Σ historical placement_ratio(job_title, score) × instroom\n" +
+                    "potential      = max Σ placement_ratio(job_title, consultant) − forecastP50"
                   }
-                  source="sourceTree · kpis.forecastMaand · RecruitCRM utm_medium + plaatsingshistorie"
-                  notes="Vereist genormaliseerde functietitels en per-consultant plaatsingsratio's voor de potentie-berekening."
+                  source="sourceTree · kpis.forecastMaand · RecruitCRM utm_medium + placement history"
+                  notes="Requires normalised job titles and per-consultant placement ratios for the potential calculation."
                 />
                 <button onClick={() => goTo("forecast")} className="text-xs text-primary hover:underline">Bekijk →</button>
               </div>
