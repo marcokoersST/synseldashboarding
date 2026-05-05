@@ -408,6 +408,8 @@ export interface SourceCampaign {
 export interface SourcePlatform {
   naam: string;
   total: number;
+  nieuw: number;
+  bestaand: number;
   conversie: number;
   avgScore: number;
   campaigns: SourceCampaign[];
