@@ -227,18 +227,22 @@ export function OverviewTab({ goTo }: { goTo: (tab: string) => void }) {
               <TileInfo
                 title="Actions today"
                 what={
-                  "Detail view of candidates whose contact-SLA is about to expire or has already expired. The clock starts at the moment of Inschrijven; we show how much time is left or by how much the SLA was breached.\n\n" +
-                  "Per candidate: tier, time remaining/overdue, and the consultant who owns the candidate in RecruitCRM."
+                  "Per candidate the open contact-SLA: tier, time remaining or hours overdue, and the owning consultant in RecruitCRM.\n\n" +
+                  "Filter columns (icon in column header):\n" +
+                  "  · Kandidaat — multi-select on candidate name\n" +
+                  "  · Tier (chip + filter) — multi-select on tier 0-30 / 30-50 / 50-70 / 70-85 / 85+\n" +
+                  "  · Consultant — multi-select on owning consultant (no recruiters; only consultants are shown here)\n" +
+                  "  · SLA — dual-thumb hour slider (negative = time left, positive = hours overdue), bounds derived from current dataset"
                 }
                 formula={
                   "deadline    = ingeschrevenOp + tier_SLA(c.tier)\n" +
-                  "time_left   = deadline − now      (positive = time left, negative = expired)\n" +
-                  "status      = expired   if now > deadline\n" +
+                  "hoursOver   = (now − deadline) / 1h    (negative = time left)\n" +
+                  "status      = expired   if hoursOver > 0\n" +
                   "            = at_risk   if (deadline − now) ≤ 20% × tier_SLA\n" +
-                  "sort: largest breach first"
+                  "sort: column header click; default = largest breach first"
                 }
                 source="getActionList() · RecruitCRM candidate status, ingeschrevenOp, owner"
-                notes="Actions themselves happen in RecruitCRM via the deeplinks. Tier deadlines identical to the SLA per tier tile."
+                notes="Tier deadlines identical to the SLA per tier tile. Actions happen in RecruitCRM via the deeplinks."
               />
               <button onClick={() => goTo("watchlist")} className="text-xs text-primary hover:underline whitespace-nowrap">Volledige watchlist →</button>
             </div>
