@@ -1,106 +1,56 @@
-## Doel
+## Goal
 
-1. **Dev info per tegel**: in plaats van één algemene Dev-tab, krijgt elke tegel/visualisatie zijn eigen "ⓘ"-uitleg (data-bron, formule, mock-aannames). De algemene Dev-tab blijft bestaan voor globale info.
-2. **Forecast → klikbare "Optimale distributie"-tegel**: als je op de oranje tegel klikt opent een paneel dat exact toont *welke kandidaten* je naar *welke consultant* moet schuiven om van P50 (142) naar de ideale forecast (168) te komen.
+On `/tv/sales-funnel-week`, add a new filter that lets the user pick **which subcolumns** are visible inside the tile **"Uitsplitsing per Unit & Conversies"**. Conversion columns appear as toggleable options inside the same picker. This filter only affects that one tile — KPI cards, CallStats, Pipeline, Formulas etc. stay untouched.
 
----
+## UX
 
-## 1. Per-tegel dev info
+A new popover button is added to `SalesFunnelFilterBar.tsx`, next to the existing **"Kolommen (N)"** group filter:
 
-**Nieuwe component** `src/components/funnel-ops/TileInfo.tsx`
-- Klein `ⓘ`-icoon (lucide `Info`, `w-3.5 h-3.5 text-muted-foreground`) rechtsboven in elke tegelheader.
-- Klik opent een `Popover` (shadcn) met:
-  - **Wat toont deze tegel** (1-2 zinnen)
-  - **Berekening / formule** (mono-stijl)
-  - **Bron in mock-data** (verwijzing naar functie in `funnelOperationsData.ts`)
-  - **Aannames / kanttekeningen**
-- Props: `title`, `what`, `formula?`, `source?`, `notes?`.
+- Label: **"Subkolommen (N/M)"** with a `ListFilter` (or `SlidersHorizontal`) icon.
+- Content: each of the 7 funnel steps as a collapsible section. Inside each section, every subcolumn (value + conversion) shown as a checkbox, grouped visually:
+  - Plain values listed first.
+  - Conversion rows shown under a small "Conversies" sub-label with a `%` icon, so users immediately see they're toggling ratio columns.
+- Per-section "Alles aan / Alles uit" mini buttons (matches existing popover pattern from memory).
+- Footer button: **"Reset naar standaard"** which restores the default selection below.
 
-**Plaatsing** — voeg `<TileInfo …>` toe aan elke tegel in:
-- `OverviewTab` — 6 KPI-tiles + "Acties vandaag"
-- `InstroomTab` — Volume-trend, SourceTreeView, ScoreHistogram, QualityHeatmap
-- `DistributieTab` — Lead-time meters, HitRateMatrix
-- `ForecastTab` — 3 tegels boven (Verwacht huidig, Optimaal, Scenario's), historische lijn, bijdragetabel
-- `OpvolgingTab` — CallDisciplineGrid, SLALeaderboard
-- `WatchlistTab` — elke categorie
+## Default selection (per spec)
 
-`KPITile.tsx` krijgt een optionele `info?: TileInfoProps`-prop zodat het ⓘ in de tegel-corner past.
+Mapped to the existing `columnGroups` keys in `src/components/tv/UnitFunnelBreakdown.tsx`:
 
-De bestaande `DevInfoTab` blijft, maar krimpt tot globale info (mock setup, SLA-matrix, kleuren, deeplink-formats, schema, out-of-scope) — geen per-tegel uitleg meer daar.
-
----
-
-## 2. Interactieve optimale forecast
-
-### Data-laag — uitbreiding van `funnelOperationsData.ts`
-
-Nieuwe export `optimalReassignments()`:
-
-```ts
-export interface ReassignSuggestion {
-  candidate: Candidate;
-  fromConsultant: Consultant | null;   // null = nog niet toegewezen
-  toConsultant: Consultant;
-  currentHitRate: number;              // % bij huidige routing
-  suggestedHitRate: number;            // % bij voorgestelde routing
-  uplift: number;                      // suggested - current
-  expectedExtraPlacements: number;     // 0..1 waarde, opgeteld → 26
-  reden: string;                       // "Consultant heeft 38% hit-rate op Lasser-rollen vs 12% huidige toewijzing"
-}
+```text
+1. Inschrijvingen   → ingeschreven, conv(ingeschreven÷toegewezen), conv(intakes÷ingeschreven)
+2. Acquisitie       → acquisities, conv(acquisities÷ingeschreven)
+3. Voorstellen      → voorstellenPerKandidaat, voorstellenViaEmail, conv(voorstellenViaEmail÷ingeschreven)
+4. Uitnodigingen    → uitnodigingenTotaal, nietUitgenodigd, welUitgenodigd, conv(uitnodigingenTotaal÷acquisities)
+5. Gesprekken       → eersteGesprek, geenEersteGesprek, welEersteGesprek, conv(eersteGesprek÷acquisities)
+6. Vervolg          → vervolgGesprek, dealsluiter, conv(welEersteGesprek÷vervolgGesprek)
+7. Geplaatst        → geplaatst, gemDagenTotPlaatsing, conv(geplaatst÷ingeschreven), conv(geplaatst÷toegewezen)
 ```
 
-Logica (deterministisch, gebruikt bestaande `hitRateMatrix("voortschrijdend")` en `candidates`):
-1. Pak alle open kandidaten met tier A+/A/B (status ≠ geplaatst/afgesloten).
-2. Voor elke kandidaat: bereken huidige verwachte hit-rate op basis van `consultantId` × `functiegroep` (of fallback 8% als geen consultant).
-3. Zoek per kandidaat de consultant met de hoogste hit-rate op haar `functiegroep` die nog "capaciteit" heeft (max 8 nieuwe matches per consultant in deze ronde, deterministisch geteld).
-4. Filter: alleen tonen als `uplift ≥ 5 procentpunt`.
-5. Sorteer op `expectedExtraPlacements` desc.
-6. Cumulatief sommeren tot totaal-uplift ≈ `kpis.forecastMaand.ideal − kpis.forecastMaand.p50` (= 26). Snijd af.
+Note: `Toegewezen` (value column under Inschrijvingen) is **off by default** per spec but remains selectable. All other existing columns map 1:1 onto the spec.
 
-### UI — nieuwe component `src/components/funnel-ops/OptimalReassignPanel.tsx`
+## Technical changes
 
-Open-mechaniek: oranje tegel "Verwacht (optimale distributie)" in `ForecastTab` wordt klikbaar (`role="button"`, focus-ring, hover-state). Klik → state `open=true` → render shadcn `Sheet` (rechts inschuivend, breed `sm:max-w-[900px]`).
+1. **`src/components/tv/UnitFunnelBreakdown.tsx`**
+   - Export a stable `subKey(sub: SubCol)` helper, e.g. `value:<key>` or `conv:<from>/<to>`.
+   - Export `DEFAULT_VISIBLE_SUBKEYS` built from the spec above.
+   - Filter `visibleGroups` further: each group's `subs` is filtered by `filters.visibleSubKeys`. Drop groups that end up with 0 subs.
 
-**Inhoud van het paneel:**
-- Header: "Optimale herverdeling — +26 plaatsingen potentie"
-- Subkop: "READ-ONLY suggestielijst — daadwerkelijk schuiven gebeurt in RecruitCRM."
-- Samenvatting-strook (4 mini-stats): aantal kandidaten, gemiddelde uplift, betrokken consultants, optelsom extra plaatsingen.
-- Filterbalk: Unit (multi), Tier (chips), zoekveld op kandidaat-naam.
-- Tabel:
-  | Kandidaat (deeplink) | Tier | Functiegroep | Unit | Huidig (consultant + hit%) | Voorstel (consultant + hit%) | Uplift | Extra plaats. | Reden |
-  - Beide consultantnamen zijn `UserLink` met externe-link-icoon.
-  - Kandidaat is `CandidateLink`.
-  - Uplift als gekleurde chip (oranje ≥5pp, rood ≥15pp).
-  - Reden is een korte zin uit de generator.
-- Footer: "Cumulatief verwacht effect: +26 plaatsingen → forecast 168".
+2. **`src/contexts/SalesFunnelFiltersContext.tsx`**
+   - Add `visibleSubKeys: string[]` + `setVisibleSubKeys`.
+   - Initialize with `DEFAULT_VISIBLE_SUBKEYS` (imported from UnitFunnelBreakdown, or co-located in a new `src/data/unitFunnelColumns.ts` to avoid circular import — preferred).
+   - Add to memoized context value.
 
-Geen knoppen die data muteren. Alleen deeplinks. Past binnen bestaande read-only architectuur.
+3. **(new) `src/data/unitFunnelColumns.ts`** *(optional, recommended)*
+   - Move `columnGroups`, `SubCol`, `subKey()`, and `DEFAULT_VISIBLE_SUBKEYS` here so both the context and the table can import them without cycles. UnitFunnelBreakdown re-exports for backward compat.
 
-### Wijzigingen in `ForecastTab.tsx`
+4. **`src/components/tv/SalesFunnelFilterBar.tsx`**
+   - New `Popover` button "Subkolommen" rendering the grouped checkbox UI described above, wired to `f.visibleSubKeys` / `f.setVisibleSubKeys`.
+   - Section toggles + Reset button.
 
-- Oranje tegel wordt `<button>` met aria-label "Toon herverdeel-suggesties".
-- State `const [openReassign, setOpenReassign] = useState(false)`.
-- Render `<OptimalReassignPanel open={openReassign} onOpenChange={setOpenReassign} />`.
-- Voeg subtiele hint toe onder "+{ideal-p50} potentie": "→ klik voor herverdeel-lijst".
-- Voeg `TileInfo` toe aan alle 3 tegels en de twee onderstaande blokken.
+5. **No other tiles touched.** The KPI strip, CallStats, ConversionFormulasCard etc. don't read `visibleSubKeys`.
 
----
+## Out of scope
 
-## Bestanden
-
-**Aanmaken**
-- `src/components/funnel-ops/TileInfo.tsx`
-- `src/components/funnel-ops/OptimalReassignPanel.tsx`
-
-**Bewerken**
-- `src/data/funnelOperationsData.ts` — voeg `optimalReassignments()` + types toe
-- `src/components/funnel-ops/tabs/ForecastTab.tsx` — klikbare tegel + panel + TileInfo
-- `src/components/funnel-ops/tabs/OverviewTab.tsx` — TileInfo per KPI
-- `src/components/funnel-ops/tabs/InstroomTab.tsx` — TileInfo per tegel
-- `src/components/funnel-ops/tabs/DistributieTab.tsx` — TileInfo per tegel
-- `src/components/funnel-ops/tabs/OpvolgingTab.tsx` — TileInfo per tegel
-- `src/components/funnel-ops/tabs/WatchlistTab.tsx` — TileInfo per categorie
-- `src/components/funnel-ops/KPITile.tsx` — optionele `info`-prop
-- `src/components/funnel-ops/tabs/DevInfoTab.tsx` — verwijder per-tegel detail; behoud globale secties + voeg "Per-tegel uitleg vind je nu via het ⓘ-icoon in elke tegel" notitie
-
-Geen routes of sidebar-wijzigingen.
+- Period view (`TVSalesFunnelPeriod`) — same components are reused, so it will inherit the filter automatically; no extra work.
+- Persistence to localStorage (current filters are session-only; matches existing pattern).
