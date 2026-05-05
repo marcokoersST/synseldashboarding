@@ -70,8 +70,12 @@ export function UnitFunnelBreakdown({ data, consultantData }: UnitFunnelBreakdow
   // Apply unit filter
   const rows = useMemo(() => allRows.filter(r => filters.isUnitVisible(r.unit)), [allRows, filters.selectedUnits]);
 
-  // Visible column groups
-  const visibleGroups = columnGroups.filter(g => filters.visibleColumnGroups.includes(g.group));
+  // Visible column groups (also filtered by per-subcolumn picker)
+  const visibleSubSet = new Set(filters.visibleSubKeys);
+  const visibleGroups = columnGroups
+    .filter(g => filters.visibleColumnGroups.includes(g.group))
+    .map(g => ({ ...g, subs: g.subs.filter(s => visibleSubSet.has(subKey(s))) }))
+    .filter(g => g.subs.length > 0);
 
   // Expand state per unit
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
