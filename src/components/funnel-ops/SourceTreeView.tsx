@@ -1,17 +1,9 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { sourceTree } from "@/data/funnelOperationsData";
-
-const BRON_LABELS: Record<string, string> = {
-  jobscan: "Jobscan",
-  open_cv: "Open CV",
-  cv_database: "CV-database",
-  reactivering: "Reactivering",
-  linkedin: "LinkedIn",
-};
+import { sourceTree, SOURCE_LABELS } from "@/data/funnelOperationsData";
 
 export function SourceTreeView() {
-  const [open, setOpen] = useState<string[]>(["jobscan"]);
+  const [open, setOpen] = useState<string[]>(["paid_jobboard"]);
   const toggle = (k: string) => setOpen(o => o.includes(k) ? o.filter(x => x !== k) : [...o, k]);
 
   return (
