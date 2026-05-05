@@ -139,8 +139,13 @@ function genCandidate(i: number): Candidate {
   const subBron = pick(SUB_BRONNEN[bron]);
   const recruiter = pick(recruiters);
 
-  // Most candidates were assigned in last 14 days; A+ tend to be very recent
-  const ageHours = tier === "A+" ? rng() * 8 : tier === "A" ? rng() * 48 : rng() * 14 * 24;
+  // Spread across ~8 weeks; high tiers stay recent so SLA timers remain realistic
+  const ageHours =
+    tier === "A+" ? rng() * 12 :
+    tier === "A"  ? rng() * 72 :
+    tier === "B"  ? rng() * 28 * 24 :
+    tier === "C"  ? rng() * 42 * 24 :
+                    rng() * 56 * 24;
   const toegewezenOp = NOW - ageHours * HOUR;
 
   // Status progression
