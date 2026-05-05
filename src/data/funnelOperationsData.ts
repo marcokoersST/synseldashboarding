@@ -183,7 +183,7 @@ function genCandidate(i: number): Candidate {
   };
 }
 
-export const candidates: Candidate[] = Array.from({ length: 5000 }, (_, i) => genCandidate(i));
+export const candidates: Candidate[] = Array.from({ length: 2740 }, (_, i) => genCandidate(i));
 
 // ---------- Call attempts: ~70% complete 6/6 ----------
 const DAG_DELEN: ("ochtend" | "middag" | "avond")[] = ["ochtend", "middag", "avond"];
