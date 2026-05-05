@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Target, Pencil, Sparkles, Plus, ChevronDown } from "lucide-react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { useForecastGoals } from "@/contexts/ForecastGoalsContext";
 import { cn } from "@/lib/utils";
@@ -158,6 +159,10 @@ export function ForecastGoalsCard({ delay = 0 }: ForecastGoalsCardProps) {
   // Expanded view
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Je doelen voor deze periode in omzet, plaatsingen en gesprekken. Velden zijn aanpasbaar; andere velden worden automatisch berekend."
+        insight="Stel één doel in (bijv. omzet) en zie meteen hoeveel plaatsingen en gesprekken je daar voor nodig hebt."
+      />
       <div className="bg-card rounded-xl p-4 border border-border">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">

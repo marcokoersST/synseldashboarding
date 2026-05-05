@@ -1,4 +1,5 @@
 import { Bot, Star, TrendingUp } from "lucide-react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { AnimatedRing } from "@/components/animations/AnimatedRing";
@@ -25,6 +26,10 @@ export function AINpsCard({ delay = 0 }: AINpsCardProps) {
   
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Hoe tevreden je kandidaten zijn over jou, gemeten als een NPS-score (van -100 tot +100)."
+        insight="Zie meteen of je kandidaten je aanbevelen of dat je nog moet werken aan je service en relatie."
+      />
       <div className="bg-card rounded-xl p-5 border border-border group h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

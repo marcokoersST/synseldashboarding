@@ -1,6 +1,7 @@
 import { Crown, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedProgress } from "@/components/animations/AnimatedProgress";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
@@ -25,6 +26,10 @@ export function TeamLeaderboard({ delay = 0 }: TeamLeaderboardProps) {
 
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="De team-omzetrace: wie staat waar op weg naar het €2M-doel? Jouw rij is gemarkeerd."
+        insight="Gezonde competitie + zien welke collega je kunt inhalen — en hoeveel je daarvoor nog moet verdienen."
+      />
       <div className="bg-card rounded-xl p-5 border border-border h-full">
         <div className="flex items-center justify-between mb-4">
           <div>

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -70,6 +71,10 @@ export function FunnelCalculatorCard({ delay = 0 }: FunnelCalculatorCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Een rekentool die laat zien hoeveel acties (calls, gesprekken, intakes) je nodig hebt om je plaatsings-doel te halen."
+        insight="Stel een doel in en zie direct hoeveel telefoontjes en gesprekken je vandaag moet doen om dat doel te raken."
+      />
       <Card className="border border-border">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold">Wervingstrechter Calculator</CardTitle>

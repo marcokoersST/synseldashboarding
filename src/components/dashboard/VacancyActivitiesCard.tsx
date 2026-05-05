@@ -1,4 +1,5 @@
 import { FilePlus, UserPlus, FolderOpen, FolderClosed } from "lucide-react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { BarChart, Bar, ResponsiveContainer, Cell, Tooltip } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
@@ -72,6 +73,10 @@ interface VacancyActivitiesCardProps {
 export function VacancyActivitiesCard({ delay = 0 }: VacancyActivitiesCardProps) {
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Wat er deze periode op je vacatures is gebeurd: nieuwe vacatures, gesloten vacatures en wijzigingen."
+        insight="Houd je vacatures warm: zie welke nog leven en welke stilstaan zodat je actie kunt ondernemen."
+      />
       <div className="bg-card rounded-xl p-5 border border-border">
         <div className="mb-4">
           <h3 className="text-sm font-medium text-foreground">Vacature Activiteiten</h3>

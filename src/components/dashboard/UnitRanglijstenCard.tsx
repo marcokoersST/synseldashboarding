@@ -2,6 +2,8 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Medal, Flame, Rocket, TrendingUp, TrendingDown, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
+import { DevNote } from "@/components/groeimodel/DevNote";
 import {
   allConsultantsList,
   getCurrentPeriodNumber,
@@ -299,9 +301,13 @@ export function UnitRanglijstenCard({ delay = 75 }: Props) {
 
   return (
     <Card
-      className="animate-fade-in-up mb-4"
+      className="animate-fade-in-up mb-4 relative"
       style={{ animationDelay: `${delay}ms`, animationFillMode: "both" }}
     >
+      <WatZieIkHier
+        what="Hoe jij scoort binnen je unit op alle belangrijke stappen. Boven elke kolom zie je eerst het unit-totaal en daaronder in goud jouw eigen aandeel. In de lijst staat jouw rij gemarkeerd."
+        insight="Je ziet direct waar je sterk in bent en waar je achterloopt op je collega's, zodat je weet waar je vandaag op moet inzetten."
+      />
       <CardHeader className="pb-3 flex-row items-center justify-between">
         <div>
           <CardTitle className="text-base flex items-center gap-2">
@@ -324,6 +330,38 @@ export function UnitRanglijstenCard({ delay = 75 }: Props) {
             />
           ))}
         </div>
+        <DevNote
+          story={
+            <>
+              As a consultant I want to see how my own contribution compares to the unit total per ranking column. Each column header shows two stacked blocks: <strong>UNIT</strong> (aggregated totals + done count + period-over-period delta) and <strong>JIJ</strong> (my personal value, my done count, and my share of the unit as a percentage). Below the header the existing scrollable list of all consultants in my unit remains, with the self row highlighted in gold and auto-scrolled to the vertical center.
+            </>
+          }
+          logic={`data: getRanglijstenData(2026, "periode", currentPeriodNumber)
+columns: 6 fixed (Inschrijvingen, Acquisities, Gesprekken,
+         Intakes, Plaatsingen, Niet begonnen)
+
+per column:
+  unitEntries  = column.entries.filter(e => e.unit === self.unit)
+                                .sort(desc by value)
+  unitTotal    = sum(unitEntries.value)
+  unitDone     = sum(unitEntries.valueDone)
+  selfEntry    = unitEntries.find(e => e.name === selfName)
+  selfValue    = selfEntry?.value      ?? 0
+  selfDone     = selfEntry?.valueDone  ?? 0
+  sharePct     = round(selfValue / unitTotal * 100)
+  delta        = (column.total - column.previousTotal)
+                  / column.previousTotal * 100   // proxy trend
+
+scroll list:
+  - render unitEntries with rank number, top-3 medal/trophy
+    (only on positive-direction columns), Flame/Rocket badges,
+    value, ✓done (hidden for Intakes / Niet begonnen),
+    and column-specific ratio (% conversion, "van acq.", etc.)
+  - self row auto-scrolls to vertical center on mount
+  - self row styled with gold gradient + ring + left border
+
+CURRENT_CONSULTANT_NAME = "Robin Jansen" (hardcoded mock).`}
+        />
       </CardContent>
     </Card>
   );

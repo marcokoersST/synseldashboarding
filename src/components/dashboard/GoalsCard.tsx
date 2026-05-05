@@ -1,5 +1,6 @@
 import { Plus, Trash2, Pencil, X, Check } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
@@ -93,6 +94,10 @@ export function GoalsCard({ delay = 0 }: GoalsCardProps) {
 
   return (
     <AnimatedCard delay={delay}>
+    <WatZieIkHier
+      what="Je persoonlijke leer- en ontwikkeldoelen voor deze periode, met aangevinkt wat al af is."
+      insight="Houd zelf grip op je groei: vink af wat je hebt gedaan en zie meteen waar je nog mee bezig bent."
+    />
     <div className="bg-card rounded-xl p-5 border border-border flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-4 shrink-0">
           <h3 className="text-sm font-medium text-foreground">Persoonlijke Ontwikkeldoelen</h3>

@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
@@ -27,6 +28,10 @@ export function ProjectionCard({
 
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what={`Een prognose van "${title.replace("Projectie ", "")}" voor de komende weken, gebaseerd op je huidige activiteiten en conversies.`}
+        insight="Op tijd bijsturen: zie alvast of je op koers ligt voor je doel of dat je nu al moet versnellen."
+      />
       <Card className="h-full">
         <CardContent className="p-6">
           {/* Header */}

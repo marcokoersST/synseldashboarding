@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
@@ -550,6 +551,10 @@ export function RevenueChart({ delay = 0 }: RevenueChartProps) {
 
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Je omzet per periode (gefactureerd) en de prognose voor de rest van het jaar, vergeleken met drie carrièrepaden: minimum-norm, fast lane en executive."
+        insight="Je ziet welk pad je nu volgt en hoeveel je extra moet binnenhalen om naar het volgende niveau te groeien."
+      />
       <div className="bg-card rounded-xl p-5 border border-border">
         <div className="flex items-center justify-between mb-4">
           <div>

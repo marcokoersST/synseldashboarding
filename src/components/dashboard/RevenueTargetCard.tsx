@@ -1,4 +1,5 @@
 import { TrendingUp } from "lucide-react";
+import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { useAnimateOnMount } from "@/hooks/useAnimateOnMount";
@@ -23,6 +24,10 @@ export function RevenueTargetCard({ delay = 0 }: RevenueTargetCardProps) {
   
   return (
     <AnimatedCard delay={delay}>
+      <WatZieIkHier
+        what="Je maandelijkse omzettarget en hoe ver je daar nu vanaf bent, weergegeven in een ring."
+        insight="Eén oogopslag: hoeveel moet ik deze maand nog binnenhalen om mijn target te halen?"
+      />
       <div className="bg-card rounded-xl p-5 border border-border group">
         <div className="flex items-center justify-between mb-4">
           <div>
