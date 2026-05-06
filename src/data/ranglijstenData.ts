@@ -304,6 +304,45 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
     intCol.previousTotalDone = Math.round(intCol.previousTotal * ratio * (0.9 + seededRandom(prevSeed + 1200, 0) * 0.2));
   }
 
+  // Ensure "Robin Jansen" (the demo logged-in consultant) always has decent values
+  // across every column, so the JIJ block never shows zeros.
+  const robinMinimums: Record<string, { value: number; valueDone?: number }> = {
+    Inschrijvingen: { value: 9, valueDone: 6 },
+    Acquisities:    { value: 4, valueDone: 62 },   // 4 acquisities → 62 voorstellen (~6%)
+    Gesprekken:     { value: 6, valueDone: 8 },    // 6 gesprekken / 8 uitnodigingen
+    Intakes:        { value: 2 },                  // valueDone (= acq) re-set below
+    Plaatsingen:    { value: 3, valueDone: 2 },    // 3 plaatsingen / 2 detachering
+    "Niet begonnen":{ value: 1 },
+  };
+  result.forEach((col) => {
+    const min = robinMinimums[col.title];
+    if (!min) return;
+    const entry = col.entries.find((e) => e.name === "Robin Jansen");
+    if (!entry) return;
+    const oldValue = entry.value;
+    const oldDone = entry.valueDone ?? 0;
+    if (entry.value < min.value) entry.value = min.value;
+    if (min.valueDone !== undefined && (entry.valueDone ?? 0) < min.valueDone) {
+      entry.valueDone = min.valueDone;
+    }
+    // Adjust column totals for the delta
+    col.total += entry.value - oldValue;
+    if (col.totalDone !== undefined) {
+      col.totalDone += (entry.valueDone ?? 0) - oldDone;
+    }
+    // Re-rank
+    col.entries.sort((a, b) => b.value - a.value);
+    col.entries.forEach((e, i) => { e.rank = i + 1; });
+  });
+  // Re-sync Intakes valueDone with (possibly bumped) Robin acquisities
+  const acqCol2 = result.find((c) => c.title === "Acquisities");
+  const intCol2 = result.find((c) => c.title === "Intakes");
+  if (acqCol2 && intCol2) {
+    const robinAcq = acqCol2.entries.find((e) => e.name === "Robin Jansen")?.value ?? 0;
+    const robinInt = intCol2.entries.find((e) => e.name === "Robin Jansen");
+    if (robinInt) robinInt.valueDone = robinAcq;
+  }
+
   return result;
 }
 
