@@ -38,6 +38,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -109,9 +110,10 @@ const navItems: NavItem[] = [
   { 
     icon: Briefcase, 
     label: "Manager Dashboard", 
-    path: "/manager-dashboard/overzicht-v2",
+    path: "/manager-dashboard/LC-A",
     subItems: [
-      { icon: Eye, label: "Overzicht", path: "/manager-dashboard/overzicht-v2" },
+      { icon: Eye, label: "LC-A", path: "/manager-dashboard/LC-A" },
+      { icon: Eye, label: "LC-B", path: "/manager-dashboard/LC-B" },
     ]
   },
   {
@@ -232,6 +234,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [manuallyCollapsed, setManuallyCollapsed] = useState<string[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [lcChooserOpen, setLcChooserOpen] = useState(false);
   const savedExpandedRef = useRef<{ expanded: string[]; manual: string[] }>({ expanded: [], manual: [] });
 
   const isOnComparisonPage = location.pathname.startsWith("/vergelijking");
@@ -287,6 +290,20 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   }, [isTransitioning]);
 
   const handleNavClick = (item: NavItem) => {
+    if (item.label === "Manager Dashboard") {
+      if (item.subItems && !isCollapsed) {
+        const isExpanded = effectiveExpandedItems.includes(item.path);
+        if (isExpanded) {
+          setExpandedItems(prev => prev.filter(p => p !== item.path));
+          setManuallyCollapsed(prev => prev.includes(item.path) ? prev : [...prev, item.path]);
+        } else {
+          setExpandedItems(prev => [...prev, item.path]);
+          setManuallyCollapsed(prev => prev.filter(p => p !== item.path));
+        }
+      }
+      setLcChooserOpen(true);
+      return;
+    }
     if (item.subItems && item.subItems.length > 0 && !isCollapsed) {
       const isExpanded = effectiveExpandedItems.includes(item.path);
       if (isExpanded) {
@@ -298,6 +315,11 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
       }
     }
     navigate(item.path);
+  };
+
+  const chooseLC = (path: string) => {
+    setLcChooserOpen(false);
+    navigate(path);
   };
 
   const isSubItemActive = (path: string) => {
@@ -434,6 +456,31 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
           <ChevronLeft className={cn("w-4 h-4 text-sidebar-foreground transition-transform duration-300", isCollapsed && "rotate-180")} />
         </button>
       </aside>
+
+      <Dialog open={lcChooserOpen} onOpenChange={setLcChooserOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Kies een Leading Concept</DialogTitle>
+            <DialogDescription>Welke variant van het Manager Dashboard wil je openen?</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            <button
+              onClick={() => chooseLC("/manager-dashboard/LC-A")}
+              className="rounded-xl border border-border bg-card p-5 text-left transition hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+            >
+              <div className="text-base font-semibold text-foreground">LC-A</div>
+              <p className="mt-1 text-xs text-muted-foreground">Sectie-gebaseerd overzicht — Operationeel, Performance & Omzet.</p>
+            </button>
+            <button
+              onClick={() => chooseLC("/manager-dashboard/LC-B")}
+              className="rounded-xl border border-border bg-card p-5 text-left transition hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+            >
+              <div className="text-base font-semibold text-foreground">LC-B</div>
+              <p className="mt-1 text-xs text-muted-foreground">Tile-grid in Systeem Hygiëne-stijl met status-indicatoren.</p>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }
