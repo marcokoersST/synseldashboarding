@@ -120,10 +120,15 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
     container.scrollTop = Math.max(0, target);
   }, [unitEntries]);
 
-  const unitSuffix =
-    column.title === "Inschrijvingen" ? "op naam"
-    : column.title === "Intakes" ? "intakes"
-    : cfg.doneLabel;
+  const unitSuffix = cfg.mainLabel ?? cfg.doneLabel;
+
+  // Intakes share: % of acquisities (existing data uses valueDone as the acq base)
+  const intakesPctSelf = column.title === "Intakes" && (selfEntry?.valueDone ?? 0) > 0
+    ? Math.round((selfValue / (selfEntry?.valueDone || 1)) * 100)
+    : 0;
+  const intakesPctUnit = column.title === "Intakes" && unitTotalDone > 0
+    ? Math.round((unitTotal / unitTotalDone) * 100)
+    : 0;
 
   return (
     <div className="rounded-md border border-border/60 bg-card/40 p-2 flex flex-col min-w-0 min-w-[150px]">
@@ -140,11 +145,15 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
           </div>
           <div className="flex items-baseline gap-1.5 mt-0.5">
             <span className="text-2xl font-bold tabular-nums leading-none">{unitTotal}</span>
-            {unitSuffix && column.title !== "Niet begonnen" && (
+            {unitSuffix && (
               <span className="text-[10px] text-muted-foreground truncate">{unitSuffix}</span>
             )}
           </div>
-          {column.totalDone !== undefined && cfg.doneLabel && column.title !== "Intakes" && (
+          {column.title === "Intakes" ? (
+            <div className="text-[10px] text-muted-foreground mt-0.5">
+              <span className="font-semibold text-foreground/80 tabular-nums">{intakesPctUnit}%</span> van acq.
+            </div>
+          ) : column.totalDone !== undefined && cfg.doneLabel && (
             <div className="text-[10px] text-success mt-0.5 flex items-center gap-1">
               <span>✓</span>
               <span className="font-semibold tabular-nums">{unitTotalDone}</span>
@@ -174,22 +183,30 @@ function RankColumn({ column, unit, selfName }: RankColumnProps) {
           </div>
           <div className="flex items-baseline gap-1.5 mt-0.5">
             <span className="text-lg font-bold tabular-nums leading-none text-gold">{selfValue}</span>
-            {unitSuffix && column.title !== "Niet begonnen" && (
+            {unitSuffix && (
               <span className="text-[10px] text-muted-foreground truncate">{unitSuffix}</span>
             )}
           </div>
           <div className="text-[10px] mt-0.5 flex items-center gap-1 flex-wrap">
-            {column.totalDone !== undefined && cfg.doneLabel && column.title !== "Intakes" && (
+            {column.title === "Intakes" ? (
+              <span className="text-muted-foreground tabular-nums">
+                <span className="font-semibold text-foreground/80">{intakesPctSelf}%</span> van acq.
+              </span>
+            ) : (
               <>
-                <span className="text-success">✓</span>
-                <span className="font-semibold tabular-nums text-success">{selfDone}</span>
-                <span className="text-muted-foreground">{cfg.doneLabel}</span>
-                <span className="text-muted-foreground/60">·</span>
+                {column.totalDone !== undefined && cfg.doneLabel && (
+                  <>
+                    <span className="text-success">✓</span>
+                    <span className="font-semibold tabular-nums text-success">{selfDone}</span>
+                    <span className="text-muted-foreground">{cfg.doneLabel}</span>
+                    <span className="text-muted-foreground/60">·</span>
+                  </>
+                )}
+                <span className="text-muted-foreground tabular-nums">
+                  <span className="font-semibold text-foreground/80">{sharePct}%</span> van unit
+                </span>
               </>
             )}
-            <span className="text-muted-foreground tabular-nums">
-              <span className="font-semibold text-foreground/80">{sharePct}%</span> van unit
-            </span>
           </div>
         </div>
       </div>
