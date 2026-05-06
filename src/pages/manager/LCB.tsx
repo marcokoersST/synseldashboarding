@@ -71,7 +71,7 @@ export default function LCB() {
   const lastRevenue = revenueChartDataV2.filter(d => d.realised > 0).pop();
   const prognoseWarning = revenueChartDataV2.some(d => d.belowTarget);
 
-  const operationeelScore = Math.min(100, Math.round((unitFunnelTotalsV2.plaatsingen / Math.max(unitFunnelTotalsV2.deals, 1)) * 100));
+  const operationeelScore = Math.min(100, Math.round((unitFunnelTotalsV2.plaatsingen / Math.max(unitFunnelTotalsV2.intakes, 1)) * 100));
   const omzetScore = lastRevenue ? Math.min(100, Math.round((lastRevenue.realised / Math.max(lastRevenue.target, 1)) * 100)) : 0;
   const globalScore = Math.round((avgSkillScore + operationeelScore + omzetScore) / 3);
   const globalStatus: Status = globalScore >= 75 ? "clean" : globalScore >= 55 ? "attention" : "critical";
