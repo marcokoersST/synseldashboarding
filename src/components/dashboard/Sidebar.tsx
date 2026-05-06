@@ -109,9 +109,10 @@ const navItems: NavItem[] = [
   { 
     icon: Briefcase, 
     label: "Manager Dashboard", 
-    path: "/manager-dashboard/overzicht-v2",
+    path: "/manager-dashboard/LC-A",
     subItems: [
-      { icon: Eye, label: "Overzicht", path: "/manager-dashboard/overzicht-v2" },
+      { icon: Eye, label: "LC-A", path: "/manager-dashboard/LC-A" },
+      { icon: Eye, label: "LC-B", path: "/manager-dashboard/LC-B" },
     ]
   },
   {
