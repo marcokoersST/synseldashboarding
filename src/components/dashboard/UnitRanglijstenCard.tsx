@@ -15,13 +15,13 @@ import {
 // Hardcoded mock identity — single source of truth for "the logged in consultant"
 const CURRENT_CONSULTANT_NAME = "Robin Jansen";
 
-const COLUMN_LABELS: Record<string, { title: string; doneLabel?: string }> = {
-  Inschrijvingen: { title: "Inschrijvingen", doneLabel: "gedaan" },
-  Acquisities: { title: "Acquisities / Voorstellen", doneLabel: "voorstellen" },
-  Gesprekken: { title: "Gesprekken / Uitnodigingen", doneLabel: "uitnodigingen" },
-  Intakes: { title: "Intakes", doneLabel: "van acq." },
-  Plaatsingen: { title: "Plaatsingen / Detachering", doneLabel: "detachering" },
-  "Niet begonnen": { title: "Niet begonnen" },
+const COLUMN_LABELS: Record<string, { title: string; mainLabel?: string; doneLabel?: string }> = {
+  Inschrijvingen: { title: "Inschrijvingen", mainLabel: "op naam", doneLabel: "gedaan" },
+  Acquisities: { title: "Acquisities / Voorstellen", mainLabel: "acquisities", doneLabel: "voorstellen" },
+  Gesprekken: { title: "Gesprekken / Uitnodigingen", mainLabel: "gesprekken", doneLabel: "uitnodigingen" },
+  Intakes: { title: "Intakes", mainLabel: "intakes" },
+  Plaatsingen: { title: "Plaatsingen / Detachering", mainLabel: "plaatsingen", doneLabel: "detachering" },
+  "Niet begonnen": { title: "Niet begonnen", mainLabel: "niet begonnen" },
 };
 
 function shortName(fullName: string): string {
