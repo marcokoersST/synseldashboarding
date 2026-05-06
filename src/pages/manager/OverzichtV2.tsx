@@ -228,7 +228,7 @@ export default function OverzichtV2() {
     <div className="w-full min-w-0">
       <div className="mb-6 flex items-start justify-between gap-3 flex-wrap min-w-0 max-w-full">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-foreground">Manager Dashboard V2</h1>
+          <h1 className="text-2xl font-bold text-foreground">Manager Dashboard — LC-A</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Signalering, sturing & coaching — focus op afwijkingen
           </p>
