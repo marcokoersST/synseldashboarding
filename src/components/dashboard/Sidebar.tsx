@@ -82,6 +82,11 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: TrendingUp,
+    label: "Sales Funnel (Week)",
+    path: "/tv/sales-funnel-week",
+  },
+  {
     icon: BarChart3,
     label: "Consultant sub dashboards",
     path: "/consultant/geld-bonus",
