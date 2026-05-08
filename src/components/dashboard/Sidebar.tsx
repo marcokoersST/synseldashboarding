@@ -259,7 +259,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnComparisonPage ? ["/"] : []),
     ...(isOnSuperAdminPage ? ["/super-admin"] : []),
     ...(isOnRanglijstenPage ? ["/tv/ranglijsten"] : []),
-    ...(isOnTVPage && !isOnRanglijstenPage ? ["/tv/sales-funnel-week"] : []),
+    ...(isOnTVPage && !isOnRanglijstenPage ? ["/tv/sales-funnel-period"] : []),
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
     ...(isOnHendrikPage ? ["/hendrik/overzicht"] : []),
     ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
