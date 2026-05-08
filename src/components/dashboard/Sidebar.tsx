@@ -82,6 +82,11 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    icon: TrendingUp,
+    label: "Sales Funnel (Week)",
+    path: "/tv/sales-funnel-week",
+  },
+  {
     icon: BarChart3,
     label: "Consultant sub dashboards",
     path: "/consultant/geld-bonus",
@@ -199,9 +204,8 @@ const navItems: NavItem[] = [
   {
     icon: Monitor,
     label: "TV Dashboards",
-    path: "/tv/sales-funnel-week",
+    path: "/tv/sales-funnel-period",
     subItems: [
-      { icon: TrendingUp, label: "Sales Funnel (Week)", path: "/tv/sales-funnel-week" },
       { icon: BarChart3, label: "Sales Funnel (Periode)", path: "/tv/sales-funnel-period" },
       { icon: Trophy, label: "Beker Dashboard", path: "/tv/beker" },
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
@@ -255,7 +259,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
     ...(isOnComparisonPage ? ["/"] : []),
     ...(isOnSuperAdminPage ? ["/super-admin"] : []),
     ...(isOnRanglijstenPage ? ["/tv/ranglijsten"] : []),
-    ...(isOnTVPage && !isOnRanglijstenPage ? ["/tv/sales-funnel-week"] : []),
+    ...(isOnTVPage && !isOnRanglijstenPage ? ["/tv/sales-funnel-period"] : []),
     ...(isOnConsultantPage ? ["/consultant/geld-bonus"] : []),
     ...(isOnHendrikPage ? ["/hendrik/overzicht"] : []),
     ...(isOnPeterJanPage ? ["/peter-jan/sales-flow"] : []),
