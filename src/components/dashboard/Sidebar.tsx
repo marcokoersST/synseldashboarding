@@ -204,9 +204,8 @@ const navItems: NavItem[] = [
   {
     icon: Monitor,
     label: "TV Dashboards",
-    path: "/tv/sales-funnel-week",
+    path: "/tv/sales-funnel-period",
     subItems: [
-      { icon: TrendingUp, label: "Sales Funnel (Week)", path: "/tv/sales-funnel-week" },
       { icon: BarChart3, label: "Sales Funnel (Periode)", path: "/tv/sales-funnel-period" },
       { icon: Trophy, label: "Beker Dashboard", path: "/tv/beker" },
       { icon: Users, label: "Gedetacheerden", path: "/tv/gedetacheerden" },
