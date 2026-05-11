@@ -19,7 +19,7 @@ import { InterventionHeatmap } from "@/components/manager/v2/InterventionHeatmap
 import { ActiveSecondmentsCard } from "@/components/manager/v2/ActiveSecondmentsCard";
 import { OpvolgingCard } from "@/components/manager/OpvolgingCard";
 import { ManagerGoalsCard } from "@/components/manager/ManagerGoalsCard";
-import { unitFunnelTotalsV2, unitOutreachTotals } from "@/data/managerOperationalDataV2";
+import { unitFunnelTotalsV2, unitOutreachTotals, generateAlerts } from "@/data/managerOperationalDataV2";
 import { consultantSkillData } from "@/data/managerPerformanceData";
 import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
 
