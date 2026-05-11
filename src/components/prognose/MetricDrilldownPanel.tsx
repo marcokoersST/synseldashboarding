@@ -1,4 +1,3 @@
-import { createPortal } from "react-dom";
 import { X, FileText, Megaphone, Send, MessageCircle, CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -319,49 +318,45 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
       ? `${row.telefonie.hours}u${row.telefonie.minutes}m`
       : `${count}/${target}`;
 
-  return createPortal(
-    <>
-      <div className="fixed inset-0 z-[59] bg-black/10" onClick={onClose} />
-      <div className="fixed top-0 right-[640px] h-full w-[640px] bg-card border-l border-r border-border shadow-2xl z-[60] overflow-y-auto animate-in slide-in-from-right duration-200">
-        {/* Colored tier band */}
-        <div className={cn("h-1 w-full", TIER_BAND[tier])} />
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-card border-b px-4 py-3 flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center text-white shrink-0", TIER_BAND[tier])}>
-              <Icon className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-semibold">{METRIC_LABEL[metric]}</h3>
-                <Badge variant="outline" className="text-[10px] font-mono">{headerCount}</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                {row.name} · {periodLabel}
-              </p>
-            </div>
+  return (
+    <div className="h-full flex flex-col bg-card">
+      {/* Colored tier band */}
+      <div className={cn("h-1 w-full shrink-0", TIER_BAND[tier])} />
+      {/* Header */}
+      <div className="bg-card border-b px-4 py-3 flex items-start justify-between gap-3 shrink-0">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center text-white shrink-0", TIER_BAND[tier])}>
+            <Icon className="h-5 w-5" />
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <a
-              href={RECRUITCRM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-8 items-center gap-1.5 px-2.5 rounded-md border hover:bg-muted text-xs font-medium"
-              title="Open in Recruit CRM"
-            >
-              <RecruitCRMLink size={14} /> CRM
-            </a>
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base font-semibold">{METRIC_LABEL[metric]}</h3>
+              <Badge variant="outline" className="text-[10px] font-mono">{headerCount}</Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+              {row.name} · {periodLabel}
+            </p>
           </div>
         </div>
-        {/* Summary */}
-        <MetricSummary stats={summary} />
-        {/* Body */}
-        <div className="py-3">{renderTable()}</div>
+        <div className="flex items-center gap-2 shrink-0">
+          <a
+            href={RECRUITCRM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-8 items-center gap-1.5 px-2.5 rounded-md border hover:bg-muted text-xs font-medium"
+            title="Open in Recruit CRM"
+          >
+            <RecruitCRMLink size={14} /> CRM
+          </a>
+          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
-    </>,
-    document.body,
+      {/* Summary */}
+      <MetricSummary stats={summary} />
+      {/* Body */}
+      <div className="py-3 overflow-y-auto flex-1">{renderTable()}</div>
+    </div>
   );
 }

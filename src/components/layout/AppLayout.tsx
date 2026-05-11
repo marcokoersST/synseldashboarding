@@ -5,6 +5,7 @@ import { TopBar } from "@/components/dashboard/TopBar";
 import { InsightsDrawer } from "@/components/dashboard/InsightsDrawer";
 import { consultantInsights } from "@/data/consultantInsightsData";
 import { cn } from "@/lib/utils";
+import { SidebarCollapseProvider, useSidebarCollapse } from "@/contexts/SidebarCollapseContext";
 
 // Context for pages to inject actions into the TopBar
 interface TopBarActionsContextType {
@@ -30,7 +31,17 @@ function getReadIds(): string[] {
 }
 
 export function AppLayout() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  return (
+    <SidebarCollapseProvider>
+      <AppLayoutInner />
+    </SidebarCollapseProvider>
+  );
+}
+
+function AppLayoutInner() {
+  const [userCollapsed, setUserCollapsed] = useState(false);
+  const { forcedCount } = useSidebarCollapse();
+  const isCollapsed = userCollapsed || forcedCount > 0;
   const [topBarActions, setTopBarActions] = useState<ReactNode>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [readIds, setReadIds] = useState<string[]>(getReadIds);
@@ -61,7 +72,7 @@ export function AppLayout() {
   return (
     <TopBarActionsContext.Provider value={{ actions: topBarActions, setActions: setTopBarActions }}>
       <div className="h-screen bg-sidebar flex overflow-hidden">
-        <Sidebar isCollapsed={isCollapsed} onToggleCollapse={() => setIsCollapsed(prev => !prev)} />
+        <Sidebar isCollapsed={isCollapsed} onToggleCollapse={() => setUserCollapsed(prev => !prev)} />
         <div className={`${isCollapsed ? 'ml-16' : 'ml-52'} flex-1 flex flex-col h-screen min-w-0 transition-[margin-left] duration-300 ease-in-out`}>
           {!isSysteemHygiene && (
             <TopBar
