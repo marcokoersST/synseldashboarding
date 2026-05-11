@@ -243,9 +243,7 @@ export default function LCB() {
       </header>
 
       <main className="px-6 py-6 space-y-6">
-        <AlertsPanelV2 />
-
-        <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_320px]">
+        <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_1fr_320px]">
           {major.map(t => (
             <MajorTile key={t.key} tile={t} onOpen={() => setOpenTile(t.key)} />
           ))}
