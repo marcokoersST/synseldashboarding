@@ -1,18 +1,33 @@
-## Reorder & merge consultant output visuals
+## Redesign LC-B detail view to match Prognose-style slide-over
 
-**Goal:** Put the table directly under the "Consultant output" heading, and move the visuals below it as a single combined tile.
+**Goal:** Replace the right-side shadcn `Sheet` drawer on `/manager-dashboard/LC-B` with the same slide-over pattern used on `/super-admin/prognose-dashboard` — sidebar auto-collapses, a thin peek strip stays on the left, and the detail panel slides in over the dashboard with a soft stroke/shadow.
+
+Tile grid, header, filters, and KPIs on the LC-B page stay exactly as they are. Only the detail-view opening behavior changes.
 
 ### Changes
 
-**1. `src/components/prognose/ConsultantOutputVisuals.tsx` — merge into one Card**
-- Replace the current 2-column grid of two separate `Card`s with a single `Card`.
-- Inside the card: a 2-column layout (`grid lg:grid-cols-2`) with a vertical divider between left (dot grid + legend) and right (radar).
-- Single shared `CardHeader` with title "Consultant output — verdeling" and a subtitle showing consultant count.
-- Remove the duplicate headers; keep section sub-labels inline above the dot grid ("Prognose-score per consultant") and above the radar ("Bottleneck verdeling") as small muted text.
-- Keep all existing logic (sorting, tooltips, click-to-open, radar aggregation, status colors).
+**1. New component: `src/components/manager/lcb/LCBDetailPanel.tsx`**
+- Built from the same skeleton as `InterventionPanel.tsx` (portal + peek strip + slide-over).
+- Uses `createPortal` to `document.body` and `fixed inset-0 z-[55]`.
+- Left peek strip (`w-[72px] md:w-[96px]`, `bg-black/20`, click → close).
+- Right panel: `bg-card`, left border, slide-in animation, full-height, scrollable body.
+- Calls `useForceSidebarCollapse(open)` from `@/contexts/SidebarCollapseContext` so the sidebar contracts while open and restores on close.
+- Esc-to-close handler.
+- Header: tile title, subtitle, status pill (reuses `STATUS_COLOR`/`STATUS_LABEL`), animated score ring, close button.
+- Body: renders the existing `tile.detail` node passed in.
+- No drill-down sub-column needed (LC-B has no metric sub-drilldown), but the layout leaves room for one in the future.
 
-**2. `src/pages/super-admin/PrognoseDashboard.tsx` — swap order**
-- Render `<PrognoseTable />` first, then `<ConsultantOutputVisuals />` below it.
-- Add a small `mt-4` between them for breathing room.
+**2. Edit `src/pages/manager/LCB.tsx`**
+- Remove the `Sheet`/`SheetContent`/`SheetHeader`/`SheetTitle` imports and usage.
+- Replace with `<LCBDetailPanel tile={openDef} onClose={() => setOpenTile(null)} />`.
+- Tiles, header, filters, alerts panel — all unchanged.
 
-No data, filtering, or interaction logic changes. Pure presentation reordering and tile consolidation.
+### Technical details
+- Animation: Tailwind `animate-in slide-in-from-right duration-300` (already used by InterventionPanel).
+- Shadow stroke: `shadow-[-12px_0_40px_-12px_hsl(var(--foreground)/0.25)]` + `border-l border-border` to match Prognose.
+- Sidebar collapse: hook is already wired globally in `AppLayout` via `SidebarCollapseContext`, so importing `useForceSidebarCollapse(!!openTile)` is enough.
+- Scroll: panel body `overflow-y-auto`; existing tile detail components (`SalesFunnelV2`, `RevenueChartV2`, etc.) render unchanged inside it.
+
+### Out of scope
+- No changes to tile grid, dimensions filter, units filter, AlertsPanel, or KPI ring header.
+- No changes to the individual detail components themselves.

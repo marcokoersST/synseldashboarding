@@ -5,7 +5,7 @@ import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { LCBDetailPanel } from "@/components/manager/lcb/LCBDetailPanel";
 import { cn } from "@/lib/utils";
 import { SalesFunnelV2 } from "@/components/manager/v2/SalesFunnelV2";
 import { AlertsPanelV2 } from "@/components/manager/v2/AlertsPanelV2";
@@ -234,14 +234,7 @@ export default function LCB() {
         </div>
       </main>
 
-      <Sheet open={!!openTile} onOpenChange={o => !o && setOpenTile(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-3xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{openDef?.title}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4">{openDef?.detail}</div>
-        </SheetContent>
-      </Sheet>
+      <LCBDetailPanel tile={openDef ?? null} onClose={() => setOpenTile(null)} />
     </div>
   );
 }
