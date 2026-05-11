@@ -100,11 +100,11 @@ function PrognoseDashboardInner() {
         </div>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <UnitOverviewTiles rows={filteredRows} onSelectConsultant={setActive} />
       </div>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <InsightsStrip
           rows={scaledRows.filter((r) => selectedUnits.includes(r.unit))}
           bottleneckFilter={bottleneckFilter}
