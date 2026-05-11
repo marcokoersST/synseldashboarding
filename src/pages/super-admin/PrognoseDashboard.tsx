@@ -55,8 +55,6 @@ function PrognoseDashboardInner() {
     [active, scaledRows],
   );
 
-  const toggleUnit = (u: string) =>
-    setSelectedUnits((p) => (p.includes(u) ? p.filter((x) => x !== u) : [...p, u]));
 
   return (
     <>
