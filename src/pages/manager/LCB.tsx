@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { ChevronDown, ChevronRight, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
+import { ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
 import { AnimatedRing } from "@/components/animations/AnimatedRing";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
