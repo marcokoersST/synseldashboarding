@@ -1,59 +1,49 @@
-## LC-B overview: richer at-a-glance bottleneck visuals
+## Goal
 
-**Goal:** Fill the empty space below the tile grid on `/manager-dashboard/LC-B` with focused visualizations so a manager can spot where the trouble is within seconds — without opening any tile.
+Convert the standalone "Signalering" panel at the top of `/manager-dashboard/LC-B` into a tile that lives inside the tile grid, matching the other tiles' UX (clickable card with score ring, status pill, metric, opens the detail panel on click).
 
-The existing tile grid, filters, and KPI header stay. We add a new **"Knelpunten in één oogopslag"** band beneath it.
+## Changes
 
-### New section — three side-by-side visuals
+**1. `src/pages/manager/LCB.tsx`**
+
+- Remove the inline `<AlertsPanelV2 />` rendered above the tile grid.
+- Add a new tile entry to the `tiles` array:
+  - `key: "signalering"`
+  - `title: "Signalering"`
+  - `subtitle: "Actuele alerts & risico's"`
+  - `metricLabel: "Open signalen"`, `metricValue: <count of visible alerts>`
+  - `status`: `critical` if any critical alerts, `attention` if warnings only, else `clean`
+  - `score`: derived from severity mix (e.g. `100 - critical*20 - warning*8`, clamped 0–100), so worst surfaces in BottleneckRanking
+  - `size: "major"` (so it gets a prominent card slot, since alerts are top-of-mind)
+  - `detail: <AlertsPanelV2 embedded />` — render the existing component inside the detail panel
+- The major grid currently uses `lg:grid-cols-[1fr_1fr_1fr_320px]` for 3 major tiles + minor column. With 4 major tiles, switch to `lg:grid-cols-[1fr_1fr_1fr_1fr_320px]` (or keep 3-up and put Signalering as the first major tile — see "Layout" below).
+- Include Signalering in `dimensionMatch` under `"All"` and a sensible dimension bucket (e.g. add to `Operationeel`).
+
+**2. `src/components/manager/v2/AlertsPanelV2.tsx`**
+
+- Add an optional `variant?: "panel" | "embedded"` prop (default `"panel"` keeps current behavior for any other consumers).
+- In `"embedded"` mode:
+  - Drop the outer `mb-6` wrapper, the collapse toggle row, and the "Signalering" header (the tile chrome already provides title + status).
+  - Render just the alert list (`grid gap-2 sm:grid-cols-2`) so it fills the detail panel body cleanly.
+  - Keep dismiss + "Alles wissen" behavior; show "Alles wissen" as a small action at the top-right of the embedded list.
+- LC-B passes `variant="embedded"` when mounting it inside the tile detail.
+
+**3. Tile preview content**
+
+The major tile face shows the standard ring + metric layout used by the other major tiles. The metric value is the count of open signals; the status pill (Kritiek/Aandacht/Op koers) uses the same derivation as `status`. No sparkline needed (alerts are a point-in-time count).
+
+## Layout
+
+Keep 3 major tiles per row visually. Two acceptable options — pick the first unless the user prefers otherwise:
 
 ```text
-┌────────────────────────────┬───────────────────────┬───────────────────────────┐
-│ Bottleneck-ranking          │ Unit × Dimensie       │ Top risico-consultants    │
-│ (gap-vs-target bars)        │ status-matrix         │ (composite-score list)    │
-└────────────────────────────┴───────────────────────┴───────────────────────────┘
+Row 1: [ Signalering ] [ Sales Funnel ] [ Omzet & Prognose ]   [ Minor column ]
+Row 2: [ Outreach    ]    (wraps)
 ```
 
-Grid: `lg:grid-cols-[1.4fr_1fr_1fr] gap-4`, single `Card` per column with consistent header.
+Implemented by changing the major grid to `lg:grid-cols-[1fr_1fr_1fr_320px]` and letting the 4th major tile (Outreach) wrap to the next row, OR by promoting Signalering to first major and demoting Outreach to minor. Default plan: keep all four as major and let them wrap; Signalering is inserted as the first tile in the array.
 
-**1. Bottleneck-ranking bars (left, widest)**
-- One horizontal bar per KPI category: Funnel, Outreach, Performance, Omzet, Opvolging, Attrition.
-- Each bar: label · gap badge (`-23%`) · progress bar colored by status · current/target tabular.
-- Sorted worst-first so the eye lands on the biggest problem immediately.
-- Clicking a row opens the corresponding tile's detail panel (reuse `setOpenTile`).
-- Data: derive each category's score from the same numbers already in `tiles[]`. No new data.
+## Out of scope
 
-**2. Unit × Dimensie matrix (middle)**
-- Rows = 5 units (Engineering, Monteurs, Operators, Trainingsunit, Early Performers).
-- Cols = 4 dims (Funnel, Outreach, Performance, Omzet) — compact icons in header.
-- Each cell: solid color square (clean/attention/critical) with the % in small text on hover-tooltip.
-- A "worst cell" pulse-ring highlights the single most-critical unit/dim combo.
-- Click a cell → open that tile + auto-select that unit in the filter (calls `setSelectedUnits([unit])` then `setOpenTile(key)`).
-- Data: per-unit slices already exposed in `unitFunnelTotalsV2`, `unitOutreachTotals`, `consultantSkillData` (filterable by unit), `revenueChartDataV2`.
-
-**3. Top risico-consultants (right)**
-- Up to 6 rows, each: avatar/initials · name + unit · composite risk score · 1-line bottleneck reason · small status dot.
-- Sorted by composite risk (lowest `overallScore` from `consultantSkillData` combined with funnel underperformance).
-- Hover row highlights; click row currently no-op (or opens a future drill). For now a chevron + tooltip "Open in Prognose Dashboard" linking to `/super-admin/prognose-dashboard?consultant={id}` if that's trivial; otherwise no link.
-- Data: `consultantSkillData` already gives skill scores; filter by `selectedUnits` if any.
-
-### Trend sparklines on existing major tiles
-
-Inside `MajorTile` (Sales Funnel, Outreach, Omzet), add a tiny 8-point sparkline under the metric value showing the last 8 weeks. Uses Recharts `LineChart` at ~64×24, color = tile status color. Data points come from existing weekly series in `managerOperationalDataV2`/`managerPerformanceDataV2` — falls back to a flat line if a series is missing. This gives instant direction without leaving the overview.
-
-### Layout density
-
-- Drop `min-h-[280px]` on major tiles to `min-h-[240px]` so the new band fits above the fold at 1706×957.
-- Wrap the new band in a `<section>` with the same `space-y-6` rhythm as the rest of `<main>`.
-
-### Files
-
-- **New:** `src/components/manager/lcb/BottleneckBand.tsx` — wraps the three cards and exposes the `(tileKey, unit?) => void` open callback.
-- **New:** `src/components/manager/lcb/BottleneckRanking.tsx`
-- **New:** `src/components/manager/lcb/UnitDimensionMatrix.tsx`
-- **New:** `src/components/manager/lcb/TopRiskConsultants.tsx`
-- **New:** `src/components/manager/lcb/TileSparkline.tsx` (tiny Recharts wrapper)
-- **Edit:** `src/pages/manager/LCB.tsx` — mount `<BottleneckBand>` under the tile grid; pass `selectedUnits`, `tiles`, and an `openTileWithUnit(key, unit?)` callback; reduce tile min-height; pass a `trendSeries` prop into `MajorTile` and render `TileSparkline` inside it.
-
-### Out of scope
-- No changes to filters, header KPIs, AlertsPanel, or detail slide-over.
-- No new datasets — every number derives from data already imported by LC-B.
+- No changes to `BottleneckBand`, `AlertsPanelV2` data source, dismiss persistence keys, header KPIs, or filters.
+- No changes to other consumers of `AlertsPanelV2` (none currently outside LC-B; the new prop is backward-compatible).

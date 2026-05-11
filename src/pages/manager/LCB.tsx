@@ -19,7 +19,7 @@ import { InterventionHeatmap } from "@/components/manager/v2/InterventionHeatmap
 import { ActiveSecondmentsCard } from "@/components/manager/v2/ActiveSecondmentsCard";
 import { OpvolgingCard } from "@/components/manager/OpvolgingCard";
 import { ManagerGoalsCard } from "@/components/manager/ManagerGoalsCard";
-import { unitFunnelTotalsV2, unitOutreachTotals } from "@/data/managerOperationalDataV2";
+import { unitFunnelTotalsV2, unitOutreachTotals, generateAlerts } from "@/data/managerOperationalDataV2";
 import { consultantSkillData } from "@/data/managerPerformanceData";
 import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
 
@@ -84,7 +84,24 @@ export default function LCB() {
     return new Date().toLocaleString("nl-NL", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" });
   }, []);
 
+  const alerts = useMemo(() => generateAlerts(), []);
+  const criticalAlerts = alerts.filter(a => a.severity === "critical").length;
+  const warningAlerts = alerts.filter(a => a.severity === "warning").length;
+  const alertScore = Math.max(0, Math.min(100, 100 - criticalAlerts * 20 - warningAlerts * 8));
+  const alertStatus: Status = criticalAlerts > 0 ? "critical" : warningAlerts > 0 ? "attention" : "clean";
+
   const tiles: TileDef[] = [
+    {
+      key: "signalering",
+      title: "Signalering",
+      subtitle: "Actuele alerts & risico's",
+      status: alertStatus,
+      score: alertScore,
+      metricLabel: "Open signalen",
+      metricValue: `${alerts.length}`,
+      size: "major",
+      detail: <AlertsPanelV2 variant="embedded" />,
+    },
     {
       key: "salesfunnel",
       title: "Sales Funnel",
@@ -180,7 +197,7 @@ export default function LCB() {
 
   const dimensionMatch = (key: string) => {
     if (dimension === "All") return true;
-    if (dimension === "Operationeel") return ["salesfunnel", "outreach", "opvolging"].includes(key);
+    if (dimension === "Operationeel") return ["signalering", "salesfunnel", "outreach", "opvolging"].includes(key);
     if (dimension === "Performance") return ["performance", "goals"].includes(key);
     if (dimension === "Omzet") return ["omzet", "attrition", "secondments"].includes(key);
     return true;
@@ -226,9 +243,7 @@ export default function LCB() {
       </header>
 
       <main className="px-6 py-6 space-y-6">
-        <AlertsPanelV2 />
-
-        <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_320px]">
+        <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_1fr_320px]">
           {major.map(t => (
             <MajorTile key={t.key} tile={t} onOpen={() => setOpenTile(t.key)} />
           ))}

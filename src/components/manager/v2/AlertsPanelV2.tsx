@@ -83,7 +83,7 @@ function AlertTile({ alert, onDismiss }: { alert: DashboardAlert; onDismiss: (id
   );
 }
 
-export function AlertsPanelV2() {
+export function AlertsPanelV2({ variant = "panel" }: { variant?: "panel" | "embedded" } = {}) {
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem(STORAGE_COLLAPSED) === "true"; } catch { return false; }
   });
@@ -105,7 +105,29 @@ export function AlertsPanelV2() {
   const criticalCount = visible.filter(a => a.severity === "critical").length;
   const warningCount = visible.filter(a => a.severity === "warning").length;
 
-  if (visible.length === 0) return null;
+  if (visible.length === 0) return variant === "embedded" ? (
+    <div className="text-xs text-muted-foreground p-4 text-center">Geen open signalen.</div>
+  ) : null;
+
+  if (variant === "embedded") {
+    return (
+      <div className="space-y-3">
+        {visible.length > 1 && (
+          <div className="flex justify-end">
+            <button onClick={clearAll} className="text-[11px] text-muted-foreground hover:text-foreground">
+              Alles wissen
+            </button>
+          </div>
+        )}
+        <div className="grid gap-2 sm:grid-cols-2">
+          {visible.map(alert => (
+            <AlertTile key={alert.id} alert={alert} onDismiss={dismiss} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="mb-6">
