@@ -74,6 +74,7 @@ const CorporateRecruitmentInflow = lazy(() => import("./pages/corporate-recruitm
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
 const Groeimodel = lazy(() => import("./pages/super-admin/Groeimodel"));
+const PrognoseDashboard = lazy(() => import("./pages/super-admin/PrognoseDashboard"));
 const TVRanglijstenGrafiek = lazy(() => import("./pages/TVRanglijstenGrafiek"));
 const ManagerOverzichtV2 = lazy(() => import("./pages/manager/OverzichtV2"));
 const ManagerLCB = lazy(() => import("./pages/manager/LCB"));
@@ -108,6 +109,7 @@ const App = () => (
               <Route path="/super-admin/emulate" element={<SuperAdminEmulate />} />
               <Route path="/super-admin/c-level" element={<CLevelDashboard />} />
               <Route path="/super-admin/groeimodel" element={<Groeimodel />} />
+              <Route path="/super-admin/prognose-dashboard" element={<PrognoseDashboard />} />
               <Route path="/tv/sales-funnel-week" element={<TVSalesFunnelWeek />} />
               <Route path="/tv/sales-funnel-period" element={<TVSalesFunnelPeriod />} />
               <Route path="/tv/beker" element={<TVBekerDashboard />} />

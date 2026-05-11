@@ -199,6 +199,7 @@ const navItems: NavItem[] = [
       { icon: BarChart3, label: "Overzicht", path: "/super-admin" },
       { icon: Eye, label: "User Emulatie", path: "/super-admin/emulate" },
       { icon: LineChart, label: "C-Level Dashboard", path: "/super-admin/c-level" },
+      { icon: Radar, label: "Prognose Dashboard", path: "/super-admin/prognose-dashboard" },
     ]
   },
   {
