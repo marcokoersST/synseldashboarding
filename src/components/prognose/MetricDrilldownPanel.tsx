@@ -15,7 +15,7 @@ import {
 } from "@/data/prognoseDrilldownData";
 import { RecruitCRMLink, RECRUITCRM_URL } from "./RecruitCRMLink";
 import { usePrognosePeriod } from "@/contexts/PrognosePeriodContext";
-import { MetricSummary } from "./MetricSummary";
+import { MetricSummary, type Stat } from "./MetricSummary";
 
 export type MetricKey =
   | "intakes"
@@ -102,7 +102,7 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
   }
 
   // Build summary stats per metric
-  const summary = (() => {
+  const summary: Stat[] = (() => {
     if (metric === "voorstellen") {
       const { promoted, openDeals } = getVoorstellen(row);
       const total = promoted.length + openDeals.length;
