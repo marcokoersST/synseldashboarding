@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LCBDetailPanel } from "@/components/manager/lcb/LCBDetailPanel";
+import { BottleneckBand } from "@/components/manager/lcb/BottleneckBand";
+import { TileSparkline } from "@/components/manager/lcb/TileSparkline";
 import { cn } from "@/lib/utils";
 import { SalesFunnelV2 } from "@/components/manager/v2/SalesFunnelV2";
 import { AlertsPanelV2 } from "@/components/manager/v2/AlertsPanelV2";
@@ -53,6 +55,7 @@ interface TileDef {
   metricValue: string;
   detail: ReactNode;
   size: "major" | "minor";
+  trend?: number[];
 }
 
 export default function LCB() {
@@ -91,6 +94,7 @@ export default function LCB() {
       metricLabel: "Plaatsingen",
       metricValue: `${unitFunnelTotalsV2.plaatsingen}`,
       size: "major",
+      trend: [12, 14, 13, 16, 18, 17, 19, unitFunnelTotalsV2.plaatsingen],
       detail: <SalesFunnelV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
@@ -102,6 +106,7 @@ export default function LCB() {
       metricLabel: "Contactmomenten",
       metricValue: `${unitOutreachTotals.totalOutreach}`,
       size: "major",
+      trend: [820, 905, 870, 940, 980, 1020, 1080, unitOutreachTotals.totalOutreach],
       detail: <OutreachCardV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
@@ -113,6 +118,7 @@ export default function LCB() {
       metricLabel: "Gerealiseerd",
       metricValue: lastRevenue ? `€${lastRevenue.realised}k` : "—",
       size: "major",
+      trend: revenueChartDataV2.filter(d => d.realised > 0).map(d => d.realised).slice(-8),
       detail: <RevenueChartV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
@@ -232,6 +238,19 @@ export default function LCB() {
             ))}
           </div>
         </div>
+
+        <BottleneckBand
+          selectedUnits={selectedUnits}
+          bottleneckRows={tiles.map(t => ({
+            key: t.key,
+            label: t.title,
+            score: t.score,
+            status: t.status,
+            metric: `${t.metricValue}`,
+          }))}
+          onSelectTile={(key) => setOpenTile(key)}
+          onSelectTileWithUnit={(key, unit) => { setSelectedUnits([unit]); setOpenTile(key); }}
+        />
       </main>
 
       <LCBDetailPanel tile={openDef ?? null} onClose={() => setOpenTile(null)} />
@@ -245,7 +264,7 @@ function MajorTile({ tile, onOpen }: { tile: TileDef; onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="group flex h-full min-h-[280px] w-full flex-col rounded-2xl border border-border bg-card text-left transition-all hover:border-primary/40 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+      className="group flex h-full min-h-[240px] w-full flex-col rounded-2xl border border-border bg-card text-left transition-all hover:border-primary/40 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
     >
       <div className="flex items-start justify-between gap-3 border-b border-border/60 px-6 pb-4 pt-5">
         <div className="min-w-0">
@@ -259,20 +278,26 @@ function MajorTile({ tile, onOpen }: { tile: TileDef; onOpen: () => void }) {
         </div>
         <ChevronRight className="mt-1.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </div>
-      <div className="grid grid-cols-[auto_1fr] items-center gap-6 px-6 py-6 flex-1">
+      <div className="grid grid-cols-[auto_1fr] items-center gap-6 px-6 py-5 flex-1">
         <div className="relative shrink-0">
-          <AnimatedRing value={tile.score} size={120} strokeWidth={10} strokeColor={color} />
+          <AnimatedRing value={tile.score} size={104} strokeWidth={9} strokeColor={color} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground">Score</span>
-            <span className="mt-0.5 text-3xl font-bold leading-none tabular-nums" style={{ color }}>
+            <span className="mt-0.5 text-2xl font-bold leading-none tabular-nums" style={{ color }}>
               <AnimatedNumber value={tile.score} />
             </span>
-            <span className="mt-1 text-[9px] text-muted-foreground">/ 100</span>
+            <span className="mt-0.5 text-[9px] text-muted-foreground">/ 100</span>
           </div>
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{tile.metricLabel}</div>
           <div className="text-3xl font-bold leading-tight tabular-nums text-foreground">{tile.metricValue}</div>
+          {tile.trend && tile.trend.length > 1 && (
+            <div className="mt-2 flex items-center gap-2">
+              <TileSparkline data={tile.trend} color={color} />
+              <span className="text-[10px] text-muted-foreground">8w trend</span>
+            </div>
+          )}
         </div>
       </div>
     </button>
