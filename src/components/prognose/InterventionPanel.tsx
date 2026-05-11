@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   type PrognoseConsultantRow,
   type InterventionNote,
@@ -14,6 +16,7 @@ import {
   loadInterventions,
   saveIntervention,
 } from "@/data/prognoseData";
+import { MetricDrilldownPanel, type MetricKey } from "./MetricDrilldownPanel";
 
 interface Props {
   row: PrognoseConsultantRow | null;
@@ -35,6 +38,7 @@ export function InterventionPanel({ row, onClose }: Props) {
   const [followUp, setFollowUp] = useState("");
   const [owner, setOwner] = useState("");
   const [history, setHistory] = useState<InterventionNote[]>([]);
+  const [activeMetric, setActiveMetric] = useState<MetricKey | null>(null);
 
   useEffect(() => {
     if (row) {
@@ -43,6 +47,7 @@ export function InterventionPanel({ row, onClose }: Props) {
       setFollowUp("");
       setOwner("");
       setHistory(loadInterventions().filter((n) => n.consultantId === row.id));
+      setActiveMetric(null);
     }
   }, [row]);
 
@@ -62,19 +67,26 @@ export function InterventionPanel({ row, onClose }: Props) {
     setNote("");
   };
 
-  const breakdown = useMemo(() => {
+  const breakdown: { key: MetricKey; label: string; a: number; t: number }[] = useMemo(() => {
     if (!row) return [];
     return [
-      { label: "Intakes", a: row.intakes.actual, t: row.intakes.target },
-      { label: "Acquisities", a: row.acquisities.actual, t: row.acquisities.target },
-      { label: "Voorstellen", a: row.voorstellen.actual, t: row.voorstellen.target },
-      { label: "Gesprekken", a: row.gesprekken.actual, t: row.gesprekken.target },
-      { label: "Plaatsingen", a: row.plaatsingen.actual, t: row.plaatsingen.target },
+      { key: "intakes", label: "Intakes", a: row.intakes.actual, t: row.intakes.target },
+      { key: "acquisities", label: "Acquisities", a: row.acquisities.actual, t: row.acquisities.target },
+      { key: "voorstellen", label: "Voorstellen", a: row.voorstellen.actual, t: row.voorstellen.target },
+      { key: "gesprekken", label: "Gesprekken", a: row.gesprekken.actual, t: row.gesprekken.target },
+      { key: "plaatsingen", label: "Plaatsingen", a: row.plaatsingen.actual, t: row.plaatsingen.target },
     ];
   }, [row]);
 
   return (
     <Sheet open={!!row} onOpenChange={(v) => !v && onClose()}>
+      {row && activeMetric && (
+        <MetricDrilldownPanel
+          metric={activeMetric}
+          row={row}
+          onClose={() => setActiveMetric(null)}
+        />
+      )}
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         {row && (
           <>
@@ -105,9 +117,26 @@ export function InterventionPanel({ row, onClose }: Props) {
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   {breakdown.map((b) => {
                     const pct = Math.round((b.a / b.t) * 100);
+                    const isActive = activeMetric === b.key;
                     return (
-                      <div key={b.label} className="rounded border bg-card p-2">
-                        <div className="text-xs text-muted-foreground">{b.label}</div>
+                      <button
+                        key={b.label}
+                        type="button"
+                        onClick={() => setActiveMetric(isActive ? null : b.key)}
+                        className={cn(
+                          "rounded border bg-card p-2 text-left transition-colors hover:border-primary/60 hover:bg-primary/5",
+                          isActive && "border-primary bg-primary/10",
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-muted-foreground">{b.label}</div>
+                          <ChevronRight
+                            className={cn(
+                              "h-3 w-3 text-muted-foreground transition-transform",
+                              isActive && "rotate-90 text-primary",
+                            )}
+                          />
+                        </div>
                         <div className="font-semibold tabular-nums">
                           {b.a} / {b.t}{" "}
                           <span
@@ -118,7 +147,7 @@ export function InterventionPanel({ row, onClose }: Props) {
                             ({pct}%)
                           </span>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                   <div className="rounded border bg-card p-2 col-span-2">
