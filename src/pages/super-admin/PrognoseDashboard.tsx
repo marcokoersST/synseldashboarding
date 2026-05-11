@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Filter } from "lucide-react";
+import { Filter, Plus, Check } from "lucide-react";
 import { UnitOverviewTiles } from "@/components/prognose/UnitOverviewTiles";
 import { PrognoseTable } from "@/components/prognose/PrognoseTable";
 import { InterventionPanel } from "@/components/prognose/InterventionPanel";
 import { InsightsStrip } from "@/components/prognose/InsightsStrip";
 import { PeriodFilter } from "@/components/prognose/PeriodFilter";
+import { ConsultantOutputVisuals } from "@/components/prognose/ConsultantOutputVisuals";
+import { cn } from "@/lib/utils";
 import {
   PrognosePeriodProvider,
   usePrognosePeriod,
