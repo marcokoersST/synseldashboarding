@@ -56,8 +56,8 @@ export function InsightsStrip({
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
       {/* Urgentie */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2 mb-3">
+        <CardContent className="p-3">
+          <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="h-4 w-4 text-orange-600" />
             <h3 className="text-sm font-semibold">Urgentie obv kwaliteit</h3>
           </div>
@@ -81,8 +81,8 @@ export function InsightsStrip({
 
       {/* Bottleneck verdeling (clickable) */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
+        <CardContent className="p-3">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-blue-600" />
               <h3 className="text-sm font-semibold">Bottleneck verdeling</h3>
@@ -128,12 +128,12 @@ export function InsightsStrip({
 
       {/* Mindset risk */}
       <Card className={cn(mindsetOnly && "border-destructive")}>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2 mb-3">
+        <CardContent className="p-3">
+          <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="h-4 w-4 text-destructive" />
             <h3 className="text-sm font-semibold">Mindset risico</h3>
           </div>
-          <div className="text-4xl font-bold text-destructive tabular-nums">{mindsetCount}</div>
+          <div className="text-3xl font-bold text-destructive tabular-nums">{mindsetCount}</div>
           <p className="text-xs text-muted-foreground mt-1">
             consultants met 4+ rode metrics ("wil hij het echt?")
           </p>
@@ -151,8 +151,8 @@ export function InsightsStrip({
 
       {/* Avg score */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2 mb-3">
+        <CardContent className="p-3">
+          <div className="flex items-center gap-2 mb-2">
             {avgDelta >= 0 ? (
               <TrendingUp className="h-4 w-4 text-emerald-600" />
             ) : (
@@ -160,7 +160,7 @@ export function InsightsStrip({
             )}
             <h3 className="text-sm font-semibold">Gemiddelde score</h3>
           </div>
-          <div className="text-4xl font-bold tabular-nums">{avgScore}%</div>
+          <div className="text-3xl font-bold tabular-nums">{avgScore}%</div>
           <p
             className={cn(
               "text-xs mt-1 tabular-nums",
