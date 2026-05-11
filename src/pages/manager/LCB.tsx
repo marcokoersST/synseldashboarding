@@ -94,6 +94,7 @@ export default function LCB() {
       metricLabel: "Plaatsingen",
       metricValue: `${unitFunnelTotalsV2.plaatsingen}`,
       size: "major",
+      trend: [12, 14, 13, 16, 18, 17, 19, unitFunnelTotalsV2.plaatsingen],
       detail: <SalesFunnelV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
@@ -105,6 +106,7 @@ export default function LCB() {
       metricLabel: "Contactmomenten",
       metricValue: `${unitOutreachTotals.totalOutreach}`,
       size: "major",
+      trend: [820, 905, 870, 940, 980, 1020, 1080, unitOutreachTotals.totalOutreach],
       detail: <OutreachCardV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
@@ -116,6 +118,7 @@ export default function LCB() {
       metricLabel: "Gerealiseerd",
       metricValue: lastRevenue ? `€${lastRevenue.realised}k` : "—",
       size: "major",
+      trend: revenueChartDataV2.filter(d => d.realised > 0).map(d => d.realised).slice(-8),
       detail: <RevenueChartV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
