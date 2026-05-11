@@ -44,6 +44,9 @@ export function InterventionPanel({ row, onClose }: Props) {
   const [owner, setOwner] = useState("");
   const [history, setHistory] = useState<InterventionNote[]>([]);
   const [activeMetric, setActiveMetric] = useState<MetricKey | null>(null);
+  const [status, setStatus] = useState<PrognoseStatus>("op-koers");
+  const [hasOverride, setHasOverride] = useState(false);
+  const { label: periodLabel } = usePrognosePeriod();
 
   useEffect(() => {
     if (row) {
@@ -53,8 +56,23 @@ export function InterventionPanel({ row, onClose }: Props) {
       setOwner("");
       setHistory(loadInterventions().filter((n) => n.consultantId === row.id));
       setActiveMetric(null);
+      setStatus(effectiveStatus(row));
+      setHasOverride(getStatusOverride(row.id) !== undefined);
     }
   }, [row]);
+
+  const handleStatusChange = (s: PrognoseStatus) => {
+    if (!row) return;
+    setStatus(s);
+    setStatusOverride(row.id, s);
+    setHasOverride(true);
+  };
+  const resetStatus = () => {
+    if (!row) return;
+    setStatusOverride(row.id, null);
+    setStatus(row.status);
+    setHasOverride(false);
+  };
 
   const handleSave = () => {
     if (!row || !category || !note) return;
