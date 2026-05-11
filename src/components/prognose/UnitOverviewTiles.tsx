@@ -56,15 +56,7 @@ function PerfList({
           </li>
         ))}
       </ul>
-      {rows.length > limit && (
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-1.5 w-full text-[10px] text-muted-foreground hover:text-foreground underline"
-        >
-          {expanded ? "Toon minder" : `Toon alle ${rows.length}`}
-        </button>
-      )}
-    </>
+    </div>
   );
 }
 
