@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Filter } from "lucide-react";
+import { Filter, Plus, Check } from "lucide-react";
 import { UnitOverviewTiles } from "@/components/prognose/UnitOverviewTiles";
 import { PrognoseTable } from "@/components/prognose/PrognoseTable";
 import { InterventionPanel } from "@/components/prognose/InterventionPanel";
 import { InsightsStrip } from "@/components/prognose/InsightsStrip";
 import { PeriodFilter } from "@/components/prognose/PeriodFilter";
+import { ConsultantOutputVisuals } from "@/components/prognose/ConsultantOutputVisuals";
+import { cn } from "@/lib/utils";
 import {
   PrognosePeriodProvider,
   usePrognosePeriod,
@@ -54,8 +55,6 @@ function PrognoseDashboardInner() {
     [active, scaledRows],
   );
 
-  const toggleUnit = (u: string) =>
-    setSelectedUnits((p) => (p.includes(u) ? p.filter((x) => x !== u) : [...p, u]));
 
   return (
     <>
@@ -87,13 +86,46 @@ function PrognoseDashboardInner() {
                   </Button>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                {allUnits.map((u) => (
-                  <label key={u} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <Checkbox checked={selectedUnits.includes(u)} onCheckedChange={() => toggleUnit(u)} />
-                    {u}
-                  </label>
-                ))}
+              <p className="text-[10px] text-muted-foreground mb-2">
+                Klik = alleen tonen · <Plus className="inline h-2.5 w-2.5" /> = toevoegen
+              </p>
+              <div className="space-y-1">
+                {allUnits.map((u) => {
+                  const active = selectedUnits.includes(u);
+                  const soloed = active && selectedUnits.length === 1;
+                  return (
+                    <div
+                      key={u}
+                      className={cn(
+                        "group flex items-center justify-between gap-2 rounded px-2 py-1.5 text-sm cursor-pointer border",
+                        active ? "bg-primary/5 border-primary/30" : "border-transparent hover:bg-muted/60",
+                      )}
+                      onClick={() => setSelectedUnits([u])}
+                    >
+                      <span className="flex items-center gap-2 min-w-0">
+                        <Check className={cn("h-3.5 w-3.5 shrink-0", active ? "text-primary" : "text-transparent")} />
+                        <span className={cn("truncate", soloed && "font-semibold")}>{u}</span>
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedUnits((p) =>
+                            p.includes(u) ? p.filter((x) => x !== u) : [...p, u],
+                          );
+                        }}
+                        className={cn(
+                          "shrink-0 h-6 w-6 rounded inline-flex items-center justify-center border opacity-0 group-hover:opacity-100 transition-opacity",
+                          active
+                            ? "border-destructive/30 text-destructive hover:bg-destructive/10"
+                            : "border-border text-muted-foreground hover:bg-accent",
+                        )}
+                        aria-label={active ? `Verwijder ${u}` : `Voeg ${u} toe`}
+                      >
+                        <Plus className={cn("h-3 w-3", active && "rotate-45")} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </PopoverContent>
           </Popover>
@@ -139,6 +171,7 @@ function PrognoseDashboardInner() {
             </div>
           )}
         </div>
+        <ConsultantOutputVisuals rows={filteredRows} onSelectConsultant={setActive} />
         <PrognoseTable rows={filteredRows} onIntervene={setActive} />
       </div>
 

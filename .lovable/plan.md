@@ -1,64 +1,54 @@
-## Scope
-Three focused improvements to `/super-admin/prognose-dashboard`. No business-logic changes outside what's listed.
+## Changes to Prognose Dashboard overview
 
----
+### 1. Top / Bottom Performers tiles — scrollable, remove "Toon alle 10"
+File: `src/components/prognose/UnitOverviewTiles.tsx` (`PerfList`)
 
-### 1. Overdue tickets in the Kritiek tile
+- Remove the `expanded` state and the "Toon alle / Toon minder" button.
+- Render the full list inside a fixed-height scroll container so all 10 (or more) are reachable by scrolling:
+  - `<div className="max-h-[220px] overflow-y-auto pr-1">…</div>`
+- Apply the same treatment to the Kritiek "Directe aandacht" and "Tickets over tijd" lists for consistency (already scrollable; keep but tighten heights so the tile matches Top/Bottom).
 
-In `src/components/prognose/UnitOverviewTiles.tsx`, extend the Kritiek tile so it also surfaces tickets that are past their follow-up date.
+### 2. Unit selector — click = "select only"
+File: `src/pages/super-admin/PrognoseDashboard.tsx`
 
-- Load tickets via `loadTickets()` from `prognoseTickets.ts` (subscribe to `prognose-tickets-changed` to re-render).
-- An "overdue ticket" = `status !== "closed"` AND `followUpDate` exists AND `followUpDate < today`.
-- Replace the current single "meest voorkomende kritieke categorie" number with a two-row mini-header:
-  - Left: critical consultant count (existing red number).
-  - Right: overdue ticket count in destructive style with a small `Clock` / `AlarmClock` icon.
-- Below the existing "Directe aandacht" list, add a second section **"Tickets over tijd"** showing up to 5 overdue tickets:
-  - Per row: ticket title (truncate), consultant name, days overdue (`X d`), owner.
-  - Click → opens that consultant's intervention panel (re-use `onSelectConsultant` by resolving the consultant from `row` lookup).
-- If no overdue tickets: muted "Geen achterstallige tickets".
+Current: clicking a unit toggles it on/off (`toggleUnit`).
+New behaviour:
+- A plain click on a unit row/checkbox sets `selectedUnits = [unit]` (solo / isolate).
+- To add a unit to the current selection, hold a modifier or use a dedicated "+" affordance. We'll add a small `+` button next to each row that does `setSelectedUnits(p => p.includes(u) ? p : [...p, u])`.
+- Keep "Alles aan / Alles uit" batch buttons unchanged.
+- Replace the `Checkbox` row with a button-row showing: unit name (click = solo), and a trailing `+` icon button (click = add). Checked state = visually highlighted when in `selectedUnits`.
 
-### 2. Historical period filter
+This matches Looker-style "click isolates, plus adds".
 
-Extend `PrognosePeriodContext` and `PeriodFilter` to support browsing past windows.
+### 3. New visual row under "Consultant output"
+File: new `src/components/prognose/ConsultantOutputVisuals.tsx`, rendered in `PrognoseDashboard.tsx` directly above `<PrognoseTable>`.
 
-- Context additions:
-  - `offset: number` (0 = current, 1 = previous, …).
-  - `setOffset(n)`, plus `label` adapts (`"Week -1 (vorige week)"`, `"Periode -2 (8 weken terug)"`, etc.).
-  - Existing `scale` / `maxDays` logic untouched; offset is informational + label only (data stays mock-scaled — drives a small deterministic perturbation of `scaleRow` so historical windows look different but stable).
-- `PeriodFilter.tsx` redesign:
-  - Keep Week/Periode toggle.
-  - Add a compact stepper next to it: `‹  Huidig  ›` showing the resolved label. Left arrow increments offset (older), right decrements (down to 0). Disabled at offset 0 going forward.
-  - Small "Vandaag" reset button when offset > 0.
-- Wire offset into `PrognoseDashboardInner` via a `scaleRow(row, scale, offset)` overload so historical windows yield stable, slightly different numbers (seeded by `offset`).
+Two side-by-side cards in a `grid-cols-1 lg:grid-cols-2 gap-3`:
 
-### 3. Compact tiles + visible "Consultant output" header
+**A. Prognose-score icon array (waffle / dot grid)**
+- One small dot per consultant in `filteredRows`, colored by status:
+  - `op-koers` → emerald, `risico` → amber, `kritiek` → destructive.
+- Layout: `flex flex-wrap gap-1`, each dot 14×14 rounded-sm with a subtle border; tooltip on hover with name + prognoseScore%.
+- Click a dot → `onSelectConsultant(row)` (opens intervention panel), matching existing behaviour.
+- Legend strip at the bottom with counts per status.
 
-Goal: at 1706×957 viewport, all 4 overview tiles + the 4 insights tiles + the "Consultant output" heading should be visible above the fold (or the heading should clearly peek to signal scroll).
+**B. Bottleneck radar chart**
+- Aggregate `filteredRows` by `r.bottleneck` (categories already used in `getTopBottlenecks`).
+- Use Recharts `RadarChart` (already in repo for other dashboards) with one polygon: count per category.
+- Title: "Bottleneck verdeling".
+- Compact: height ~220px, no legend, single fill = `hsl(var(--primary)/0.25)`, stroke = primary.
 
-- `UnitOverviewTiles.tsx`:
-  - Reduce `CardHeader` padding (`pb-1.5`, smaller title `text-sm`).
-  - Performer list: cap visible rows to top 5 with a small "Toon alle 10" expander, `py-1` rows, smaller avatar column.
-  - Bottlenecks: switch from 3 stacked cards to 3 compact rows with inline badge + count.
-  - Kritiek: smaller hero number (`text-3xl`), shorter list (max 4 + new overdue section in 3).
-  - Use `gap-3` instead of `gap-4` and tighter `CardContent` (`pt-2 pb-3`).
-- `PrognoseDashboard.tsx`:
-  - Reduce vertical rhythm: `mb-6` → `mb-4` on overview and insights sections.
-  - Tighten page header (`mb-4`, `text-xl` title).
-- `InsightsStrip.tsx`:
-  - `p-4` → `p-3`, tighter row spacing, smaller numbers (`text-3xl`).
+Both cards use existing semantic tokens; no new colors.
 
-No changes to table, intervention panel, drilldown, status override, or RCRM linking.
+### Technical notes
 
----
+- No data model changes. Bottleneck categories come from `BottleneckCategory` in `prognoseData.ts`.
+- Recharts is already a dependency (used elsewhere). Import `RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer`.
+- Tooltips on the icon array use shadcn `Tooltip` for consistency.
+- All changes are presentation-layer only; no business logic touched.
 
-## Technical notes
+### Files
 
-Files to edit:
-- `src/components/prognose/UnitOverviewTiles.tsx` — overdue tickets + density.
-- `src/components/prognose/InsightsStrip.tsx` — density.
-- `src/components/prognose/PeriodFilter.tsx` — historical stepper.
-- `src/contexts/PrognosePeriodContext.tsx` — `offset` state + label.
-- `src/data/prognoseData.ts` — `scaleRow` accepts optional `offset` for a seeded ±15 % perturbation.
-- `src/pages/super-admin/PrognoseDashboard.tsx` — wire offset, tighten spacing.
-
-No new files. No dependency changes. localStorage schema unchanged (tickets read as-is).
+- Edit `src/components/prognose/UnitOverviewTiles.tsx` — remove expander, make lists scrollable.
+- Edit `src/pages/super-admin/PrognoseDashboard.tsx` — new unit selector interaction; mount the new visuals component.
+- Create `src/components/prognose/ConsultantOutputVisuals.tsx` — dot grid + radar.

@@ -21,18 +21,14 @@ interface Props {
 function PerfList({
   rows,
   onSelect,
-  limit,
 }: {
   rows: PrognoseConsultantRow[];
   onSelect: (r: PrognoseConsultantRow) => void;
-  limit: number;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? rows : rows.slice(0, limit);
   return (
-    <>
+    <div className="max-h-[240px] overflow-y-auto pr-1">
       <ul className="space-y-0.5">
-        {visible.map((r, i) => (
+        {rows.map((r, i) => (
           <li
             key={r.id}
             onClick={() => onSelect(r)}
@@ -60,15 +56,7 @@ function PerfList({
           </li>
         ))}
       </ul>
-      {rows.length > limit && (
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-1.5 w-full text-[10px] text-muted-foreground hover:text-foreground underline"
-        >
-          {expanded ? "Toon minder" : `Toon alle ${rows.length}`}
-        </button>
-      )}
-    </>
+    </div>
   );
 }
 
@@ -114,7 +102,7 @@ export function UnitOverviewTiles({ rows, onSelectConsultant }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-2 pb-3 px-3">
-          <PerfList rows={top} onSelect={onSelectConsultant} limit={5} />
+          <PerfList rows={top} onSelect={onSelectConsultant} />
         </CardContent>
       </Card>
 
@@ -126,7 +114,7 @@ export function UnitOverviewTiles({ rows, onSelectConsultant }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-2 pb-3 px-3">
-          <PerfList rows={bottom} onSelect={onSelectConsultant} limit={5} />
+          <PerfList rows={bottom} onSelect={onSelectConsultant} />
         </CardContent>
       </Card>
 
