@@ -83,7 +83,7 @@ function AlertTile({ alert, onDismiss }: { alert: DashboardAlert; onDismiss: (id
   );
 }
 
-export function AlertsPanelV2() {
+export function AlertsPanelV2({ variant = "panel" }: { variant?: "panel" | "embedded" } = {}) {
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem(STORAGE_COLLAPSED) === "true"; } catch { return false; }
   });
