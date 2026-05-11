@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -6,16 +6,52 @@ import { Filter } from "lucide-react";
 import { UnitOverviewTiles } from "@/components/prognose/UnitOverviewTiles";
 import { PrognoseTable } from "@/components/prognose/PrognoseTable";
 import { InterventionPanel } from "@/components/prognose/InterventionPanel";
-import { prognoseRows, type PrognoseConsultantRow } from "@/data/prognoseData";
+import { InsightsStrip } from "@/components/prognose/InsightsStrip";
+import { PeriodFilter } from "@/components/prognose/PeriodFilter";
+import {
+  PrognosePeriodProvider,
+  usePrognosePeriod,
+} from "@/contexts/PrognosePeriodContext";
+import {
+  prognoseRows,
+  scaleRow,
+  redMetricCount,
+  type PrognoseConsultantRow,
+  type BottleneckCategory,
+} from "@/data/prognoseData";
 
-export default function PrognoseDashboard() {
+function PrognoseDashboardInner() {
+  const { scale } = usePrognosePeriod();
   const allUnits = useMemo(() => Array.from(new Set(prognoseRows.map((r) => r.unit))).sort(), []);
   const [selectedUnits, setSelectedUnits] = useState<string[]>(allUnits);
   const [active, setActive] = useState<PrognoseConsultantRow | null>(null);
+  const [bottleneckFilter, setBottleneckFilter] = useState<BottleneckCategory | null>(null);
+  const [mindsetOnly, setMindsetOnly] = useState(false);
 
-  const filteredRows = useMemo(
-    () => prognoseRows.filter((r) => selectedUnits.includes(r.unit)),
-    [selectedUnits],
+  // Re-render on status override changes
+  const [, force] = useState(0);
+  useEffect(() => {
+    const h = () => force((n) => n + 1);
+    window.addEventListener("prognose-status-changed", h);
+    return () => window.removeEventListener("prognose-status-changed", h);
+  }, []);
+
+  const scaledRows = useMemo(
+    () => prognoseRows.map((r) => scaleRow(r, scale)),
+    [scale],
+  );
+
+  const filteredRows = useMemo(() => {
+    let rows = scaledRows.filter((r) => selectedUnits.includes(r.unit));
+    if (bottleneckFilter) rows = rows.filter((r) => r.bottleneck === bottleneckFilter);
+    if (mindsetOnly) rows = rows.filter((r) => redMetricCount(r) >= 4);
+    return rows;
+  }, [scaledRows, selectedUnits, bottleneckFilter, mindsetOnly]);
+
+  // Active row needs to be re-resolved when scale changes
+  const activeScaled = useMemo(
+    () => (active ? scaledRows.find((r) => r.id === active.id) ?? null : null),
+    [active, scaledRows],
   );
 
   const toggleUnit = (u: string) =>
@@ -23,54 +59,98 @@ export default function PrognoseDashboard() {
 
   return (
     <>
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Prognose Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Forecast en interventies per sales-consultant
           </p>
         </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              Units ({selectedUnits.length}/{allUnits.length})
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-64">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold">Filter op unit</span>
-              <div className="flex gap-1">
-                <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => setSelectedUnits(allUnits)}>
-                  Alles aan
-                </Button>
-                <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => setSelectedUnits([])}>
-                  Alles uit
-                </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <PeriodFilter />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Units ({selectedUnits.length}/{allUnits.length})
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-64">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold">Filter op unit</span>
+                <div className="flex gap-1">
+                  <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => setSelectedUnits(allUnits)}>
+                    Alles aan
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => setSelectedUnits([])}>
+                    Alles uit
+                  </Button>
+                </div>
               </div>
-            </div>
-            <div className="space-y-1.5">
-              {allUnits.map((u) => (
-                <label key={u} className="flex items-center gap-2 text-sm cursor-pointer">
-                  <Checkbox checked={selectedUnits.includes(u)} onCheckedChange={() => toggleUnit(u)} />
-                  {u}
-                </label>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
+              <div className="space-y-1.5">
+                {allUnits.map((u) => (
+                  <label key={u} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox checked={selectedUnits.includes(u)} onCheckedChange={() => toggleUnit(u)} />
+                    {u}
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       <div className="mb-6">
         <UnitOverviewTiles rows={filteredRows} onSelectConsultant={setActive} />
       </div>
 
+      <div className="mb-6">
+        <InsightsStrip
+          rows={scaledRows.filter((r) => selectedUnits.includes(r.unit))}
+          bottleneckFilter={bottleneckFilter}
+          onBottleneckFilter={setBottleneckFilter}
+          mindsetOnly={mindsetOnly}
+          onMindsetToggle={() => setMindsetOnly((v) => !v)}
+        />
+      </div>
+
       <div>
-        <h2 className="text-lg font-semibold mb-3">Consultant output</h2>
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h2 className="text-lg font-semibold">Consultant output</h2>
+          {(bottleneckFilter || mindsetOnly) && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Actieve filters:</span>
+              {bottleneckFilter && (
+                <button
+                  onClick={() => setBottleneckFilter(null)}
+                  className="px-2 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20"
+                >
+                  {bottleneckFilter} ✕
+                </button>
+              )}
+              {mindsetOnly && (
+                <button
+                  onClick={() => setMindsetOnly(false)}
+                  className="px-2 py-0.5 rounded bg-destructive/10 text-destructive hover:bg-destructive/20"
+                >
+                  Mindset risico ✕
+                </button>
+              )}
+            </div>
+          )}
+        </div>
         <PrognoseTable rows={filteredRows} onIntervene={setActive} />
       </div>
 
-      <InterventionPanel row={active} onClose={() => setActive(null)} />
+      <InterventionPanel row={activeScaled} onClose={() => setActive(null)} />
     </>
+  );
+}
+
+export default function PrognoseDashboard() {
+  return (
+    <PrognosePeriodProvider>
+      <PrognoseDashboardInner />
+    </PrognosePeriodProvider>
   );
 }
