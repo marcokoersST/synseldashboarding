@@ -21,18 +21,14 @@ interface Props {
 function PerfList({
   rows,
   onSelect,
-  limit,
 }: {
   rows: PrognoseConsultantRow[];
   onSelect: (r: PrognoseConsultantRow) => void;
-  limit: number;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? rows : rows.slice(0, limit);
   return (
-    <>
+    <div className="max-h-[240px] overflow-y-auto pr-1">
       <ul className="space-y-0.5">
-        {visible.map((r, i) => (
+        {rows.map((r, i) => (
           <li
             key={r.id}
             onClick={() => onSelect(r)}
