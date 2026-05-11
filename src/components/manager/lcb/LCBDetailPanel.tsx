@@ -106,8 +106,8 @@ export function LCBDetailPanel({ tile, onClose }: Props) {
           </div>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">{tile.detail}</div>
+        {/* Body — strip the nested card chrome from detail components */}
+        <div className="flex-1 overflow-y-auto bg-muted/10 px-6 py-5 lcb-detail-flat">{tile.detail}</div>
       </div>
     </div>,
     document.body,
