@@ -1,87 +1,119 @@
-## Redesign Prognose Dashboard (`/super-admin/prognose-dashboard`)
+## Visual redesign: Intervention panel + drill-down + ticket-style interventions
 
-A focused rebuild of the existing dashboard that keeps the core "consultant output → intervene" workflow but adds period filtering, telephony drill-down, an editable status, the real RecruitCRM logo, and richer manager-style insights inspired by the uploaded spreadsheet.
+Two parallel changes on the consultant detail flow at `/super-admin/prognose-dashboard`:
 
-### 1. Period filter (Week / Period)
+1. A polished visual redesign of both side panels (intervention panel and metric drill-down).
+2. A ticket workflow for interventions — open/closed status, owner, follow-up updates and an activity timeline.
 
-Add a segmented period selector next to the unit filter in the page header:
-- **Week** — current rolling week (default, ma–vandaag) — matches today's behaviour.
-- **Period** — current 4-weeks period (P1–P13).
+---
 
-The selector multiplies the actual numbers and date range used by drill-downs (week ×1, period ×4). Period label propagates into:
-- `InterventionPanel` header ("Rolling week" → "Periode 5" etc.).
-- `MetricDrilldownPanel` subtitle and date generator (max 7 vs 28 days).
+### 1. Visual redesign of the intervention panel (right Sheet)
 
-### 2. RecruitCRM logo + working hyperlinks
+Goals: clearer hierarchy, less "form-on-grey-card" feel, more dashboard-like.
 
-- Copy `user-uploads://RecruitCRM_logo.png` to `src/assets/recruitcrm-logo.png`.
-- Create a small `<RecruitCRMLink href>` component that renders the logo (h-5 w-5 rounded) and links to `https://app.recruitcrm.io/v1/candidates` in a new tab.
-- Replace every blue "R" placeholder badge with this component in:
-  - `MetricDrilldownPanel` (intakes, acquisities, voorstellen promoted + open deals, gesprekken, plaatsingen, new telefonie table).
-  - "Open in Recruit CRM" header button in the drill-down.
-- **Remove** the icon entirely from the Naam column in `PrognoseTable` (the consultant name becomes plain text — no link, no logo).
-
-### 3. Telephony drill-down
-
-- Add `telefonie` to `MetricKey`.
-- Generate mock call list (`getTelefonie`): per-call rows with kandidaat, klant, richting (Uitgaand/Inkomend), duur `[m:ss]`, datum, resultaat (Beantwoord / Voicemail / Geen gehoor). Total duration matches `row.telefonie`.
-- Render new table in `MetricDrilldownPanel`.
-- Make the Telefonie tile inside `InterventionPanel` clickable (same pattern as the other 5 tiles, with chevron + active state) and add a sortable Telefonie column trigger by clicking the existing column header (already sortable).
-
-### 4. Editable prognose status
-
-- In `InterventionPanel`, render the status badge as a `Select` with the three options (Op koers, Risico, Kritiek). On change, update an in-memory override map kept in `prognoseData` (and persisted via `localStorage` under `prognose-status-overrides`).
-- Status overrides are read by `PrognoseTable`, `UnitOverviewTiles` (Top/Bottom/Critical lists), and the row pill, so all views stay in sync.
-- Add a small "Auto" reset link to clear the override and revert to the score-derived status.
-
-### 5. Make every button/control interactive
-
-Audit pass — wire up controls that are currently visual-only or stubbed:
-- Drill-down header "Open in Recruit CRM" (`ExternalLink`) → opens the placeholder URL in a new tab.
-- Drill-down close (X) and backdrop click already work — verified.
-- Unit filter "Alles aan / Alles uit" already work.
-- "Noteer actie" row button already opens the panel.
-- New: Top/Bottom rows already select a consultant on click — keep.
-- New: clicking a Top 3 Bottlenecks card filters the table to that bottleneck (toggle).
-- New: "Kritiek" tile rows already select; add a "Filter op kritiek" link that filters the table.
-
-### 6. Improved insights (manager-friendly, inspired by the uploaded sheet)
-
-Add a new **Insights strip** between the unit-overview tiles and the consultant table:
+Layout (top → bottom inside the Sheet):
 
 ```text
-┌──────────────┬──────────────┬──────────────┬──────────────┐
-│ Urgentie obv │ Bottleneck   │ Mindset risk │ Gem. score   │
-│ kwaliteit    │ verdeling    │ (4x rood)    │ + Δ vs vorig │
-└──────────────┴──────────────┴──────────────┴──────────────┘
+┌────────────────────────────────────────────────┐
+│ [avatar]  Tim Kuik                             │
+│           Trainingsunit · Rolling week         │
+│                                                │
+│  Score 115%  ●●●●●○  [Op koers ▾]  [Auto]     │
+│  ───────────────────────────────────           │
+│                                                │
+│  Prognose breakdown                            │
+│  ┌──────┬──────┬──────┐                        │
+│  │ tile │ tile │ tile │   (3-col, taller       │
+│  └──────┴──────┴──────┘    tiles with progress │
+│  ┌──────┬──────┬──────┐    bar + chevron)      │
+│  │ tile │ tile │ Tel  │                        │
+│  └──────┴──────┴──────┘                        │
+│                                                │
+│  Tabs: [Open interventies (2)] [Geschiedenis] │
+│  ─ ticket cards ─                              │
+│  + Nieuwe interventie                          │
+└────────────────────────────────────────────────┘
 ```
 
-- **Urgentie** — badge counts: `1.laag` / `2.middel` / `3.hoog` / `4.extreem hoog`, derived from how many of the 5 metrics are below threshold (≥4 below = extreem hoog → mindset signal). Mirrors the legend in the spreadsheet.
-- **Bottleneck verdeling** — horizontal stacked bar of `getTopBottlenecks` (full distribution, not just top 3).
-- **Mindset risk** — count of consultants with 4 or more red metrics ("wil hij het echt"-flag).
-- **Avg score + Δ** — average prognose score with arrow vs previous window.
+Concrete updates:
+- **Header**: gradient avatar circle with consultant initials, large name, sub-line for unit/period. Score row on its own line with a 5-dot mini-bar (one dot per metric, colored per tier) plus the editable status `Select` and `Auto` reset link.
+- **Breakdown tiles**: 3 columns instead of 2, slightly taller. Each tile shows label + chevron, big value, tiny progress bar (h-1) tinted by tier (`good/ok/warn/bad`), and `(pct%)`. Telephony tile renders the duration plus a "calls expected" badge.
+- **Active tile** gets a left border accent and shadow instead of just bg tint.
+- Wrap the panel in a subtle vertical divider gradient so it visually separates from the drill-down on the left.
 
-Also enrich the consultant table:
-- Add a small color block per metric cell (goed/voldoende/onvoldoende/slecht) using the spreadsheet's 4-tier thresholds (`≥1× target`, `≥2× target`, `≥3× target`, `≥4× target` for "te weinig" inverse — actually just per-target ratio: ≥100% green, ≥75% yellow, ≥50% orange, <50% red).
-- Add a "Bottleneck" column showing the consultant's primary bottleneck (compact badge).
-- Keep the row tint based on status.
+### 2. Visual redesign of the drill-down panel (left side panel)
 
-### 7. File map
+Goals: feel like a focused inspector, not a raw table.
+
+- **Metric header band**: thin colored strip at the top whose color matches the metric tier (green/yellow/orange/red). On the band: metric icon + name, count, period chip, "Open in CRM" pill button, close X.
+- **Summary row** under the band: 3 mini-stats (e.g. for Voorstellen → Promoted, Open deals, Conversion %; for Telefonie → calls, avg duration, beantwoord %; sensible defaults for other metrics).
+- **Tables**: compact zebra striping, sticky header inside scroll area, RecruitCRM logo column made narrow, consultant/candidate names always single-line with truncate + tooltip. Replace bare badges with subtle pill chips that respect the design tokens.
+- **Empty states** per metric (currently silent) — show a friendly placeholder when the period yields zero records.
+
+### 3. Ticket-style interventions
+
+Replace the "single note + history" model with proper tickets.
+
+**Data model** (extends `prognoseData.ts`, kept in `localStorage` under `prognose-tickets`):
+
+```ts
+type TicketStatus = "open" | "in_progress" | "closed";
+interface InterventionTicket {
+  id: string;
+  consultantId: string;
+  category: BottleneckCategory | "Anders";
+  title: string;             // short description
+  description: string;       // initial note
+  owner: string;
+  followUpDate?: string;
+  status: TicketStatus;
+  createdAt: string;
+  closedAt?: string;
+  updates: TicketUpdate[];   // append-only thread
+}
+interface TicketUpdate {
+  id: string;
+  author: string;
+  message: string;
+  createdAt: string;
+  type: "comment" | "status_change" | "owner_change" | "followup_change";
+}
+```
+
+Helpers exported: `loadTickets()`, `saveTicket()`, `addTicketUpdate()`, `setTicketStatus()`, `setTicketOwner()`, `setTicketFollowUp()`. Backwards-compatibility: existing `loadInterventions()` notes are imported once into the ticket store as closed tickets so no history is lost.
+
+**UI inside the Sheet** (`InterventionPanel`):
+
+- Two tabs: `Open (n)` and `Geschiedenis (n)`.
+- Each tab renders a stacked list of **ticket cards**:
+  ```
+  ┌─ category badge · status pill · #ID ─────── ⋯ ─┐
+  │  Title (bold)                                  │
+  │  Description preview (1 line, truncate)        │
+  │  Owner · Opvolging dd-mm · Created xx          │
+  │  ▾ Toon updates (3)                            │
+  └────────────────────────────────────────────────┘
+  ```
+- Expanding a card shows:
+  - Activity timeline (vertical line with dots), including system events ("Status: open → in_progress").
+  - `Textarea` to add a comment (+ author input prefilled with last-used owner from `localStorage`).
+  - Action buttons: `In behandeling` / `Hervatten` / `Sluiten` (status transitions).
+  - Inline `Eigenaar` and `Opvolgdatum` quick-edit fields — each change appends a system update.
+- A primary `Nieuwe interventie` button at the bottom of the Open tab opens an inline form (slides in above the list) replacing the current always-visible form. Form fields: Categorie, Titel, Beschrijving, Eigenaar, Opvolgdatum.
+- Closed tickets in `Geschiedenis` show a strike-through title + closed date, expandable to view the full thread (read-only).
+
+### 4. Files
 
 Create:
-- `src/assets/recruitcrm-logo.png` (copied from upload).
-- `src/components/prognose/RecruitCRMLink.tsx` — logo + anchor.
-- `src/components/prognose/PeriodFilter.tsx` — Week/Period segmented control.
-- `src/components/prognose/InsightsStrip.tsx` — new 4-tile strip.
-- `src/contexts/PrognosePeriodContext.tsx` — provides `period` + scaling factor and date-range max-days to children.
+- `src/data/prognoseTickets.ts` — ticket types, storage helpers, legacy migration from `prognose-interventions`.
+- `src/components/prognose/TicketCard.tsx` — collapsible card with timeline and actions.
+- `src/components/prognose/TicketComposer.tsx` — inline new-ticket form.
+- `src/components/prognose/MetricSummary.tsx` — 3 mini-stats row for the drill-down header.
 
 Update:
-- `src/data/prognoseData.ts` — add `getStatusOverride/setStatusOverride`, `urgencyLevel(row)`, `metricTier(actual,target)`; add period scaler helpers.
-- `src/data/prognoseDrilldownData.ts` — accept `maxDays` arg; add `getTelefonie`.
-- `src/components/prognose/MetricDrilldownPanel.tsx` — add telefonie, swap "R" badge → `RecruitCRMLink`, header button opens URL, period subtitle.
-- `src/components/prognose/InterventionPanel.tsx` — add telefonie tile click, status `Select`, period in subtitle.
-- `src/components/prognose/PrognoseTable.tsx` — remove R icon from Naam, add Bottleneck column, color-tier mini-pills, optional bottleneck filter.
-- `src/components/prognose/UnitOverviewTiles.tsx` — make Top 3 bottleneck cards filter-toggle; add "Filter op kritiek" link.
-- `src/pages/super-admin/PrognoseDashboard.tsx` — wrap with `PrognosePeriodContext`, render `PeriodFilter`, render `InsightsStrip`, manage `bottleneckFilter` and `criticalOnly` state.
+- `src/components/prognose/InterventionPanel.tsx` — full redesign, tabs, ticket list, removes the always-on note form.
+- `src/components/prognose/MetricDrilldownPanel.tsx` — colored band, summary row, compact tables, empty states.
+- `src/components/prognose/PrognoseTable.tsx` — small badge in the Interventie column showing open ticket count when > 0 (e.g. `2 open`).
+- `src/data/prognoseData.ts` — add `getOpenTicketCount(consultantId)` re-export shim that proxies to `prognoseTickets`.
 
-No backend / no schema work — pure frontend on existing mock data.
+No backend, no schema changes — pure frontend on `localStorage`.
