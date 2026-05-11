@@ -1,4 +1,3 @@
-import { createPortal } from "react-dom";
 import { X, FileText, Megaphone, Send, MessageCircle, CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
