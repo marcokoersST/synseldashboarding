@@ -31,7 +31,17 @@ function getReadIds(): string[] {
 }
 
 export function AppLayout() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  return (
+    <SidebarCollapseProvider>
+      <AppLayoutInner />
+    </SidebarCollapseProvider>
+  );
+}
+
+function AppLayoutInner() {
+  const [userCollapsed, setUserCollapsed] = useState(false);
+  const { forcedCount } = useSidebarCollapse();
+  const isCollapsed = userCollapsed || forcedCount > 0;
   const [topBarActions, setTopBarActions] = useState<ReactNode>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [readIds, setReadIds] = useState<string[]>(getReadIds);
