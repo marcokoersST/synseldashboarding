@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { X, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -179,29 +180,36 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
       ? row.voorstellen.actual
       : (row[metric] as { actual: number }).actual;
 
-  return (
-    <div
-      className="fixed top-0 right-[640px] h-full w-[640px] bg-background border-l border-r shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-right duration-200"
-    >
-      <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-start justify-between">
-        <div>
-          <h3 className="text-base font-semibold">
-            {METRIC_LABEL[metric]} <span className="text-muted-foreground font-normal">({totalCount})</span>
-          </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {row.name} · {periodLabel}
-          </p>
+  return createPortal(
+    <>
+      <div
+        className="fixed inset-0 z-[59] bg-transparent"
+        onClick={onClose}
+      />
+      <div
+        className="fixed top-0 right-[640px] h-full w-[640px] bg-card border-l border-r border-border shadow-2xl z-[60] overflow-y-auto animate-in slide-in-from-right duration-200"
+      >
+        <div className="sticky top-0 z-10 bg-card border-b px-4 py-3 flex items-start justify-between">
+          <div>
+            <h3 className="text-base font-semibold">
+              {METRIC_LABEL[metric]} <span className="text-muted-foreground font-normal">({totalCount})</span>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {row.name} · {periodLabel}
+            </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" title="Open in Recruit CRM">
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" title="Open in Recruit CRM">
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        <div className="p-3">{renderTable()}</div>
       </div>
-      <div className="p-3">{renderTable()}</div>
-    </div>
+    </>,
+    document.body,
   );
 }
