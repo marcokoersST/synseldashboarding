@@ -115,22 +115,40 @@ export function InterventionPanel({ row, onClose }: Props) {
           <>
             <SheetHeader>
               <SheetTitle>{row.name}</SheetTitle>
-              <SheetDescription>
-                {row.unit} · Prognose score{" "}
-                <span className="font-semibold text-foreground">{row.prognoseScore}%</span>
-                {" · "}
-                <Badge
-                  variant="outline"
-                  className={
-                    row.status === "kritiek"
-                      ? "border-destructive text-destructive"
-                      : row.status === "risico"
-                        ? "border-amber-500 text-amber-600"
-                        : "border-emerald-500 text-emerald-600"
-                  }
-                >
-                  {row.status}
-                </Badge>
+              <SheetDescription asChild>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span>
+                    {row.unit} · {periodLabel} · Prognose score{" "}
+                    <span className="font-semibold text-foreground">{row.prognoseScore}%</span>
+                  </span>
+                  <Select value={status} onValueChange={(v) => handleStatusChange(v as PrognoseStatus)}>
+                    <SelectTrigger
+                      className={cn(
+                        "h-7 w-auto px-2 text-xs gap-1",
+                        status === "kritiek"
+                          ? "border-destructive text-destructive"
+                          : status === "risico"
+                            ? "border-amber-500 text-amber-600"
+                            : "border-emerald-500 text-emerald-600",
+                      )}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="op-koers">Op koers</SelectItem>
+                      <SelectItem value="risico">Risico</SelectItem>
+                      <SelectItem value="kritiek">Kritiek</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {hasOverride && (
+                    <button
+                      onClick={resetStatus}
+                      className="text-xs underline text-muted-foreground hover:text-foreground"
+                    >
+                      Auto
+                    </button>
+                  )}
+                </div>
               </SheetDescription>
             </SheetHeader>
 
