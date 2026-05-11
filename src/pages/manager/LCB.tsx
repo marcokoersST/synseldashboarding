@@ -197,7 +197,7 @@ export default function LCB() {
 
   const dimensionMatch = (key: string) => {
     if (dimension === "All") return true;
-    if (dimension === "Operationeel") return ["salesfunnel", "outreach", "opvolging"].includes(key);
+    if (dimension === "Operationeel") return ["signalering", "salesfunnel", "outreach", "opvolging"].includes(key);
     if (dimension === "Performance") return ["performance", "goals"].includes(key);
     if (dimension === "Omzet") return ["omzet", "attrition", "secondments"].includes(key);
     return true;
