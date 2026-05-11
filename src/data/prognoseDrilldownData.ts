@@ -124,3 +124,35 @@ export function getPlaatsingen(row: PrognoseConsultantRow): PlaatsingRow[] {
     startdatum: dateInLastDays(seed, i * 4 + 4, 14),
   }));
 }
+
+export interface TelefonieRow {
+  kandidaat: string;
+  klant: string;
+  richting: "Uitgaand" | "Inkomend";
+  duur: string;
+  datum: string;
+  resultaat: string;
+}
+const RICHTINGEN: ("Uitgaand" | "Inkomend")[] = ["Uitgaand", "Uitgaand", "Uitgaand", "Inkomend"];
+const RESULTATEN = ["Beantwoord", "Voicemail", "Geen gehoor", "Beantwoord", "Beantwoord"];
+
+export function getTelefonie(row: PrognoseConsultantRow, maxDays = 7): TelefonieRow[] {
+  const seed = hash(row.id + ":tel");
+  const totalSec =
+    row.telefonie.hours * 3600 + row.telefonie.minutes * 60 + row.telefonie.seconds;
+  // ~ avg call 4 min → derive call count
+  const callCount = Math.max(5, Math.round(totalSec / 240));
+  return Array.from({ length: callCount }, (_, i) => {
+    const callSec = 30 + Math.floor(rand(seed, i * 5 + 1) * 540);
+    const m = Math.floor(callSec / 60);
+    const s = callSec % 60;
+    return {
+      kandidaat: pick(KANDIDATEN, seed, i * 5 + 2),
+      klant: pick(KLANTEN, seed, i * 5 + 3),
+      richting: pick(RICHTINGEN, seed, i * 5 + 4),
+      duur: `[${m}:${s.toString().padStart(2, "0")}]`,
+      datum: dateInLastDays(seed, i * 5 + 5, maxDays),
+      resultaat: pick(RESULTATEN, seed, i * 5 + 6),
+    };
+  });
+}

@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import { X, ExternalLink } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -10,14 +10,18 @@ import {
   getVoorstellen,
   getGesprekken,
   getPlaatsingen,
+  getTelefonie,
 } from "@/data/prognoseDrilldownData";
+import { RecruitCRMLink, RECRUITCRM_URL } from "./RecruitCRMLink";
+import { usePrognosePeriod } from "@/contexts/PrognosePeriodContext";
 
 export type MetricKey =
   | "intakes"
   | "acquisities"
   | "voorstellen"
   | "gesprekken"
-  | "plaatsingen";
+  | "plaatsingen"
+  | "telefonie";
 
 const METRIC_LABEL: Record<MetricKey, string> = {
   intakes: "Intakes",
@@ -25,23 +29,13 @@ const METRIC_LABEL: Record<MetricKey, string> = {
   voorstellen: "Voorstellen",
   gesprekken: "Gesprekken",
   plaatsingen: "Plaatsingen",
+  telefonie: "Telefonie",
 };
 
 interface Props {
   metric: MetricKey;
   row: PrognoseConsultantRow;
   onClose: () => void;
-}
-
-function RBadge() {
-  return (
-    <button
-      className="inline-flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-[10px] font-bold text-white hover:bg-blue-700"
-      title="Open in Recruit CRM"
-    >
-      R
-    </button>
-  );
 }
 
 function Th({ children, align = "left" }: { children: React.ReactNode; align?: "left" | "right" }) {
@@ -58,7 +52,7 @@ function Th({ children, align = "left" }: { children: React.ReactNode; align?: "
 }
 
 export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
-  const periodLabel = "Rolling week (ma–vandaag)";
+  const { label: periodLabel, maxDays } = usePrognosePeriod();
 
   const renderTable = () => {
     if (metric === "intakes") {
@@ -69,7 +63,7 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
           <tbody>
             {rows.map((r, i) => (
               <tr key={i} className="border-b hover:bg-muted/30">
-                <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RBadge />{r.kandidaat}</span></td>
+                <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RecruitCRMLink />{r.kandidaat}</span></td>
                 <td className="px-3 py-2 text-muted-foreground">{r.datum}</td>
                 <td className="px-3 py-2"><Badge variant="secondary" className="text-xs">{r.type}</Badge></td>
                 <td className="px-3 py-2 text-xs">{r.status}</td>
@@ -87,7 +81,7 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
           <tbody>
             {rows.map((r, i) => (
               <tr key={i} className="border-b hover:bg-muted/30">
-                <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RBadge />{r.kandidaat}</span></td>
+                <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RecruitCRMLink />{r.kandidaat}</span></td>
                 <td className="px-3 py-2 text-xs text-muted-foreground">{r.vanStage}</td>
                 <td className="px-3 py-2 text-xs"><Badge variant="outline" className="border-emerald-500 text-emerald-600">{r.naarStage}</Badge></td>
                 <td className="px-3 py-2 text-muted-foreground">{r.datum}</td>
@@ -108,7 +102,7 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
               <tbody>
                 {promoted.map((r, i) => (
                   <tr key={i} className="border-b hover:bg-muted/30">
-                    <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RBadge />{r.kandidaat}</span></td>
+                    <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RecruitCRMLink />{r.kandidaat}</span></td>
                     <td className="px-3 py-2 text-xs">{r.klant}</td>
                     <td className="px-3 py-2 text-xs text-muted-foreground">{r.vorigeStage}</td>
                     <td className="px-3 py-2 text-muted-foreground">{r.datum}</td>
@@ -127,7 +121,7 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
               <tbody>
                 {openDeals.map((r, i) => (
                   <tr key={i} className="border-b hover:bg-muted/30">
-                    <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RBadge />{r.kandidaat}</span></td>
+                    <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RecruitCRMLink />{r.kandidaat}</span></td>
                     <td className="px-3 py-2 text-right tabular-nums font-semibold text-amber-600">{r.openDeals}</td>
                     <td className="px-3 py-2 text-xs text-muted-foreground">{r.oudsteStage}</td>
                   </tr>
@@ -146,9 +140,29 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
           <tbody>
             {rows.map((r, i) => (
               <tr key={i} className="border-b hover:bg-muted/30">
-                <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RBadge />{r.kandidaat}</span></td>
+                <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RecruitCRMLink />{r.kandidaat}</span></td>
                 <td className="px-3 py-2 text-xs">{r.klant}</td>
                 <td className="px-3 py-2"><Badge variant="secondary" className="text-xs">{r.type}</Badge></td>
+                <td className="px-3 py-2 text-muted-foreground">{r.datum}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    }
+    if (metric === "telefonie") {
+      const rows = getTelefonie(row, maxDays);
+      return (
+        <table className="w-full text-sm">
+          <thead><tr><Th>Kandidaat</Th><Th>Klant</Th><Th>Richting</Th><Th align="right">Duur</Th><Th>Resultaat</Th><Th>Datum</Th></tr></thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i} className="border-b hover:bg-muted/30">
+                <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RecruitCRMLink />{r.kandidaat}</span></td>
+                <td className="px-3 py-2 text-xs">{r.klant}</td>
+                <td className="px-3 py-2"><Badge variant="outline" className="text-xs">{r.richting}</Badge></td>
+                <td className="px-3 py-2 text-right tabular-nums">{r.duur}</td>
+                <td className="px-3 py-2 text-xs">{r.resultaat}</td>
                 <td className="px-3 py-2 text-muted-foreground">{r.datum}</td>
               </tr>
             ))}
@@ -164,7 +178,7 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
         <tbody>
           {rows.map((r, i) => (
             <tr key={i} className="border-b hover:bg-muted/30">
-              <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RBadge />{r.kandidaat}</span></td>
+              <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><RecruitCRMLink />{r.kandidaat}</span></td>
               <td className="px-3 py-2 text-xs">{r.klant}</td>
               <td className="px-3 py-2"><Badge variant="outline" className="text-xs">{r.type}</Badge></td>
               <td className="px-3 py-2 text-muted-foreground">{r.startdatum}</td>
@@ -178,17 +192,14 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
   const totalCount =
     metric === "voorstellen"
       ? row.voorstellen.actual
-      : (row[metric] as { actual: number }).actual;
+      : metric === "telefonie"
+        ? `${row.telefonie.hours}u${row.telefonie.minutes}m`
+        : (row[metric] as { actual: number }).actual;
 
   return createPortal(
     <>
-      <div
-        className="fixed inset-0 z-[59] bg-transparent"
-        onClick={onClose}
-      />
-      <div
-        className="fixed top-0 right-[640px] h-full w-[640px] bg-card border-l border-r border-border shadow-2xl z-[60] overflow-y-auto animate-in slide-in-from-right duration-200"
-      >
+      <div className="fixed inset-0 z-[59] bg-transparent" onClick={onClose} />
+      <div className="fixed top-0 right-[640px] h-full w-[640px] bg-card border-l border-r border-border shadow-2xl z-[60] overflow-y-auto animate-in slide-in-from-right duration-200">
         <div className="sticky top-0 z-10 bg-card border-b px-4 py-3 flex items-start justify-between">
           <div>
             <h3 className="text-base font-semibold">
@@ -198,10 +209,16 @@ export function MetricDrilldownPanel({ metric, row, onClose }: Props) {
               {row.name} · {periodLabel}
             </p>
           </div>
-          <div className="flex items-center gap-1">
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" title="Open in Recruit CRM">
-              <ExternalLink className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-2">
+            <a
+              href={RECRUITCRM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-8 items-center gap-1.5 px-2 rounded-md hover:bg-muted text-xs font-medium"
+              title="Open in Recruit CRM"
+            >
+              <RecruitCRMLink size={16} /> Open in CRM
+            </a>
             <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>

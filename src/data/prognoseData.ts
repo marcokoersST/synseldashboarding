@@ -194,3 +194,90 @@ export function saveIntervention(note: InterventionNote) {
   all.unshift(note);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
 }
+
+// ----- Status overrides (manager-editable) -----
+const STATUS_OVERRIDE_KEY = "prognose-status-overrides";
+type OverrideMap = Record<string, PrognoseStatus>;
+
+function readOverrides(): OverrideMap {
+  try {
+    const raw = localStorage.getItem(STATUS_OVERRIDE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+function writeOverrides(map: OverrideMap) {
+  localStorage.setItem(STATUS_OVERRIDE_KEY, JSON.stringify(map));
+  window.dispatchEvent(new CustomEvent("prognose-status-changed"));
+}
+export function getStatusOverride(id: string): PrognoseStatus | undefined {
+  return readOverrides()[id];
+}
+export function setStatusOverride(id: string, status: PrognoseStatus | null) {
+  const map = readOverrides();
+  if (status === null) delete map[id];
+  else map[id] = status;
+  writeOverrides(map);
+}
+export function effectiveStatus(row: PrognoseConsultantRow): PrognoseStatus {
+  return getStatusOverride(row.id) ?? row.status;
+}
+
+// ----- Metric tier (color coding) -----
+export type MetricTier = "good" | "ok" | "warn" | "bad";
+export function metricTier(actual: number, target: number): MetricTier {
+  const pct = target === 0 ? 1 : actual / target;
+  if (pct >= 1) return "good";
+  if (pct >= 0.75) return "ok";
+  if (pct >= 0.5) return "warn";
+  return "bad";
+}
+export function tierBg(t: MetricTier): string {
+  return t === "good"
+    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+    : t === "ok"
+      ? "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400"
+      : t === "warn"
+        ? "bg-orange-500/15 text-orange-700 dark:text-orange-400"
+        : "bg-destructive/15 text-destructive";
+}
+
+// ----- Urgency (count of red metrics) -----
+export type UrgencyLevel = "1.laag" | "2.middel" | "3.hoog" | "4.extreem hoog";
+export function redMetricCount(row: PrognoseConsultantRow): number {
+  let n = 0;
+  if (metricTier(row.intakes.actual, row.intakes.target) === "bad") n++;
+  if (metricTier(row.acquisities.actual, row.acquisities.target) === "bad") n++;
+  if (metricTier(row.voorstellen.actual, row.voorstellen.target) === "bad") n++;
+  if (metricTier(row.gesprekken.actual, row.gesprekken.target) === "bad") n++;
+  if (metricTier(row.plaatsingen.actual, row.plaatsingen.target) === "bad") n++;
+  return n;
+}
+export function urgencyLevel(row: PrognoseConsultantRow): UrgencyLevel {
+  const n = redMetricCount(row);
+  if (n >= 4) return "4.extreem hoog";
+  if (n === 3) return "3.hoog";
+  if (n === 2) return "2.middel";
+  return "1.laag";
+}
+
+// ----- Period scaling -----
+export function scaleRow(row: PrognoseConsultantRow, scale: number): PrognoseConsultantRow {
+  if (scale === 1) return row;
+  const totalSec =
+    (row.telefonie.hours * 3600 + row.telefonie.minutes * 60 + row.telefonie.seconds) * scale;
+  return {
+    ...row,
+    intakes: { actual: row.intakes.actual * scale, target: row.intakes.target * scale },
+    acquisities: { actual: row.acquisities.actual * scale, target: row.acquisities.target * scale },
+    voorstellen: { actual: row.voorstellen.actual * scale, target: row.voorstellen.target * scale },
+    gesprekken: { actual: row.gesprekken.actual * scale, target: row.gesprekken.target * scale },
+    plaatsingen: { actual: row.plaatsingen.actual * scale, target: row.plaatsingen.target * scale },
+    telefonie: {
+      hours: Math.floor(totalSec / 3600),
+      minutes: Math.floor((totalSec % 3600) / 60),
+      seconds: totalSec % 60,
+    },
+  };
+}

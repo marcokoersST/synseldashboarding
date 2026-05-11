@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, ExternalLink } from "lucide-react";
+import { ArrowUpDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type PrognoseConsultantRow, formatTelefonie } from "@/data/prognoseData";
+import {
+  type PrognoseConsultantRow,
+  formatTelefonie,
+  effectiveStatus,
+  metricTier,
+  tierBg,
+} from "@/data/prognoseData";
 
 interface Props {
   rows: PrognoseConsultantRow[];
@@ -20,6 +26,7 @@ type SortKey =
   | "gesprekken"
   | "plaatsingen"
   | "telefonie"
+  | "bottleneck"
   | "status";
 
 function statusClasses(status: PrognoseConsultantRow["status"]) {
@@ -42,13 +49,12 @@ function StatusPill({ status }: { status: PrognoseConsultantRow["status"] }) {
   );
 }
 
-function ActualTarget({ a, t }: { a: number; t: number }) {
-  const pct = (a / t) * 100;
-  const color = pct >= 100 ? "text-emerald-600" : pct >= 70 ? "text-foreground" : "text-destructive";
+function MetricCell({ a, t }: { a: number; t: number }) {
+  const tier = metricTier(a, t);
   return (
-    <span className={cn("tabular-nums", color)}>
+    <span className={cn("inline-flex items-center justify-end gap-1 px-1.5 py-0.5 rounded tabular-nums font-medium", tierBg(tier))}>
       {a}
-      <span className="text-muted-foreground">/{t}</span>
+      <span className="opacity-60">/{t}</span>
     </span>
   );
 }
@@ -56,6 +62,14 @@ function ActualTarget({ a, t }: { a: number; t: number }) {
 export function PrognoseTable({ rows, onIntervene }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("status");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [, force] = useState(0);
+
+  // Re-render when status overrides change
+  useEffect(() => {
+    const h = () => force((n) => n + 1);
+    window.addEventListener("prognose-status-changed", h);
+    return () => window.removeEventListener("prognose-status-changed", h);
+  }, []);
 
   const sorted = [...rows].sort((a, b) => {
     let av: number | string;
@@ -72,10 +86,14 @@ export function PrognoseTable({ rows, onIntervene }: Props) {
         av = a.telefonie.hours * 3600 + a.telefonie.minutes * 60 + a.telefonie.seconds;
         bv = b.telefonie.hours * 3600 + b.telefonie.minutes * 60 + b.telefonie.seconds;
         break;
-      case "status":
-        av = a.status === "kritiek" ? 0 : a.status === "risico" ? 1 : 2;
-        bv = b.status === "kritiek" ? 0 : b.status === "risico" ? 1 : 2;
-        break;
+      case "bottleneck": av = a.bottleneck; bv = b.bottleneck; break;
+      case "status": {
+        const s = (r: PrognoseConsultantRow) => {
+          const st = effectiveStatus(r);
+          return st === "kritiek" ? 0 : st === "risico" ? 1 : 2;
+        };
+        av = s(a); bv = s(b); break;
+      }
     }
     if (av < bv) return sortDir === "asc" ? -1 : 1;
     if (av > bv) return sortDir === "asc" ? 1 : -1;
@@ -86,7 +104,7 @@ export function PrognoseTable({ rows, onIntervene }: Props) {
     if (k === sortKey) setSortDir(sortDir === "asc" ? "desc" : "asc");
     else {
       setSortKey(k);
-      setSortDir(k === "name" || k === "unit" ? "asc" : "desc");
+      setSortDir(k === "name" || k === "unit" || k === "bottleneck" ? "asc" : "desc");
     }
   };
 
@@ -140,6 +158,7 @@ export function PrognoseTable({ rows, onIntervene }: Props) {
               <Th k="gesprekken" label="Gesprekken" align="right" />
               <Th k="plaatsingen" label="Plaatsingen" align="right" />
               <Th k="telefonie" label="Uitg. telefonie" align="right" />
+              <Th k="bottleneck" label="Bottleneck" />
               <Th k="status" label="Prognose" />
               <th className="h-10 px-3 text-right text-xs font-semibold text-muted-foreground bg-muted/50 sticky top-0 z-20">
                 Interventie
@@ -147,32 +166,38 @@ export function PrognoseTable({ rows, onIntervene }: Props) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r) => (
-              <tr key={r.id} className={cn("border-b transition-colors", statusClasses(r.status))}>
-                <td className="px-3 py-2 sticky left-0 z-10 bg-card font-medium">
-                  <span className="inline-flex items-center gap-2">
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-[10px] font-bold text-white">
-                      R
-                    </span>
-                    {r.name}
-                  </span>
-                </td>
-                <td className="px-3 py-2 text-xs text-muted-foreground">{r.unit}</td>
-                <td className="px-3 py-2 text-right"><ActualTarget a={r.intakes.actual} t={r.intakes.target} /></td>
-                <td className="px-3 py-2 text-right"><ActualTarget a={r.acquisities.actual} t={r.acquisities.target} /></td>
-                <td className="px-3 py-2 text-right"><ActualTarget a={r.voorstellen.actual} t={r.voorstellen.target} /></td>
-                <td className="px-3 py-2 text-right"><ActualTarget a={r.gesprekken.actual} t={r.gesprekken.target} /></td>
-                <td className="px-3 py-2 text-right"><ActualTarget a={r.plaatsingen.actual} t={r.plaatsingen.target} /></td>
-                <td className="px-3 py-2 text-right tabular-nums">{formatTelefonie(r.telefonie)}</td>
-                <td className="px-3 py-2"><StatusPill status={r.status} /></td>
-                <td className="px-3 py-2 text-right">
-                  <Button size="sm" variant="outline" onClick={() => onIntervene(r)}>
-                    <ExternalLink className="h-3 w-3 mr-1" />
-                    Noteer actie
-                  </Button>
+            {sorted.map((r) => {
+              const st = effectiveStatus(r);
+              return (
+                <tr key={r.id} className={cn("border-b transition-colors", statusClasses(st))}>
+                  <td className="px-3 py-2 sticky left-0 z-10 bg-card font-medium">{r.name}</td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">{r.unit}</td>
+                  <td className="px-3 py-2 text-right"><MetricCell a={r.intakes.actual} t={r.intakes.target} /></td>
+                  <td className="px-3 py-2 text-right"><MetricCell a={r.acquisities.actual} t={r.acquisities.target} /></td>
+                  <td className="px-3 py-2 text-right"><MetricCell a={r.voorstellen.actual} t={r.voorstellen.target} /></td>
+                  <td className="px-3 py-2 text-right"><MetricCell a={r.gesprekken.actual} t={r.gesprekken.target} /></td>
+                  <td className="px-3 py-2 text-right"><MetricCell a={r.plaatsingen.actual} t={r.plaatsingen.target} /></td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatTelefonie(r.telefonie)}</td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">
+                    {r.bottleneck === "Geen knelpunt" ? "—" : r.bottleneck}
+                  </td>
+                  <td className="px-3 py-2"><StatusPill status={st} /></td>
+                  <td className="px-3 py-2 text-right">
+                    <Button size="sm" variant="outline" onClick={() => onIntervene(r)}>
+                      Noteer actie
+                      <ChevronRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
+            {sorted.length === 0 && (
+              <tr>
+                <td colSpan={11} className="text-center py-8 text-sm text-muted-foreground">
+                  Geen consultants matchen de huidige filters.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
           <tfoot>
             <tr className="bg-muted/60 font-semibold sticky bottom-0">
@@ -186,7 +211,7 @@ export function PrognoseTable({ rows, onIntervene }: Props) {
               <td className="px-3 py-2 text-right tabular-nums">
                 [{totalH}:{String(totalM).padStart(2, "0")}:{String(totalS).padStart(2, "0")}]
               </td>
-              <td colSpan={2} />
+              <td colSpan={3} />
             </tr>
           </tfoot>
         </table>
