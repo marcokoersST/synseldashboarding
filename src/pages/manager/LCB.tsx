@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LCBDetailPanel } from "@/components/manager/lcb/LCBDetailPanel";
+import { BottleneckBand } from "@/components/manager/lcb/BottleneckBand";
+import { TileSparkline } from "@/components/manager/lcb/TileSparkline";
 import { cn } from "@/lib/utils";
 import { SalesFunnelV2 } from "@/components/manager/v2/SalesFunnelV2";
 import { AlertsPanelV2 } from "@/components/manager/v2/AlertsPanelV2";
