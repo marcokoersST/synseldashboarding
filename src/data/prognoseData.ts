@@ -263,17 +263,58 @@ export function urgencyLevel(row: PrognoseConsultantRow): UrgencyLevel {
 }
 
 // ----- Period scaling -----
-export function scaleRow(row: PrognoseConsultantRow, scale: number): PrognoseConsultantRow {
-  if (scale === 1) return row;
-  const totalSec =
-    (row.telefonie.hours * 3600 + row.telefonie.minutes * 60 + row.telefonie.seconds) * scale;
+export function scaleRow(
+  row: PrognoseConsultantRow,
+  scale: number,
+  offset: number = 0,
+): PrognoseConsultantRow {
+  // Build a stable per-row, per-offset perturbation factor in [0.7, 1.15]
+  const seed = nameHash(row.id) + offset * 9173;
+  const perturb = offset === 0 ? 1 : 0.7 + rand(seed, 11) * 0.45;
+  const apply = (n: number) => Math.max(0, Math.round(n * scale * perturb));
+  const applyTarget = (n: number) => n * scale; // targets scale linearly only
+  const totalSec = Math.round(
+    (row.telefonie.hours * 3600 + row.telefonie.minutes * 60 + row.telefonie.seconds) *
+      scale *
+      perturb,
+  );
+  if (scale === 1 && offset === 0) return row;
+
+  // Recompute prognoseScore from new ratios so tiles/insights stay coherent.
+  const intakes = { actual: apply(row.intakes.actual), target: applyTarget(row.intakes.target) };
+  const acquisities = {
+    actual: apply(row.acquisities.actual),
+    target: applyTarget(row.acquisities.target),
+  };
+  const voorstellen = {
+    actual: apply(row.voorstellen.actual),
+    target: applyTarget(row.voorstellen.target),
+  };
+  const gesprekken = {
+    actual: apply(row.gesprekken.actual),
+    target: applyTarget(row.gesprekken.target),
+  };
+  const plaatsingen = {
+    actual: apply(row.plaatsingen.actual),
+    target: applyTarget(row.plaatsingen.target),
+  };
+  const ratios = [
+    intakes.actual / Math.max(1, intakes.target),
+    acquisities.actual / Math.max(1, acquisities.target),
+    voorstellen.actual / Math.max(1, voorstellen.target),
+    gesprekken.actual / Math.max(1, gesprekken.target),
+    plaatsingen.actual / Math.max(1, plaatsingen.target),
+  ];
+  const newScore = Math.round((ratios.reduce((a, b) => a + b, 0) / ratios.length) * 100);
+
   return {
     ...row,
-    intakes: { actual: row.intakes.actual * scale, target: row.intakes.target * scale },
-    acquisities: { actual: row.acquisities.actual * scale, target: row.acquisities.target * scale },
-    voorstellen: { actual: row.voorstellen.actual * scale, target: row.voorstellen.target * scale },
-    gesprekken: { actual: row.gesprekken.actual * scale, target: row.gesprekken.target * scale },
-    plaatsingen: { actual: row.plaatsingen.actual * scale, target: row.plaatsingen.target * scale },
+    intakes,
+    acquisities,
+    voorstellen,
+    gesprekken,
+    plaatsingen,
+    prognoseScore: offset === 0 ? row.prognoseScore : newScore,
     telefonie: {
       hours: Math.floor(totalSec / 3600),
       minutes: Math.floor((totalSec % 3600) / 60),
