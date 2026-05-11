@@ -371,9 +371,10 @@ function ComparisonPanel({ ids, onClose }: { ids: [number, number]; onClose: () 
 interface PerformanceCardV2Props {
   delay?: number;
   selectedUnit?: string;
+  framed?: boolean;
 }
 
-export function PerformanceCardV2({ delay = 0, selectedUnit }: PerformanceCardV2Props) {
+export function PerformanceCardV2({ delay = 0, selectedUnit, framed = true }: PerformanceCardV2Props) {
   const filteredData = useMemo(() => {
     if (!selectedUnit || selectedUnit === "all") return consultantSkillData;
     return consultantSkillData.filter(c => c.unit === selectedUnit);
@@ -404,43 +405,48 @@ export function PerformanceCardV2({ delay = 0, selectedUnit }: PerformanceCardV2
     });
   };
 
+  const body = (
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {framed && <Users className="w-4 h-4 text-primary" />}
+          <div>
+            {framed && <h3 className="text-sm font-medium text-foreground">Performance & Kwaliteit</h3>}
+            <p className="text-xs text-muted-foreground mt-0.5">Volume, kwaliteit & coaching</p>
+          </div>
+        </div>
+        <Button variant={compareMode ? "secondary" : "outline"} size="sm" className="h-7 text-xs gap-1"
+          onClick={() => { setCompareMode(!compareMode); setCompareIds([]); }}>
+          <GitCompare className="w-3 h-3" />Vergelijk
+        </Button>
+      </div>
+
+      <PerformanceSummary filteredData={filteredData} />
+      <QualitySentimentOverview />
+
+      {compareMode && compareIds.length === 2 && (
+        <div className="mb-4">
+          <ComparisonPanel ids={compareIds as [number, number]} onClose={() => setCompareIds([])} />
+        </div>
+      )}
+      {compareMode && compareIds.length < 2 && (
+        <p className="text-xs text-muted-foreground mb-3 px-1">Selecteer 2 consultants om te vergelijken ({compareIds.length}/2)</p>
+      )}
+
+      <div className="space-y-2 flex-1 overflow-y-auto">
+        {ranked.map((c, i) => (
+          <ConsultantRow key={c.consultantId} data={c} rank={i + 1} teamAvgs={teamAvgs}
+            onCompareToggle={compareMode ? () => toggleCompare(c.consultantId) : undefined}
+            isCompareSelected={compareIds.includes(c.consultantId)} />
+        ))}
+      </div>
+    </>
+  );
+
+  if (!framed) return <div className="flex flex-col">{body}</div>;
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-primary" />
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Performance & Kwaliteit</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Volume, kwaliteit & coaching</p>
-            </div>
-          </div>
-          <Button variant={compareMode ? "secondary" : "outline"} size="sm" className="h-7 text-xs gap-1"
-            onClick={() => { setCompareMode(!compareMode); setCompareIds([]); }}>
-            <GitCompare className="w-3 h-3" />Vergelijk
-          </Button>
-        </div>
-
-        <PerformanceSummary filteredData={filteredData} />
-        <QualitySentimentOverview />
-
-        {compareMode && compareIds.length === 2 && (
-          <div className="mb-4">
-            <ComparisonPanel ids={compareIds as [number, number]} onClose={() => setCompareIds([])} />
-          </div>
-        )}
-        {compareMode && compareIds.length < 2 && (
-          <p className="text-xs text-muted-foreground mb-3 px-1">Selecteer 2 consultants om te vergelijken ({compareIds.length}/2)</p>
-        )}
-
-        <div className="space-y-2 flex-1 overflow-y-auto">
-          {ranked.map((c, i) => (
-            <ConsultantRow key={c.consultantId} data={c} rank={i + 1} teamAvgs={teamAvgs}
-              onCompareToggle={compareMode ? () => toggleCompare(c.consultantId) : undefined}
-              isCompareSelected={compareIds.includes(c.consultantId)} />
-          ))}
-        </div>
-      </div>
+      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">{body}</div>
     </AnimatedCard>
   );
 }
