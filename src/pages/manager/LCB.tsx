@@ -5,7 +5,7 @@ import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { LCBDetailPanel } from "@/components/manager/lcb/LCBDetailPanel";
 import { cn } from "@/lib/utils";
 import { SalesFunnelV2 } from "@/components/manager/v2/SalesFunnelV2";
 import { AlertsPanelV2 } from "@/components/manager/v2/AlertsPanelV2";
