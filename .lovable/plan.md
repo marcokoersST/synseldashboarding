@@ -1,93 +1,63 @@
 ## Doel
 
-Een nieuwe pagina `/super-admin/prognose-dashboard` waarmee C-level managers per sales-consultant zien hoe de prognose ervoor staat, met de mogelijkheid om interventie-acties vast te leggen.
+In de **Intervention side panel** worden de zes tegels in **"Prognose breakdown"** klikbaar. Bij een klik verschijnt **links naast het bestaande side panel** een tweede paneel met een gedetailleerde tabel voor de geselecteerde metric, scoped op de actieve consultant + datumperiode.
 
-## Navigatie
+## Layout
 
-- Sidebar entry "Prognose Dashboard" toevoegen onder de Super Admin sectie (icon `LineChart` of `Radar`), pad `/super-admin/prognose-dashboard`.
-- Route registreren in `src/App.tsx` als lazy-loaded page binnen de bestaande `AppLayout`.
+```text
+┌─────────────────────────────┬──────────────────────────────┐
+│  Drill-down tabel (links)   │  Bestaand panel (rechts)     │
+│  - Titel: metric + periode  │  - Header consultant         │
+│  - Datatabel (scrollbaar)   │  - Prognose breakdown tiles  │
+│  - Recruit CRM 'R' link     │  - Noteer interventie form   │
+│  - Sluit-knop               │  - Geschiedenis              │
+│  width: ~640px              │  width: sm:max-w-xl (~640px) │
+└─────────────────────────────┴──────────────────────────────┘
+```
 
-## Page-opbouw (top-down scroll)
+- Het bestaande `Sheet` (rechts) blijft ongewijzigd qua positie/breedte.
+- Het drill-down paneel komt **direct links** ertegenaan (eigen vaste container, `fixed right-[640px] top-0 h-full`), met eigen border en scroll. Verschijnt alleen wanneer een metric actief is.
+- Sluiten van de drill-down via X-knop bovenin of nogmaals klikken op de actieve tegel.
+- Tegels krijgen actieve styling (border-primary + bg-primary/5) wanneer geselecteerd.
+- Slide-in animatie van rechts→links bij openen.
 
-### 1. Header
-- Titel: "Prognose Dashboard"
-- Subtitel: "Forecast en interventies per sales-consultant"
-- Rolling-week date filter + Unit multi-select (zelfde patroon als andere manager dashboards, met "Alles aan/uit").
+## Drill-down inhoud per tegel
 
-### 2. Sales Unit Overview (boven de vouw)
-Grid met 4 tegels:
+Gebaseerd op RecruitCRM metadata:
 
-a) **Top 10 Performers**
-   - Compacte ranglijst (rank, naam, unit, score, delta).
-   - Score = gewogen prognose-haalbaarheid (mock).
+| Tegel | Tabelkolommen |
+|---|---|
+| **Intakes** | Kandidaat · Datum · Type intake (Kantoor/Teams/Whatsapp) · Status |
+| **Acquisities** | Kandidaat · Van stage `2 Acquisitie` → Naar stage `3 In procedure` · Datum |
+| **Voorstellen** | Twee secties: (1) **Verplaatst naar 2.0 Kandidaat voorgesteld** — Kandidaat · Klant · Vorige stage (`1.x …`) · Datum. (2) **Open deals zonder eindstage** — Kandidaat · Aantal open deals · Oudste open deal stage |
+| **Gesprekken** | Kandidaat · Klant · Type (1e sollicitatiegesprek / Vervolggesprek / Dealsluiter) · Datum |
+| **Plaatsingen** | Kandidaat · Klant · Type (Detavast / W&S / Marge fac) · Startdatum |
+| **Telefonie** | Niet klikbaar |
 
-b) **Bottom 10 Performers**
-   - Zelfde format, gesorteerd oplopend, rode delta-indicator.
-
-c) **Top 3 Bottlenecks**
-   - Drie tegels met meest voorkomende bottleneck-categorieën (bv. "Te weinig acquisities", "Lage voorstel-ratio", "Uitgaande telefonie onder norm").
-   - Per bottleneck: aantal getroffen consultants, trend pijl, korte AI-achtige insight regel.
-
-d) **Critical Counter + Critical List**
-   - Grote teller bovenaan: aantal consultants in de hoogste kritieke categorie (rode kleur, AnimatedNumber).
-   - Daaronder een lijst met onderwerpen die directe aandacht nodig hebben (consultant + reden + categorie badge). Klikbaar → scrollt naar de rij in de tabel of opent de interventie-side panel.
-
-### 3. Consultant Output Tabel (onderste deel, scrollbaar)
-Volledige consultant-tabel met sortable kolommen:
-
-| Kolom            | Type    | Opmerking                                        |
-|------------------|---------|--------------------------------------------------|
-| Naam             | text    | Met Recruit CRM 'R'-badge link                   |
-| Unit             | badge   | Voor filtering/sortering                         |
-| Intakes          | number  | Actueel / target                                 |
-| Acquisities      | number  | Actueel / target                                 |
-| Voorstellen      | number  | Actueel / target                                 |
-| Gesprekken       | number  | Actueel / target                                 |
-| Plaatsingen      | number  | Actueel / target                                 |
-| Uitgaande telefonie | `[H:M:S]` | Belduur in HMS-formaat                       |
-| Prognose status  | pill    | Op koers / Risico / Kritiek                      |
-| Interventie      | actie   | Knop "Noteer actie"                              |
-
-Extra UX:
-- Rij-highlight kleur op basis van prognose status.
-- Sticky header en sticky naam-kolom (z-50) net als andere manager funnel tabellen.
-- Footer-rij met totalen per kolom.
-
-### 4. Interventie Side Panel
-- Slide-in `Sheet` rechts wanneer een rij of critical-list item geklikt wordt.
-- Toont: consultant samenvatting, prognose breakdown, bottleneck-redenen, en een formulier met:
-  - Categorie selectie (dropdown).
-  - Tekst-notitie (textarea).
-  - Vervolgactie (datum + eigenaar).
-  - "Opslaan" knop → mock state (localStorage `prognose-interventions`).
-- Geschiedenis van eerdere interventies onderaan (activity feed).
-
-## Data
-
-Eén nieuw bestand `src/data/prognoseData.ts` met:
-- `PrognoseConsultantRow[]` (afgeleid van bestaande `allConsultantsList` zodat namen/units gesynchroniseerd blijven met andere dashboards).
-- Helpers om top/bottom 10, bottlenecks en critical list te berekenen.
-- Mock interventie-history.
-
-Belduur in `[H:M:S]` format en Robin Jansen heeft (zoals eerder vastgelegd) geen nullen.
+Aantal rijen per metric = `row[metric].actual` (consistent met tegel-getal). Elke rij heeft een blauwe **'R'-badge** als CRM profile-link (mock).
 
 ## Technische details
 
-Bestanden te maken / wijzigen:
-- create `src/pages/super-admin/PrognoseDashboard.tsx`
-- create `src/components/prognose/UnitOverviewTiles.tsx` (top10 / bottom10 / bottlenecks / critical)
-- create `src/components/prognose/CriticalCounter.tsx`
-- create `src/components/prognose/CriticalList.tsx`
-- create `src/components/prognose/PrognoseTable.tsx`
-- create `src/components/prognose/InterventionPanel.tsx`
-- create `src/data/prognoseData.ts`
-- edit `src/App.tsx` (lazy route)
-- edit `src/components/dashboard/Sidebar.tsx` (nav entry)
+**Nieuw bestand** `src/data/prognoseDrilldownData.ts`:
+- Deterministische generator op basis van `consultantId + metric + index` (zelfde hash-aanpak als `prognoseData.ts`).
+- Pools: kandidaatnamen, klantnamen, exacte RCRM stages uit PDF (`"1.1 Via mail voorstellen"`, `"2.0 Kandidaat voorgesteld"`, `"3.1 1e sollicitatiegesprek"`, etc.).
+- Exports: `getIntakes(row)`, `getAcquisities(row)`, `getVoorstellen(row)` (returns `{ promoted: [], openDeals: [] }`), `getGesprekken(row)`, `getPlaatsingen(row)`.
 
-Bestaande UI-conventies hergebruiken: `AnimatedNumber`, `Card`, `Sheet`, `Badge`, semantic design tokens, glassmorphism headers, popover unit-filter met "Alles aan/uit". Geen business-logic kanten; alles op statische mock data.
+**Nieuw component** `src/components/prognose/MetricDrilldownPanel.tsx`:
+- Props: `metric`, `row`, `onClose`.
+- Wrapper: `fixed top-0 right-[640px] h-full w-[640px] bg-background border-l border-r shadow-2xl z-50 overflow-y-auto` met slide-in animatie.
+- Header met titel, periode-label, sluit-knop.
+- Switch op `metric` → render correcte tabel(len) met semantic tokens.
 
-## Out of scope
+**Wijziging** `src/components/prognose/InterventionPanel.tsx`:
+- Nieuwe state `activeMetric: MetricKey | null`, reset bij wisselen `row`.
+- Map de 5 KPI-tegels naar `<button>` met `onClick` toggle + active styling + `ChevronRight` icoon.
+- Render `<MetricDrilldownPanel>` als sibling van `<SheetContent>` wanneer `activeMetric` bestaat.
 
-- Backend/persistence (interventies alleen in localStorage).
-- Aanpassingen aan andere super-admin pagina's.
-- Echte forecasting-modellen — alleen mock scores.
+**Verantwoordelijkheid:** alleen frontend/presentation; geen backend/data-koppeling. Alle drill-down data is mock.
+
+## Bestanden
+
+- `src/data/prognoseDrilldownData.ts` (nieuw)
+- `src/components/prognose/MetricDrilldownPanel.tsx` (nieuw)
+- `src/components/prognose/InterventionPanel.tsx` (edit)
