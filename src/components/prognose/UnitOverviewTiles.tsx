@@ -102,7 +102,7 @@ export function UnitOverviewTiles({ rows, onSelectConsultant }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-2 pb-3 px-3">
-          <PerfList rows={top} onSelect={onSelectConsultant} limit={5} />
+          <PerfList rows={top} onSelect={onSelectConsultant} />
         </CardContent>
       </Card>
 
@@ -114,7 +114,7 @@ export function UnitOverviewTiles({ rows, onSelectConsultant }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-2 pb-3 px-3">
-          <PerfList rows={bottom} onSelect={onSelectConsultant} limit={5} />
+          <PerfList rows={bottom} onSelect={onSelectConsultant} />
         </CardContent>
       </Card>
 
