@@ -260,33 +260,39 @@ function RevenueDetailV2({ delay, selectedUnit }: { delay: number; selectedUnit?
 interface RevenueChartV2Props {
   delay?: number;
   selectedUnit?: string;
+  framed?: boolean;
 }
 
-export function RevenueChartV2({ delay = 0, selectedUnit }: RevenueChartV2Props) {
+export function RevenueChartV2({ delay = 0, selectedUnit, framed = true }: RevenueChartV2Props) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
+  const body = (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          {framed && <h3 className="text-sm font-medium text-foreground">Omzet Overzicht</h3>}
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {displayMode ? "Per consultant" : "Gerealiseerd, target, prognose & referentielijnen"}
+          </p>
+        </div>
+        <Button variant="ghost" size="icon" onClick={toggle}
+          className="h-7 w-7 rounded-full bg-secondary hover:bg-secondary/80">
+          {displayMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+        </Button>
+      </div>
+      <div className={cn(
+        "transition-all duration-400 ease-in-out",
+        isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
+      )}>
+        {displayMode ? <RevenueDetailV2 delay={delay} selectedUnit={selectedUnit} /> : <RevenueOverviewV2 delay={delay} />}
+      </div>
+    </>
+  );
+
+  if (!framed) return <div>{body}</div>;
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-sm font-medium text-foreground">Omzet Overzicht</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {displayMode ? "Per consultant" : "Gerealiseerd, target, prognose & referentielijnen"}
-            </p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={toggle}
-            className="h-7 w-7 rounded-full bg-secondary hover:bg-secondary/80">
-            {displayMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-          </Button>
-        </div>
-        <div className={cn(
-          "transition-all duration-400 ease-in-out",
-          isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
-        )}>
-          {displayMode ? <RevenueDetailV2 delay={delay} selectedUnit={selectedUnit} /> : <RevenueOverviewV2 delay={delay} />}
-        </div>
-      </div>
+      <div className="bg-card rounded-xl p-5 border border-border">{body}</div>
     </AnimatedCard>
   );
 }
