@@ -21,7 +21,7 @@ import {
 } from "@/data/prognoseData";
 
 function PrognoseDashboardInner() {
-  const { scale } = usePrognosePeriod();
+  const { scale, offset } = usePrognosePeriod();
   const allUnits = useMemo(() => Array.from(new Set(prognoseRows.map((r) => r.unit))).sort(), []);
   const [selectedUnits, setSelectedUnits] = useState<string[]>(allUnits);
   const [active, setActive] = useState<PrognoseConsultantRow | null>(null);
@@ -37,8 +37,8 @@ function PrognoseDashboardInner() {
   }, []);
 
   const scaledRows = useMemo(
-    () => prognoseRows.map((r) => scaleRow(r, scale)),
-    [scale],
+    () => prognoseRows.map((r) => scaleRow(r, scale, offset)),
+    [scale, offset],
   );
 
   const filteredRows = useMemo(() => {
@@ -59,10 +59,10 @@ function PrognoseDashboardInner() {
 
   return (
     <>
-      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+      <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Prognose Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-xl font-bold text-foreground">Prognose Dashboard</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Forecast en interventies per sales-consultant
           </p>
         </div>
