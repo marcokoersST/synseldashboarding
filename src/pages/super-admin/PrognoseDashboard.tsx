@@ -171,8 +171,10 @@ function PrognoseDashboardInner() {
             </div>
           )}
         </div>
-        <ConsultantOutputVisuals rows={filteredRows} onSelectConsultant={setActive} />
         <PrognoseTable rows={filteredRows} onIntervene={setActive} />
+        <div className="mt-4">
+          <ConsultantOutputVisuals rows={filteredRows} onSelectConsultant={setActive} />
+        </div>
       </div>
 
       <InterventionPanel row={activeScaled} onClose={() => setActive(null)} />
