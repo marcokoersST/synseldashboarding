@@ -280,14 +280,6 @@
   }
 }
 
-/* LC-B detail panel — flatten nested card chrome from embedded tile components */
-.lcb-detail-flat .bg-card.rounded-xl {
-  background: transparent !important;
-  border: 0 !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-.lcb-detail-flat .hover-lift:hover {
-  transform: none !important;
+/* LC-B detail panel marker (components render unframed via the `framed` prop) */
+.lcb-detail-flat {
 }

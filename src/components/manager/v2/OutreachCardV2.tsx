@@ -299,36 +299,42 @@ function OutreachDetail({ delay, selectedUnit }: { delay: number; selectedUnit?:
 interface OutreachCardV2Props {
   delay?: number;
   selectedUnit?: string;
+  framed?: boolean;
 }
 
-export function OutreachCardV2({ delay = 0, selectedUnit }: OutreachCardV2Props) {
+export function OutreachCardV2({ delay = 0, selectedUnit, framed = true }: OutreachCardV2Props) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
+  const body = (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          {framed && <Phone className="h-5 w-5 text-primary" />}
+          <div>
+            {framed && <h3 className="text-sm font-medium text-foreground">Outreach & Contactactiviteit</h3>}
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {displayMode ? "Per consultant" : "Calls, e-mails & kwaliteit"}
+            </p>
+          </div>
+        </div>
+        <Button variant="ghost" size="icon" onClick={toggle}
+          className="h-7 w-7 rounded-full bg-secondary hover:bg-secondary/80">
+          {displayMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+        </Button>
+      </div>
+      <div className={cn(
+        "flex-1 transition-all duration-400 ease-in-out",
+        isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
+      )}>
+        {displayMode ? <OutreachDetail delay={delay} selectedUnit={selectedUnit} /> : <OutreachOverview delay={delay} selectedUnit={selectedUnit} />}
+      </div>
+    </>
+  );
+
+  if (!framed) return <div className="flex flex-col">{body}</div>;
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Phone className="h-5 w-5 text-primary" />
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Outreach & Contactactiviteit</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {displayMode ? "Per consultant" : "Calls, e-mails & kwaliteit"}
-              </p>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon" onClick={toggle}
-            className="h-7 w-7 rounded-full bg-secondary hover:bg-secondary/80">
-            {displayMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-          </Button>
-        </div>
-        <div className={cn(
-          "flex-1 transition-all duration-400 ease-in-out",
-          isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
-        )}>
-          {displayMode ? <OutreachDetail delay={delay} selectedUnit={selectedUnit} /> : <OutreachOverview delay={delay} selectedUnit={selectedUnit} />}
-        </div>
-      </div>
+      <div className="bg-card rounded-xl p-5 border border-border h-full flex flex-col">{body}</div>
     </AnimatedCard>
   );
 }

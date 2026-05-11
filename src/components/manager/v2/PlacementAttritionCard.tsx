@@ -5,7 +5,7 @@ import { CalendarX2, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { attritionProjectionData } from "@/data/managerRevenueDetailData";
 
-export function PlacementAttritionCard({ delay = 0 }: { delay?: number }) {
+export function PlacementAttritionCard({ delay = 0, framed = true }: { delay?: number; framed?: boolean }) {
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
 
   const totalStoppers = attritionProjectionData.reduce((s, p) => s + p.expectedAttrition, 0);
@@ -19,9 +19,9 @@ export function PlacementAttritionCard({ delay = 0 }: { delay?: number }) {
 
   const selectedDetail = attritionProjectionData.find(d => d.period === selectedPeriod);
 
-  return (
-    <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border">
+  const body = (
+    <>
+      {framed && (
         <div className="flex items-center gap-2 mb-4">
           <CalendarX2 className="h-5 w-5 text-destructive" />
           <div>
@@ -31,8 +31,9 @@ export function PlacementAttritionCard({ delay = 0 }: { delay?: number }) {
             </p>
           </div>
         </div>
+      )}
 
-        {/* Line chart */}
+      {/* Line chart */}
         <div className="h-40 mb-4">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
@@ -109,7 +110,13 @@ export function PlacementAttritionCard({ delay = 0 }: { delay?: number }) {
             </div>
           </div>
         )}
-      </div>
+    </>
+  );
+
+  if (!framed) return <div className="space-y-4">{body}</div>;
+  return (
+    <AnimatedCard delay={delay}>
+      <div className="bg-card rounded-xl p-5 border border-border">{body}</div>
     </AnimatedCard>
   );
 }

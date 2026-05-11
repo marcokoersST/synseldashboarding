@@ -343,36 +343,42 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
 interface SalesFunnelV2Props {
   delay?: number;
   selectedUnit?: string;
+  framed?: boolean;
 }
 
-export function SalesFunnelV2({ delay = 0, selectedUnit }: SalesFunnelV2Props) {
+export function SalesFunnelV2({ delay = 0, selectedUnit, framed = true }: SalesFunnelV2Props) {
   const { isTransitioning, displayMode, toggle } = useDetailToggle();
 
+  const body = (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          {framed && <h3 className="text-sm font-medium text-foreground">Sales Funnel</h3>}
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {displayMode ? "Per consultant met conversies & detail" : "9-staps conversie overzicht"}
+          </p>
+        </div>
+        <Button variant="ghost" size="icon" onClick={toggle}
+          className="h-7 w-7 rounded-full bg-secondary hover:bg-secondary/80">
+          {displayMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+        </Button>
+      </div>
+      <div className={cn(
+        "transition-all duration-400 ease-in-out",
+        isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
+      )}>
+        {displayMode
+          ? <FunnelDetailTable delay={delay} selectedUnit={selectedUnit} />
+          : <FunnelOverview delay={delay} selectedUnit={selectedUnit} />
+        }
+      </div>
+    </>
+  );
+
+  if (!framed) return <div>{body}</div>;
   return (
     <AnimatedCard delay={delay}>
-      <div className="bg-card rounded-xl p-5 border border-border">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-sm font-medium text-foreground">Sales Funnel</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {displayMode ? "Per consultant met conversies & detail" : "9-staps conversie overzicht"}
-            </p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={toggle}
-            className="h-7 w-7 rounded-full bg-secondary hover:bg-secondary/80">
-            {displayMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-          </Button>
-        </div>
-        <div className={cn(
-          "transition-all duration-400 ease-in-out",
-          isTransitioning ? "opacity-0 scale-[0.97] translate-y-2" : "opacity-100 scale-100 translate-y-0"
-        )}>
-          {displayMode
-            ? <FunnelDetailTable delay={delay} selectedUnit={selectedUnit} />
-            : <FunnelOverview delay={delay} selectedUnit={selectedUnit} />
-          }
-        </div>
-      </div>
+      <div className="bg-card rounded-xl p-5 border border-border">{body}</div>
     </AnimatedCard>
   );
 }

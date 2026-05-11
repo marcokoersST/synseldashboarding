@@ -146,7 +146,7 @@ export default function LCB() {
         { label: "Conversie", value: `${funnelConv}%` },
         { label: "Vrstl→Int", value: `${intakeConv}%` },
       ],
-      detail: <SalesFunnelV2 delay={0} selectedUnit={selectedUnit} />,
+      detail: <SalesFunnelV2 delay={0} selectedUnit={selectedUnit} framed={false} />,
     },
     {
       key: "outreach",
@@ -162,7 +162,7 @@ export default function LCB() {
         { label: "E-mails", value: `${unitOutreachTotals.emailsSent}` },
         { label: "Kwaliteit", value: `${unitOutreachTotals.qualityScore}` },
       ],
-      detail: <OutreachCardV2 delay={0} selectedUnit={selectedUnit} />,
+      detail: <OutreachCardV2 delay={0} selectedUnit={selectedUnit} framed={false} />,
     },
     {
       key: "omzet",
@@ -178,7 +178,7 @@ export default function LCB() {
         { label: "Marge", value: `${margePct}%` },
         { label: "Prognose YR", value: `€${fullYearProgose}k` },
       ],
-      detail: <RevenueChartV2 delay={0} selectedUnit={selectedUnit} />,
+      detail: <RevenueChartV2 delay={0} selectedUnit={selectedUnit} framed={false} />,
     },
     {
       key: "performance",
@@ -193,7 +193,7 @@ export default function LCB() {
         { label: "Top performer", value: `${consultantSkillData.filter(c => overallScore(c) >= 80).length}` },
         { label: "Consultants", value: `${consultantSkillData.length}` },
       ],
-      detail: <PerformanceCardV2 delay={0} selectedUnit={selectedUnit} />,
+      detail: <PerformanceCardV2 delay={0} selectedUnit={selectedUnit} framed={false} />,
     },
     {
       key: "goals",
@@ -208,7 +208,7 @@ export default function LCB() {
         { label: "Risico", value: `${goalsTotal - goalsOnTrack - goalsAttention}` },
         { label: "Voortgang", value: `${goalsPct}%` },
       ],
-      detail: <ManagerGoalsCard delay={0} selectedUnit={selectedUnit} />,
+      detail: <ManagerGoalsCard delay={0} selectedUnit={selectedUnit} framed={false} />,
     },
     {
       key: "attrition",
@@ -223,7 +223,7 @@ export default function LCB() {
         { label: "Impact", value: `€${attritionImpact.toFixed(0)}k` },
         { label: "Risico", value: "3" },
       ],
-      detail: <PlacementAttritionCard delay={0} />,
+      detail: <PlacementAttritionCard delay={0} framed={false} />,
     },
     {
       key: "secondments",
@@ -238,7 +238,7 @@ export default function LCB() {
         { label: "W&S", value: "5" },
         { label: "Marge Fac", value: "2" },
       ],
-      detail: <ActiveSecondmentsCard delay={0} selectedUnit={selectedUnit} />,
+      detail: <ActiveSecondmentsCard delay={0} selectedUnit={selectedUnit} framed={false} />,
     },
     {
       key: "opvolging",
@@ -253,7 +253,7 @@ export default function LCB() {
         { label: "Vandaag", value: "3" },
         { label: "Deze week", value: "2" },
       ],
-      detail: <OpvolgingCard delay={0} selectedUnit={selectedUnit} />,
+      detail: <OpvolgingCard delay={0} selectedUnit={selectedUnit} framed={false} />,
     },
   ];
 
