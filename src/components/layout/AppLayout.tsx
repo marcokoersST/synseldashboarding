@@ -5,6 +5,7 @@ import { TopBar } from "@/components/dashboard/TopBar";
 import { InsightsDrawer } from "@/components/dashboard/InsightsDrawer";
 import { consultantInsights } from "@/data/consultantInsightsData";
 import { cn } from "@/lib/utils";
+import { SidebarCollapseProvider, useSidebarCollapse } from "@/contexts/SidebarCollapseContext";
 
 // Context for pages to inject actions into the TopBar
 interface TopBarActionsContextType {
