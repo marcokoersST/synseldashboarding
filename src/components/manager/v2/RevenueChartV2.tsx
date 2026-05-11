@@ -152,7 +152,7 @@ function RevenueDetailV2({ delay, selectedUnit }: { delay: number; selectedUnit?
 
   const detailData = consultantRevenueDetailData.find(d => d.consultantId === selectedConsultant);
 
-  return (
+  const mainEl = (
     <div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-4">
         {consultants.map((c, i) => (
@@ -187,69 +187,71 @@ function RevenueDetailV2({ delay, selectedUnit }: { delay: number; selectedUnit?
           </LineChart>
         </ResponsiveContainer>
       </div>
+    </div>
+  );
 
-      {/* Consultant revenue detail */}
-      {detailData && (
-        <div className="bg-muted/10 border border-primary/10 rounded-lg px-4 py-4 mt-3 space-y-3" onClick={e => e.stopPropagation()}>
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-semibold text-foreground">Detail: {detailData.consultantName}</h4>
-            <button onClick={() => { setSelectedConsultant(null); setActiveLine(null); }} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
-          </div>
-          <div className="grid grid-cols-4 gap-3">
-            <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
-              <p className="text-lg font-bold text-foreground">€{detailData.totalRevenue}k</p>
-              <p className="text-[10px] text-muted-foreground">Totale omzet</p>
-            </div>
-            <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
-              <p className="text-lg font-bold text-foreground">€{detailData.avgCostPerCandidate}k</p>
-              <p className="text-[10px] text-muted-foreground">Gem. per kandidaat</p>
-            </div>
-            <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
-              <p className="text-lg font-bold text-foreground">{detailData.detacheringCount} / {detailData.rsCount}</p>
-              <p className="text-[10px] text-muted-foreground">Detavast / W&S</p>
-            </div>
-            <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
-              <p className={cn("text-lg font-bold", detailData.performanceRatio >= 80 ? "text-success" : detailData.performanceRatio >= 60 ? "text-foreground" : "text-destructive")}>
-                {detailData.performanceRatio}%
-              </p>
-              <p className="text-[10px] text-muted-foreground">Performance ratio</p>
-            </div>
-          </div>
-          <div className="overflow-auto max-h-[180px] rounded border border-border/30">
-            <table className="w-full text-[11px]">
-              <thead className="bg-card sticky top-0">
-                <tr className="border-b border-border">
-                  <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Kandidaat</th>
-                  <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Bedrijf</th>
-                  <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Type</th>
-                  <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Deal</th>
-                  <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">€/mnd</th>
-                  <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Looptijd</th>
-                  <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Start</th>
-                  <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Einde</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detailData.secondments.map((s, i) => (
-                  <tr key={i} className="border-b border-border/20 hover:bg-muted/20">
-                    <td className="py-1.5 px-2 font-medium text-foreground">{s.candidateName}</td>
-                    <td className="py-1.5 px-2 text-muted-foreground">{s.company}</td>
-                    <td className="py-1.5 px-2 text-center">
-                      <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full",
-                        s.type === "Detavast" ? "bg-primary/10 text-primary" : s.type === "W&S" ? "bg-teal/10 text-teal" : "bg-amber-500/10 text-amber-600"
-                      )}>{s.type}</span>
-                    </td>
-                    <td className="py-1.5 px-2 text-center tabular-nums text-muted-foreground text-[10px]">{s.dealId}</td>
-                    <td className="py-1.5 px-2 text-right tabular-nums font-semibold">€{s.monthlyRevenue}k</td>
-                    <td className="py-1.5 px-2 text-center tabular-nums">{s.contractedHours > 0 ? `${s.contractedHours}h` : "–"}</td>
-                    <td className="py-1.5 px-2 text-muted-foreground">{s.startDate}</td>
-                    <td className="py-1.5 px-2 text-muted-foreground">{s.endDate}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+  const detailEl = detailData && (
+    <div className="space-y-3" onClick={e => e.stopPropagation()}>
+      <div className="flex items-center justify-between sticky top-0 bg-background pb-2 border-b border-border">
+        <h4 className="text-xs font-semibold text-foreground">Detail: {detailData.consultantName}</h4>
+        <button onClick={() => { setSelectedConsultant(null); setActiveLine(null); }} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
+          <p className="text-lg font-bold text-foreground">€{detailData.totalRevenue}k</p>
+          <p className="text-[10px] text-muted-foreground">Totale omzet</p>
         </div>
+        <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
+          <p className="text-lg font-bold text-foreground">€{detailData.avgCostPerCandidate}k</p>
+          <p className="text-[10px] text-muted-foreground">Gem. per kandidaat</p>
+        </div>
+        <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
+          <p className="text-lg font-bold text-foreground">{detailData.detacheringCount} / {detailData.rsCount}</p>
+          <p className="text-[10px] text-muted-foreground">Detavast / W&S</p>
+        </div>
+        <div className="rounded-lg bg-card border border-border/30 p-2.5 text-center">
+          <p className={cn("text-lg font-bold", detailData.performanceRatio >= 80 ? "text-success" : detailData.performanceRatio >= 60 ? "text-foreground" : "text-destructive")}>
+            {detailData.performanceRatio}%
+          </p>
+          <p className="text-[10px] text-muted-foreground">Performance ratio</p>
+        </div>
+      </div>
+      <div className="overflow-auto max-h-[280px] rounded border border-border/30">
+        <table className="w-full text-[11px]">
+          <thead className="bg-card sticky top-0">
+            <tr className="border-b border-border">
+              <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Kandidaat</th>
+              <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Type</th>
+              <th className="text-right py-1.5 px-2 font-medium text-muted-foreground">€/mnd</th>
+              <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Looptijd</th>
+            </tr>
+          </thead>
+          <tbody>
+            {detailData.secondments.map((s, i) => (
+              <tr key={i} className="border-b border-border/20 hover:bg-muted/20">
+                <td className="py-1.5 px-2 font-medium text-foreground">{s.candidateName}<div className="text-[10px] text-muted-foreground">{s.company}</div></td>
+                <td className="py-1.5 px-2 text-center">
+                  <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full",
+                    s.type === "Detavast" ? "bg-primary/10 text-primary" : s.type === "W&S" ? "bg-teal/10 text-teal" : "bg-amber-500/10 text-amber-600"
+                  )}>{s.type}</span>
+                </td>
+                <td className="py-1.5 px-2 text-right tabular-nums font-semibold">€{s.monthlyRevenue}k</td>
+                <td className="py-1.5 px-2 text-center tabular-nums">{s.contractedHours > 0 ? `${s.contractedHours}h` : "–"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex-1 min-w-0">{mainEl}</div>
+      {detailEl && (
+        <aside className="w-full lg:w-[400px] shrink-0 lg:border-l lg:border-border lg:pl-4 max-h-[calc(100vh-220px)] overflow-y-auto">
+          {detailEl}
+        </aside>
       )}
     </div>
   );

@@ -19,20 +19,8 @@ export function PlacementAttritionCard({ delay = 0, framed = true }: { delay?: n
 
   const selectedDetail = attritionProjectionData.find(d => d.period === selectedPeriod);
 
-  const body = (
+  const mainContent = (
     <>
-      {framed && (
-        <div className="flex items-center gap-2 mb-4">
-          <CalendarX2 className="h-5 w-5 text-destructive" />
-          <div>
-            <h3 className="text-sm font-medium text-foreground">Verwachte Afvallers</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {totalStoppers} verwachte stoppers — €{totalImpact.toFixed(0)}k omzetrisico
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Line chart */}
         <div className="h-40 mb-4">
           <ResponsiveContainer width="100%" height="100%">
@@ -84,32 +72,55 @@ export function PlacementAttritionCard({ delay = 0, framed = true }: { delay?: n
             </tbody>
           </table>
         </div>
+    </>
+  );
 
-        {/* Detail panel */}
-        {selectedDetail && (
-          <div className="bg-muted/10 border border-primary/10 rounded-lg px-4 py-4 mt-3 space-y-3">
+  const detailPanel = selectedDetail && (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between sticky top-0 bg-background pb-2 border-b border-border">
+        <h4 className="text-xs font-semibold text-foreground">Detail: {selectedDetail.period}</h4>
+        <button onClick={() => setSelectedPeriod(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
+      </div>
+      <div className="space-y-2">
+        {selectedDetail.candidates.map((c, i) => (
+          <div key={i} className="rounded-lg bg-card border border-border/30 p-3 space-y-1.5">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-foreground">Detail: {selectedDetail.period}</h4>
-              <button onClick={() => setSelectedPeriod(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
+              <span className="text-xs font-medium text-foreground">{c.candidateName}</span>
+              <span className="text-xs font-semibold tabular-nums text-destructive">-€{c.revenue.toLocaleString()}</span>
             </div>
-            <div className="space-y-2">
-              {selectedDetail.candidates.map((c, i) => (
-                <div key={i} className="rounded-lg bg-card border border-border/30 p-3 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-foreground">{c.candidateName}</span>
-                    <span className="text-xs font-semibold tabular-nums text-destructive">-€{c.revenue.toLocaleString()}</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">Consultant: {c.consultantName}</p>
-                  <p className="text-[11px] text-muted-foreground">{c.notes}</p>
-                  <div className="flex items-start gap-1.5 mt-1">
-                    <Lightbulb className="h-3 w-3 text-primary shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-foreground">{c.aiAnalysis}</p>
-                  </div>
-                </div>
-              ))}
+            <p className="text-[11px] text-muted-foreground">Consultant: {c.consultantName}</p>
+            <p className="text-[11px] text-muted-foreground">{c.notes}</p>
+            <div className="flex items-start gap-1.5 mt-1">
+              <Lightbulb className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+              <p className="text-[11px] text-foreground">{c.aiAnalysis}</p>
             </div>
           </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const body = (
+    <>
+      {framed && (
+        <div className="flex items-center gap-2 mb-4">
+          <CalendarX2 className="h-5 w-5 text-destructive" />
+          <div>
+            <h3 className="text-sm font-medium text-foreground">Verwachte Afvallers</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {totalStoppers} verwachte stoppers — €{totalImpact.toFixed(0)}k omzetrisico
+            </p>
+          </div>
+        </div>
+      )}
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex-1 min-w-0">{mainContent}</div>
+        {detailPanel && (
+          <aside className="w-full lg:w-[380px] shrink-0 lg:border-l lg:border-border lg:pl-4 max-h-[calc(100vh-220px)] overflow-y-auto">
+            {detailPanel}
+          </aside>
         )}
+      </div>
     </>
   );
 

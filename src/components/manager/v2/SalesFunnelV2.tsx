@@ -180,160 +180,162 @@ function FunnelDetailTable({ delay, selectedUnit }: { delay: number; selectedUni
     return avgs;
   }, [filtered]);
 
-  return (
-    <div className="space-y-3">
-      <div className="overflow-auto max-h-[520px] rounded-md border border-border/40">
-        <table className="w-full text-xs">
-          <thead className="sticky top-0 z-10 bg-card">
-            <tr className="border-b border-border">
-              <th className="text-left py-2 px-2 font-medium text-muted-foreground sticky left-0 bg-card z-20 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] cursor-pointer min-w-[140px]"
-                onClick={() => toggleSort("consultantName")}>
-                Consultant <SortIcon k="consultantName" />
+  const tableEl = (
+    <div className="overflow-auto max-h-[520px] rounded-md border border-border/40">
+      <table className="w-full text-xs">
+        <thead className="sticky top-0 z-10 bg-card">
+          <tr className="border-b border-border">
+            <th className="text-left py-2 px-2 font-medium text-muted-foreground sticky left-0 bg-card z-20 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] cursor-pointer min-w-[140px]"
+              onClick={() => toggleSort("consultantName")}>
+              Consultant <SortIcon k="consultantName" />
+            </th>
+            {funnelStepsV2.map((step, i) => (
+              <th key={step.key} className={cn(
+                "text-center py-2 px-1.5 font-medium text-muted-foreground cursor-pointer whitespace-nowrap hover:text-foreground",
+                i > 0 && "border-l border-border/30"
+              )} onClick={() => toggleSort(step.key as SortKey)}>
+                <div className="text-[10px]">{step.label}</div>
+                <SortIcon k={step.key as SortKey} />
               </th>
-              {funnelStepsV2.map((step, i) => (
-                <th key={step.key} className={cn(
-                  "text-center py-2 px-1.5 font-medium text-muted-foreground cursor-pointer whitespace-nowrap hover:text-foreground",
-                  i > 0 && "border-l border-border/30"
-                )} onClick={() => toggleSort(step.key as SortKey)}>
-                  <div className="text-[10px]">{step.label}</div>
-                  <SortIcon k={step.key as SortKey} />
-                </th>
-              ))}
-              <th className="text-center py-2 px-1.5 font-medium text-muted-foreground border-l border-border/30 whitespace-nowrap">
-                <div className="text-[10px]">Dealsluiters</div>
-              </th>
-              <th className="text-center py-2 px-2 font-medium text-muted-foreground cursor-pointer border-l border-border/30 whitespace-nowrap"
-                onClick={() => toggleSort("biggestDrop")}>
-                <div className="flex items-center gap-1 justify-center">
-                  <TrendingDown className="w-3 h-3" /> Drop
-                </div>
-                <SortIcon k="biggestDrop" />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map(row => {
-              const drop = findBiggestDrop(row);
-              const isExpanded = expandedConsultant === row.consultantId;
-              return (
-                <tr key={row.consultantId}
-                  className={cn("border-b border-border/30 cursor-pointer transition-colors", isExpanded ? "bg-primary/5" : "hover:bg-muted/20")}
-                  onClick={() => setExpandedConsultant(isExpanded ? null : row.consultantId)}
-                >
-                  <td className="py-2 px-2 font-medium text-foreground sticky left-0 bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
-                    <div className="flex items-center gap-1">
-                      {isExpanded ? <ChevronDown className="w-3 h-3 shrink-0" /> : <ChevronRight className="w-3 h-3 shrink-0" />}
-                      <div>
-                        <span className="text-xs">{row.consultantName}</span>
-                        <span className="text-[10px] text-muted-foreground block">{row.unit}</span>
-                      </div>
+            ))}
+            <th className="text-center py-2 px-1.5 font-medium text-muted-foreground border-l border-border/30 whitespace-nowrap">
+              <div className="text-[10px]">Dealsluiters</div>
+            </th>
+            <th className="text-center py-2 px-2 font-medium text-muted-foreground cursor-pointer border-l border-border/30 whitespace-nowrap"
+              onClick={() => toggleSort("biggestDrop")}>
+              <div className="flex items-center gap-1 justify-center">
+                <TrendingDown className="w-3 h-3" /> Drop
+              </div>
+              <SortIcon k="biggestDrop" />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map(row => {
+            const drop = findBiggestDrop(row);
+            const isExpanded = expandedConsultant === row.consultantId;
+            return (
+              <tr key={row.consultantId}
+                className={cn("border-b border-border/30 cursor-pointer transition-colors", isExpanded ? "bg-primary/5" : "hover:bg-muted/20")}
+                onClick={() => setExpandedConsultant(isExpanded ? null : row.consultantId)}
+              >
+                <td className="py-2 px-2 font-medium text-foreground sticky left-0 bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                  <div className="flex items-center gap-1">
+                    {isExpanded ? <ChevronDown className="w-3 h-3 shrink-0" /> : <ChevronRight className="w-3 h-3 shrink-0" />}
+                    <div>
+                      <span className="text-xs">{row.consultantName}</span>
+                      <span className="text-[10px] text-muted-foreground block">{row.unit}</span>
                     </div>
+                  </div>
+                </td>
+                {funnelStepsV2.map((step, i) => {
+                  const prevKey = `prev${step.key.charAt(0).toUpperCase()}${step.key.slice(1)}` as keyof ConsultantFunnelDataV2;
+                  const prev = row[prevKey] as number;
+                  const curr = row[step.key];
+                  const trendDown = prev > 0 && curr < prev;
+                  return (
+                    <td key={step.key} className={cn(
+                      "text-center py-2 px-1.5 tabular-nums",
+                      i > 0 && "border-l border-border/30",
+                      trendDown && "text-destructive"
+                    )}>
+                      <span className="font-semibold">{curr}</span>
+                      {trendDown && <span className="text-[9px] ml-0.5">↓</span>}
+                    </td>
+                  );
+                })}
+                <td className="text-center py-2 px-1.5 tabular-nums font-semibold border-l border-border/30">
+                  {row.dealsluiters}
+                </td>
+                <td className={cn(
+                  "text-center py-2 px-2 border-l border-border/30",
+                  drop.convPct < 40 ? "text-destructive" : drop.convPct < 60 ? "text-amber-500" : "text-muted-foreground"
+                )}>
+                  <div className="text-[10px] font-medium">{drop.stepLabel}</div>
+                  <div className="text-[11px] font-bold">{drop.convPct}%</div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const detailEl = expandedConsultant !== null && (() => {
+    const row = sorted.find(r => r.consultantId === expandedConsultant);
+    const detail = consultantDetailData.find(d => d.consultantId === expandedConsultant);
+    if (!row || !detail) return null;
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between sticky top-0 bg-background pb-2 border-b border-border">
+          <h4 className="text-xs font-semibold text-foreground">Detail: {row.consultantName}</h4>
+          <button onClick={() => setExpandedConsultant(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
+        </div>
+        <div className="overflow-auto max-h-[260px] rounded border border-border/30">
+          <table className="w-full text-[11px]">
+            <thead className="bg-card sticky top-0">
+              <tr className="border-b border-border">
+                <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Kandidaat</th>
+                <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Cat.</th>
+                <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Status</th>
+                <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">AI</th>
+                <th className="text-center py-1.5 px-2 font-medium text-muted-foreground"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {detail.candidates.map(cand => (
+                <tr key={cand.id} className="border-b border-border/20 hover:bg-muted/20">
+                  <td className="py-1.5 px-2 font-medium text-foreground">{cand.name}</td>
+                  <td className={cn("py-1.5 px-2 text-center", categoryColors[cand.category])}>{cand.category}</td>
+                  <td className="py-1.5 px-2 text-muted-foreground capitalize">{cand.status}</td>
+                  <td className="py-1.5 px-2 text-center tabular-nums">
+                    {cand.aiScore ? (
+                      <span className={cn("font-semibold", cand.aiScore >= 80 ? "text-accent" : cand.aiScore >= 60 ? "text-primary" : "text-destructive")}>{cand.aiScore}</span>
+                    ) : "–"}
                   </td>
-                  {funnelStepsV2.map((step, i) => {
-                    const prevKey = `prev${step.key.charAt(0).toUpperCase()}${step.key.slice(1)}` as keyof ConsultantFunnelDataV2;
-                    const prev = row[prevKey] as number;
-                    const curr = row[step.key];
-                    const trendDown = prev > 0 && curr < prev;
-                    return (
-                      <td key={step.key} className={cn(
-                        "text-center py-2 px-1.5 tabular-nums",
-                        i > 0 && "border-l border-border/30",
-                        trendDown && "text-destructive"
-                      )}>
-                        <span className="font-semibold">{curr}</span>
-                        {trendDown && <span className="text-[9px] ml-0.5">↓</span>}
-                      </td>
-                    );
-                  })}
-                  <td className="text-center py-2 px-1.5 tabular-nums font-semibold border-l border-border/30">
-                    {row.dealsluiters}
-                  </td>
-                  <td className={cn(
-                    "text-center py-2 px-2 border-l border-border/30",
-                    drop.convPct < 40 ? "text-destructive" : drop.convPct < 60 ? "text-amber-500" : "text-muted-foreground"
-                  )}>
-                    <div className="text-[10px] font-medium">{drop.stepLabel}</div>
-                    <div className="text-[11px] font-bold">{drop.convPct}%</div>
+                  <td className="py-1.5 px-2 text-center">
+                    <a href="#" className="inline-flex items-center justify-center w-6 h-6 rounded bg-[#0066FF]/10 hover:bg-[#0066FF]/20 transition-colors" title="Open in Recruit CRM">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <rect width="24" height="24" rx="4" fill="#0066FF"/>
+                        <text x="12" y="17" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold" fontFamily="Arial, sans-serif">R</text>
+                      </svg>
+                    </a>
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {funnelStepsV2.slice(1).map((step, i) => {
+            const conv = getConversionForStep(row, i + 1);
+            return (
+              <div key={step.key} className="text-center px-2 py-1 rounded bg-card border border-border/30">
+                <div className="text-[9px] text-muted-foreground">{funnelStepsV2[i].label} → {step.label}</div>
+                <div className={cn("text-xs font-bold tabular-nums",
+                  conv !== null && conv < 40 ? "text-destructive" : conv !== null && conv < 60 ? "text-amber-500" : "text-foreground"
+                )}>{conv !== null ? `${conv}%` : "–"}</div>
+              </div>
+            );
+          })}
+        </div>
+        <AIInsightNote insights={[
+          ...detail.aiInsights.map(text => ({ type: "observation" as const, text })),
+          { type: "forecast" as const, text: detail.prognose },
+        ]} />
       </div>
+    );
+  })();
 
-      {/* Detail panel below table */}
-      {expandedConsultant !== null && (() => {
-        const row = sorted.find(r => r.consultantId === expandedConsultant);
-        const detail = consultantDetailData.find(d => d.consultantId === expandedConsultant);
-        if (!row || !detail) return null;
-        return (
-          <div className="bg-muted/10 border border-primary/10 rounded-lg px-4 py-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-foreground">Detail: {row.consultantName}</h4>
-              <button onClick={() => setExpandedConsultant(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Sluiten ✕</button>
-            </div>
-            <div className="overflow-auto max-h-[200px] rounded border border-border/30">
-              <table className="w-full text-[11px]">
-                <thead className="bg-card sticky top-0">
-                  <tr className="border-b border-border">
-                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Kandidaat</th>
-                    <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Categorie</th>
-                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Status</th>
-                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Kanaal</th>
-                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Contact</th>
-                    <th className="text-left py-1.5 px-2 font-medium text-muted-foreground">Datum</th>
-                    <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">AI Score</th>
-                    <th className="text-center py-1.5 px-2 font-medium text-muted-foreground">Profiel</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detail.candidates.map(cand => (
-                    <tr key={cand.id} className="border-b border-border/20 hover:bg-muted/20">
-                      <td className="py-1.5 px-2 font-medium text-foreground">{cand.name}</td>
-                      <td className={cn("py-1.5 px-2 text-center", categoryColors[cand.category])}>{cand.category}</td>
-                      <td className="py-1.5 px-2 text-muted-foreground capitalize">{cand.status}</td>
-                      <td className="py-1.5 px-2 text-muted-foreground">{cand.intakeKanaal ?? "–"}</td>
-                      <td className="py-1.5 px-2 text-muted-foreground">{cand.contactPersoon ?? "–"}</td>
-                      <td className="py-1.5 px-2 text-muted-foreground">{cand.toewijzingsDatum}</td>
-                      <td className="py-1.5 px-2 text-center tabular-nums">
-                        {cand.aiScore ? (
-                          <span className={cn("font-semibold", cand.aiScore >= 80 ? "text-accent" : cand.aiScore >= 60 ? "text-primary" : "text-destructive")}>{cand.aiScore}</span>
-                        ) : "–"}
-                      </td>
-                      <td className="py-1.5 px-2 text-center">
-                        <a href="#" className="inline-flex items-center justify-center w-6 h-6 rounded bg-[#0066FF]/10 hover:bg-[#0066FF]/20 transition-colors" title="Open in Recruit CRM">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                            <rect width="24" height="24" rx="4" fill="#0066FF"/>
-                            <text x="12" y="17" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold" fontFamily="Arial, sans-serif">R</text>
-                          </svg>
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {funnelStepsV2.slice(1).map((step, i) => {
-                const conv = getConversionForStep(row, i + 1);
-                return (
-                  <div key={step.key} className="text-center px-2 py-1 rounded bg-card border border-border/30">
-                    <div className="text-[9px] text-muted-foreground">{funnelStepsV2[i].label} → {step.label}</div>
-                    <div className={cn("text-xs font-bold tabular-nums",
-                      conv !== null && conv < 40 ? "text-destructive" : conv !== null && conv < 60 ? "text-amber-500" : "text-foreground"
-                    )}>{conv !== null ? `${conv}%` : "–"}</div>
-                  </div>
-                );
-              })}
-            </div>
-            <AIInsightNote insights={[
-              ...detail.aiInsights.map(text => ({ type: "observation" as const, text })),
-              { type: "forecast" as const, text: detail.prognose },
-            ]} />
-          </div>
-        );
-      })()}
+  return (
+    <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex-1 min-w-0">{tableEl}</div>
+      {detailEl && (
+        <aside className="w-full lg:w-[420px] shrink-0 lg:border-l lg:border-border lg:pl-4 max-h-[calc(100vh-220px)] overflow-y-auto">
+          {detailEl}
+        </aside>
+      )}
     </div>
   );
 }
