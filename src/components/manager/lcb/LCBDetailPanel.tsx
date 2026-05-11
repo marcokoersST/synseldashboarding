@@ -70,7 +70,7 @@ export function LCBDetailPanel({ tile, onClose }: Props) {
         )}
       >
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-primary/10 via-card to-card border-b px-6 pt-5 pb-4">
+        <div className="relative bg-card border-b px-6 pt-5 pb-4">
           <div className="flex items-start gap-4">
             <div className="relative shrink-0">
               <AnimatedRing value={tile.score} size={64} strokeWidth={6} strokeColor={color} />
