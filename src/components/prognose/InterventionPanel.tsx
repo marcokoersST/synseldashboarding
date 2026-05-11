@@ -191,10 +191,25 @@ export function InterventionPanel({ row, onClose }: Props) {
                       </button>
                     );
                   })}
-                  <div className="rounded border bg-card p-2 col-span-2">
-                    <div className="text-xs text-muted-foreground">Telefonie</div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveMetric(activeMetric === "telefonie" ? null : "telefonie")}
+                    className={cn(
+                      "rounded border bg-card p-2 col-span-2 text-left transition-colors hover:border-primary/60 hover:bg-primary/5",
+                      activeMetric === "telefonie" && "border-primary bg-primary/10",
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-muted-foreground">Telefonie</div>
+                      <ChevronRight
+                        className={cn(
+                          "h-3 w-3 text-muted-foreground transition-transform",
+                          activeMetric === "telefonie" && "rotate-90 text-primary",
+                        )}
+                      />
+                    </div>
                     <div className="font-semibold tabular-nums">{formatTelefonie(row.telefonie)}</div>
-                  </div>
+                  </button>
                 </div>
               </div>
 
