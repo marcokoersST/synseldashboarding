@@ -84,7 +84,24 @@ export default function LCB() {
     return new Date().toLocaleString("nl-NL", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" });
   }, []);
 
+  const alerts = useMemo(() => generateAlerts(), []);
+  const criticalAlerts = alerts.filter(a => a.severity === "critical").length;
+  const warningAlerts = alerts.filter(a => a.severity === "warning").length;
+  const alertScore = Math.max(0, Math.min(100, 100 - criticalAlerts * 20 - warningAlerts * 8));
+  const alertStatus: Status = criticalAlerts > 0 ? "critical" : warningAlerts > 0 ? "attention" : "clean";
+
   const tiles: TileDef[] = [
+    {
+      key: "signalering",
+      title: "Signalering",
+      subtitle: "Actuele alerts & risico's",
+      status: alertStatus,
+      score: alertScore,
+      metricLabel: "Open signalen",
+      metricValue: `${alerts.length}`,
+      size: "major",
+      detail: <AlertsPanelV2 variant="embedded" />,
+    },
     {
       key: "salesfunnel",
       title: "Sales Funnel",
