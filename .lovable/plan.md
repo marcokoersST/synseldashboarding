@@ -1,119 +1,63 @@
-## Visual redesign: Intervention panel + drill-down + ticket-style interventions
+# Detail-view redesign — Prognose Dashboard
 
-Two parallel changes on the consultant detail flow at `/super-admin/prognose-dashboard`:
+## Problem
 
-1. A polished visual redesign of both side panels (intervention panel and metric drill-down).
-2. A ticket workflow for interventions — open/closed status, owner, follow-up updates and an activity timeline.
+Today the consultant intervention Sheet (right) and the metric drill-down panel (further right, offset by 640px) sit next to each other. On a 1700px viewport this looks cramped, the dashboard behind is barely visible, and the two windows compete visually.
 
----
+## New interaction model
 
-### 1. Visual redesign of the intervention panel (right Sheet)
+When a user opens a consultant detail (Intervention Panel):
 
-Goals: clearer hierarchy, less "form-on-grey-card" feel, more dashboard-like.
-
-Layout (top → bottom inside the Sheet):
+1. **Sidebar auto-collapses** to its narrow 64px state. It re-expands when the detail view closes (only if the user had it expanded before).
+2. **The detail panel slides over the dashboard** from the right and covers ~85% of the viewport, leaving a thin visible strip (~80–120px) of the dashboard on the left as a "peek". Clicking the strip closes the detail.
+3. **Drill-downs no longer open as a second window beside the intervention panel.** Instead, the same slide-over splits internally into two columns:
+   - Left: drill-down table (metric data)
+   - Right: consultant intervention/ticket panel (current content)
+   When no metric is active, the panel shows only the intervention column centered with a wider max width.
+4. Smooth transitions: 300ms ease for sidebar collapse, panel slide-in, and the internal split (drill-down column animates in from the left within the panel).
 
 ```text
-┌────────────────────────────────────────────────┐
-│ [avatar]  Tim Kuik                             │
-│           Trainingsunit · Rolling week         │
-│                                                │
-│  Score 115%  ●●●●●○  [Op koers ▾]  [Auto]     │
-│  ───────────────────────────────────           │
-│                                                │
-│  Prognose breakdown                            │
-│  ┌──────┬──────┬──────┐                        │
-│  │ tile │ tile │ tile │   (3-col, taller       │
-│  └──────┴──────┴──────┘    tiles with progress │
-│  ┌──────┬──────┬──────┐    bar + chevron)      │
-│  │ tile │ tile │ Tel  │                        │
-│  └──────┴──────┴──────┘                        │
-│                                                │
-│  Tabs: [Open interventies (2)] [Geschiedenis] │
-│  ─ ticket cards ─                              │
-│  + Nieuwe interventie                          │
-└────────────────────────────────────────────────┘
+Closed:          Open intervention:                 Open + drilldown:
+┌──┬─────────┐   ┌─┬──┬───────────────┐             ┌─┬──┬────────┬──────┐
+│SB│Dashboard│   │S│ ░│  Intervention │             │S│ ░│Drilldwn│Interv│
+│  │         │   │B│  │   panel       │             │B│  │ table  │ panel│
+└──┴─────────┘   └─┴──┴───────────────┘             └─┴──┴────────┴──────┘
+                    ^peek strip                        ^peek strip
 ```
 
-Concrete updates:
-- **Header**: gradient avatar circle with consultant initials, large name, sub-line for unit/period. Score row on its own line with a 5-dot mini-bar (one dot per metric, colored per tier) plus the editable status `Select` and `Auto` reset link.
-- **Breakdown tiles**: 3 columns instead of 2, slightly taller. Each tile shows label + chevron, big value, tiny progress bar (h-1) tinted by tier (`good/ok/warn/bad`), and `(pct%)`. Telephony tile renders the duration plus a "calls expected" badge.
-- **Active tile** gets a left border accent and shadow instead of just bg tint.
-- Wrap the panel in a subtle vertical divider gradient so it visually separates from the drill-down on the left.
+## Implementation
 
-### 2. Visual redesign of the drill-down panel (left side panel)
+**State lifting in `PrognoseDashboard.tsx`**
+- When `active` (selected consultant) becomes truthy, dispatch a custom event or use a new context to request sidebar collapse. Restore previous state on close.
+- Cleanest approach: add an optional `forceCollapsed` prop chain. `AppLayout` already owns `isCollapsed`. Expose a setter via a lightweight context (`SidebarCollapseContext`) so any page can request a temporary collapse and restore on cleanup.
 
-Goals: feel like a focused inspector, not a raw table.
+**Files to edit / create**
+- `src/contexts/SidebarCollapseContext.tsx` (new) — `{ requestCollapse(): release; }` API; tracks the previous user-set state and restores it when all requests are released.
+- `src/components/layout/AppLayout.tsx` — wrap children with the provider; consume the requested-collapse flag; merge with user state (request wins, restore on release).
+- `src/pages/super-admin/PrognoseDashboard.tsx` — call `requestCollapse()` when `active` is set, release on close.
 
-- **Metric header band**: thin colored strip at the top whose color matches the metric tier (green/yellow/orange/red). On the band: metric icon + name, count, period chip, "Open in CRM" pill button, close X.
-- **Summary row** under the band: 3 mini-stats (e.g. for Voorstellen → Promoted, Open deals, Conversion %; for Telefonie → calls, avg duration, beantwoord %; sensible defaults for other metrics).
-- **Tables**: compact zebra striping, sticky header inside scroll area, RecruitCRM logo column made narrow, consultant/candidate names always single-line with truncate + tooltip. Replace bare badges with subtle pill chips that respect the design tokens.
-- **Empty states** per metric (currently silent) — show a friendly placeholder when the period yields zero records.
+**Replace stacked sheets with a single overlay**
+- `src/components/prognose/InterventionPanel.tsx`:
+  - Stop using `<Sheet>` (which is fixed-width and stacks awkwardly with the drill-down portal).
+  - Render a custom fixed overlay: backdrop on the leftmost ~100px (clickable to close, slightly dimmed so the dashboard "peek" remains readable), and a panel anchored right covering `calc(100% - 100px)`.
+  - Inside the panel, use a 2-column flex layout. The drill-down column has `width: 0` when no metric is active and animates to e.g. `min(560px, 45%)` when active. The right column (intervention content) keeps its current visual design but uses the available width.
+- `src/components/prognose/MetricDrilldownPanel.tsx`:
+  - Convert from a `createPortal` standalone overlay to an inline component rendered inside the InterventionPanel's left column.
+  - Drop its own backdrop and `right-[640px]` positioning. Keep the tier band, header, summary and table content as-is.
+  - Keep the close button (collapses the left column back to 0).
 
-### 3. Ticket-style interventions
+**Animations**
+- Sidebar: existing `transition-[width] duration-300` already in place; just toggle the flag.
+- Panel slide-in: `animate-in slide-in-from-right duration-300`.
+- Drill-down column: `transition-[width,opacity] duration-300 ease-in-out` on the wrapper.
 
-Replace the "single note + history" model with proper tickets.
+**Styling notes**
+- Peek strip width: 96px on ≥1280px, 48px on smaller screens (still clickable).
+- Backdrop over the peek strip uses `bg-black/30 backdrop-blur-[1px]` to make it obvious that clicking it closes the panel.
+- Panel keeps `bg-card`, adds a left shadow `shadow-[-12px_0_40px_-12px_rgba(0,0,0,0.25)]` for depth.
+- Internal divider between drill-down and intervention: 1px border with subtle gradient.
 
-**Data model** (extends `prognoseData.ts`, kept in `localStorage` under `prognose-tickets`):
+## Out of scope
 
-```ts
-type TicketStatus = "open" | "in_progress" | "closed";
-interface InterventionTicket {
-  id: string;
-  consultantId: string;
-  category: BottleneckCategory | "Anders";
-  title: string;             // short description
-  description: string;       // initial note
-  owner: string;
-  followUpDate?: string;
-  status: TicketStatus;
-  createdAt: string;
-  closedAt?: string;
-  updates: TicketUpdate[];   // append-only thread
-}
-interface TicketUpdate {
-  id: string;
-  author: string;
-  message: string;
-  createdAt: string;
-  type: "comment" | "status_change" | "owner_change" | "followup_change";
-}
-```
-
-Helpers exported: `loadTickets()`, `saveTicket()`, `addTicketUpdate()`, `setTicketStatus()`, `setTicketOwner()`, `setTicketFollowUp()`. Backwards-compatibility: existing `loadInterventions()` notes are imported once into the ticket store as closed tickets so no history is lost.
-
-**UI inside the Sheet** (`InterventionPanel`):
-
-- Two tabs: `Open (n)` and `Geschiedenis (n)`.
-- Each tab renders a stacked list of **ticket cards**:
-  ```
-  ┌─ category badge · status pill · #ID ─────── ⋯ ─┐
-  │  Title (bold)                                  │
-  │  Description preview (1 line, truncate)        │
-  │  Owner · Opvolging dd-mm · Created xx          │
-  │  ▾ Toon updates (3)                            │
-  └────────────────────────────────────────────────┘
-  ```
-- Expanding a card shows:
-  - Activity timeline (vertical line with dots), including system events ("Status: open → in_progress").
-  - `Textarea` to add a comment (+ author input prefilled with last-used owner from `localStorage`).
-  - Action buttons: `In behandeling` / `Hervatten` / `Sluiten` (status transitions).
-  - Inline `Eigenaar` and `Opvolgdatum` quick-edit fields — each change appends a system update.
-- A primary `Nieuwe interventie` button at the bottom of the Open tab opens an inline form (slides in above the list) replacing the current always-visible form. Form fields: Categorie, Titel, Beschrijving, Eigenaar, Opvolgdatum.
-- Closed tickets in `Geschiedenis` show a strike-through title + closed date, expandable to view the full thread (read-only).
-
-### 4. Files
-
-Create:
-- `src/data/prognoseTickets.ts` — ticket types, storage helpers, legacy migration from `prognose-interventions`.
-- `src/components/prognose/TicketCard.tsx` — collapsible card with timeline and actions.
-- `src/components/prognose/TicketComposer.tsx` — inline new-ticket form.
-- `src/components/prognose/MetricSummary.tsx` — 3 mini-stats row for the drill-down header.
-
-Update:
-- `src/components/prognose/InterventionPanel.tsx` — full redesign, tabs, ticket list, removes the always-on note form.
-- `src/components/prognose/MetricDrilldownPanel.tsx` — colored band, summary row, compact tables, empty states.
-- `src/components/prognose/PrognoseTable.tsx` — small badge in the Interventie column showing open ticket count when > 0 (e.g. `2 open`).
-- `src/data/prognoseData.ts` — add `getOpenTicketCount(consultantId)` re-export shim that proxies to `prognoseTickets`.
-
-No backend, no schema changes — pure frontend on `localStorage`.
+- No changes to ticket logic, period filter, status override, or table data.
+- No business-logic changes; visual / interaction only.
