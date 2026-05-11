@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   type PrognoseConsultantRow,
   type InterventionNote,
@@ -14,6 +16,7 @@ import {
   loadInterventions,
   saveIntervention,
 } from "@/data/prognoseData";
+import { MetricDrilldownPanel, type MetricKey } from "./MetricDrilldownPanel";
 
 interface Props {
   row: PrognoseConsultantRow | null;
