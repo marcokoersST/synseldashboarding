@@ -19,20 +19,8 @@ export function PlacementAttritionCard({ delay = 0, framed = true }: { delay?: n
 
   const selectedDetail = attritionProjectionData.find(d => d.period === selectedPeriod);
 
-  const body = (
+  const mainContent = (
     <>
-      {framed && (
-        <div className="flex items-center gap-2 mb-4">
-          <CalendarX2 className="h-5 w-5 text-destructive" />
-          <div>
-            <h3 className="text-sm font-medium text-foreground">Verwachte Afvallers</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {totalStoppers} verwachte stoppers — €{totalImpact.toFixed(0)}k omzetrisico
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Line chart */}
         <div className="h-40 mb-4">
           <ResponsiveContainer width="100%" height="100%">
