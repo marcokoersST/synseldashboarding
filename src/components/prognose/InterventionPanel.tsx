@@ -38,6 +38,7 @@ export function InterventionPanel({ row, onClose }: Props) {
   const [followUp, setFollowUp] = useState("");
   const [owner, setOwner] = useState("");
   const [history, setHistory] = useState<InterventionNote[]>([]);
+  const [activeMetric, setActiveMetric] = useState<MetricKey | null>(null);
 
   useEffect(() => {
     if (row) {
@@ -46,6 +47,7 @@ export function InterventionPanel({ row, onClose }: Props) {
       setFollowUp("");
       setOwner("");
       setHistory(loadInterventions().filter((n) => n.consultantId === row.id));
+      setActiveMetric(null);
     }
   }, [row]);
 
