@@ -234,14 +234,7 @@ export default function LCB() {
         </div>
       </main>
 
-      <Sheet open={!!openTile} onOpenChange={o => !o && setOpenTile(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-3xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{openDef?.title}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4">{openDef?.detail}</div>
-        </SheetContent>
-      </Sheet>
+      <LCBDetailPanel tile={openDef ?? null} onClose={() => setOpenTile(null)} />
     </div>
   );
 }
