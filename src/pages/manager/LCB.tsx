@@ -15,17 +15,15 @@ import { OutreachCardV2 } from "@/components/manager/v2/OutreachCardV2";
 import { PerformanceCardV2 } from "@/components/manager/v2/PerformanceCardV2";
 import { RevenueChartV2 } from "@/components/manager/v2/RevenueChartV2";
 import { PlacementAttritionCard } from "@/components/manager/v2/PlacementAttritionCard";
-import { InterventionHeatmap } from "@/components/manager/v2/InterventionHeatmap";
 import { ActiveSecondmentsCard } from "@/components/manager/v2/ActiveSecondmentsCard";
 import { OpvolgingCard } from "@/components/manager/OpvolgingCard";
 import { ManagerGoalsCard } from "@/components/manager/ManagerGoalsCard";
-import { unitFunnelTotalsV2, unitOutreachTotals, generateAlerts } from "@/data/managerOperationalDataV2";
+import { unitFunnelTotalsV2, unitOutreachTotals, generateAlerts, getConversionV2 } from "@/data/managerOperationalDataV2";
 import { consultantSkillData } from "@/data/managerPerformanceData";
-import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
+import { revenueChartDataV2, placementAttritionData } from "@/data/managerPerformanceDataV2";
 
 const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
 const DATE_PRESETS = ["Vandaag", "Gisteren", "Laatste 7 dagen", "Laatste 14 dagen", "Laatste 30 dagen", "Huidige week", "Vorige week", "Huidige periode", "Vorige periode", "Huidig jaar"];
-const DIMENSIES = ["All", "Operationeel", "Performance", "Omzet"];
 
 type Status = "clean" | "attention" | "critical";
 const STATUS_COLOR: Record<Status, string> = {
@@ -45,6 +43,8 @@ function overallScore(c: typeof consultantSkillData[0]): number {
   return Math.round(m.reduce((a, b) => a + b, 0) / m.length);
 }
 
+interface Stat { label: string; value: string; trend?: number }
+
 interface TileDef {
   key: string;
   title: string;
@@ -54,14 +54,13 @@ interface TileDef {
   metricLabel: string;
   metricValue: string;
   detail: ReactNode;
-  size: "major" | "minor";
   trend?: number[];
+  stats?: Stat[];
 }
 
 export default function LCB() {
   const [datePreset, setDatePreset] = useState("Huidige periode");
   const [comparison, setComparison] = useState("Vorige vergelijkbare periode");
-  const [dimension, setDimension] = useState("All");
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
   const [openTile, setOpenTile] = useState<string | null>(null);
 
@@ -71,11 +70,20 @@ export default function LCB() {
     consultantSkillData.reduce((s, c) => s + overallScore(c), 0) / consultantSkillData.length
   ), []);
   const belowNorm = useMemo(() => consultantSkillData.filter(c => overallScore(c) < 55).length, []);
-  const lastRevenue = revenueChartDataV2.filter(d => d.realised > 0).pop();
+
+  const realisedSeries = revenueChartDataV2.filter(d => d.realised > 0);
+  const lastRevenue = realisedSeries[realisedSeries.length - 1];
+  const ytdRealised = realisedSeries.reduce((s, d) => s + d.realised, 0);
+  const ytdTarget = revenueChartDataV2.slice(0, realisedSeries.length).reduce((s, d) => s + d.target, 0);
+  const fullYearTarget = revenueChartDataV2.reduce((s, d) => s + d.target, 0);
+  const fullYearProgose = revenueChartDataV2.reduce((s, d) => s + (d.realised > 0 ? d.realised : d.prognose), 0);
   const prognoseWarning = revenueChartDataV2.some(d => d.belowTarget);
+  // Derived margin (mock): 28% avg, slightly variable
+  const margePct = 28.4;
+  const margeEur = Math.round(ytdRealised * margePct / 100);
 
   const operationeelScore = Math.min(100, Math.round((unitFunnelTotalsV2.plaatsingen / Math.max(unitFunnelTotalsV2.intakes, 1)) * 100));
-  const omzetScore = lastRevenue ? Math.min(100, Math.round((lastRevenue.realised / Math.max(lastRevenue.target, 1)) * 100)) : 0;
+  const omzetScore = Math.min(100, Math.round((ytdRealised / Math.max(ytdTarget, 1)) * 100));
   const globalScore = Math.round((avgSkillScore + operationeelScore + omzetScore) / 3);
   const globalStatus: Status = globalScore >= 75 ? "clean" : globalScore >= 55 ? "attention" : "critical";
   const globalColor = STATUS_COLOR[globalStatus];
@@ -87,8 +95,26 @@ export default function LCB() {
   const alerts = useMemo(() => generateAlerts(), []);
   const criticalAlerts = alerts.filter(a => a.severity === "critical").length;
   const warningAlerts = alerts.filter(a => a.severity === "warning").length;
+  const infoAlerts = alerts.filter(a => a.severity === "info").length;
   const alertScore = Math.max(0, Math.min(100, 100 - criticalAlerts * 20 - warningAlerts * 8));
   const alertStatus: Status = criticalAlerts > 0 ? "critical" : warningAlerts > 0 ? "attention" : "clean";
+
+  const totalStoppers = placementAttritionData.reduce((s, p) => s + p.stoppersCount, 0);
+  const attritionImpact = placementAttritionData.reduce((s, p) => s + p.revenueImpact, 0);
+  const retention = Math.max(0, 100 - Math.round((totalStoppers / Math.max(unitFunnelTotalsV2.plaatsingen, 1)) * 100));
+
+  const funnelConv = getConversionV2(unitFunnelTotalsV2.plaatsingen, unitFunnelTotalsV2.intakes);
+  const intakeConv = getConversionV2(unitFunnelTotalsV2.intakes, unitFunnelTotalsV2.voorstellen);
+
+  // Goals (mock) — 12 goals total, 8 on track, 3 aandacht, 1 risk
+  const goalsTotal = 12, goalsOnTrack = 8, goalsAttention = 3;
+  const goalsPct = Math.round((goalsOnTrack / goalsTotal) * 100);
+
+  // Active secondments mock count
+  const activeSecondments = 18;
+
+  // Opvolging mock counts
+  const opvolgingOpen = 7, opvolgingOverdue = 2;
 
   const tiles: TileDef[] = [
     {
@@ -99,7 +125,11 @@ export default function LCB() {
       score: alertScore,
       metricLabel: "Open signalen",
       metricValue: `${alerts.length}`,
-      size: "major",
+      stats: [
+        { label: "Kritiek", value: `${criticalAlerts}` },
+        { label: "Aandacht", value: `${warningAlerts}` },
+        { label: "Info", value: `${infoAlerts}` },
+      ],
       detail: <AlertsPanelV2 variant="embedded" />,
     },
     {
@@ -110,148 +140,188 @@ export default function LCB() {
       score: operationeelScore,
       metricLabel: "Plaatsingen",
       metricValue: `${unitFunnelTotalsV2.plaatsingen}`,
-      size: "major",
       trend: [12, 14, 13, 16, 18, 17, 19, unitFunnelTotalsV2.plaatsingen],
+      stats: [
+        { label: "Intakes", value: `${unitFunnelTotalsV2.intakes}` },
+        { label: "Conversie", value: `${funnelConv}%` },
+        { label: "Vrstl→Int", value: `${intakeConv}%` },
+      ],
       detail: <SalesFunnelV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
       key: "outreach",
-      title: "Outreach & Contactmomenten",
-      subtitle: "Activiteit van het team",
+      title: "Outreach",
+      subtitle: "Telefonie & e-mail activiteit",
       status: unitOutreachTotals.totalOutreach > 200 ? "clean" : "attention",
       score: Math.min(100, Math.round((unitOutreachTotals.totalOutreach / 400) * 100)),
       metricLabel: "Contactmomenten",
       metricValue: `${unitOutreachTotals.totalOutreach}`,
-      size: "major",
       trend: [820, 905, 870, 940, 980, 1020, 1080, unitOutreachTotals.totalOutreach],
+      stats: [
+        { label: "Calls", value: `${unitOutreachTotals.callsIn + unitOutreachTotals.callsOut}` },
+        { label: "E-mails", value: `${unitOutreachTotals.emailsSent}` },
+        { label: "Kwaliteit", value: `${unitOutreachTotals.qualityScore}` },
+      ],
       detail: <OutreachCardV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
       key: "omzet",
-      title: "Omzet & Prognose",
-      subtitle: "Realisatie versus target",
-      status: prognoseWarning ? "critical" : omzetScore >= 75 ? "clean" : "attention",
+      title: "Omzet & Marge",
+      subtitle: "Realisatie en brutomarge",
+      status: prognoseWarning ? "critical" : omzetScore >= 90 ? "clean" : "attention",
       score: omzetScore,
-      metricLabel: "Gerealiseerd",
-      metricValue: lastRevenue ? `€${lastRevenue.realised}k` : "—",
-      size: "major",
-      trend: revenueChartDataV2.filter(d => d.realised > 0).map(d => d.realised).slice(-8),
+      metricLabel: "YTD Realised",
+      metricValue: `€${ytdRealised}k`,
+      trend: realisedSeries.map(d => d.realised).slice(-8),
+      stats: [
+        { label: "Target", value: `€${ytdTarget}k` },
+        { label: "Marge", value: `${margePct}%` },
+        { label: "Prognose YR", value: `€${fullYearProgose}k` },
+      ],
       detail: <RevenueChartV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
       key: "performance",
-      title: "Performance",
-      subtitle: "Skills & kwaliteit",
+      title: "Performance & Skills",
+      subtitle: "Kwaliteit en groei van het team",
       status: avgSkillScore >= 75 ? "clean" : avgSkillScore >= 55 ? "attention" : "critical",
       score: avgSkillScore,
-      metricLabel: belowNorm > 0 ? "Onder norm" : "Gem. score",
-      metricValue: belowNorm > 0 ? `${belowNorm}` : `${avgSkillScore}%`,
-      size: "minor",
+      metricLabel: "Gem. score",
+      metricValue: `${avgSkillScore}`,
+      stats: [
+        { label: "Onder norm", value: `${belowNorm}` },
+        { label: "Top performer", value: `${consultantSkillData.filter(c => overallScore(c) >= 80).length}` },
+        { label: "Consultants", value: `${consultantSkillData.length}` },
+      ],
       detail: <PerformanceCardV2 delay={0} selectedUnit={selectedUnit} />,
     },
     {
       key: "goals",
-      title: "Doelen",
-      subtitle: "Voortgang team",
-      status: "clean",
-      score: 80,
-      metricLabel: "Doelen",
-      metricValue: "Actief",
-      size: "minor",
+      title: "Doelen & Groei",
+      subtitle: "Voortgang teamdoelstellingen",
+      status: goalsPct >= 75 ? "clean" : goalsPct >= 55 ? "attention" : "critical",
+      score: goalsPct,
+      metricLabel: "Op koers",
+      metricValue: `${goalsOnTrack}/${goalsTotal}`,
+      stats: [
+        { label: "Aandacht", value: `${goalsAttention}` },
+        { label: "Risico", value: `${goalsTotal - goalsOnTrack - goalsAttention}` },
+        { label: "Voortgang", value: `${goalsPct}%` },
+      ],
       detail: <ManagerGoalsCard delay={0} selectedUnit={selectedUnit} />,
+    },
+    {
+      key: "attrition",
+      title: "Plaatsing & Attritie",
+      subtitle: "Retentie van actieve plaatsingen",
+      status: retention >= 90 ? "clean" : retention >= 80 ? "attention" : "critical",
+      score: retention,
+      metricLabel: "Retentie",
+      metricValue: `${retention}%`,
+      stats: [
+        { label: "Stoppers", value: `${totalStoppers}` },
+        { label: "Impact", value: `€${attritionImpact.toFixed(0)}k` },
+        { label: "Risico", value: "3" },
+      ],
+      detail: <PlacementAttritionCard delay={0} />,
+    },
+    {
+      key: "secondments",
+      title: "Actieve kandidaten",
+      subtitle: "Lopende detacheringen & contracten",
+      status: "clean",
+      score: 85,
+      metricLabel: "Actief",
+      metricValue: `${activeSecondments}`,
+      stats: [
+        { label: "Detavast", value: "11" },
+        { label: "W&S", value: "5" },
+        { label: "Marge Fac", value: "2" },
+      ],
+      detail: <ActiveSecondmentsCard delay={0} selectedUnit={selectedUnit} />,
     },
     {
       key: "opvolging",
       title: "Opvolging",
       subtitle: "Open acties & SLA",
-      status: "attention",
+      status: opvolgingOverdue > 0 ? "attention" : "clean",
       score: 65,
-      metricLabel: "Status",
-      metricValue: "Live",
-      size: "minor",
+      metricLabel: "Open acties",
+      metricValue: `${opvolgingOpen}`,
+      stats: [
+        { label: "Te laat", value: `${opvolgingOverdue}` },
+        { label: "Vandaag", value: "3" },
+        { label: "Deze week", value: "2" },
+      ],
       detail: <OpvolgingCard delay={0} selectedUnit={selectedUnit} />,
-    },
-    {
-      key: "attrition",
-      title: "Plaatsing & Attritie",
-      subtitle: "Retentie van geplaatsten",
-      status: "clean",
-      score: 78,
-      metricLabel: "Live",
-      metricValue: "Actief",
-      size: "minor",
-      detail: <PlacementAttritionCard delay={0} />,
-    },
-    {
-      key: "secondments",
-      title: "Actieve detacheringen",
-      subtitle: "Lopende contracten",
-      status: "clean",
-      score: 85,
-      metricLabel: "Live",
-      metricValue: "Actief",
-      size: "minor",
-      detail: <ActiveSecondmentsCard delay={0} selectedUnit={selectedUnit} />,
     },
   ];
 
-  const dimensionMatch = (key: string) => {
-    if (dimension === "All") return true;
-    if (dimension === "Operationeel") return ["signalering", "salesfunnel", "outreach", "opvolging"].includes(key);
-    if (dimension === "Performance") return ["performance", "goals"].includes(key);
-    if (dimension === "Omzet") return ["omzet", "attrition", "secondments"].includes(key);
-    return true;
-  };
-
-  const major = tiles.filter(t => t.size === "major" && dimensionMatch(t.key));
-  const minor = tiles.filter(t => t.size === "minor" && dimensionMatch(t.key));
   const openDef = tiles.find(t => t.key === openTile);
+
+  // Header KPI strip
+  const headerKpis: { label: string; value: string; sub?: string; tone?: Status }[] = [
+    { label: "YTD Omzet", value: `€${ytdRealised}k`, sub: `${omzetScore}% v target`, tone: omzetScore >= 90 ? "clean" : "attention" },
+    { label: "Brutomarge", value: `${margePct}%`, sub: `€${margeEur}k`, tone: "clean" },
+    { label: "Plaatsingen", value: `${unitFunnelTotalsV2.plaatsingen}`, sub: `${funnelConv}% conv` },
+    { label: "Actieve kand.", value: `${activeSecondments}`, sub: `${retention}% retentie`, tone: retention >= 90 ? "clean" : "attention" },
+    { label: "Doelen", value: `${goalsOnTrack}/${goalsTotal}`, sub: `${goalsPct}% op koers`, tone: goalsPct >= 75 ? "clean" : "attention" },
+    { label: "Signalen", value: `${alerts.length}`, sub: `${criticalAlerts} kritiek`, tone: alertStatus },
+  ];
 
   return (
     <div className="min-h-full bg-background">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 overflow-hidden">
-        <div className="flex h-20 items-center gap-4 px-6">
-          <div className="relative shrink-0">
-            <AnimatedRing value={globalScore} size={64} strokeWidth={6} strokeColor={globalColor} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-base font-bold tabular-nums" style={{ color: globalColor }}>
-                <AnimatedNumber value={globalScore} />
-              </span>
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="flex h-14 items-center gap-4 px-6">
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="relative">
+              <AnimatedRing value={globalScore} size={40} strokeWidth={4} strokeColor={globalColor} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[11px] font-bold tabular-nums" style={{ color: globalColor }}>
+                  <AnimatedNumber value={globalScore} />
+                </span>
+              </div>
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-sm font-semibold text-foreground leading-tight">Manager Dashboard — LC-B</h1>
+              <p className="text-[10px] text-muted-foreground leading-tight">
+                <span className="font-medium" style={{ color: globalColor }}>{STATUS_LABEL[globalStatus]}</span>
+                {" · "}Operationeel {operationeelScore}% · Performance {avgSkillScore}% · Omzet {omzetScore}%
+              </p>
             </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-semibold text-foreground">Manager Dashboard — LC-B</h1>
-            <p className="text-xs text-muted-foreground truncate">
-              Manager health score:{" "}
-              <span className="font-medium" style={{ color: globalColor }}>{STATUS_LABEL[globalStatus]}</span>
-              {" · "}Operationeel {operationeelScore}% · Performance {avgSkillScore}% · Omzet {omzetScore}%
-            </p>
-          </div>
-          <div className="shrink-0 flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[10px] text-muted-foreground">
-            <RefreshCw className="h-3 w-3" />
-            <span>Updated {refreshLabel}</span>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2 shrink-0">
+            <SelectFilter label="Periode" value={datePreset} options={DATE_PRESETS} onSelect={setDatePreset} triggerClassName="w-[180px]" />
+            <SelectFilter label="Vergelijk" value={comparison} options={["Vorige vergelijkbare periode", "Vorig jaar", "Geen"]} onSelect={setComparison} triggerClassName="w-[200px]" />
+            <MultiSelectFilter label="Units" placeholder="Alle units" values={selectedUnits} options={UNITS.map(u => ({ value: u, label: u }))} onChange={setSelectedUnits} triggerClassName="w-[150px]" />
+            <div className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[10px] text-muted-foreground">
+              <RefreshCw className="h-3 w-3" />
+              <span>{refreshLabel}</span>
+            </div>
           </div>
         </div>
-        <div className="h-12 border-t border-border/60 px-6 flex items-center overflow-x-auto scrollbar-thin">
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            <SelectFilter label="Datum" value={datePreset} options={DATE_PRESETS} onSelect={setDatePreset} triggerClassName="w-[200px]" />
-            <SelectFilter label="Compare" value={comparison} options={["Vorige vergelijkbare periode", "Vorig jaar", "Geen"]} onSelect={setComparison} triggerClassName="w-[260px]" />
-            <MultiSelectFilter label="Units" placeholder="Alle units" values={selectedUnits} options={UNITS.map(u => ({ value: u, label: u }))} onChange={setSelectedUnits} triggerClassName="w-[170px]" />
-            <SelectFilter label="Dimensie" value={dimension} options={DIMENSIES} onSelect={setDimension} triggerClassName="w-[200px]" />
-          </div>
+        <div className="grid grid-cols-6 border-t border-border/60 divide-x divide-border/60 bg-card/40">
+          {headerKpis.map(k => {
+            const c = k.tone ? STATUS_COLOR[k.tone] : undefined;
+            return (
+              <div key={k.label} className="px-4 py-2 min-w-0">
+                <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground truncate">{k.label}</div>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-lg font-bold tabular-nums leading-none" style={c ? { color: c } : undefined}>{k.value}</span>
+                  {k.sub && <span className="text-[10px] text-muted-foreground truncate">{k.sub}</span>}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </header>
 
-      <main className="px-6 py-6 space-y-6">
-        <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_1fr_320px]">
-          {major.map(t => (
-            <MajorTile key={t.key} tile={t} onOpen={() => setOpenTile(t.key)} />
+      <main className="px-4 py-4 space-y-4">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
+          {tiles.map(t => (
+            <DenseTile key={t.key} tile={t} onOpen={() => setOpenTile(t.key)} />
           ))}
-          <div className="grid grid-rows-5 gap-3">
-            {minor.map(t => (
-              <MinorTile key={t.key} tile={t} onOpen={() => setOpenTile(t.key)} />
-            ))}
-          </div>
         </div>
 
         <BottleneckBand
@@ -273,77 +343,56 @@ export default function LCB() {
   );
 }
 
-function MajorTile({ tile, onOpen }: { tile: TileDef; onOpen: () => void }) {
+function DenseTile({ tile, onOpen }: { tile: TileDef; onOpen: () => void }) {
   const color = STATUS_COLOR[tile.status];
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="group flex h-full min-h-[240px] w-full flex-col rounded-2xl border border-border bg-card text-left transition-all hover:border-primary/40 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+      className="group flex w-full flex-col rounded-xl border border-border bg-card text-left transition-all hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
     >
-      <div className="flex items-start justify-between gap-3 border-b border-border/60 px-6 pb-4 pt-5">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="truncate text-lg font-semibold text-foreground">{tile.title}</h3>
-            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider" style={{ backgroundColor: `${color}22`, color }}>
-              {STATUS_LABEL[tile.status]}
-            </span>
-          </div>
-          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{tile.subtitle}</p>
+      <div className="flex items-start gap-2 px-3 pt-2.5 pb-1.5">
+        <span
+          className="inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wider shrink-0"
+          style={{ backgroundColor: `${color}22`, color }}
+        >
+          {STATUS_LABEL[tile.status]}
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-[13px] font-semibold text-foreground leading-tight">{tile.title}</h3>
+          <p className="truncate text-[10px] text-muted-foreground leading-tight">{tile.subtitle}</p>
         </div>
-        <ChevronRight className="mt-1.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+        <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </div>
-      <div className="grid grid-cols-[auto_1fr] items-center gap-6 px-6 py-5 flex-1">
+      <div className="grid grid-cols-[auto_1fr] items-center gap-3 px-3 pb-2.5">
         <div className="relative shrink-0">
-          <AnimatedRing value={tile.score} size={104} strokeWidth={9} strokeColor={color} />
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground">Score</span>
-            <span className="mt-0.5 text-2xl font-bold leading-none tabular-nums" style={{ color }}>
+          <AnimatedRing value={tile.score} size={64} strokeWidth={6} strokeColor={color} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-sm font-bold tabular-nums" style={{ color }}>
               <AnimatedNumber value={tile.score} />
             </span>
-            <span className="mt-0.5 text-[9px] text-muted-foreground">/ 100</span>
           </div>
         </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{tile.metricLabel}</div>
-          <div className="text-3xl font-bold leading-tight tabular-nums text-foreground">{tile.metricValue}</div>
+        <div className="min-w-0">
+          <div className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground">{tile.metricLabel}</div>
+          <div className="text-xl font-bold leading-none tabular-nums text-foreground">{tile.metricValue}</div>
           {tile.trend && tile.trend.length > 1 && (
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-1.5">
               <TileSparkline data={tile.trend} color={color} />
-              <span className="text-[10px] text-muted-foreground">8w trend</span>
             </div>
           )}
         </div>
       </div>
-    </button>
-  );
-}
-
-function MinorTile({ tile, onOpen }: { tile: TileDef; onOpen: () => void }) {
-  const color = STATUS_COLOR[tile.status];
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-all hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
-    >
-      <div className="relative shrink-0">
-        <AnimatedRing value={tile.score} size={48} strokeWidth={5} strokeColor={color} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-bold tabular-nums" style={{ color }}>{tile.score}</span>
+      {tile.stats && tile.stats.length > 0 && (
+        <div className="grid grid-cols-3 border-t border-border/60 divide-x divide-border/60">
+          {tile.stats.map(s => (
+            <div key={s.label} className="px-2 py-1.5 min-w-0">
+              <div className="text-[9px] uppercase tracking-wider text-muted-foreground truncate">{s.label}</div>
+              <div className="text-[13px] font-semibold tabular-nums text-foreground truncate">{s.value}</div>
+            </div>
+          ))}
         </div>
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5">
-          <h4 className="truncate text-sm font-semibold text-foreground">{tile.title}</h4>
-        </div>
-        <p className="truncate text-[10px] text-muted-foreground">{tile.subtitle}</p>
-        <div className="mt-1 flex items-center gap-1.5">
-          <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
-          <span className="text-[10px] text-muted-foreground">{STATUS_LABEL[tile.status]}</span>
-        </div>
-      </div>
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+      )}
     </button>
   );
 }

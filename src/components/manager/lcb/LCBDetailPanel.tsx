@@ -70,7 +70,7 @@ export function LCBDetailPanel({ tile, onClose }: Props) {
         )}
       >
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-primary/10 via-card to-card border-b px-6 pt-5 pb-4">
+        <div className="relative bg-card border-b px-6 pt-5 pb-4">
           <div className="flex items-start gap-4">
             <div className="relative shrink-0">
               <AnimatedRing value={tile.score} size={64} strokeWidth={6} strokeColor={color} />
@@ -91,13 +91,13 @@ export function LCBDetailPanel({ tile, onClose }: Props) {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">{tile.subtitle}</p>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  {tile.metricLabel}
-                </span>
-                <span className="text-lg font-bold tabular-nums text-foreground">
-                  {tile.metricValue}
-                </span>
+            </div>
+            <div className="text-right pr-2 shrink-0">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                {tile.metricLabel}
+              </div>
+              <div className="text-2xl font-bold tabular-nums text-foreground leading-none mt-1">
+                {tile.metricValue}
               </div>
             </div>
             <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={onClose}>
@@ -106,8 +106,8 @@ export function LCBDetailPanel({ tile, onClose }: Props) {
           </div>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">{tile.detail}</div>
+        {/* Body — strip the nested card chrome from detail components */}
+        <div className="flex-1 overflow-y-auto bg-muted/10 px-6 py-5 lcb-detail-flat">{tile.detail}</div>
       </div>
     </div>,
     document.body,
