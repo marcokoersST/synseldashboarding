@@ -72,7 +72,7 @@ function AppLayoutInner() {
   return (
     <TopBarActionsContext.Provider value={{ actions: topBarActions, setActions: setTopBarActions }}>
       <div className="h-screen bg-sidebar flex overflow-hidden">
-        <Sidebar isCollapsed={isCollapsed} onToggleCollapse={() => setIsCollapsed(prev => !prev)} />
+        <Sidebar isCollapsed={isCollapsed} onToggleCollapse={() => setUserCollapsed(prev => !prev)} />
         <div className={`${isCollapsed ? 'ml-16' : 'ml-52'} flex-1 flex flex-col h-screen min-w-0 transition-[margin-left] duration-300 ease-in-out`}>
           {!isSysteemHygiene && (
             <TopBar
