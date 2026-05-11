@@ -55,6 +55,7 @@ interface TileDef {
   metricValue: string;
   detail: ReactNode;
   size: "major" | "minor";
+  trend?: number[];
 }
 
 export default function LCB() {
