@@ -238,6 +238,19 @@ export default function LCB() {
             ))}
           </div>
         </div>
+
+        <BottleneckBand
+          selectedUnits={selectedUnits}
+          bottleneckRows={tiles.map(t => ({
+            key: t.key,
+            label: t.title,
+            score: t.score,
+            status: t.status,
+            metric: `${t.metricValue}`,
+          }))}
+          onSelectTile={(key) => setOpenTile(key)}
+          onSelectTileWithUnit={(key, unit) => { setSelectedUnits([unit]); setOpenTile(key); }}
+        />
       </main>
 
       <LCBDetailPanel tile={openDef ?? null} onClose={() => setOpenTile(null)} />
