@@ -12,11 +12,16 @@ import {
   type PrognoseConsultantRow,
   type InterventionNote,
   type BottleneckCategory,
+  type PrognoseStatus,
   formatTelefonie,
   loadInterventions,
   saveIntervention,
+  effectiveStatus,
+  setStatusOverride,
+  getStatusOverride,
 } from "@/data/prognoseData";
 import { MetricDrilldownPanel, type MetricKey } from "./MetricDrilldownPanel";
+import { usePrognosePeriod } from "@/contexts/PrognosePeriodContext";
 
 interface Props {
   row: PrognoseConsultantRow | null;
