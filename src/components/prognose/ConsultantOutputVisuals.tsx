@@ -58,87 +58,91 @@ export function ConsultantOutputVisuals({ rows, onSelectConsultant }: Props) {
   }, [rows]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
-      <Card>
-        <CardHeader className="pb-1.5 pt-3 px-4 border-b">
-          <CardTitle className="text-sm">
-            Prognose-score per consultant
-            <span className="ml-2 text-[10px] font-normal text-muted-foreground">
-              {rows.length} consultants — gesorteerd op score
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-3 pb-3 px-4">
-          <TooltipProvider delayDuration={100}>
-            <div className="flex flex-wrap gap-1">
-              {sorted.map((r) => (
-                <Tooltip key={r.id}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => onSelectConsultant(r)}
-                      className={cn(
-                        "h-3.5 w-3.5 rounded-sm border transition-transform hover:scale-125 hover:z-10",
-                        statusColor(r.status),
-                      )}
-                      aria-label={`${r.name} — ${r.prognoseScore}%`}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">
-                    <div className="font-medium">{r.name}</div>
-                    <div className="text-muted-foreground">{r.unit}</div>
-                    <div className="tabular-nums">Score: {r.prognoseScore}%</div>
-                    <div className="text-[10px] text-muted-foreground">{r.bottleneck}</div>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+    <Card>
+      <CardHeader className="pb-1.5 pt-3 px-4 border-b">
+        <CardTitle className="text-sm">
+          Consultant output — verdeling
+          <span className="ml-2 text-[10px] font-normal text-muted-foreground">
+            {rows.length} consultants
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x">
+          <div className="px-4 py-3">
+            <div className="text-[11px] font-medium text-muted-foreground mb-2">
+              Prognose-score per consultant
+              <span className="ml-1.5 text-[10px] font-normal">— gesorteerd op score</span>
             </div>
-          </TooltipProvider>
-          <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground border-t pt-2">
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500 border border-emerald-600/60" />
-              Op koers <span className="font-semibold tabular-nums text-foreground">{counts["op-koers"]}</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-500 border border-amber-600/60" />
-              Risico <span className="font-semibold tabular-nums text-foreground">{counts.risico}</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-destructive border border-destructive/60" />
-              Kritiek <span className="font-semibold tabular-nums text-foreground">{counts.kritiek}</span>
-            </span>
+            <TooltipProvider delayDuration={100}>
+              <div className="flex flex-wrap gap-1">
+                {sorted.map((r) => (
+                  <Tooltip key={r.id}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => onSelectConsultant(r)}
+                        className={cn(
+                          "h-3.5 w-3.5 rounded-sm border transition-transform hover:scale-125 hover:z-10",
+                          statusColor(r.status),
+                        )}
+                        aria-label={`${r.name} — ${r.prognoseScore}%`}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      <div className="font-medium">{r.name}</div>
+                      <div className="text-muted-foreground">{r.unit}</div>
+                      <div className="tabular-nums">Score: {r.prognoseScore}%</div>
+                      <div className="text-[10px] text-muted-foreground">{r.bottleneck}</div>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </TooltipProvider>
+            <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground border-t pt-2">
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500 border border-emerald-600/60" />
+                Op koers <span className="font-semibold tabular-nums text-foreground">{counts["op-koers"]}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-500 border border-amber-600/60" />
+                Risico <span className="font-semibold tabular-nums text-foreground">{counts.risico}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-destructive border border-destructive/60" />
+                Kritiek <span className="font-semibold tabular-nums text-foreground">{counts.kritiek}</span>
+              </span>
+            </div>
           </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader className="pb-1.5 pt-3 px-4 border-b">
-          <CardTitle className="text-sm">Bottleneck verdeling</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-2 pb-2 px-2">
-          <div style={{ width: "100%", height: 220 }}>
-            <ResponsiveContainer>
-              <RadarChart data={radarData} outerRadius="75%">
-                <PolarGrid stroke="hsl(var(--border))" />
-                <PolarAngleAxis
-                  dataKey="category"
-                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                />
-                <PolarRadiusAxis
-                  tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                  axisLine={false}
-                />
-                <Radar
-                  name="Aantal"
-                  dataKey="count"
-                  stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary))"
-                  fillOpacity={0.3}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+          <div className="px-2 py-3">
+            <div className="text-[11px] font-medium text-muted-foreground mb-1 px-2">
+              Bottleneck verdeling
+            </div>
+            <div style={{ width: "100%", height: 220 }}>
+              <ResponsiveContainer>
+                <RadarChart data={radarData} outerRadius="75%">
+                  <PolarGrid stroke="hsl(var(--border))" />
+                  <PolarAngleAxis
+                    dataKey="category"
+                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                  />
+                  <PolarRadiusAxis
+                    tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                    axisLine={false}
+                  />
+                  <Radar
+                    name="Aantal"
+                    dataKey="count"
+                    stroke="hsl(var(--primary))"
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0.3}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
