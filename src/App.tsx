@@ -70,6 +70,7 @@ const BarendFunnelOps = lazy(() => import("./pages/barend/FunnelOperations"));
 // Marketing dashboards
 const MarketingHub = lazy(() => import("./pages/marketing/MarketingHub"));
 const MarketingVacatureFunnel = lazy(() => import("./pages/marketing/VacatureFunnelMonitor"));
+const RecruitmentInternHub = lazy(() => import("./pages/recruitment-intern/RecruitmentInternHub"));
 const CorporateRecruitmentInflow = lazy(() => import("./pages/corporate-recruitment/InflowDashboard"));
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
