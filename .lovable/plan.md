@@ -1,46 +1,87 @@
-## Issue
+# Recruitment Intern Hub customization
 
-Inside the LC-B detail view, the row/period drill-down (e.g. "Detail: P12" in *Plaatsing & Attritie*, "Detail: {consultant}" in Outreach / Sales Funnel / Revenue) renders **below** the table. On a full-screen detail panel that pushes the chart out of view and feels disconnected. The prognose dashboard (`MetricDrilldownPanel`) handles this by docking the detail to the **right** of the table — same pattern should apply here.
+Scope is limited to the duplicated hub (`src/pages/recruitment-intern/RecruitmentInternHub.tsx`) and a new dedicated Overview tab. The original Marketing Hub stays untouched.
 
-## Fix
+## 1. Tabs (RecruitmentInternHub.tsx)
 
-Switch the 4 V2 detail components to a side-by-side layout when a row is selected. Pattern: outer flex/grid, table+chart take the remaining width, drill-down panel sits on the right at a fixed width (`w-[380px]`) and is independently scrollable. When no row is selected, the main content takes full width (no empty column).
+- Rename `Paid Channels` → `Recruitment`
+- Rename `Jobboards` → `Marketing`
+- Remove `Paid Social`, `Paid Social – Ad level`, `Inschrijvingen`
+- Final tab order: Overview, Recruitment, Marketing
 
-### Components to update
+## 2. New Overview tab
 
-1. **`PlacementAttritionCard.tsx`** — "Detail: {period}" panel (currently `mt-3` below table).
-2. **`OutreachCardV2.tsx`** — "Detail: {consultantName}" expanded row panel.
-3. **`SalesFunnelV2.tsx`** — per-consultant detail panel.
-4. **`RevenueChartV2.tsx`** — per-consultant click-through detail.
+Create `src/pages/recruitment-intern/tabs/RecruitmentOverviewTab.tsx` (copy of the marketing OverviewTab, then modified) so the original stays intact.
 
-### Layout pattern (applied per component)
+### Top KPI tiles (3)
+Replace the 3 existing tiles with hard-coded values:
+- `Inschrijven` → 4
+- `Gesprekken` → 5
+- `Aangenomen` → 2
 
-```text
-<div className="flex gap-4">
-  <div className="flex-1 min-w-0">
-    {chart + table}
-  </div>
-  {selected && (
-    <aside className="w-[380px] shrink-0 border-l border-border pl-4 max-h-[calc(100vh-180px)] overflow-y-auto">
-      {detail content, sticky header with title + close}
-    </aside>
-  )}
-</div>
-```
+Keep current card styling and delta/progress visuals (delta vs hard-coded "previous" picked from existing seed helper so the visuals still render).
 
-- Header inside the aside keeps the existing "Detail: …" + "Sluiten ✕" controls; make it `sticky top-0 bg-background` so it stays visible while scrolling.
-- Remove the previous below-table wrapper (`mt-3`, the row-anchored detail block in OutreachCardV2, etc.).
-- On narrow viewports (`lg:` breakpoint), fall back to stacked: `flex-col lg:flex-row`. Keeps mobile/embedded usage acceptable.
-- Selected-row highlight in the table stays (already present via `bg-primary/5`).
+### Inflow section
 
-### Out of scope
+- Section heading stays `Inflow`.
+- Replace the `Units` popover with an `Afdelingen` popover.
+  - Trigger label: `Afdelingen` (or `N afdeling(en)` when filtered).
+  - Options (hard-coded, all selected by default):
+    Sales, Customer Service, Marketing, Stagiaire, Bijbaan, Overig.
+  - Keep `Alles aan` / `Alles uit` buttons.
 
-- No changes to overview tiles, financial strip, `LCBDetailPanel` chrome, or data.
-- No changes to embedded behaviour outside the LC-B detail view — the side-panel layout works the same when these components are used elsewhere because it's purely presentational and gracefully collapses when nothing is selected.
+### Inflow scorecards (2)
+- `Inschrijvingen Recruitment` → 2
+- `Inschrijvingen Marketing` → existing `inflowHeractiveringen.current` value (just relabel; behavior unchanged)
 
-## Files touched
+### Funnel column chart (replaces "Per Bron" + "Per Consultant")
+Single full-width `Card` titled `Funnel drop-off` with a Recharts `BarChart` (vertical bars, one series), bars in this order with hard-coded values that visually drop off:
+1. Conversions
+2. Inschrijvingen
+3. Assessment
+4. Eerste gesprek
+5. Tweede gesprek
+6. Aangenomen
 
-- `src/components/manager/v2/PlacementAttritionCard.tsx`
-- `src/components/manager/v2/OutreachCardV2.tsx`
-- `src/components/manager/v2/SalesFunnelV2.tsx`
-- `src/components/manager/v2/RevenueChartV2.tsx`
+Use existing chart styling (semantic tokens, rounded top corners, LabelList on top).
+
+### Weekly hires chart (replaces "Inflow per Unit")
+Card titled `Aangenomen per week`. Replace the unit selector with nothing (or keep an empty header). Render a `BarChart` with one bar per week (W1..W8 or last 8 ISO weeks) using a small hard-coded dataset of weekly hire counts.
+
+### Highlights card
+- `Best presterende bron`: keep label, force display value `30` (drop the source name suffix or keep source name and hard-code the count to 30 — keep source name with `(30)`).
+- `Laagste CPA`: force display value `€34,12` (drop the existing `Indeed (€8,14)` string).
+- Keep `Snelst stijgende CPA` row unchanged.
+
+### Redenen afgevallen card (replaces "Unit Verdeling (Marketing)")
+Card titled `Redenen afgevallen`. Render a simple two-column table:
+
+| Reden | Aantal |
+| --- | --- |
+| Parttime werken | hard-coded |
+| Thuiswerken | hard-coded |
+| Auto van de zaak | hard-coded |
+| Vindt rol niet interessant | hard-coded |
+| Wil buitendienst | hard-coded |
+| Voor andere optie gekozen | hard-coded |
+
+Counts: pick plausible descending values (e.g. 8, 6, 5, 4, 3, 2) so the table reads naturally. Left column = reden, right column = aantal, right-aligned tabular-nums.
+
+## 3. Wire-up
+
+In `RecruitmentInternHub.tsx`:
+- Import the new `RecruitmentOverviewTab` instead of the marketing `OverviewTab`.
+- Drop imports/cases for the removed tabs.
+- Update the `tabs` array and `renderTab` switch accordingly.
+
+## Technical notes
+
+- No data-layer changes; numbers are hard-coded inline in the new Overview tab.
+- Keep using semantic Tailwind tokens already in the file.
+- No changes to `MarketingHub.tsx`, marketing tabs, or shared marketing data files.
+- No routing or sidebar changes.
+
+## Files
+
+- edit `src/pages/recruitment-intern/RecruitmentInternHub.tsx`
+- create `src/pages/recruitment-intern/tabs/RecruitmentOverviewTab.tsx`
