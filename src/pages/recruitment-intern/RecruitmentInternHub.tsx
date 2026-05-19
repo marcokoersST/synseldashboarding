@@ -4,21 +4,15 @@ import type { DateRange } from "react-day-picker";
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
 
 import DateFilterPanel from "@/components/marketing/DateFilterPanel";
-import OverviewTab from "@/pages/marketing/tabs/OverviewTab";
+import RecruitmentOverviewTab from "./tabs/RecruitmentOverviewTab";
 import PaidChannelsTab from "@/pages/marketing/tabs/PaidChannelsTab";
 import JobboardsTab from "@/pages/marketing/tabs/JobboardsTab";
-import PaidSocialTab from "@/pages/marketing/tabs/PaidSocialTab";
-import PaidSocialAdLevelTab from "@/pages/marketing/tabs/PaidSocialAdLevelTab";
-import InschrijvingenTab from "@/pages/marketing/tabs/InschrijvingenTab";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { id: "overview", label: "Overview" },
-  { id: "paid-channels", label: "Paid Channels" },
-  { id: "jobboards", label: "Jobboards" },
-  { id: "paid-social", label: "Paid Social" },
-  { id: "paid-social-ad", label: "Paid Social – Ad level" },
-  { id: "inschrijvingen", label: "Inschrijvingen" },
+  { id: "recruitment", label: "Recruitment" },
+  { id: "marketing", label: "Marketing" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -49,12 +43,9 @@ const RecruitmentInternHub = () => {
   const renderTab = () => {
     const sharedProps = { dateRange, compareRange: effectiveCompareRange, deltaMode };
     switch (activeTab) {
-      case "overview": return <OverviewTab {...sharedProps} onTabChange={setActiveTab} />;
-      case "paid-channels": return <PaidChannelsTab {...sharedProps} />;
-      case "jobboards": return <JobboardsTab {...sharedProps} />;
-      case "paid-social": return <PaidSocialTab {...sharedProps} />;
-      case "paid-social-ad": return <PaidSocialAdLevelTab {...sharedProps} />;
-      case "inschrijvingen": return <InschrijvingenTab {...sharedProps} />;
+      case "overview": return <RecruitmentOverviewTab {...sharedProps} onTabChange={setActiveTab} />;
+      case "recruitment": return <PaidChannelsTab {...sharedProps} />;
+      case "marketing": return <JobboardsTab {...sharedProps} />;
       default: return null;
     }
   };
