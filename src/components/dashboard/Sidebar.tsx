@@ -127,6 +127,11 @@ const navItems: NavItem[] = [
     path: "/marketing",
   },
   {
+    icon: Megaphone,
+    label: "Recruitment Intern Hub",
+    path: "/recruitment-intern",
+  },
+  {
     icon: Sparkles,
     label: "AI KPI Dashboard",
     path: "/concepts/ai-kpi",
