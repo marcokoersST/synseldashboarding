@@ -233,8 +233,16 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
         <CardContent>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between p-2 rounded bg-emerald-500/10">
-              <span className="text-muted-foreground">Best presterende bron</span>
+              <span className="text-muted-foreground">Best presterende bron conversies</span>
               <span className="font-semibold text-emerald-700">30</span>
+            </div>
+            <div className="flex justify-between p-2 rounded bg-emerald-500/10">
+              <span className="text-muted-foreground">Best presterende bron gesprekken</span>
+              <span className="font-semibold text-emerald-700">12</span>
+            </div>
+            <div className="flex justify-between p-2 rounded bg-emerald-500/10">
+              <span className="text-muted-foreground">Best presterende vacature</span>
+              <span className="font-semibold text-emerald-700">Junior Sales Consultant</span>
             </div>
             <div className="flex justify-between p-2 rounded bg-blue-500/10">
               <span className="text-muted-foreground">Laagste CPA</span>
