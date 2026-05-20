@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { TrendingUp, TrendingDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
-import { FunnelDropOff } from "@/components/recruitment-intern/FunnelDropOff";
+import { WeeklyFunnelDropOff } from "@/components/recruitment-intern/WeeklyFunnelDropOff";
 import { MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
@@ -35,6 +35,17 @@ const LINKEDIN_WEEKLY = [
   { week: "W6", connectieverzoeken: 55, berichten: 32, inschrijvingen: 2 },
   { week: "W7", connectieverzoeken: 48, berichten: 27, inschrijvingen: 1 },
   { week: "W8", connectieverzoeken: 60, berichten: 35, inschrijvingen: 3 },
+];
+
+const BRONNEN_WEEKLY = [
+  { week: "W1", values: { linkedin: 1, werkzoeken: 0, recruitrobin: 0, indeed: 1 } },
+  { week: "W2", values: { linkedin: 0, werkzoeken: 1, recruitrobin: 0, indeed: 0 } },
+  { week: "W3", values: { linkedin: 1, werkzoeken: 1, recruitrobin: 0, indeed: 1 } },
+  { week: "W4", values: { linkedin: 2, werkzoeken: 1, recruitrobin: 1, indeed: 1 } },
+  { week: "W5", values: { linkedin: 1, werkzoeken: 2, recruitrobin: 0, indeed: 1 } },
+  { week: "W6", values: { linkedin: 2, werkzoeken: 1, recruitrobin: 1, indeed: 2 } },
+  { week: "W7", values: { linkedin: 1, werkzoeken: 2, recruitrobin: 0, indeed: 1 } },
+  { week: "W8", values: { linkedin: 3, werkzoeken: 2, recruitrobin: 1, indeed: 2 } },
 ];
 
 const REDENEN = [
@@ -161,24 +172,32 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
           </Popover>
         </CardHeader>
         <CardContent>
-          <FunnelDropOff
-            data={BRONNEN.map((b) => ({ stage: b.source, value: b.inschrijven }))}
-            color={MARKETING_COLORS[0]}
+          <WeeklyFunnelDropOff
+            weeks={BRONNEN_WEEKLY}
+            series={[
+              { key: "linkedin", label: "LinkedIn", color: MARKETING_COLORS[0] },
+              { key: "werkzoeken", label: "Werkzoeken CV Database", color: MARKETING_COLORS[1] },
+              { key: "recruitrobin", label: "RecruitRobin", color: MARKETING_COLORS[2] },
+              { key: "indeed", label: "Indeed CV Database", color: MARKETING_COLORS[3] },
+            ]}
           />
         </CardContent>
       </Card>
 
-      {/* LinkedIn funnel */}
+      {/* LinkedIn weekly funnel */}
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">LinkedIn</CardTitle></CardHeader>
         <CardContent>
-          <FunnelDropOff
-            data={[
-              { stage: "Connectieverzoeken", value: LINKEDIN_WEEKLY.reduce((s, w) => s + w.connectieverzoeken, 0) },
-              { stage: "Verstuurde berichten", value: LINKEDIN_WEEKLY.reduce((s, w) => s + w.berichten, 0) },
-              { stage: "Inschrijvingen", value: LINKEDIN_WEEKLY.reduce((s, w) => s + w.inschrijvingen, 0) },
+          <WeeklyFunnelDropOff
+            weeks={LINKEDIN_WEEKLY.map((w) => ({
+              week: w.week,
+              values: { connectieverzoeken: w.connectieverzoeken, berichten: w.berichten, inschrijvingen: w.inschrijvingen },
+            }))}
+            series={[
+              { key: "connectieverzoeken", label: "Connectieverzoeken", color: MARKETING_COLORS[0] },
+              { key: "berichten", label: "Verstuurde berichten", color: MARKETING_COLORS[1] },
+              { key: "inschrijvingen", label: "Inschrijvingen", color: MARKETING_COLORS[2] },
             ]}
-            color={MARKETING_COLORS[0]}
           />
         </CardContent>
       </Card>
