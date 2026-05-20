@@ -161,24 +161,32 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
           </Popover>
         </CardHeader>
         <CardContent>
-          <FunnelDropOff
-            data={BRONNEN.map((b) => ({ stage: b.source, value: b.inschrijven }))}
-            color={MARKETING_COLORS[0]}
+          <WeeklyFunnelDropOff
+            weeks={BRONNEN_WEEKLY}
+            series={[
+              { key: "linkedin", label: "LinkedIn", color: MARKETING_COLORS[0] },
+              { key: "werkzoeken", label: "Werkzoeken CV Database", color: MARKETING_COLORS[1] },
+              { key: "recruitrobin", label: "RecruitRobin", color: MARKETING_COLORS[2] },
+              { key: "indeed", label: "Indeed CV Database", color: MARKETING_COLORS[3] },
+            ]}
           />
         </CardContent>
       </Card>
 
-      {/* LinkedIn funnel */}
+      {/* LinkedIn weekly funnel */}
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">LinkedIn</CardTitle></CardHeader>
         <CardContent>
-          <FunnelDropOff
-            data={[
-              { stage: "Connectieverzoeken", value: LINKEDIN_WEEKLY.reduce((s, w) => s + w.connectieverzoeken, 0) },
-              { stage: "Verstuurde berichten", value: LINKEDIN_WEEKLY.reduce((s, w) => s + w.berichten, 0) },
-              { stage: "Inschrijvingen", value: LINKEDIN_WEEKLY.reduce((s, w) => s + w.inschrijvingen, 0) },
+          <WeeklyFunnelDropOff
+            weeks={LINKEDIN_WEEKLY.map((w) => ({
+              week: w.week,
+              values: { connectieverzoeken: w.connectieverzoeken, berichten: w.berichten, inschrijvingen: w.inschrijvingen },
+            }))}
+            series={[
+              { key: "connectieverzoeken", label: "Connectieverzoeken", color: MARKETING_COLORS[0] },
+              { key: "berichten", label: "Verstuurde berichten", color: MARKETING_COLORS[1] },
+              { key: "inschrijvingen", label: "Inschrijvingen", color: MARKETING_COLORS[2] },
             ]}
-            color={MARKETING_COLORS[0]}
           />
         </CardContent>
       </Card>
