@@ -202,18 +202,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">Funnel drop-off</CardTitle></CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={FUNNEL_DATA} margin={{ left: 10, right: 30, top: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="stage" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} domain={[0, (m: number) => Math.ceil(m * 1.3)]} />
-              <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "var(--radius)", fontSize: "12px" }} />
-              <Bar dataKey="value" name="Kandidaten" fill={MARKETING_COLORS[0]} radius={[6, 6, 0, 0]} barSize={48}>
-                <LabelList dataKey="value" position="top" style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                <LabelList dataKey="dropLabel" position="insideTop" offset={12} style={{ fontSize: 11, fontWeight: 600, fill: "hsl(var(--destructive))" }} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <FunnelDropOff data={FUNNEL_DATA} />
         </CardContent>
       </Card>
 
