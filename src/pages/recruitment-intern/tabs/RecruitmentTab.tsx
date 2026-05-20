@@ -5,20 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TrendingUp, TrendingDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  BarChart,
-  Bar,
-  Line,
-  ComposedChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LabelList,
-} from "recharts";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
+import { FunnelDropOff } from "@/components/recruitment-intern/FunnelDropOff";
 import { MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
@@ -172,47 +160,26 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
             </PopoverContent>
           </Popover>
         </CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="py-2 px-4 text-left font-medium text-muted-foreground">Bron</th>
-                <th className="py-2 px-4 text-right font-medium text-muted-foreground w-40">Inschrijven</th>
-              </tr>
-            </thead>
-            <tbody>
-              {BRONNEN.map((b) => (
-                <tr key={b.source} className="border-b hover:bg-muted/50">
-                  <td className="font-medium py-2 px-4">{b.source}</td>
-                  <td className="text-right tabular-nums py-2 px-4">{b.inschrijven}</td>
-                </tr>
-              ))}
-              <tr className="font-bold bg-muted/30">
-                <td className="py-2 px-4">Totaal</td>
-                <td className="text-right tabular-nums py-2 px-4">{totalInschrijven}</td>
-              </tr>
-            </tbody>
-          </table>
+        <CardContent>
+          <FunnelDropOff
+            data={BRONNEN.map((b) => ({ stage: b.source, value: b.inschrijven }))}
+            color={MARKETING_COLORS[0]}
+          />
         </CardContent>
       </Card>
 
-      {/* LinkedIn weekly chart */}
+      {/* LinkedIn funnel */}
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">LinkedIn</CardTitle></CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={LINKEDIN_WEEKLY} margin={{ left: 10, right: 30, top: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="week" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "var(--radius)", fontSize: "12px" }} />
-              <Legend wrapperStyle={{ fontSize: "12px" }} />
-              <Bar dataKey="connectieverzoeken" name="Connectieverzoeken" fill={MARKETING_COLORS[0]} radius={[4, 4, 0, 0]} />
-              <Bar dataKey="berichten" name="Verstuurde berichten" fill={MARKETING_COLORS[1]} radius={[4, 4, 0, 0]} />
-              <Bar dataKey="inschrijvingen" name="Inschrijvingen" fill={MARKETING_COLORS[2]} radius={[4, 4, 0, 0]} />
-              <Line type="monotone" dataKey="connectieverzoeken" name="Trend" stroke="hsl(var(--primary))" strokeWidth={2} strokeDasharray="4 4" dot={false} legendType="none" />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <FunnelDropOff
+            data={[
+              { stage: "Connectieverzoeken", value: LINKEDIN_WEEKLY.reduce((s, w) => s + w.connectieverzoeken, 0) },
+              { stage: "Verstuurde berichten", value: LINKEDIN_WEEKLY.reduce((s, w) => s + w.berichten, 0) },
+              { stage: "Inschrijvingen", value: LINKEDIN_WEEKLY.reduce((s, w) => s + w.inschrijvingen, 0) },
+            ]}
+            color={MARKETING_COLORS[0]}
+          />
         </CardContent>
       </Card>
 
