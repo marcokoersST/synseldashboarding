@@ -111,7 +111,17 @@ const CANDIDATE_NAMES = [
   "Luuk Peters", "Julia Hendriks", "Tim van Leeuwen", "Sara Dekker",
   "Niels Eggens", "Femke Vermeer", "Joris Kuiper", "Iris Hofman",
 ];
-const COMPANIES = ["Shell", "ASML", "Philips", "ING", "KPN", "Rabobank", "Unilever", "Heineken", "Vopak", "DSM"];
+const COMPANIES = [
+  "Koopmans Meel", "Nedpack / Qimarox", "KME Netherlands BV", "J&W Service B.V.",
+  "VDL Steelweld bv", "Tevel Systems", "SafanDarley Lochem B.V.", "Shell",
+  "ASML", "Philips", "Vopak", "DSM",
+];
+const ROLES = [
+  "Operator 5-Ploegendienst", "Software Engineer", "Automation Engineer",
+  "Design Engineer", "Software Engineer PLC", "Service Monteur",
+  "Technisch Project Manager", "Allround Monteur", "Werktuigbouwkundige",
+  "Elektromonteur",
+];
 const CONTACT_PEOPLE = ["Mark Jansen", "Karin de Boer", "Bas van Loon", "Linda Verstegen", "Joost Bakker", "Esther Klein"];
 const CATEGORIES: CandidateCategory[] = ["A+", "A", "B"];
 const STATUSES: CandidateStatus[] = [
@@ -119,6 +129,26 @@ const STATUSES: CandidateStatus[] = [
   "Geplaatst", "Lead", "Niet beschikbaar", "Niet geplaatst", "Nieuw",
   "Vacature aanvraag", "Verdelen",
 ];
+
+// ─── Realistic RecruitCRM-style ID generators ──────────────────────────
+function makeCandidateId(rnd: () => number): string {
+  // 6-digit numeric IDs, e.g. 205070, 133538, 219890
+  return String(rint(rnd, 100000, 299999));
+}
+function makeDealId(rnd: () => number): string {
+  // Mixed 5-7 digit numeric IDs, e.g. 1220938, 99981, 31685
+  const bucket = rnd();
+  if (bucket < 0.45) return String(rint(rnd, 1200000, 1230000));
+  if (bucket < 0.8) return String(rint(rnd, 80000, 110000));
+  return String(rint(rnd, 30000, 60000));
+}
+function makeOpdrachtgeverId(rnd: () => number): string {
+  return String(rint(rnd, 10000, 99999));
+}
+function firstName(full: string): string {
+  return full.split(" ")[0];
+}
+
 
 export interface CandidateRow {
   name: string;
