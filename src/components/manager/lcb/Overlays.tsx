@@ -137,9 +137,10 @@ interface ConsultantProps {
   onClose: () => void;
   onBack?: () => void;
   onOpenStep: (consultantId: number, step: LcbStepKey) => void;
+  onOpenCallConversions?: (consultantId: number, conversionId?: string) => void;
 }
 
-export function ConsultantOverviewOverlay({ open, consultantId, onClose, onBack, onOpenStep }: ConsultantProps) {
+export function ConsultantOverviewOverlay({ open, consultantId, onClose, onBack, onOpenStep, onOpenCallConversions }: ConsultantProps) {
   const c = consultantId != null ? consultant(consultantId) : null;
   const f = consultantId != null ? lcbMarketRows.find((x) => x.consultantId === consultantId) : null;
 
