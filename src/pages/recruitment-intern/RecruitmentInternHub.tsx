@@ -44,7 +44,7 @@ const RecruitmentInternHub = () => {
     const sharedProps = { dateRange, compareRange: effectiveCompareRange, deltaMode };
     switch (activeTab) {
       case "overview": return <RecruitmentOverviewTab {...sharedProps} onTabChange={setActiveTab} />;
-      case "recruitment": return <PaidChannelsTab {...sharedProps} />;
+      case "recruitment": return <RecruitmentTab {...sharedProps} />;
       case "marketing": return <JobboardsTab {...sharedProps} />;
       default: return null;
     }
