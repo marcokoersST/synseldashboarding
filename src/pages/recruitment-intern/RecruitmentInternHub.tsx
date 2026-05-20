@@ -5,7 +5,7 @@ import type { DeltaMode } from "@/components/marketing/DeltaCell";
 
 import DateFilterPanel from "@/components/marketing/DateFilterPanel";
 import RecruitmentOverviewTab from "./tabs/RecruitmentOverviewTab";
-import PaidChannelsTab from "@/pages/marketing/tabs/PaidChannelsTab";
+import RecruitmentTab from "./tabs/RecruitmentTab";
 import JobboardsTab from "@/pages/marketing/tabs/JobboardsTab";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +44,7 @@ const RecruitmentInternHub = () => {
     const sharedProps = { dateRange, compareRange: effectiveCompareRange, deltaMode };
     switch (activeTab) {
       case "overview": return <RecruitmentOverviewTab {...sharedProps} onTabChange={setActiveTab} />;
-      case "recruitment": return <PaidChannelsTab {...sharedProps} />;
+      case "recruitment": return <RecruitmentTab {...sharedProps} />;
       case "marketing": return <JobboardsTab {...sharedProps} />;
       default: return null;
     }

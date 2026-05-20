@@ -64,7 +64,7 @@ function ProgressBar({ current, previous, invert }: { current: number; previous:
   );
 }
 
-const FUNNEL_DATA = [
+const FUNNEL_RAW = [
   { stage: "Conversions", value: 42 },
   { stage: "Inschrijvingen", value: 28 },
   { stage: "Assessment", value: 18 },
@@ -72,6 +72,12 @@ const FUNNEL_DATA = [
   { stage: "Tweede gesprek", value: 6 },
   { stage: "Aangenomen", value: 2 },
 ];
+
+const FUNNEL_DATA = FUNNEL_RAW.map((s, i, arr) => {
+  const prev = i === 0 ? null : arr[i - 1].value;
+  const dropPct = prev ? Math.round(((prev - s.value) / prev) * 100) : 0;
+  return { ...s, dropLabel: i === 0 ? "" : `-${dropPct}%` };
+});
 
 const WEEKLY_HIRES = [
   { week: "W1", hires: 1 },
@@ -82,15 +88,6 @@ const WEEKLY_HIRES = [
   { week: "W6", hires: 4 },
   { week: "W7", hires: 2 },
   { week: "W8", hires: 3 },
-];
-
-const REDENEN = [
-  { reden: "Parttime werken", aantal: 8 },
-  { reden: "Thuiswerken", aantal: 6 },
-  { reden: "Auto van de zaak", aantal: 5 },
-  { reden: "Vindt rol niet interessant", aantal: 4 },
-  { reden: "Wil buitendienst", aantal: 3 },
-  { reden: "Voor andere optie gekozen", aantal: 2 },
 ];
 
 const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
@@ -213,6 +210,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
               <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "var(--radius)", fontSize: "12px" }} />
               <Bar dataKey="value" name="Kandidaten" fill={MARKETING_COLORS[0]} radius={[6, 6, 0, 0]} barSize={48}>
                 <LabelList dataKey="value" position="top" style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                <LabelList dataKey="dropLabel" position="insideTop" offset={12} style={{ fontSize: 11, fontWeight: 600, fill: "hsl(var(--destructive))" }} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -254,28 +252,6 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
         </CardContent>
       </Card>
 
-      {/* Redenen afgevallen */}
-      <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Redenen afgevallen</CardTitle></CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="py-2 px-4 text-left font-medium text-muted-foreground">Reden</th>
-                <th className="py-2 px-4 text-right font-medium text-muted-foreground w-32">Aantal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {REDENEN.map((r) => (
-                <tr key={r.reden} className="border-b hover:bg-muted/50">
-                  <td className="font-medium py-2 px-4">{r.reden}</td>
-                  <td className="text-right tabular-nums py-2 px-4">{r.aantal}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
     </div>
   );
 };
