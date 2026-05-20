@@ -209,8 +209,8 @@ export function CandidateMarketTab({
           </tbody>
           <tfoot className="sticky bottom-0 z-20 bg-card border-t-2 border-border">
             <tr className="font-semibold">
-              <td className="sticky left-0 z-10 bg-card px-3 py-2 text-foreground border-r border-border">Totaal</td>
-              <td className="px-3 py-2 text-muted-foreground">{rows.length} consultants</td>
+              <td className="sticky left-0 z-10 bg-card px-2 py-2 text-foreground border-r border-border">Totaal</td>
+              <td className="px-2 py-2 text-muted-foreground">{rows.length} consultants</td>
               {lcbFunnelSteps.map((s, i) => {
                 let conv: number | null = null;
                 if (i > 0) {
