@@ -213,7 +213,17 @@ function CallsTab({ rows }: { rows: ReturnType<typeof getCandidateActivity> }) {
               <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.time}</td>
               <td className="px-2 py-1.5 tabular-nums font-mono text-[10px]">{r.duration}</td>
               <td className="px-2 py-1.5 text-muted-foreground text-[10px]">{r.dealRef ?? "—"}</td>
-              <td className="px-2 py-1.5"><ExternalLink className="h-3 w-3 text-muted-foreground" /></td>
+              <td className="px-2 py-1.5">
+                <a
+                  href="https://ai.synsel.nl/recordings"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center text-muted-foreground hover:text-primary"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </td>
             </tr>
           ))}
           {rows.length === 0 && <tr><td colSpan={8} className="px-2 py-6 text-center text-muted-foreground">Geen calls.</td></tr>}
