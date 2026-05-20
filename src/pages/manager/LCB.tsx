@@ -30,6 +30,7 @@ import {
   RevenueDetailOverlay, SoonToStartOverlay, NetImpactOverlay,
   YtdRealisedOverlay, ForecastYearOverlay,
 } from "@/components/manager/lcb/Overlays";
+import { CallConversionsOverlay } from "@/components/manager/lcb/CallConversionsOverlay";
 import { Button } from "@/components/ui/button";
 
 const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
