@@ -203,9 +203,33 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
 
       {/* Funnel drop-off chart */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Funnel drop-off</CardTitle></CardHeader>
-        <CardContent>
-          <FunnelDropOff data={FUNNEL_DATA} />
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Funnel drop-off</CardTitle>
+          <ChartTableToggle view={funnelView} onChange={setFunnelView} />
+        </CardHeader>
+        <CardContent className={funnelView === "table" ? "p-0" : undefined}>
+          {funnelView === "chart" ? (
+            <FunnelDropOff data={FUNNEL_DATA} />
+          ) : (
+            <table className="w-full caption-bottom text-sm">
+              <thead className="[&_tr]:border-b">
+                <tr>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Stage</th>
+                  <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Aantal</th>
+                  <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Drop-off vs vorige</th>
+                </tr>
+              </thead>
+              <tbody className="[&_tr:last-child]:border-0">
+                {FUNNEL_DATA.map((d, i) => (
+                  <tr key={d.stage} className="border-b transition-colors hover:bg-muted/50">
+                    <td className="p-4 align-middle font-medium">{d.stage}</td>
+                    <td className="p-4 align-middle text-right tabular-nums">{d.value}</td>
+                    <td className="p-4 align-middle text-right tabular-nums text-muted-foreground">{i === 0 ? "—" : d.dropLabel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </CardContent>
       </Card>
 
