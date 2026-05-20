@@ -360,14 +360,15 @@ export function getCandidateDealLinks(candidateId: string, dealsCount: number): 
   const n = Math.max(1, Math.min(dealsCount + 2, 8));
   return Array.from({ length: n }, (_, i) => {
     const co = pick(rnd, COMPANIES);
+    const role = pick(rnd, ROLES);
     return {
-      dealName: `${candidateId.split("-")[1]} → ${co}`,
-      dealId: `DEAL-${30000 + i + rint(rnd, 0, 99)}`,
+      dealName: `Kandidaat ${candidateId} - ${co} - ${role}`,
+      dealId: makeDealId(rnd),
       dealStatus: pick(rnd, LCB_DEAL_STAGES),
       candidateName: "—",
       candidateId,
       opdrachtgeverName: co,
-      opdrachtgeverId: `OPDR-${500 + i}`,
+      opdrachtgeverId: makeOpdrachtgeverId(rnd),
       proposed: rnd() < 0.6,
       date: fullDate(rnd),
       time: hhmm(rnd),
