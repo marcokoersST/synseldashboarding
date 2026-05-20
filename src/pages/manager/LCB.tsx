@@ -272,6 +272,7 @@ export default function LCB() {
 
 // ─── Inline left-pane lists ───────────────────────────────────────────
 function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[]; selected: CandidateRow | null; onSelect: (c: CandidateRow) => void }) {
+  const compact = selected != null;
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-3">
       <div className="rounded-md border border-border overflow-hidden">
@@ -279,9 +280,13 @@ function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[];
           <thead className="bg-muted/60 sticky top-0">
             <tr className="text-left">
               <Th>Naam</Th><Th>ID</Th><Th>Cat.</Th><Th>Status</Th>
-              <Th className="text-right">Deals</Th><Th className="text-right">Voorstellen</Th>
-              <Th className="text-right">Mails</Th><Th className="text-right">Calls</Th>
-              <Th>Datum</Th><Th>Tijd</Th>
+              {!compact && (
+                <>
+                  <Th className="text-right">Deals</Th><Th className="text-right">Voorstellen</Th>
+                  <Th className="text-right">Mails</Th><Th className="text-right">Calls</Th>
+                  <Th>Datum</Th><Th>Tijd</Th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -300,16 +305,20 @@ function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[];
                   <td className="px-2 py-1.5 text-muted-foreground text-[10px]">{r.id}</td>
                   <td className="px-2 py-1.5"><span className="inline-flex items-center rounded-full border border-border bg-muted px-1.5 py-0 text-[10px] font-medium">{r.category}</span></td>
                   <td className="px-2 py-1.5 text-muted-foreground">{r.status}</td>
-                  <td className="px-2 py-1.5 text-right tabular-nums">{r.deals}</td>
-                  <td className="px-2 py-1.5 text-right tabular-nums">{r.proposals}</td>
-                  <td className="px-2 py-1.5 text-right tabular-nums">{r.emails}</td>
-                  <td className="px-2 py-1.5 text-right tabular-nums">{r.calls}</td>
-                  <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.lastUpdatedDate}</td>
-                  <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.lastUpdatedTime}</td>
+                  {!compact && (
+                    <>
+                      <td className="px-2 py-1.5 text-right tabular-nums">{r.deals}</td>
+                      <td className="px-2 py-1.5 text-right tabular-nums">{r.proposals}</td>
+                      <td className="px-2 py-1.5 text-right tabular-nums">{r.emails}</td>
+                      <td className="px-2 py-1.5 text-right tabular-nums">{r.calls}</td>
+                      <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.lastUpdatedDate}</td>
+                      <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.lastUpdatedTime}</td>
+                    </>
+                  )}
                 </tr>
               );
             })}
-            {rows.length === 0 && <tr><td colSpan={10} className="px-2 py-6 text-center text-muted-foreground">Geen records.</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={compact ? 4 : 10} className="px-2 py-6 text-center text-muted-foreground">Geen records.</td></tr>}
           </tbody>
         </table>
       </div>
