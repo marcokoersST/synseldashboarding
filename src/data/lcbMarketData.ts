@@ -293,6 +293,16 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
     "Ervaren technicus beschikbaar | MBO + MTS",
     "Service Monteur | MBO-3 Gas, water en warmte",
   ];
+  const callSubjects = [
+    "Telefonische intake",
+    "Opvolging beschikbaarheid",
+    "Pitch nieuwe rol",
+    "Salaris- en voorwaarden bespreken",
+    "Status update kandidaat",
+    "No-show navragen",
+    "Terugkoppeling klantgesprek",
+    "Bevestiging startdatum",
+  ];
   return Array.from({ length: total }, (_, i) => {
     const kindR = rnd();
     const kind: ActivityItem["kind"] = kindR < 0.5 ? "email" : kindR < 0.85 ? "call" : "note";
@@ -302,7 +312,7 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
       direction: rnd() < 0.6 ? "out" : "in",
       contact: pick(rnd, CONTACT_PEOPLE),
       contactStatus: pick(rnd, CONTACT_STATUSES),
-      subject: kind !== "call" ? pick(rnd, subjects) : undefined,
+      subject: kind === "call" ? pick(rnd, callSubjects) : kind === "email" ? pick(rnd, subjects) : undefined,
       duration: kind === "call" ? hms(rnd) : undefined,
       body: kind === "note" ? pick(rnd, ["Kort gesprek, follow-up gepland.", "Klant wil tweede gesprek inplannen."]) : undefined,
       date: fullDate(rnd),

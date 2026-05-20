@@ -1,18 +1,16 @@
-## Goal
-When the candidate detail pane (right) is open, the left "Inschrijvingen" list shows only the relevant columns. The metrics already shown on the right (Deals, Voorstellen, Mails, Calls) become redundant on the left.
+## Three fixes to Outreach Historie list (`CandidateDetailPane.tsx`) + 1 data tweak (`lcbMarketData.ts`)
 
-## Change
-Single file: `src/pages/manager/LCB.tsx` — `StepCandidateList`.
+### 1. Status badge no longer expands row height
+Cause: "Geen contactpersoon" wraps to two lines inside the pill.
+Fix: add `whitespace-nowrap` to the status badge in the Outreach Historie row (and align header). Badges stay one line, so the row stays one line tall.
 
-- Derive `compact = selected != null`.
-- When `compact`:
-  - Render only these columns: **Naam, ID, Cat., Status**.
-  - Hide: Deals, Voorstellen, Mails, Calls, Datum, Tijd.
-- When no candidate is selected: keep the current full column set unchanged.
-- Apply the same column visibility to both `<thead>` and each `<tr>` in `<tbody>`, and update the empty-state `colSpan` accordingly (10 → 4 in compact mode).
+### 2. Onderwerp for calls
+`getCandidateActivity` currently leaves `subject` undefined for `kind === "call"`. Add a separate `callSubjects` pool with call reasons (e.g. "Telefonische intake", "Opvolging beschikbaarheid", "Pitch nieuwe rol", "Salaris-/voorwaarden bespreken", "Status update kandidaat", "No-show navragen") and assign it to `subject` when `kind === "call"`. The summary "latest activity" strip already falls back to `subject`, so it benefits too. No type change needed.
 
-No data, sorting, selection, or styling logic changes. Right pane (`CandidateDetailPane`) is untouched.
+### 3. New "Contact" link column
+Add a 7th column at the right of the Outreach Historie table: a small external-link icon linking to `https://app.recruitcrm.io/v2/contacts` (target=_blank, rel=noopener, stopPropagation). Update the grid template:
+`16px 140px 110px minmax(0,1fr) 64px 110px 24px`
+Add header label "Link" (or empty) and a matching cell with an `ExternalLink` icon.
 
-## Out of scope
-- `StepDealList` (deal flow) — user only referenced the candidate table.
-- Column reordering or resizing.
+### Out of scope
+EmailsTab / CallsTab tables (already have a Link column) — no changes.
