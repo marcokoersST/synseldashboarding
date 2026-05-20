@@ -191,68 +191,67 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Inschrijvingen per bron</CardTitle>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs">
-                <Filter className="mr-1.5 h-3 w-3" />{bronFilterLabel}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-3" align="end">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Afdelingen</span>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setBronFilter(new Set(AFDELINGEN))}>Alles aan</Button>
-                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setBronFilter(new Set())}>Alles uit</Button>
+          <div className="flex items-center gap-2">
+            <ChartTableToggle view={bronView} onChange={setBronView} />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  <Filter className="mr-1.5 h-3 w-3" />{bronFilterLabel}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3" align="end">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Afdelingen</span>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setBronFilter(new Set(AFDELINGEN))}>Alles aan</Button>
+                    <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setBronFilter(new Set())}>Alles uit</Button>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                {AFDELINGEN.map((a) => (
-                  <label key={a} className="flex items-center gap-2 cursor-pointer text-sm">
-                    <Checkbox
-                      checked={bronFilter.has(a)}
-                      onCheckedChange={() => {
-                        setBronFilter((prev) => {
-                          const n = new Set(prev);
-                          n.has(a) ? n.delete(a) : n.add(a);
-                          return n;
-                        });
-                      }}
-                    />
-                    {a}
-                  </label>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+                <div className="space-y-2">
+                  {AFDELINGEN.map((a) => (
+                    <label key={a} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <Checkbox
+                        checked={bronFilter.has(a)}
+                        onCheckedChange={() => {
+                          setBronFilter((prev) => {
+                            const n = new Set(prev);
+                            n.has(a) ? n.delete(a) : n.add(a);
+                            return n;
+                          });
+                        }}
+                      />
+                      {a}
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </CardHeader>
-        <CardContent>
-          <WeeklyFunnelDropOff
-            weeks={BRONNEN_WEEKLY}
-            series={[
-              { key: "linkedin", label: "LinkedIn", color: MARKETING_COLORS[0] },
-              { key: "werkzoeken", label: "Werkzoeken CV Database", color: MARKETING_COLORS[1] },
-              { key: "recruitrobin", label: "RecruitRobin", color: MARKETING_COLORS[2] },
-              { key: "indeed", label: "Indeed CV Database", color: MARKETING_COLORS[3] },
-            ]}
-          />
+        <CardContent className={bronView === "table" ? "p-0" : undefined}>
+          {bronView === "chart" ? (
+            <WeeklyFunnelDropOff
+              weeks={BRONNEN_WEEKLY}
+              series={BRON_SERIES}
+            />
+          ) : (
+            renderWeeklyTable(BRONNEN_WEEKLY, BRON_SERIES)
+          )}
         </CardContent>
       </Card>
 
       {/* LinkedIn weekly funnel */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">LinkedIn</CardTitle></CardHeader>
-        <CardContent>
-          <WeeklyFunnelDropOff
-            weeks={LINKEDIN_WEEKLY.map((w) => ({
-              week: w.week,
-              values: { connectieverzoeken: w.connectieverzoeken, berichten: w.berichten, inschrijvingen: w.inschrijvingen },
-            }))}
-            series={[
-              { key: "connectieverzoeken", label: "Connectieverzoeken", color: MARKETING_COLORS[0] },
-              { key: "berichten", label: "Verstuurde berichten", color: MARKETING_COLORS[1] },
-              { key: "inschrijvingen", label: "Inschrijvingen", color: MARKETING_COLORS[2] },
-            ]}
-          />
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">LinkedIn</CardTitle>
+          <ChartTableToggle view={linkedinView} onChange={setLinkedinView} />
+        </CardHeader>
+        <CardContent className={linkedinView === "table" ? "p-0" : undefined}>
+          {linkedinView === "chart" ? (
+            <WeeklyFunnelDropOff weeks={LINKEDIN_WEEKS} series={LINKEDIN_SERIES} />
+          ) : (
+            renderWeeklyTable(LINKEDIN_WEEKS, LINKEDIN_SERIES)
+          )}
         </CardContent>
       </Card>
 
