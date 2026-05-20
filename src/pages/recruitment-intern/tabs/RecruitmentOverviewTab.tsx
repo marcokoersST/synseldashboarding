@@ -252,28 +252,6 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
         </CardContent>
       </Card>
 
-      {/* Redenen afgevallen */}
-      <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Redenen afgevallen</CardTitle></CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="py-2 px-4 text-left font-medium text-muted-foreground">Reden</th>
-                <th className="py-2 px-4 text-right font-medium text-muted-foreground w-32">Aantal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {REDENEN.map((r) => (
-                <tr key={r.reden} className="border-b hover:bg-muted/50">
-                  <td className="font-medium py-2 px-4">{r.reden}</td>
-                  <td className="text-right tabular-nums py-2 px-4">{r.aantal}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
     </div>
   );
 };
