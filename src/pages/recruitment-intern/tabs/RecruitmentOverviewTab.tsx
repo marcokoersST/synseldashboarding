@@ -19,6 +19,7 @@ import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompar
 import { MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 import { FunnelDropOff } from "@/components/recruitment-intern/FunnelDropOff";
+import { ChartTableToggle } from "@/components/recruitment-intern/ChartTableToggle";
 
 interface Props {
   dateRange: DateRange;
