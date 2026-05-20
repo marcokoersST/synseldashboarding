@@ -67,6 +67,28 @@ const LINKEDIN_SERIES: WeeklyFunnelSeries[] = [
   { key: "inschrijvingen", label: "Inschrijvingen", color: MARKETING_COLORS[2] },
 ];
 
+const CV_DB_WEEKLY = [
+  { week: "W1", bekeken: 120, downloads: 28, inschrijvingen: 1 },
+  { week: "W2", bekeken: 135, downloads: 32, inschrijvingen: 0 },
+  { week: "W3", bekeken: 128, downloads: 30, inschrijvingen: 2 },
+  { week: "W4", bekeken: 150, downloads: 38, inschrijvingen: 1 },
+  { week: "W5", bekeken: 142, downloads: 34, inschrijvingen: 1 },
+  { week: "W6", bekeken: 165, downloads: 42, inschrijvingen: 2 },
+  { week: "W7", bekeken: 155, downloads: 40, inschrijvingen: 1 },
+  { week: "W8", bekeken: 180, downloads: 48, inschrijvingen: 3 },
+];
+
+const CV_DB_WEEKS: WeeklyFunnelDatum[] = CV_DB_WEEKLY.map((w) => ({
+  week: w.week,
+  values: { bekeken: w.bekeken, downloads: w.downloads, inschrijvingen: w.inschrijvingen },
+}));
+
+const CV_DB_SERIES: WeeklyFunnelSeries[] = [
+  { key: "bekeken", label: "Bekeken cv's", color: MARKETING_COLORS[0] },
+  { key: "downloads", label: "CV downloads", color: MARKETING_COLORS[1] },
+  { key: "inschrijvingen", label: "Inschrijvingen", color: MARKETING_COLORS[2] },
+];
+
 const REDENEN = [
   { reden: "Parttime werken", aantal: 8 },
   { reden: "Thuiswerken", aantal: 6 },
@@ -115,8 +137,9 @@ function ProgressBar({ current, previous, invert }: { current: number; previous:
 const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
   const compareLabel = getCompareDisplayText(compareRange);
   const [bronFilter, setBronFilter] = useState<Set<string>>(new Set(AFDELINGEN));
-  const [bronView, setBronView] = useState<"chart" | "table">("chart");
-  const [linkedinView, setLinkedinView] = useState<"chart" | "table">("chart");
+  const [bronView, setBronView] = useState<"chart" | "table">("table");
+  const [linkedinView, setLinkedinView] = useState<"chart" | "table">("table");
+  const [cvDbView, setCvDbView] = useState<"chart" | "table">("table");
 
   const kpis = useMemo(() => {
     const items = [
@@ -171,11 +194,9 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
                   return (
                     <td key={w.week} className={`p-3 align-middle text-right tabular-nums ${below ? "text-destructive" : ""}`}>
                       <div>{v}</div>
-                      {below && (
-                        <div className="text-[10px] font-medium text-destructive/80">
-                          {pct.toFixed(0)}%
-                        </div>
-                      )}
+                      <div className={`text-[10px] font-medium ${below ? "text-destructive/80" : "invisible"}`}>
+                        {below ? `${pct.toFixed(0)}%` : "0%"}
+                      </div>
                     </td>
                   );
                 })}
@@ -282,6 +303,21 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
             <WeeklyFunnelDropOff weeks={LINKEDIN_WEEKS} series={LINKEDIN_SERIES} />
           ) : (
             renderWeeklyTable(LINKEDIN_WEEKS, LINKEDIN_SERIES)
+          )}
+        </CardContent>
+      </Card>
+
+      {/* CV databases weekly funnel */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">CV databases</CardTitle>
+          <ChartTableToggle view={cvDbView} onChange={setCvDbView} />
+        </CardHeader>
+        <CardContent className={cvDbView === "table" ? "p-0" : undefined}>
+          {cvDbView === "chart" ? (
+            <WeeklyFunnelDropOff weeks={CV_DB_WEEKS} series={CV_DB_SERIES} />
+          ) : (
+            renderWeeklyTable(CV_DB_WEEKS, CV_DB_SERIES)
           )}
         </CardContent>
       </Card>
