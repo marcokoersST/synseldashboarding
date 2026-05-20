@@ -5,20 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TrendingUp, TrendingDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  BarChart,
-  Bar,
-  Line,
-  ComposedChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LabelList,
-} from "recharts";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
+import { FunnelDropOff } from "@/components/recruitment-intern/FunnelDropOff";
 import { MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
