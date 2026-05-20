@@ -37,7 +37,7 @@ const labelOf = (k: FieldKey) => ALL_FIELDS.find((f) => f.key === k)?.label ?? k
 function resolveField(consultantId: number, key: FieldKey): number {
   const row = lcbMarketRows.find((r) => r.consultantId === consultantId);
   if (!row) return 0;
-  if (BASE_FIELDS.some((f) => f.key === key)) return (row as Record<string, number>)[key] ?? 0;
+  if (BASE_FIELDS.some((f) => f.key === key)) return (row as unknown as Record<string, number>)[key] ?? 0;
   // derived deterministic splits seeded by consultantId
   const seed = (consultantId * 13 + key.length * 7) % 100 / 100;
   switch (key) {
