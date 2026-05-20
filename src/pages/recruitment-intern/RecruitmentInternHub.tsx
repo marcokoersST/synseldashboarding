@@ -5,7 +5,7 @@ import type { DeltaMode } from "@/components/marketing/DeltaCell";
 
 import DateFilterPanel from "@/components/marketing/DateFilterPanel";
 import RecruitmentOverviewTab from "./tabs/RecruitmentOverviewTab";
-import PaidChannelsTab from "@/pages/marketing/tabs/PaidChannelsTab";
+import RecruitmentTab from "./tabs/RecruitmentTab";
 import JobboardsTab from "@/pages/marketing/tabs/JobboardsTab";
 import { cn } from "@/lib/utils";
 
