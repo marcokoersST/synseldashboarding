@@ -9,7 +9,7 @@ interface LeftPane {
   breadcrumbs: string[];
   title: string;
   subtitle?: string;
-  width?: number; // px
+  width?: number | string; // px or CSS width string
   content: ReactNode;
   onBack?: () => void;
 }
@@ -17,7 +17,7 @@ interface RightPane {
   breadcrumbs: string[];
   title: string;
   subtitle?: string;
-  width?: number; // px
+  width?: number | string;
   content: ReactNode;
 }
 
@@ -57,7 +57,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, onCloseRight }: Pr
         breadcrumbs={left.breadcrumbs}
         title={left.title}
         subtitle={left.subtitle}
-        widthPx={left.width ?? (right ? 560 : 980)}
+        width={left.width ?? (right ? "clamp(360px, 30vw, 520px)" : "clamp(720px, 70vw, 1100px)")}
         onBack={left.onBack}
         onClose={onClose}
         slideFrom="right"
@@ -70,7 +70,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, onCloseRight }: Pr
           breadcrumbs={right.breadcrumbs}
           title={right.title}
           subtitle={right.subtitle}
-          widthPx={right.width ?? 620}
+          width={right.width ?? "clamp(720px, 62vw, 1100px)"}
           onClose={onCloseRight ?? onClose}
           slideFrom="right"
         >
@@ -83,15 +83,15 @@ export function LcbSplitOverlay({ open, onClose, left, right, onCloseRight }: Pr
 }
 
 function Pane({
-  breadcrumbs, title, subtitle, widthPx, children, onClose, onBack, slideFrom, bordered,
+  breadcrumbs, title, subtitle, width, children, onClose, onBack, slideFrom, bordered,
 }: {
-  breadcrumbs: string[]; title: string; subtitle?: string; widthPx: number;
+  breadcrumbs: string[]; title: string; subtitle?: string; width: number | string;
   children: ReactNode; onClose: () => void; onBack?: () => void;
   slideFrom: "right"; bordered?: boolean;
 }) {
   return (
     <aside
-      style={{ width: widthPx, maxWidth: "92vw" }}
+      style={{ width, maxWidth: "92vw" }}
       className={cn(
         "h-full flex flex-col bg-background border-l border-border shadow-2xl",
         "animate-in slide-in-from-right-4 duration-200",
