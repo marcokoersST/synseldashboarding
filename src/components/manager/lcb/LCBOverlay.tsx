@@ -40,7 +40,7 @@ export function LCBOverlay({
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex">
+    <div className="fixed inset-x-0 bottom-0 top-14 z-[60] flex">
       <button
         type="button"
         aria-label="Sluiten"
