@@ -260,11 +260,11 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
           <div className="space-y-3 text-sm">
             <div className="flex justify-between p-2 rounded bg-emerald-500/10">
               <span className="text-muted-foreground">Best presterende bron conversies</span>
-              <span className="font-semibold text-emerald-700">30</span>
+              <span className="font-semibold text-emerald-700">Indeed (30)</span>
             </div>
             <div className="flex justify-between p-2 rounded bg-emerald-500/10">
               <span className="text-muted-foreground">Best presterende bron gesprekken</span>
-              <span className="font-semibold text-emerald-700">12</span>
+              <span className="font-semibold text-emerald-700">LinkedIn (12)</span>
             </div>
             <div className="flex justify-between p-2 rounded bg-emerald-500/10">
               <span className="text-muted-foreground">Best presterende vacature</span>
@@ -272,7 +272,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
             </div>
             <div className="flex justify-between p-2 rounded bg-blue-500/10">
               <span className="text-muted-foreground">Laagste CPA</span>
-              <span className="font-semibold text-blue-700">€34,12</span>
+              <span className="font-semibold text-blue-700">Werkzoeken.nl (€34,12)</span>
             </div>
           </div>
         </CardContent>
