@@ -111,7 +111,17 @@ const CANDIDATE_NAMES = [
   "Luuk Peters", "Julia Hendriks", "Tim van Leeuwen", "Sara Dekker",
   "Niels Eggens", "Femke Vermeer", "Joris Kuiper", "Iris Hofman",
 ];
-const COMPANIES = ["Shell", "ASML", "Philips", "ING", "KPN", "Rabobank", "Unilever", "Heineken", "Vopak", "DSM"];
+const COMPANIES = [
+  "Koopmans Meel", "Nedpack / Qimarox", "KME Netherlands BV", "J&W Service B.V.",
+  "VDL Steelweld bv", "Tevel Systems", "SafanDarley Lochem B.V.", "Shell",
+  "ASML", "Philips", "Vopak", "DSM",
+];
+const ROLES = [
+  "Operator 5-Ploegendienst", "Software Engineer", "Automation Engineer",
+  "Design Engineer", "Software Engineer PLC", "Service Monteur",
+  "Technisch Project Manager", "Allround Monteur", "Werktuigbouwkundige",
+  "Elektromonteur",
+];
 const CONTACT_PEOPLE = ["Mark Jansen", "Karin de Boer", "Bas van Loon", "Linda Verstegen", "Joost Bakker", "Esther Klein"];
 const CATEGORIES: CandidateCategory[] = ["A+", "A", "B"];
 const STATUSES: CandidateStatus[] = [
@@ -119,6 +129,26 @@ const STATUSES: CandidateStatus[] = [
   "Geplaatst", "Lead", "Niet beschikbaar", "Niet geplaatst", "Nieuw",
   "Vacature aanvraag", "Verdelen",
 ];
+
+// ─── Realistic RecruitCRM-style ID generators ──────────────────────────
+function makeCandidateId(rnd: () => number): string {
+  // 6-digit numeric IDs, e.g. 205070, 133538, 219890
+  return String(rint(rnd, 100000, 299999));
+}
+function makeDealId(rnd: () => number): string {
+  // Mixed 5-7 digit numeric IDs, e.g. 1220938, 99981, 31685
+  const bucket = rnd();
+  if (bucket < 0.45) return String(rint(rnd, 1200000, 1230000));
+  if (bucket < 0.8) return String(rint(rnd, 80000, 110000));
+  return String(rint(rnd, 30000, 60000));
+}
+function makeOpdrachtgeverId(rnd: () => number): string {
+  return String(rint(rnd, 10000, 99999));
+}
+function firstName(full: string): string {
+  return full.split(" ")[0];
+}
+
 
 export interface CandidateRow {
   name: string;
@@ -180,7 +210,7 @@ export function getCandidatesForStep(consultantId: number, step: LcbStepKey): Ca
     const time = hhmm(rnd);
     return {
       name: n,
-      id: `KAND-${10000 + consultantId * 100 + i}`,
+      id: makeCandidateId(rnd),
       category: CATEGORIES[rint(rnd, 0, 2)],
       status: STATUSES[rint(rnd, 0, STATUSES.length - 1)],
       deals: 1 + rint(rnd, 0, 3),
@@ -197,21 +227,24 @@ export function getCandidatesForStep(consultantId: number, step: LcbStepKey): Ca
 export function getDealsForStep(consultantId: number, step: LcbStepKey): DealRow[] {
   const rnd = mulberry32(consultantId * 277 + step.length * 53);
   const row = lcbMarketRows.find((r) => r.consultantId === consultantId);
+  const consultantFullName = row?.consultantName ?? "";
+  const consultantFirst = firstName(consultantFullName);
   const count = row ? Math.min(25, Math.max(1, row[step] as number)) : 10;
   return Array.from({ length: count }, (_, i) => {
     const cand = CANDIDATE_NAMES[(consultantId + i) % CANDIDATE_NAMES.length];
     const co = COMPANIES[(consultantId * 2 + i) % COMPANIES.length];
+    const role = ROLES[(consultantId + i * 3) % ROLES.length];
     const stage = LCB_DEAL_STAGES[rint(rnd, 0, LCB_DEAL_STAGES.length - 1)];
     const date = fullDate(rnd);
     const time = hhmm(rnd);
     return {
-      dealName: `${cand.split(" ")[0]} → ${co}`,
-      dealId: `DEAL-${20000 + consultantId * 100 + i}`,
+      dealName: `${consultantFirst} - ${co} - ${role}`,
+      dealId: makeDealId(rnd),
       dealStatus: stage,
       candidateName: cand,
-      candidateId: `KAND-${10000 + consultantId * 100 + i}`,
+      candidateId: makeCandidateId(rnd),
       opdrachtgeverName: co,
-      opdrachtgeverId: `OPDR-${500 + i}`,
+      opdrachtgeverId: makeOpdrachtgeverId(rnd),
       lastUpdated: ddmm(rnd),
       lastUpdatedDate: date,
       lastUpdatedTime: time,
@@ -317,7 +350,7 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
       body: kind === "note" ? pick(rnd, ["Kort gesprek, follow-up gepland.", "Klant wil tweede gesprek inplannen."]) : undefined,
       date: fullDate(rnd),
       time: hhmm(rnd),
-      dealRef: rnd() < 0.6 ? `DEAL-${20000 + rint(rnd, 0, 99)}` : undefined,
+      dealRef: rnd() < 0.6 ? makeDealId(rnd) : undefined,
     };
   });
 }
@@ -327,14 +360,15 @@ export function getCandidateDealLinks(candidateId: string, dealsCount: number): 
   const n = Math.max(1, Math.min(dealsCount + 2, 8));
   return Array.from({ length: n }, (_, i) => {
     const co = pick(rnd, COMPANIES);
+    const role = pick(rnd, ROLES);
     return {
-      dealName: `${candidateId.split("-")[1]} → ${co}`,
-      dealId: `DEAL-${30000 + i + rint(rnd, 0, 99)}`,
+      dealName: `Kandidaat ${candidateId} - ${co} - ${role}`,
+      dealId: makeDealId(rnd),
       dealStatus: pick(rnd, LCB_DEAL_STAGES),
       candidateName: "—",
       candidateId,
       opdrachtgeverName: co,
-      opdrachtgeverId: `OPDR-${500 + i}`,
+      opdrachtgeverId: makeOpdrachtgeverId(rnd),
       proposed: rnd() < 0.6,
       date: fullDate(rnd),
       time: hhmm(rnd),

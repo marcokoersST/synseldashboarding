@@ -30,6 +30,7 @@ import {
   RevenueDetailOverlay, SoonToStartOverlay, NetImpactOverlay,
   YtdRealisedOverlay, ForecastYearOverlay,
 } from "@/components/manager/lcb/Overlays";
+import { CallConversionsOverlay } from "@/components/manager/lcb/CallConversionsOverlay";
 import { Button } from "@/components/ui/button";
 
 const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
@@ -73,6 +74,7 @@ export default function LCB() {
   const [netImpactOverlay, setNetImpactOverlay] = useState<number | null>(null);
   const [ytdOpen, setYtdOpen] = useState(false);
   const [forecastOpen, setForecastOpen] = useState(false);
+  const [callConvOverlay, setCallConvOverlay] = useState<{ consultantId: number; initial?: string } | null>(null);
 
   const alerts = useMemo(() => generateAlerts(), []);
 
@@ -257,6 +259,13 @@ export default function LCB() {
         consultantId={consultantOverlay}
         onClose={() => setConsultantOverlay(null)}
         onOpenStep={(consultantId, step) => { setConsultantOverlay(null); setStepCtx({ consultantId, step }); }}
+        onOpenCallConversions={(consultantId, initial) => { setConsultantOverlay(null); setCallConvOverlay({ consultantId, initial }); }}
+      />
+      <CallConversionsOverlay
+        open={!!callConvOverlay}
+        consultantId={callConvOverlay?.consultantId ?? null}
+        initialConversion={callConvOverlay?.initial ?? null}
+        onClose={() => setCallConvOverlay(null)}
       />
       <DevelopmentOverlay open={!!devOverlay} consultantId={devOverlay} onClose={() => setDevOverlay(null)} />
       <StopperOverlay open={!!stopperOverlay} consultantId={stopperOverlay} onClose={() => setStopperOverlay(null)} />
