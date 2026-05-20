@@ -120,6 +120,57 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
 
   const totalInschrijven = BRONNEN.reduce((s, r) => s + r.inschrijven, 0);
 
+  const renderWeeklyTable = (weeks: WeeklyFunnelDatum[], series: WeeklyFunnelSeries[]) => (
+    <div className="max-h-[480px] overflow-auto">
+      <table className="w-full caption-bottom text-sm">
+        <thead className="[&_tr]:border-b">
+          <tr>
+            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10">Bron</th>
+            {weeks.map((w) => (
+              <th key={w.week} className="h-12 px-3 text-right align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10">
+                {w.week}
+              </th>
+            ))}
+            <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground sticky top-0 bg-background z-10">Totaal</th>
+          </tr>
+        </thead>
+        <tbody className="[&_tr:last-child]:border-0">
+          {series.map((s) => {
+            const total = weeks.reduce((sum, w) => sum + (w.values[s.key] ?? 0), 0);
+            return (
+              <tr key={s.key} className="border-b transition-colors hover:bg-muted/50">
+                <td className="p-4 align-middle font-medium">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: s.color }} />
+                    {s.label}
+                  </div>
+                </td>
+                {weeks.map((w) => (
+                  <td key={w.week} className="p-3 align-middle text-right tabular-nums">{w.values[s.key] ?? 0}</td>
+                ))}
+                <td className="p-4 align-middle text-right tabular-nums font-semibold">{total}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot className="border-t bg-muted/30">
+          <tr className="font-bold">
+            <td className="p-4">Totaal</td>
+            {weeks.map((w) => (
+              <td key={w.week} className="p-3 text-right tabular-nums">
+                {series.reduce((sum, s) => sum + (w.values[s.key] ?? 0), 0)}
+              </td>
+            ))}
+            <td className="p-4 text-right tabular-nums">
+              {weeks.reduce((sum, w) => sum + series.reduce((s2, s) => s2 + (w.values[s.key] ?? 0), 0), 0)}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+
+
   return (
     <div className="space-y-6">
       {/* KPI cards */}
