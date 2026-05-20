@@ -97,6 +97,8 @@ function ProgressBar({ current, previous, invert }: { current: number; previous:
 const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
   const compareLabel = getCompareDisplayText(compareRange);
   const [bronFilter, setBronFilter] = useState<Set<string>>(new Set(AFDELINGEN));
+  const [bronView, setBronView] = useState<"chart" | "table">("chart");
+  const [linkedinView, setLinkedinView] = useState<"chart" | "table">("chart");
 
   const kpis = useMemo(() => {
     const items = [
