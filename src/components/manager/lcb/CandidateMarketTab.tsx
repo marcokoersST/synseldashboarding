@@ -244,7 +244,7 @@ function Th({
   return (
     <th
       className={cn(
-        "px-3 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap",
+        "px-2 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground",
         align === "right" && "text-right",
         sticky && "sticky left-0 z-30 bg-muted/70 backdrop-blur",
         sortable && "cursor-pointer select-none hover:text-foreground",
