@@ -489,5 +489,3 @@ function buildCandidateRecords(consultantId: number, step: LcbStepKey) {
   return { kind: "candidate" as const, items: cands };
 }
 
-// Silence unused import warning
-void ArrowRight;
