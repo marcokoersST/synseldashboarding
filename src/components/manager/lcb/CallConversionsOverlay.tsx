@@ -448,7 +448,7 @@ function ConversionDetail({
               </tr>
             ))}
             {rows.items.length === 0 && (
-              <tr><td colSpan={10} className="px-2 py-6 text-center text-muted-foreground">Geen records.</td></tr>
+              <tr><td colSpan={rows.kind === "deal" ? 10 : 7} className="px-2 py-6 text-center text-muted-foreground">Geen records.</td></tr>
             )}
           </tbody>
         </table>
