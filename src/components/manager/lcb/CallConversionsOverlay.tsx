@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ExternalLink, Plus, Save, Trash2, X } from "lucide-react";
+import { ExternalLink, Plus, Save, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LCBOverlay } from "./LCBOverlay";
 import { Button } from "@/components/ui/button";
