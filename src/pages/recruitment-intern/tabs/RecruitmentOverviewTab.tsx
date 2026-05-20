@@ -210,6 +210,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
               <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "var(--radius)", fontSize: "12px" }} />
               <Bar dataKey="value" name="Kandidaten" fill={MARKETING_COLORS[0]} radius={[6, 6, 0, 0]} barSize={48}>
                 <LabelList dataKey="value" position="top" style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                <LabelList dataKey="dropLabel" position="insideTop" offset={12} style={{ fontSize: 11, fontWeight: 600, fill: "hsl(var(--destructive))" }} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
