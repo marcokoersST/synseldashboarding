@@ -37,6 +37,17 @@ const LINKEDIN_WEEKLY = [
   { week: "W8", connectieverzoeken: 60, berichten: 35, inschrijvingen: 3 },
 ];
 
+const BRONNEN_WEEKLY = [
+  { week: "W1", values: { linkedin: 1, werkzoeken: 0, recruitrobin: 0, indeed: 1 } },
+  { week: "W2", values: { linkedin: 0, werkzoeken: 1, recruitrobin: 0, indeed: 0 } },
+  { week: "W3", values: { linkedin: 1, werkzoeken: 1, recruitrobin: 0, indeed: 1 } },
+  { week: "W4", values: { linkedin: 2, werkzoeken: 1, recruitrobin: 1, indeed: 1 } },
+  { week: "W5", values: { linkedin: 1, werkzoeken: 2, recruitrobin: 0, indeed: 1 } },
+  { week: "W6", values: { linkedin: 2, werkzoeken: 1, recruitrobin: 1, indeed: 2 } },
+  { week: "W7", values: { linkedin: 1, werkzoeken: 2, recruitrobin: 0, indeed: 1 } },
+  { week: "W8", values: { linkedin: 3, werkzoeken: 2, recruitrobin: 1, indeed: 2 } },
+];
+
 const REDENEN = [
   { reden: "Parttime werken", aantal: 8 },
   { reden: "Thuiswerken", aantal: 6 },
