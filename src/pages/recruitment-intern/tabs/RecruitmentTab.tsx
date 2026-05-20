@@ -171,11 +171,9 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
                   return (
                     <td key={w.week} className={`p-3 align-middle text-right tabular-nums ${below ? "text-destructive" : ""}`}>
                       <div>{v}</div>
-                      {below && (
-                        <div className="text-[10px] font-medium text-destructive/80">
-                          {pct.toFixed(0)}%
-                        </div>
-                      )}
+                      <div className={`text-[10px] font-medium ${below ? "text-destructive/80" : "invisible"}`}>
+                        {below ? `${pct.toFixed(0)}%` : "0%"}
+                      </div>
                     </td>
                   );
                 })}
