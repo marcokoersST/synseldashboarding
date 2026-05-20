@@ -156,7 +156,7 @@ export default function LCB() {
         onReset={onResetFilters}
       />
 
-      <LCBSignalRow alerts={alerts} onSelect={handleSignalClick} />
+
 
       <div className="flex shrink-0 border-b border-border bg-card/30 overflow-x-auto">
         {TABS.map((t) => (
