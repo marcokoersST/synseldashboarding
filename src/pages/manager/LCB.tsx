@@ -238,7 +238,7 @@ export default function LCB() {
           subtitle: stepEntity === "candidate"
             ? `${stepCandidates.length} kandidaten in deze stap. Klik een rij voor details.`
             : `${stepDeals.length} deals in deze stap. Klik een rij voor details.`,
-          width: (selectedCandidate || selectedDeal) ? 560 : 980,
+          
           content: stepEntity === "candidate"
             ? <StepCandidateList rows={stepCandidates} selected={selectedCandidate} onSelect={(c) => { setSelectedDeal(null); setSelectedCandidate(c); }} />
             : <StepDealList rows={stepDeals} selected={selectedDeal} onSelect={(d) => { setSelectedCandidate(null); setSelectedDeal(d); }} />,
