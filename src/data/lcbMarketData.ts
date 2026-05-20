@@ -210,7 +210,7 @@ export function getCandidatesForStep(consultantId: number, step: LcbStepKey): Ca
     const time = hhmm(rnd);
     return {
       name: n,
-      id: `KAND-${10000 + consultantId * 100 + i}`,
+      id: makeCandidateId(rnd),
       category: CATEGORIES[rint(rnd, 0, 2)],
       status: STATUSES[rint(rnd, 0, STATUSES.length - 1)],
       deals: 1 + rint(rnd, 0, 3),
@@ -227,21 +227,24 @@ export function getCandidatesForStep(consultantId: number, step: LcbStepKey): Ca
 export function getDealsForStep(consultantId: number, step: LcbStepKey): DealRow[] {
   const rnd = mulberry32(consultantId * 277 + step.length * 53);
   const row = lcbMarketRows.find((r) => r.consultantId === consultantId);
+  const consultantFullName = row?.consultantName ?? "";
+  const consultantFirst = firstName(consultantFullName);
   const count = row ? Math.min(25, Math.max(1, row[step] as number)) : 10;
   return Array.from({ length: count }, (_, i) => {
     const cand = CANDIDATE_NAMES[(consultantId + i) % CANDIDATE_NAMES.length];
     const co = COMPANIES[(consultantId * 2 + i) % COMPANIES.length];
+    const role = ROLES[(consultantId + i * 3) % ROLES.length];
     const stage = LCB_DEAL_STAGES[rint(rnd, 0, LCB_DEAL_STAGES.length - 1)];
     const date = fullDate(rnd);
     const time = hhmm(rnd);
     return {
-      dealName: `${cand.split(" ")[0]} → ${co}`,
-      dealId: `DEAL-${20000 + consultantId * 100 + i}`,
+      dealName: `${consultantFirst} - ${co} - ${role}`,
+      dealId: makeDealId(rnd),
       dealStatus: stage,
       candidateName: cand,
-      candidateId: `KAND-${10000 + consultantId * 100 + i}`,
+      candidateId: makeCandidateId(rnd),
       opdrachtgeverName: co,
-      opdrachtgeverId: `OPDR-${500 + i}`,
+      opdrachtgeverId: makeOpdrachtgeverId(rnd),
       lastUpdated: ddmm(rnd),
       lastUpdatedDate: date,
       lastUpdatedTime: time,
