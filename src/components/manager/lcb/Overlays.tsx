@@ -169,7 +169,15 @@ export function ConsultantOverviewOverlay({ open, consultantId, onClose, onBack,
             </div>
           </section>
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-2">Conversies per stap</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider">Conversies per stap</h3>
+              {onOpenCallConversions && (
+                <Button size="sm" variant="outline" className="h-7 text-xs"
+                  onClick={() => onOpenCallConversions(f.consultantId)}>
+                  Open Call Conversions
+                </Button>
+              )}
+            </div>
             <div className="rounded-lg border border-border overflow-hidden">
               <table className="w-full text-xs">
                 <thead className="bg-muted/60"><tr className="text-left"><Th>Stap</Th><Th align="right">Aantal</Th><Th align="right">Conversie</Th></tr></thead>
@@ -181,9 +189,13 @@ export function ConsultantOverviewOverlay({ open, consultantId, onClose, onBack,
                       const prev = f[lcbFunnelSteps[i - 1].key] as number;
                       if (prev > 0) conv = Math.round((val / prev) * 100);
                     }
+                    const clickable = !!onOpenCallConversions && i > 0;
                     return (
-                      <tr key={s.key} className="border-t border-border">
-                        <td className="px-3 py-1.5">{s.label}</td>
+                      <tr key={s.key}
+                        className={cn("border-t border-border", clickable && "cursor-pointer hover:bg-muted/30")}
+                        onClick={clickable ? () => onOpenCallConversions!(f.consultantId) : undefined}
+                      >
+                        <td className="px-3 py-1.5">{i > 0 ? `${lcbFunnelSteps[i - 1].label} → ${s.label}` : s.label}</td>
                         <td className="px-3 py-1.5 text-right tabular-nums">{val}</td>
                         <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground">{conv !== null ? `${conv}%` : "—"}</td>
                       </tr>
