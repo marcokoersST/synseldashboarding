@@ -109,6 +109,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
   }, [dateRange, compareRange]);
 
   const [selectedAfdelingen, setSelectedAfdelingen] = useState<Set<string>>(new Set(AFDELINGEN));
+  const [funnelView, setFunnelView] = useState<"chart" | "table">("chart");
 
   const inschrijvingenRecruitment = 2;
   const inschrijvingenMarketing = 3;
