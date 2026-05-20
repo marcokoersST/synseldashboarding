@@ -259,6 +259,13 @@ export default function LCB() {
         consultantId={consultantOverlay}
         onClose={() => setConsultantOverlay(null)}
         onOpenStep={(consultantId, step) => { setConsultantOverlay(null); setStepCtx({ consultantId, step }); }}
+        onOpenCallConversions={(consultantId, initial) => { setConsultantOverlay(null); setCallConvOverlay({ consultantId, initial }); }}
+      />
+      <CallConversionsOverlay
+        open={!!callConvOverlay}
+        consultantId={callConvOverlay?.consultantId ?? null}
+        initialConversion={callConvOverlay?.initial ?? null}
+        onClose={() => setCallConvOverlay(null)}
       />
       <DevelopmentOverlay open={!!devOverlay} consultantId={devOverlay} onClose={() => setDevOverlay(null)} />
       <StopperOverlay open={!!stopperOverlay} consultantId={stopperOverlay} onClose={() => setStopperOverlay(null)} />
