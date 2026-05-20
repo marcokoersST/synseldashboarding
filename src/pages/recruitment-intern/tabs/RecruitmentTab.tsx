@@ -155,6 +155,7 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
         <tbody className="[&_tr:last-child]:border-0">
           {series.map((s) => {
             const total = weeks.reduce((sum, w) => sum + (w.values[s.key] ?? 0), 0);
+            const avg = total / Math.max(weeks.length, 1);
             return (
               <tr key={s.key} className="border-b transition-colors hover:bg-muted/50">
                 <td className="p-4 align-middle font-medium">
@@ -163,9 +164,21 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
                     {s.label}
                   </div>
                 </td>
-                {weeks.map((w) => (
-                  <td key={w.week} className="p-3 align-middle text-right tabular-nums">{w.values[s.key] ?? 0}</td>
-                ))}
+                {weeks.map((w) => {
+                  const v = w.values[s.key] ?? 0;
+                  const below = avg > 0 && v < avg;
+                  const pct = avg > 0 ? ((v - avg) / avg) * 100 : 0;
+                  return (
+                    <td key={w.week} className={`p-3 align-middle text-right tabular-nums ${below ? "text-destructive" : ""}`}>
+                      <div>{v}</div>
+                      {below && (
+                        <div className="text-[10px] font-medium text-destructive/80">
+                          {pct.toFixed(0)}%
+                        </div>
+                      )}
+                    </td>
+                  );
+                })}
                 <td className="p-4 align-middle text-right tabular-nums font-semibold">{total}</td>
               </tr>
             );
