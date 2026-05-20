@@ -74,6 +74,7 @@ export default function LCB() {
   const [netImpactOverlay, setNetImpactOverlay] = useState<number | null>(null);
   const [ytdOpen, setYtdOpen] = useState(false);
   const [forecastOpen, setForecastOpen] = useState(false);
+  const [callConvOverlay, setCallConvOverlay] = useState<{ consultantId: number; initial?: string } | null>(null);
 
   const alerts = useMemo(() => generateAlerts(), []);
 
