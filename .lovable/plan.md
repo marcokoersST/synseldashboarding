@@ -1,19 +1,19 @@
-## Goal
-Make the right-hand detail overlay (kandidaat / deal detail) in the LC-B split overlay at least 3/5 of the viewport width. In the screenshot the left list pane is wider than the detail pane on the right, which feels cramped for the candidate scorecards, activity log and tabbed body.
+Plan:
 
-## Change (single file: `src/components/manager/lcb/LcbSplitOverlay.tsx`)
+1. Update `src/components/manager/lcb/CandidateMarketTab.tsx` so the sales funnel table container is no longer forced to fill all remaining height.
+   - Replace the current `flex-1 overflow-auto` wrapper with a content-sized wrapper using a sensible `max-height`.
+   - Keep vertical scrolling available when there are many rows.
+   - Disable horizontal scrolling on the wrapper.
 
-Replace the fixed pixel widths with viewport-relative sizing:
+2. Make the table fit the available width instead of creating an x-axis scrollbar.
+   - Use full-width / fixed table layout behavior.
+   - Tighten column padding and apply stable column widths where needed so all visible columns fit cleanly.
+   - Preserve the sticky first column and sticky header.
 
-- **Right detail pane (when open):** width = `clamp(720px, 62vw, 1100px)` — guarantees ≥ ~3/5 of the viewport on typical screens, scales up on wide monitors, never exceeds 92vw.
-- **Left list pane (when right pane is open):** width = `clamp(360px, 30vw, 520px)` — shrinks so the detail pane dominates side-by-side.
-- **Left list pane (standalone, no right pane):** unchanged behavior — fills wide default.
+3. Remove the awkward blank area under the `Totaal` row.
+   - Let the table border end directly after the total row when there are only a few rows.
+   - Keep the total row at the bottom of the table content, not floating above empty white space.
 
-Implementation detail: switch the `style={{ width: widthPx, maxWidth: "92vw" }}` on the inner `<Pane>` to accept a CSS width string (either the existing `widthPx` number for backward compat or a viewport-based string), and have `LcbSplitOverlay` compute the new defaults when callers don't pass an explicit `width`. Caller in `LCB.tsx` currently passes `width: (selectedCandidate || selectedDeal) ? 560 : 980` for the left pane — drop those overrides so the new defaults apply.
-
-## Files touched
-- `src/components/manager/lcb/LcbSplitOverlay.tsx` (width logic)
-- `src/pages/manager/LCB.tsx` (remove the now-stale `width: 560 / 980` props on the `left` prop)
-
-## Out of scope
-No content, animation, or styling-token changes. ESC-to-close-right and overlay portal behavior stay as-is.
+Scope:
+- Only the visual/layout behavior of this table changes.
+- No data, sorting, click behavior, overlays, or funnel calculations change.
