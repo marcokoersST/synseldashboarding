@@ -16,7 +16,7 @@ import { dealStageBadgeClass } from "@/data/lcbDealStages";
 
 import { LCB_STATUS_COLOR, LCB_STATUS_LABEL, statusFromScore } from "@/lib/lcbStatus";
 import { LCBTopBar } from "@/components/manager/lcb/LCBTopBar";
-import { LCBSignalRow } from "@/components/manager/lcb/LCBSignalRow";
+import { AlertTriangle, ChevronRight } from "lucide-react";
 import { CandidateMarketTab } from "@/components/manager/lcb/CandidateMarketTab";
 import { ConsultantDevelopmentTab } from "@/components/manager/lcb/ConsultantDevelopmentTab";
 import { FinanceForecastTab } from "@/components/manager/lcb/FinanceForecastTab";
