@@ -64,7 +64,7 @@ function ProgressBar({ current, previous, invert }: { current: number; previous:
   );
 }
 
-const FUNNEL_DATA = [
+const FUNNEL_RAW = [
   { stage: "Conversions", value: 42 },
   { stage: "Inschrijvingen", value: 28 },
   { stage: "Assessment", value: 18 },
@@ -72,6 +72,12 @@ const FUNNEL_DATA = [
   { stage: "Tweede gesprek", value: 6 },
   { stage: "Aangenomen", value: 2 },
 ];
+
+const FUNNEL_DATA = FUNNEL_RAW.map((s, i, arr) => {
+  const prev = i === 0 ? null : arr[i - 1].value;
+  const dropPct = prev ? Math.round(((prev - s.value) / prev) * 100) : 0;
+  return { ...s, dropLabel: i === 0 ? "" : `-${dropPct}%` };
+});
 
 const WEEKLY_HIRES = [
   { week: "W1", hires: 1 },
@@ -82,15 +88,6 @@ const WEEKLY_HIRES = [
   { week: "W6", hires: 4 },
   { week: "W7", hires: 2 },
   { week: "W8", hires: 3 },
-];
-
-const REDENEN = [
-  { reden: "Parttime werken", aantal: 8 },
-  { reden: "Thuiswerken", aantal: 6 },
-  { reden: "Auto van de zaak", aantal: 5 },
-  { reden: "Vindt rol niet interessant", aantal: 4 },
-  { reden: "Wil buitendienst", aantal: 3 },
-  { reden: "Voor andere optie gekozen", aantal: 2 },
 ];
 
 const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
