@@ -49,6 +49,24 @@ const BRONNEN_WEEKLY = [
   { week: "W8", values: { linkedin: 3, werkzoeken: 2, recruitrobin: 1, indeed: 2 } },
 ];
 
+const BRON_SERIES: WeeklyFunnelSeries[] = [
+  { key: "linkedin", label: "LinkedIn", color: MARKETING_COLORS[0] },
+  { key: "werkzoeken", label: "Werkzoeken CV Database", color: MARKETING_COLORS[1] },
+  { key: "recruitrobin", label: "RecruitRobin", color: MARKETING_COLORS[2] },
+  { key: "indeed", label: "Indeed CV Database", color: MARKETING_COLORS[3] },
+];
+
+const LINKEDIN_WEEKS: WeeklyFunnelDatum[] = LINKEDIN_WEEKLY.map((w) => ({
+  week: w.week,
+  values: { connectieverzoeken: w.connectieverzoeken, berichten: w.berichten, inschrijvingen: w.inschrijvingen },
+}));
+
+const LINKEDIN_SERIES: WeeklyFunnelSeries[] = [
+  { key: "connectieverzoeken", label: "Connectieverzoeken", color: MARKETING_COLORS[0] },
+  { key: "berichten", label: "Verstuurde berichten", color: MARKETING_COLORS[1] },
+  { key: "inschrijvingen", label: "Inschrijvingen", color: MARKETING_COLORS[2] },
+];
+
 const REDENEN = [
   { reden: "Parttime werken", aantal: 8 },
   { reden: "Thuiswerken", aantal: 6 },
