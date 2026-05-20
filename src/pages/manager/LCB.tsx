@@ -159,20 +159,35 @@ export default function LCB() {
 
 
       <div className="flex shrink-0 border-b border-border bg-card/30 overflow-x-auto">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "px-4 py-2 text-xs font-medium whitespace-nowrap border-b-2 transition-colors text-left",
-              tab === t.id ? "border-primary text-primary bg-primary/5" : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <div>{t.label}</div>
-            <div className="text-[10px] font-normal text-muted-foreground">{t.subtitle}</div>
-          </button>
-        ))}
+        {TABS.map((t) => {
+          const isSignals = t.id === "signals";
+          const count = isSignals ? alerts.length : 0;
+          const critCount = isSignals ? alerts.filter((a) => a.severity === "critical").length : 0;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "px-4 py-2 text-xs font-medium whitespace-nowrap border-b-2 transition-colors text-left",
+                tab === t.id ? "border-primary text-primary bg-primary/5" : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <div className="inline-flex items-center gap-1.5">
+                <span>{t.label}</span>
+                {isSignals && count > 0 && (
+                  <span className={cn(
+                    "inline-flex items-center justify-center rounded-full px-1.5 py-0 text-[10px] font-semibold tabular-nums min-w-[18px]",
+                    critCount > 0
+                      ? "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30"
+                      : "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30",
+                  )}>{count}</span>
+                )}
+              </div>
+              <div className="text-[10px] font-normal text-muted-foreground">{t.subtitle}</div>
+            </button>
+          );
+        })}
       </div>
 
       <main className="flex-1 overflow-hidden p-3 min-h-0">
@@ -206,6 +221,9 @@ export default function LCB() {
             onOpenSoonToStart={(id) => setSoonOverlay(id)}
             onOpenNetImpact={(id) => setNetImpactOverlay(id)}
           />
+        )}
+        {tab === "signals" && (
+          <SignalsTab alerts={alerts} onSelect={handleSignalClick} />
         )}
       </main>
 
