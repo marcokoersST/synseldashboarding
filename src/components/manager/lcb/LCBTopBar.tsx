@@ -5,12 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { LcbDateFilter, type LcbDateState } from "./LcbDateFilter";
 
 interface Props {
-  datePreset: string;
-  onDatePreset: (v: string) => void;
-  comparison: string;
-  onComparison: (v: string) => void;
+  date: LcbDateState;
+  onDate: (v: LcbDateState) => void;
   units: string[];
   selectedUnits: string[];
   onSelectedUnits: (v: string[]) => void;
@@ -22,14 +21,8 @@ interface Props {
   onReset: () => void;
 }
 
-const DATE_PRESETS = [
-  "Vandaag", "Gisteren", "Laatste 7 dagen", "Laatste 14 dagen", "Laatste 30 dagen",
-  "Huidige week", "Vorige week", "Huidige periode", "Vorige periode", "Huidig jaar",
-];
-const COMPARE_OPTIONS = ["Vorige vergelijkbare periode", "Vorig jaar", "Geen"];
-
 export function LCBTopBar({
-  datePreset, onDatePreset, comparison, onComparison,
+  date, onDate,
   units, selectedUnits, onSelectedUnits,
   consultants, selectedConsultants, onSelectedConsultants,
   search, onSearch, onReset,
@@ -37,8 +30,7 @@ export function LCBTopBar({
   const [focused, setFocused] = useState(false);
   return (
     <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-border bg-card/30">
-      <SelectFilter label="Periode" value={datePreset} options={DATE_PRESETS} onSelect={onDatePreset} />
-      <SelectFilter label="Vergelijk" value={comparison} options={COMPARE_OPTIONS} onSelect={onComparison} />
+      <LcbDateFilter value={date} onChange={onDate} />
       <MultiFilter
         label="Units" placeholder="Alle units"
         values={selectedUnits}
@@ -88,31 +80,6 @@ function ChipButton({ label, value, active, ...props }: React.ButtonHTMLAttribut
       <span className="text-foreground font-medium">{value}</span>
       <ChevronDown className="h-3 w-3 opacity-60" />
     </button>
-  );
-}
-
-function SelectFilter({ label, value, options, onSelect }: { label: string; value: string; options: string[]; onSelect: (v: string) => void }) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <ChipButton label={label} value={value} active />
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-1" align="start">
-        {options.map((opt) => (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => onSelect(opt)}
-            className={cn(
-              "w-full text-left px-2 py-1.5 text-xs rounded hover:bg-muted",
-              value === opt && "bg-primary/10 text-primary",
-            )}
-          >
-            {opt}
-          </button>
-        ))}
-      </PopoverContent>
-    </Popover>
   );
 }
 
