@@ -106,7 +106,7 @@ function SummaryBody({ notes, activity }: { notes: ReturnType<typeof getCandidat
         <div className="rounded-md border border-border bg-card overflow-hidden">
           <div
             className="grid items-center gap-2 px-2.5 py-1.5 bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground font-medium border-b border-border"
-            style={{ gridTemplateColumns: "16px 140px 110px minmax(0,1fr) 64px 110px" }}
+            style={{ gridTemplateColumns: "16px 140px 110px minmax(0,1fr) 64px 110px 24px" }}
           >
             <span />
             <span>Contact</span>
@@ -114,24 +114,35 @@ function SummaryBody({ notes, activity }: { notes: ReturnType<typeof getCandidat
             <span>Onderwerp</span>
             <span className="text-right">Duur</span>
             <span className="text-right">Datum</span>
+            <span />
           </div>
           <ul className="divide-y divide-border">
             {activity.map((a) => (
               <li
                 key={a.id}
                 className="grid items-center gap-2 px-2.5 py-2 text-xs hover:bg-muted/30"
-                style={{ gridTemplateColumns: "16px 140px 110px minmax(0,1fr) 64px 110px" }}
+                style={{ gridTemplateColumns: "16px 140px 110px minmax(0,1fr) 64px 110px 24px" }}
               >
                 <ActivityIcon kind={a.kind} direction={a.direction} />
                 <span className="font-medium truncate">{a.contact}</span>
-                <span>
-                  <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px]", contactStatusBadgeClass(a.contactStatus))}>
+                <span className="min-w-0">
+                  <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] whitespace-nowrap max-w-full truncate", contactStatusBadgeClass(a.contactStatus))}>
                     {a.contactStatus}
                   </span>
                 </span>
                 <span className="text-muted-foreground truncate">{a.subject ?? a.body ?? "—"}</span>
                 <span className="text-muted-foreground tabular-nums text-[10px] text-right font-mono">{a.duration ?? ""}</span>
                 <span className="text-muted-foreground tabular-nums text-[10px] text-right whitespace-nowrap">{a.date} · {a.time}</span>
+                <a
+                  href="https://app.recruitcrm.io/v2/contacts"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center justify-center text-muted-foreground hover:text-primary"
+                  title="Open contact in Recruit CRM"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                </a>
               </li>
             ))}
           </ul>
