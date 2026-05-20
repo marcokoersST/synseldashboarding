@@ -174,7 +174,7 @@ export function ConsultantOverviewOverlay({ open, consultantId, onClose, onBack,
               {onOpenCallConversions && (
                 <Button size="sm" variant="outline" className="h-7 text-xs"
                   onClick={() => onOpenCallConversions(f.consultantId)}>
-                  Open Call Conversions
+                  Conversie-analyse openen
                 </Button>
               )}
             </div>

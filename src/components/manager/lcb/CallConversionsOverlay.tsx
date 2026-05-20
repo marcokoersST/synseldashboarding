@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ExternalLink, Plus, Save, Trash2, X } from "lucide-react";
+import { ExternalLink, Plus, Save, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LCBOverlay } from "./LCBOverlay";
 import { Button } from "@/components/ui/button";
@@ -448,7 +448,7 @@ function ConversionDetail({
               </tr>
             ))}
             {rows.items.length === 0 && (
-              <tr><td colSpan={10} className="px-2 py-6 text-center text-muted-foreground">Geen records.</td></tr>
+              <tr><td colSpan={rows.kind === "deal" ? 10 : 7} className="px-2 py-6 text-center text-muted-foreground">Geen records.</td></tr>
             )}
           </tbody>
         </table>
@@ -489,5 +489,3 @@ function buildCandidateRecords(consultantId: number, step: LcbStepKey) {
   return { kind: "candidate" as const, items: cands };
 }
 
-// Silence unused import warning
-void ArrowRight;
