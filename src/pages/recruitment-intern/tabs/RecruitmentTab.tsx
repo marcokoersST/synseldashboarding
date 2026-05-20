@@ -307,6 +307,21 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
         </CardContent>
       </Card>
 
+      {/* CV databases weekly funnel */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">CV databases</CardTitle>
+          <ChartTableToggle view={cvDbView} onChange={setCvDbView} />
+        </CardHeader>
+        <CardContent className={cvDbView === "table" ? "p-0" : undefined}>
+          {cvDbView === "chart" ? (
+            <WeeklyFunnelDropOff weeks={CV_DB_WEEKS} series={CV_DB_SERIES} />
+          ) : (
+            renderWeeklyTable(CV_DB_WEEKS, CV_DB_SERIES)
+          )}
+        </CardContent>
+      </Card>
+
       {/* Redenen afgevallen */}
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">Redenen afgevallen</CardTitle></CardHeader>
