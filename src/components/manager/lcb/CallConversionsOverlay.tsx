@@ -364,7 +364,7 @@ function ConversionDetail({
   // Pick the underlying entity based on the result field
   const rows = useMemo(() => {
     const dealStep = stepKeyForField(conv.result) ?? stepKeyForField(conv.base);
-    if (!dealStep) return [];
+    if (!dealStep) return { kind: "candidate" as const, items: [] as ReturnType<typeof getCandidatesForStep> };
     const stepDef = lcbFunnelSteps.find((s) => s.key === dealStep);
     if (stepDef?.entity === "deal") return buildDealRecords(consultantId, dealStep);
     return buildCandidateRecords(consultantId, dealStep);
