@@ -1,22 +1,19 @@
 ## Goal
-Promote "Signalen" from a strip above the tab bar into a full tab alongside Candidate Market, Consultant Development, and Finance & Forecast.
+Make the right-hand detail overlay (kandidaat / deal detail) in the LC-B split overlay at least 3/5 of the viewport width. In the screenshot the left list pane is wider than the detail pane on the right, which feels cramped for the candidate scorecards, activity log and tabbed body.
 
-## Changes (single file: `src/pages/manager/LCB.tsx`)
+## Change (single file: `src/components/manager/lcb/LcbSplitOverlay.tsx`)
 
-1. **Add tab definition.** Extend `TabId` to include `"signals"` and append to `TABS`:
-   `{ id: "signals", label: "Signalen", subtitle: "Acties & alerts" }`. Show the active alert count as a small pill in the tab button (e.g. `alerts.length` as a muted badge after the label).
+Replace the fixed pixel widths with viewport-relative sizing:
 
-2. **Remove the standalone signal strip.** Delete the `<LCBSignalRow alerts={alerts} onSelect={handleSignalClick} />` line that currently sits between `LCBTopBar` and the tab strip.
+- **Right detail pane (when open):** width = `clamp(720px, 62vw, 1100px)` — guarantees ≥ ~3/5 of the viewport on typical screens, scales up on wide monitors, never exceeds 92vw.
+- **Left list pane (when right pane is open):** width = `clamp(360px, 30vw, 520px)` — shrinks so the detail pane dominates side-by-side.
+- **Left list pane (standalone, no right pane):** unchanged behavior — fills wide default.
 
-3. **Render signals as a tab panel.** When `tab === "signals"`, render a new lightweight tab body (`<SignalsTab alerts={alerts} onSelect={handleSignalClick} />`) inside the existing `<main>`. Reuse the existing alert grouping/severity styling from `LCBSignalRow` but lay it out as a full-height list:
-   - Group by severity (critical → attention → clean) with section headers and counts.
-   - Each row: severity dot, consultant name, metric, message, and a "Open" affordance that calls `onSelect(alert)` (same handler as before, which already routes to the right tab + overlay).
-   - Empty state: "Alle signalen op groen".
-4. **`handleSignalClick` keeps working as-is** — it still flips `setTab(...)` to market/development to open the right overlay. From the Signalen tab, clicking an alert moves the user into the relevant tab + opens the drill-down, which is the desired flow.
+Implementation detail: switch the `style={{ width: widthPx, maxWidth: "92vw" }}` on the inner `<Pane>` to accept a CSS width string (either the existing `widthPx` number for backward compat or a viewport-based string), and have `LcbSplitOverlay` compute the new defaults when callers don't pass an explicit `width`. Caller in `LCB.tsx` currently passes `width: (selectedCandidate || selectedDeal) ? 560 : 980` for the left pane — drop those overrides so the new defaults apply.
 
-5. **Optional cleanup.** Remove the now-unused `LCBSignalRow` import if the strip is no longer used anywhere; the signals UI is moved into an inline `SignalsTab` component at the bottom of `LCB.tsx`.
+## Files touched
+- `src/components/manager/lcb/LcbSplitOverlay.tsx` (width logic)
+- `src/pages/manager/LCB.tsx` (remove the now-stale `width: 560 / 980` props on the `left` prop)
 
 ## Out of scope
-- No changes to alert data, filters, overlays, or other tabs' content.
-- No changes to `LCBSignalRow.tsx` itself (the file can stay; just unimported).
-- No new files.
+No content, animation, or styling-token changes. ESC-to-close-right and overlay portal behavior stay as-is.

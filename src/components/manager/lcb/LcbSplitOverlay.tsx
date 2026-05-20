@@ -9,7 +9,7 @@ interface LeftPane {
   breadcrumbs: string[];
   title: string;
   subtitle?: string;
-  width?: number; // px
+  width?: number | string; // px or CSS width string
   content: ReactNode;
   onBack?: () => void;
 }
@@ -17,7 +17,7 @@ interface RightPane {
   breadcrumbs: string[];
   title: string;
   subtitle?: string;
-  width?: number; // px
+  width?: number | string;
   content: ReactNode;
 }
 
