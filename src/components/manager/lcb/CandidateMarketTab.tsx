@@ -271,7 +271,7 @@ function Td({
     <td
       onMouseEnter={onEnter}
       className={cn(
-        "px-3 py-1.5",
+        "px-2 py-1.5",
         align === "right" && "text-right",
         sticky && "sticky left-0 z-10 bg-card border-r border-border",
         highlight && (sticky ? "bg-muted/40" : "bg-muted/30"),
