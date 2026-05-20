@@ -109,7 +109,7 @@ export function CandidateMarketTab({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col">
       <div className="flex items-center justify-between gap-3 mb-2">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Sales funnel per consultant</h2>
@@ -119,8 +119,8 @@ export function CandidateMarketTab({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto rounded-lg border border-border bg-card relative">
-        <table className="w-full text-xs border-collapse">
+      <div className="overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-card relative" style={{ maxHeight: "calc(100vh - 280px)" }}>
+        <table className="w-full text-xs border-collapse table-fixed">
           <thead className="sticky top-0 z-20 bg-muted/70 backdrop-blur">
             <tr className="text-left">
               <Th sticky sortable onClick={() => toggleSort("consultantName")} active={sortKey === "consultantName"} dir={sortDir} highlight={hoverCol === "consultantName"}>Consultant</Th>
