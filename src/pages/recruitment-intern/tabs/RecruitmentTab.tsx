@@ -6,7 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { TrendingUp, TrendingDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
-import { WeeklyFunnelDropOff } from "@/components/recruitment-intern/WeeklyFunnelDropOff";
+import { WeeklyFunnelDropOff, type WeeklyFunnelDatum, type WeeklyFunnelSeries } from "@/components/recruitment-intern/WeeklyFunnelDropOff";
+import { ChartTableToggle } from "@/components/recruitment-intern/ChartTableToggle";
 import { MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
