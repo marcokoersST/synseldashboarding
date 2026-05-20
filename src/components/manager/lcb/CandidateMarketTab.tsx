@@ -125,11 +125,15 @@ export function CandidateMarketTab({
             <tr className="text-left">
               <Th sticky sortable onClick={() => toggleSort("consultantName")} active={sortKey === "consultantName"} dir={sortDir} highlight={hoverCol === "consultantName"}>Consultant</Th>
               <Th sortable onClick={() => toggleSort("unit")} active={sortKey === "unit"} dir={sortDir} highlight={hoverCol === "unit"}>Unit</Th>
-              {lcbFunnelSteps.map((s) => (
-                <Th key={s.key} align="right" sortable onClick={() => toggleSort(s.key as SortKey)} active={sortKey === s.key} dir={sortDir} highlight={hoverCol === s.key}>
-                  {s.label}
-                </Th>
-              ))}
+              {lcbFunnelSteps.map((s, i) => {
+                const prev = i > 0 ? lcbFunnelSteps[i - 1].label : null;
+                const label = prev ? `${prev} vs ${s.label}` : s.label;
+                return (
+                  <Th key={s.key} align="right" sortable onClick={() => toggleSort(s.key as SortKey)} active={sortKey === s.key} dir={sortDir} highlight={hoverCol === s.key}>
+                    {label}
+                  </Th>
+                );
+              })}
               <Th sortable onClick={() => toggleSort("drop")} active={sortKey === "drop"} dir={sortDir} highlight={hoverCol === "drop"}>Grootste drop-off</Th>
               <Th sortable onClick={() => toggleSort("status")} active={sortKey === "status"} dir={sortDir} highlight={hoverCol === "status"}>Status</Th>
             </tr>
@@ -271,7 +275,7 @@ function Td({
         align === "right" && "text-right",
         sticky && "sticky left-0 z-10 bg-card border-r border-border",
         highlight && (sticky ? "bg-muted/40" : "bg-muted/30"),
-        intersect && "bg-muted/60",
+        intersect && "bg-muted/80 dark:bg-muted",
       )}
     >
       {children}

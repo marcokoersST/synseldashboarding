@@ -1,7 +1,7 @@
 // LC-B weekly market data — seeded, deterministic. Used only by /manager-dashboard/LC-B.
-// Follows the round-2 brief: weekly logic, deal vs candidate entities, realistic ratios.
 
 import { myTeamConsultants } from "./managerData";
+import { LCB_DEAL_STAGES, CONTACT_STATUSES, type LcbDealStage, type ContactStatus } from "./lcbDealStages";
 
 // ─── Funnel steps (round-2 labels) ──────────────────────────────────────
 export const lcbFunnelSteps = [
@@ -44,15 +44,13 @@ function mulberry32(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-const rint = (rnd: () => number, min: number, max: number) =>
-  Math.floor(rnd() * (max - min + 1)) + min;
-const rfloat = (rnd: () => number, min: number, max: number) =>
-  rnd() * (max - min) + min;
+const rint = (rnd: () => number, min: number, max: number) => Math.floor(rnd() * (max - min + 1)) + min;
+const rfloat = (rnd: () => number, min: number, max: number) => rnd() * (max - min) + min;
+const pick = <T,>(rnd: () => number, arr: readonly T[]) => arr[rint(rnd, 0, arr.length - 1)];
 
 // ─── Build deterministic weekly row per consultant ─────────────────────
 function buildRow(c: { id: number; name: string; unit: string }): LcbConsultantRow {
   const rnd = mulberry32(c.id * 9973 + 17);
-  // perf class: 30% good, 50% average, 20% bad
   const r = rnd();
   const perf: LcbConsultantRow["perf"] = r < 0.3 ? "good" : r < 0.8 ? "average" : "bad";
   const invPerProposal = perf === "good" ? 15 : perf === "average" ? 20 : 40;
@@ -61,7 +59,6 @@ function buildRow(c: { id: number; name: string; unit: string }): LcbConsultantR
   const inschrijvingen = Math.round(toegewezen * rfloat(rnd, 0.9, 1.0));
   const acquisities = Math.round(inschrijvingen * rfloat(rnd, 0.9, 1.0));
 
-  // voorstellen: per acquisitie candidate 20-65 deals
   let voorstellen = 0;
   for (let i = 0; i < acquisities; i++) voorstellen += rint(rnd, 20, 65);
 
@@ -70,69 +67,42 @@ function buildRow(c: { id: number; name: string; unit: string }): LcbConsultantR
   const gesprekken = Math.round(uitnodiging * rfloat(rnd, 0.3, 1.0));
   const vervolg = Math.round(gesprekken * rfloat(rnd, 0.1, 0.5));
 
-  // plaatsingen: either [0,30%] x gesprekken OR [75,90%] x vervolg
   const useVervolg = rnd() < 0.5 && vervolg > 0;
   const plaatsingen = useVervolg
     ? Math.round(vervolg * rfloat(rnd, 0.75, 0.9))
     : Math.round(gesprekken * rfloat(rnd, 0, 0.3));
 
   return {
-    consultantId: c.id,
-    consultantName: c.name,
-    unit: c.unit,
-    perf,
-    toegewezen,
-    inschrijvingen,
-    acquisities,
-    voorstellen,
-    intakes,
-    uitnodiging,
-    gesprekken,
-    vervolg,
-    plaatsingen,
+    consultantId: c.id, consultantName: c.name, unit: c.unit, perf,
+    toegewezen, inschrijvingen, acquisities, voorstellen,
+    intakes, uitnodiging, gesprekken, vervolg, plaatsingen,
   };
 }
 
 export const lcbMarketRows: LcbConsultantRow[] = myTeamConsultants.map(buildRow);
 
-// ─── Totals + benchmark conversion per step ─────────────────────────────
-export const lcbTotals: Record<LcbStepKey, number> = lcbFunnelSteps.reduce(
-  (acc, s) => {
-    acc[s.key] = lcbMarketRows.reduce((sum, r) => sum + (r[s.key] as number), 0);
-    return acc;
-  },
-  {} as Record<LcbStepKey, number>,
-);
+export const lcbTotals: Record<LcbStepKey, number> = lcbFunnelSteps.reduce((acc, s) => {
+  acc[s.key] = lcbMarketRows.reduce((sum, r) => sum + (r[s.key] as number), 0);
+  return acc;
+}, {} as Record<LcbStepKey, number>);
 
 export function lcbBenchmarks(): Partial<Record<LcbStepKey, number>> {
   const out: Partial<Record<LcbStepKey, number>> = {};
   for (let i = 1; i < lcbFunnelSteps.length; i++) {
     const cur = lcbFunnelSteps[i].key;
     const prev = lcbFunnelSteps[i - 1].key;
-    const ratios = lcbMarketRows
-      .filter((r) => (r[prev] as number) > 0)
-      .map((r) => (r[cur] as number) / (r[prev] as number));
-    out[cur] = ratios.length
-      ? ratios.reduce((a, b) => a + b, 0) / ratios.length
-      : 0;
+    const ratios = lcbMarketRows.filter((r) => (r[prev] as number) > 0).map((r) => (r[cur] as number) / (r[prev] as number));
+    out[cur] = ratios.length ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 0;
   }
   return out;
 }
 
-// ─── Drill-down dummy candidate / deal records ─────────────────────────
+// ─── Mock pools ────────────────────────────────────────────────────────
 export type CandidateCategory = "A+" | "A" | "B";
 export type CandidateStatus =
-  | "1 | Inschrijven"
-  | "2 | Acquisitie"
-  | "3 | In procedure"
-  | "Afgewezen"
-  | "Geplaatst"
-  | "Lead"
-  | "Niet beschikbaar"
-  | "Niet geplaatst"
-  | "Nieuw"
-  | "Vacature aanvraag"
-  | "Verdelen";
+  | "1 | Inschrijven" | "2 | Acquisitie" | "3 | In procedure" | "Afgewezen"
+  | "Geplaatst" | "Lead" | "Niet beschikbaar" | "Niet geplaatst" | "Nieuw"
+  | "Vacature aanvraag" | "Verdelen";
 
 const CANDIDATE_NAMES = [
   "Jan de Vries", "Maria van den Berg", "Pieter Jansen", "Anna Bakker",
@@ -142,13 +112,13 @@ const CANDIDATE_NAMES = [
   "Niels Eggens", "Femke Vermeer", "Joris Kuiper", "Iris Hofman",
 ];
 const COMPANIES = ["Shell", "ASML", "Philips", "ING", "KPN", "Rabobank", "Unilever", "Heineken", "Vopak", "DSM"];
+const CONTACT_PEOPLE = ["Mark Jansen", "Karin de Boer", "Bas van Loon", "Linda Verstegen", "Joost Bakker", "Esther Klein"];
 const CATEGORIES: CandidateCategory[] = ["A+", "A", "B"];
 const STATUSES: CandidateStatus[] = [
   "1 | Inschrijven", "2 | Acquisitie", "3 | In procedure", "Afgewezen",
   "Geplaatst", "Lead", "Niet beschikbaar", "Niet geplaatst", "Nieuw",
   "Vacature aanvraag", "Verdelen",
 ];
-const DEAL_STATUSES = ["Open", "Voorgesteld", "Intake gepland", "Onderhandeling", "Afgewezen", "Geplaatst"];
 
 export interface CandidateRow {
   name: string;
@@ -159,35 +129,55 @@ export interface CandidateRow {
   proposals: number;
   emails: number;
   calls: number;
-  lastUpdated: string;
+  lastUpdated: string;          // legacy "12 mrt" — kept for back-compat
+  lastUpdatedDate: string;      // "12 mrt 2026"
+  lastUpdatedTime: string;      // "14:32"
 }
 
 export interface DealRow {
   dealName: string;
   dealId: string;
-  dealStatus: string;
+  dealStatus: LcbDealStage;
   candidateName: string;
   candidateId: string;
   opdrachtgeverName: string;
   opdrachtgeverId: string;
   lastUpdated: string;
+  lastUpdatedDate: string;
+  lastUpdatedTime: string;
 }
 
+const MONTHS = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
 function ddmm(rnd: () => number) {
   const d = rint(rnd, 1, 28);
-  const m = ["jan", "feb", "mrt", "apr", "mei", "jun"][rint(rnd, 0, 5)];
+  const m = MONTHS[rint(rnd, 0, 5)];
   return `${d} ${m}`;
 }
+function fullDate(rnd: () => number) {
+  const d = rint(rnd, 1, 28);
+  const m = MONTHS[rint(rnd, 0, 11)];
+  return `${d} ${m} 2026`;
+}
+function hhmm(rnd: () => number) {
+  const h = String(rint(rnd, 8, 19)).padStart(2, "0");
+  const m = String(rint(rnd, 0, 59)).padStart(2, "0");
+  return `${h}:${m}`;
+}
+function hms(rnd: () => number) {
+  const h = rint(rnd, 0, 1);
+  const m = rint(rnd, 0, 59);
+  const s = rint(rnd, 0, 59);
+  return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
 
-export function getCandidatesForStep(
-  consultantId: number,
-  step: LcbStepKey,
-): CandidateRow[] {
+export function getCandidatesForStep(consultantId: number, step: LcbStepKey): CandidateRow[] {
   const rnd = mulberry32(consultantId * 131 + step.length * 19);
   const row = lcbMarketRows.find((r) => r.consultantId === consultantId);
   const count = row ? Math.min(20, Math.max(1, row[step] as number)) : 8;
   return Array.from({ length: count }, (_, i) => {
     const n = CANDIDATE_NAMES[(consultantId * 3 + i) % CANDIDATE_NAMES.length];
+    const date = fullDate(rnd);
+    const time = hhmm(rnd);
     return {
       name: n,
       id: `KAND-${10000 + consultantId * 100 + i}`,
@@ -198,29 +188,204 @@ export function getCandidatesForStep(
       emails: rint(rnd, 0, 18),
       calls: rint(rnd, 0, 14),
       lastUpdated: ddmm(rnd),
+      lastUpdatedDate: date,
+      lastUpdatedTime: time,
     };
   });
 }
 
-export function getDealsForStep(
-  consultantId: number,
-  step: LcbStepKey,
-): DealRow[] {
+export function getDealsForStep(consultantId: number, step: LcbStepKey): DealRow[] {
   const rnd = mulberry32(consultantId * 277 + step.length * 53);
   const row = lcbMarketRows.find((r) => r.consultantId === consultantId);
   const count = row ? Math.min(25, Math.max(1, row[step] as number)) : 10;
   return Array.from({ length: count }, (_, i) => {
     const cand = CANDIDATE_NAMES[(consultantId + i) % CANDIDATE_NAMES.length];
     const co = COMPANIES[(consultantId * 2 + i) % COMPANIES.length];
+    const stage = LCB_DEAL_STAGES[rint(rnd, 0, LCB_DEAL_STAGES.length - 1)];
+    const date = fullDate(rnd);
+    const time = hhmm(rnd);
     return {
       dealName: `${cand.split(" ")[0]} → ${co}`,
       dealId: `DEAL-${20000 + consultantId * 100 + i}`,
-      dealStatus: DEAL_STATUSES[rint(rnd, 0, DEAL_STATUSES.length - 1)],
+      dealStatus: stage,
       candidateName: cand,
       candidateId: `KAND-${10000 + consultantId * 100 + i}`,
       opdrachtgeverName: co,
       opdrachtgeverId: `OPDR-${500 + i}`,
       lastUpdated: ddmm(rnd),
+      lastUpdatedDate: date,
+      lastUpdatedTime: time,
+    };
+  });
+}
+
+// ─── Candidate detail: activity, notes, related deals ─────────────────
+export type Direction = "in" | "out";
+
+export interface CandidateNote {
+  id: string;
+  author: string;
+  date: string;
+  time: string;
+  body: string;
+}
+
+export interface ActivityItem {
+  id: string;
+  kind: "email" | "call" | "note";
+  direction: Direction;
+  contact: string;
+  contactStatus: ContactStatus;
+  subject?: string;
+  duration?: string; // for calls
+  body?: string;     // for notes
+  date: string;
+  time: string;
+  dealRef?: string;
+}
+
+export interface CandidateDealLink {
+  dealName: string;
+  dealId: string;
+  dealStatus: LcbDealStage;
+  candidateName: string;
+  candidateId: string;
+  opdrachtgeverName: string;
+  opdrachtgeverId: string;
+  proposed: boolean;
+  date: string;
+  time: string;
+}
+
+function seedFromId(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return mulberry32(h);
+}
+
+export function getCandidateNotes(candidateId: string): CandidateNote[] {
+  const rnd = seedFromId(candidateId + "notes");
+  const n = rint(rnd, 1, 4);
+  const samples = [
+    "Wil eerst kennismaken voor commitment.",
+    "Liever rol dichter bij huis (max 30 min).",
+    "Verwacht salarisindicatie voor volgende stap.",
+    "Heeft ervaring met hydrauliek, sterke fit.",
+    "Reageerde positief op pitch, vervolg gepland.",
+    "Niet bereikbaar deze week, opvolgen maandag.",
+  ];
+  return Array.from({ length: n }, (_, i) => ({
+    id: `${candidateId}-note-${i}`,
+    author: pick(rnd, ["Jij", "Eelkje de Boer", "Edo de Boer"]),
+    date: fullDate(rnd),
+    time: hhmm(rnd),
+    body: pick(rnd, samples),
+  }));
+}
+
+export function getCandidateActivity(candidateId: string): ActivityItem[] {
+  const rnd = seedFromId(candidateId + "act");
+  const total = rint(rnd, 6, 14);
+  const subjects = [
+    "Allround werkplaats-/servicemonteur met ervaring",
+    "FW: Ervaren servicemonteur — meer dan 30 jaar ervaring",
+    "Technisch Project Manager | HBO | 40 jaar",
+    "Ervaren technicus beschikbaar | MBO + MTS",
+    "Service Monteur | MBO-3 Gas, water en warmte",
+  ];
+  return Array.from({ length: total }, (_, i) => {
+    const kindR = rnd();
+    const kind: ActivityItem["kind"] = kindR < 0.5 ? "email" : kindR < 0.85 ? "call" : "note";
+    return {
+      id: `${candidateId}-act-${i}`,
+      kind,
+      direction: rnd() < 0.6 ? "out" : "in",
+      contact: pick(rnd, CONTACT_PEOPLE),
+      contactStatus: pick(rnd, CONTACT_STATUSES),
+      subject: kind !== "call" ? pick(rnd, subjects) : undefined,
+      duration: kind === "call" ? hms(rnd) : undefined,
+      body: kind === "note" ? pick(rnd, ["Kort gesprek, follow-up gepland.", "Klant wil tweede gesprek inplannen."]) : undefined,
+      date: fullDate(rnd),
+      time: hhmm(rnd),
+      dealRef: rnd() < 0.6 ? `DEAL-${20000 + rint(rnd, 0, 99)}` : undefined,
+    };
+  });
+}
+
+export function getCandidateDealLinks(candidateId: string, dealsCount: number): CandidateDealLink[] {
+  const rnd = seedFromId(candidateId + "deals");
+  const n = Math.max(1, Math.min(dealsCount + 2, 8));
+  return Array.from({ length: n }, (_, i) => {
+    const co = pick(rnd, COMPANIES);
+    return {
+      dealName: `${candidateId.split("-")[1]} → ${co}`,
+      dealId: `DEAL-${30000 + i + rint(rnd, 0, 99)}`,
+      dealStatus: pick(rnd, LCB_DEAL_STAGES),
+      candidateName: "—",
+      candidateId,
+      opdrachtgeverName: co,
+      opdrachtgeverId: `OPDR-${500 + i}`,
+      proposed: rnd() < 0.6,
+      date: fullDate(rnd),
+      time: hhmm(rnd),
+    };
+  });
+}
+
+// ─── Deal detail: notes, tasks, meetings ──────────────────────────────
+export interface DealNote { id: string; author: string; date: string; time: string; body: string }
+export interface DealTask { id: string; title: string; done: boolean; due: string }
+export interface DealMeeting { id: string; title: string; date: string; time: string; with: string }
+
+export function getDealNotes(dealId: string): DealNote[] {
+  const rnd = seedFromId(dealId + "n");
+  return Array.from({ length: rint(rnd, 1, 4) }, (_, i) => ({
+    id: `${dealId}-n-${i}`,
+    author: pick(rnd, ["Jij", "Eelkje de Boer"]),
+    date: fullDate(rnd),
+    time: hhmm(rnd),
+    body: pick(rnd, [
+      "Opdrachtgever vroeg om referenties.",
+      "Tweede gesprek gepland, kandidaat enthousiast.",
+      "Tarief onderhandeling loopt, akkoord verwacht.",
+      "Wacht op feedback na vervolggesprek.",
+    ]),
+  }));
+}
+export function getDealTasks(dealId: string): DealTask[] {
+  const rnd = seedFromId(dealId + "t");
+  return Array.from({ length: rint(rnd, 1, 3) }, (_, i) => ({
+    id: `${dealId}-t-${i}`,
+    title: pick(rnd, ["Bel opdrachtgever voor terugkoppeling", "Stuur contract concept", "Plan vervolggesprek", "Verstuur CV"]),
+    done: rnd() < 0.4,
+    due: `${ddmm(rnd)} ${hhmm(rnd)}`,
+  }));
+}
+export function getDealMeetings(dealId: string): DealMeeting[] {
+  const rnd = seedFromId(dealId + "m");
+  return Array.from({ length: rint(rnd, 0, 3) }, (_, i) => ({
+    id: `${dealId}-m-${i}`,
+    title: pick(rnd, ["Intake gesprek", "Vervolggesprek", "Onderhandeling", "Contract bespreking"]),
+    date: fullDate(rnd),
+    time: hhmm(rnd),
+    with: pick(rnd, CONTACT_PEOPLE),
+  }));
+}
+export function getDealActivity(dealId: string): ActivityItem[] {
+  const rnd = seedFromId(dealId + "a");
+  return Array.from({ length: rint(rnd, 3, 8) }, (_, i) => {
+    const kind: ActivityItem["kind"] = rnd() < 0.55 ? "email" : "call";
+    return {
+      id: `${dealId}-a-${i}`,
+      kind,
+      direction: rnd() < 0.55 ? "out" : "in",
+      contact: pick(rnd, CONTACT_PEOPLE),
+      contactStatus: pick(rnd, CONTACT_STATUSES),
+      subject: kind === "email" ? pick(rnd, ["Voorstel kandidaat", "Reminder voorstel", "Bevestiging intake", "Update procedure"]) : undefined,
+      duration: kind === "call" ? hms(rnd) : undefined,
+      date: fullDate(rnd),
+      time: hhmm(rnd),
+      dealRef: dealId,
     };
   });
 }
@@ -230,24 +395,21 @@ export interface LcbFinancePerfRow {
   consultantId: number;
   consultantName: string;
   activeCandidates: number;
-  activeMonthlyRevenue: number;       // €k
+  activeMonthlyRevenue: number;
   soonToStart: number;
-  soonToStartRevenue: number;         // €k
+  soonToStartRevenue: number;
   expectedStoppers: number;
-  stopperRiskRevenue: number;         // €k
+  stopperRiskRevenue: number;
   likelyExtensions: number;
-  likelyExtensionRevenue: number;     // €k
+  likelyExtensionRevenue: number;
   placementsYTD: number;
-  avgMarginPerCandidate: number;      // €
-  netImpact: number;                  // €k (active + soon - risk)
-  topOpdrachtgevers: string[];        // top 2 names + spread
+  avgMarginPerCandidate: number;
+  netImpact: number;
+  topOpdrachtgevers: string[];
   totalOpdrachtgevers: number;
 }
 
-export function buildFinancePerfRow(
-  consultantId: number,
-  consultantName: string,
-): LcbFinancePerfRow {
+export function buildFinancePerfRow(consultantId: number, consultantName: string): LcbFinancePerfRow {
   const rnd = mulberry32(consultantId * 7919 + 31);
   const active = rint(rnd, 2, 7);
   const activeRev = active * rint(rnd, 8, 16);
@@ -263,21 +425,13 @@ export function buildFinancePerfRow(
   const ops = [...COMPANIES].sort(() => rnd() - 0.5);
   const totalOps = rint(rnd, 3, 6);
   return {
-    consultantId,
-    consultantName,
-    activeCandidates: active,
-    activeMonthlyRevenue: activeRev,
-    soonToStart: soon,
-    soonToStartRevenue: soonRev,
-    expectedStoppers: stoppers,
-    stopperRiskRevenue: stopperRev,
-    likelyExtensions: likely,
-    likelyExtensionRevenue: likelyRev,
-    placementsYTD: placements,
-    avgMarginPerCandidate: avgMargin,
-    netImpact,
-    topOpdrachtgevers: ops.slice(0, 2),
-    totalOpdrachtgevers: totalOps,
+    consultantId, consultantName,
+    activeCandidates: active, activeMonthlyRevenue: activeRev,
+    soonToStart: soon, soonToStartRevenue: soonRev,
+    expectedStoppers: stoppers, stopperRiskRevenue: stopperRev,
+    likelyExtensions: likely, likelyExtensionRevenue: likelyRev,
+    placementsYTD: placements, avgMarginPerCandidate: avgMargin,
+    netImpact, topOpdrachtgevers: ops.slice(0, 2), totalOpdrachtgevers: totalOps,
   };
 }
 
