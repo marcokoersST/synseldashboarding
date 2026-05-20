@@ -364,3 +364,110 @@ function StepDealList({ rows, selected, onSelect }: { rows: DealRow[]; selected:
 function Th({ children, className }: { children?: React.ReactNode; className?: string }) {
   return <th className={cn("px-2 py-1.5 font-medium text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap text-left", className)}>{children}</th>;
 }
+
+// ─── Signals tab ───────────────────────────────────────────
+const SEVERITY_META: Record<DashboardAlert["severity"], { label: string; dot: string; row: string; pill: string }> = {
+  critical: {
+    label: "Kritiek",
+    dot: "bg-red-500",
+    row: "border-red-500/30 hover:bg-red-500/5",
+    pill: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30",
+  },
+  warning: {
+    label: "Aandacht",
+    dot: "bg-amber-500",
+    row: "border-amber-500/30 hover:bg-amber-500/5",
+    pill: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+  },
+  info: {
+    label: "Info",
+    dot: "bg-blue-500",
+    row: "border-blue-500/30 hover:bg-blue-500/5",
+    pill: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
+  },
+};
+
+function SignalsTab({ alerts, onSelect }: { alerts: DashboardAlert[]; onSelect: (a: DashboardAlert) => void }) {
+  const groups = useMemo(() => {
+    const order: DashboardAlert["severity"][] = ["critical", "warning", "info"];
+    return order
+      .map((sev) => ({ severity: sev, items: alerts.filter((a) => a.severity === sev) }))
+      .filter((g) => g.items.length > 0);
+  }, [alerts]);
+
+  if (alerts.length === 0) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
+        <div className="h-8 w-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+        </div>
+        <div className="text-sm font-medium text-foreground">Alle signalen op groen</div>
+        <div className="text-xs">Geen openstaande alerts voor dit team.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-y-auto">
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold text-foreground">Signalen</h2>
+        <p className="text-[11px] text-muted-foreground">
+          Klik een signaal om direct naar de bijbehorende consultant of funnelstap te navigeren.
+        </p>
+      </div>
+      <div className="space-y-4">
+        {groups.map((g) => {
+          const meta = SEVERITY_META[g.severity];
+          return (
+            <section key={g.severity}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />
+                <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {meta.label}
+                </h3>
+                <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-semibold tabular-nums", meta.pill)}>
+                  {g.items.length}
+                </span>
+              </div>
+              <ul className="space-y-1.5">
+                {g.items.map((a) => (
+                  <li key={a.id}>
+                    <button
+                      type="button"
+                      onClick={() => onSelect(a)}
+                      className={cn(
+                        "w-full text-left rounded-md border bg-card px-3 py-2 flex items-start gap-3 transition-colors group",
+                        meta.row,
+                      )}
+                    >
+                      <AlertTriangle className={cn("h-3.5 w-3.5 mt-0.5 shrink-0", g.severity === "critical" ? "text-red-500" : g.severity === "warning" ? "text-amber-500" : "text-blue-500")} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-semibold text-foreground">{a.title}</span>
+                          {a.consultantName && (
+                            <span className="text-[10px] text-muted-foreground">· {a.consultantName}</span>
+                          )}
+                          {a.metric && (
+                            <span className="text-[10px] text-muted-foreground">· {a.metric}</span>
+                          )}
+                          {a.value && (
+                            <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-semibold tabular-nums", meta.pill)}>
+                              {a.value}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{a.message}</p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-foreground shrink-0 mt-0.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
