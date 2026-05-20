@@ -1,17 +1,11 @@
 import { useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AnimatedRing } from "@/components/animations/AnimatedRing";
-import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { myTeamConsultants } from "@/data/managerData";
-import {
-  generateAlerts,
-  unitFunnelTotalsV2,
-  type DashboardAlert,
-  type FunnelStepKey,
-  type CandidateRecord,
-} from "@/data/managerOperationalDataV2";
+import { generateAlerts, type DashboardAlert } from "@/data/managerOperationalDataV2";
+import { lcbMarketRows, type LcbStepKey, type CandidateRow } from "@/data/lcbMarketData";
 import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
 import { consultantSkillData } from "@/data/managerPerformanceData";
 
@@ -22,13 +16,10 @@ import { CandidateMarketTab } from "@/components/manager/lcb/CandidateMarketTab"
 import { ConsultantDevelopmentTab } from "@/components/manager/lcb/ConsultantDevelopmentTab";
 import { FinanceForecastTab } from "@/components/manager/lcb/FinanceForecastTab";
 import {
-  StepDetailOverlay,
-  ConsultantOverviewOverlay,
-  CandidateDetailOverlay,
-  DevelopmentOverlay,
-  StopperOverlay,
-  ActivePlacementsOverlay,
-  RevenueDetailOverlay,
+  StepDetailOverlay, ConsultantOverviewOverlay, CandidateDetailOverlay,
+  DevelopmentOverlay, StopperOverlay, ActivePlacementsOverlay,
+  RevenueDetailOverlay, SoonToStartOverlay, NetImpactOverlay,
+  YtdRealisedOverlay, ForecastYearOverlay,
 } from "@/components/manager/lcb/Overlays";
 
 const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
@@ -50,28 +41,28 @@ function overall(c: typeof consultantSkillData[0]): number {
 }
 
 export default function LCB() {
-  // global filters
   const [datePreset, setDatePreset] = useState("Huidige periode");
   const [comparison, setComparison] = useState("Vorige vergelijkbare periode");
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
   const [selectedConsultants, setSelectedConsultants] = useState<number[]>([]);
   const [search, setSearch] = useState("");
 
-  // tabs
   const [tab, setTab] = useState<TabId>("market");
 
-  // overlays
-  const [stepOverlay, setStepOverlay] = useState<{ consultantId: number; step: FunnelStepKey } | null>(null);
+  const [stepOverlay, setStepOverlay] = useState<{ consultantId: number; step: LcbStepKey } | null>(null);
   const [consultantOverlay, setConsultantOverlay] = useState<number | null>(null);
-  const [candidateOverlay, setCandidateOverlay] = useState<{ cand: CandidateRecord; consultantId: number } | null>(null);
+  const [candidateOverlay, setCandidateOverlay] = useState<{ cand: CandidateRow; consultantId: number } | null>(null);
   const [devOverlay, setDevOverlay] = useState<number | null>(null);
   const [stopperOverlay, setStopperOverlay] = useState<number | null>(null);
   const [placementOverlay, setPlacementOverlay] = useState<number | null>(null);
   const [revenueOverlay, setRevenueOverlay] = useState<number | null>(null);
+  const [soonOverlay, setSoonOverlay] = useState<number | null>(null);
+  const [netImpactOverlay, setNetImpactOverlay] = useState<number | null>(null);
+  const [ytdOpen, setYtdOpen] = useState(false);
+  const [forecastOpen, setForecastOpen] = useState(false);
 
   const alerts = useMemo(() => generateAlerts(), []);
 
-  // global health
   const avgSkillScore = useMemo(
     () => Math.round(consultantSkillData.reduce((s, c) => s + overall(c), 0) / consultantSkillData.length),
     [],
@@ -79,7 +70,9 @@ export default function LCB() {
   const realisedSeries = revenueChartDataV2.filter((d) => d.realised > 0);
   const ytdRealised = realisedSeries.reduce((s, d) => s + d.realised, 0);
   const ytdTarget = revenueChartDataV2.slice(0, realisedSeries.length).reduce((s, d) => s + d.target, 0);
-  const operationeelScore = Math.min(100, Math.round((unitFunnelTotalsV2.plaatsingen / Math.max(unitFunnelTotalsV2.intakes, 1)) * 100));
+  const totalPlaatsingen = lcbMarketRows.reduce((s, r) => s + r.plaatsingen, 0);
+  const totalIntakes = lcbMarketRows.reduce((s, r) => s + r.intakes, 0);
+  const operationeelScore = Math.min(100, Math.round((totalPlaatsingen / Math.max(totalIntakes, 1)) * 100));
   const omzetScore = Math.min(100, Math.round((ytdRealised / Math.max(ytdTarget, 1)) * 100));
   const globalScore = Math.round((avgSkillScore + operationeelScore + omzetScore) / 3);
   const globalStatus = statusFromScore(globalScore);
@@ -90,49 +83,37 @@ export default function LCB() {
     setSelectedUnits([]); setSelectedConsultants([]); setSearch("");
   };
 
-  // route signals to relevant overlays based on alert metric/consultant
   const handleSignalClick = (a: DashboardAlert) => {
     const c = myTeamConsultants.find((x) => x.name === a.consultantName);
     if (!c) return;
-    if (a.metric?.toLowerCase().includes("plaatsing")) {
-      setTab("market");
-      setStepOverlay({ consultantId: c.id, step: "plaatsingen" });
-    } else if (a.metric?.toLowerCase().includes("intake")) {
-      setTab("market");
-      setStepOverlay({ consultantId: c.id, step: "intakes" });
-    } else if (a.metric?.toLowerCase().includes("gesprek") || a.metric?.toLowerCase().includes("uitnodiging")) {
-      setTab("market");
-      setStepOverlay({ consultantId: c.id, step: "gesprekken" });
-    } else if (a.metric?.toLowerCase().includes("outreach") || a.metric?.toLowerCase().includes("kwaliteit")) {
-      setTab("development");
-      setDevOverlay(c.id);
-    } else {
-      setTab("market");
-      setConsultantOverlay(c.id);
-    }
+    const m = a.metric?.toLowerCase() ?? "";
+    if (m.includes("plaatsing")) { setTab("market"); setStepOverlay({ consultantId: c.id, step: "plaatsingen" }); }
+    else if (m.includes("intake")) { setTab("market"); setStepOverlay({ consultantId: c.id, step: "intakes" }); }
+    else if (m.includes("gesprek") || m.includes("uitnodiging")) { setTab("market"); setStepOverlay({ consultantId: c.id, step: "gesprekken" }); }
+    else if (m.includes("outreach") || m.includes("kwaliteit")) { setTab("development"); setDevOverlay(c.id); }
+    else { setTab("market"); setConsultantOverlay(c.id); }
   };
 
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col bg-background overflow-hidden">
-      {/* Header */}
+      {/* Header: compact, no ring */}
       <header className="shrink-0 border-b border-border bg-card/60">
-        <div className="flex h-14 items-center gap-4 px-4">
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="relative">
-              <AnimatedRing value={globalScore} size={40} strokeWidth={4} strokeColor={globalColor} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[11px] font-bold tabular-nums" style={{ color: globalColor }}>
-                  <AnimatedNumber value={globalScore} />
-                </span>
-              </div>
-            </div>
-            <div>
-              <h1 className="text-sm font-semibold leading-tight">Manager Dashboard — LC-B</h1>
-              <p className="text-[10px] text-muted-foreground leading-tight">
-                <span className="font-medium" style={{ color: globalColor }}>{LCB_STATUS_LABEL[globalStatus]}</span>
-                {" · "}Operationeel {operationeelScore}% · Performance {avgSkillScore}% · Omzet {omzetScore}%
-              </p>
-            </div>
+        <div className="flex h-12 items-center gap-3 px-4">
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-semibold leading-tight">Manager Dashboard — LC-B</h1>
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="inline-flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[10px] cursor-help">
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: globalColor }} />
+                    <span className="font-medium" style={{ color: globalColor }}>{LCB_STATUS_LABEL[globalStatus]}</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs max-w-[240px]">
+                  Overall status — gewogen gemiddelde van operationeel ({operationeelScore}%), performance ({avgSkillScore}%) en omzet ({omzetScore}%).
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="flex-1" />
           <div className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[10px] text-muted-foreground">
@@ -141,7 +122,6 @@ export default function LCB() {
         </div>
       </header>
 
-      {/* Top bar filters */}
       <LCBTopBar
         datePreset={datePreset} onDatePreset={setDatePreset}
         comparison={comparison} onComparison={setComparison}
@@ -153,10 +133,8 @@ export default function LCB() {
         onReset={onResetFilters}
       />
 
-      {/* Signal row */}
       <LCBSignalRow alerts={alerts} onSelect={handleSignalClick} />
 
-      {/* Tabs */}
       <div className="flex shrink-0 border-b border-border bg-card/30 overflow-x-auto">
         {TABS.map((t) => (
           <button
@@ -164,7 +142,7 @@ export default function LCB() {
             type="button"
             onClick={() => setTab(t.id)}
             className={cn(
-              "px-4 py-2.5 text-xs font-medium whitespace-nowrap border-b-2 transition-colors text-left",
+              "px-4 py-2 text-xs font-medium whitespace-nowrap border-b-2 transition-colors text-left",
               tab === t.id ? "border-primary text-primary bg-primary/5" : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
@@ -174,8 +152,7 @@ export default function LCB() {
         ))}
       </div>
 
-      {/* Active tab content */}
-      <main className="flex-1 overflow-hidden p-4">
+      <main className="flex-1 overflow-hidden p-3">
         {tab === "market" && (
           <CandidateMarketTab
             selectedUnits={selectedUnits}
@@ -201,6 +178,10 @@ export default function LCB() {
             onOpenStoppers={(id) => setStopperOverlay(id)}
             onOpenPlacements={(id) => setPlacementOverlay(id)}
             onOpenRevenue={(id) => setRevenueOverlay(id)}
+            onOpenYtd={() => setYtdOpen(true)}
+            onOpenForecast={() => setForecastOpen(true)}
+            onOpenSoonToStart={(id) => setSoonOverlay(id)}
+            onOpenNetImpact={(id) => setNetImpactOverlay(id)}
           />
         )}
       </main>
@@ -232,6 +213,10 @@ export default function LCB() {
       <StopperOverlay open={!!stopperOverlay} consultantId={stopperOverlay} onClose={() => setStopperOverlay(null)} />
       <ActivePlacementsOverlay open={!!placementOverlay} consultantId={placementOverlay} onClose={() => setPlacementOverlay(null)} />
       <RevenueDetailOverlay open={!!revenueOverlay} consultantId={revenueOverlay} onClose={() => setRevenueOverlay(null)} />
+      <SoonToStartOverlay open={!!soonOverlay} consultantId={soonOverlay} onClose={() => setSoonOverlay(null)} />
+      <NetImpactOverlay open={!!netImpactOverlay} consultantId={netImpactOverlay} onClose={() => setNetImpactOverlay(null)} />
+      <YtdRealisedOverlay open={ytdOpen} onClose={() => setYtdOpen(false)} />
+      <ForecastYearOverlay open={forecastOpen} onClose={() => setForecastOpen(false)} />
     </div>
   );
 }
