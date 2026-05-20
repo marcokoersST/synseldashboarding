@@ -33,11 +33,12 @@ import {
 import { Button } from "@/components/ui/button";
 
 const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
-type TabId = "market" | "development" | "finance";
+type TabId = "market" | "development" | "finance" | "signals";
 const TABS: { id: TabId; label: string; subtitle: string }[] = [
   { id: "market", label: "Candidate Market Approach", subtitle: "Acquisitie & funnel" },
   { id: "development", label: "Consultant Development & Steering", subtitle: "Coaching & ontwikkeling" },
   { id: "finance", label: "Finance & Forecast", subtitle: "Omzet, marge & risico" },
+  { id: "signals", label: "Signalen", subtitle: "Acties & alerts" },
 ];
 
 function overall(c: typeof consultantSkillData[0]): number {
