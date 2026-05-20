@@ -109,7 +109,7 @@ export function CandidateMarketTab({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col">
       <div className="flex items-center justify-between gap-3 mb-2">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Sales funnel per consultant</h2>
@@ -119,8 +119,8 @@ export function CandidateMarketTab({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto rounded-lg border border-border bg-card relative">
-        <table className="w-full text-xs border-collapse">
+      <div className="overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-card relative" style={{ maxHeight: "calc(100vh - 280px)" }}>
+        <table className="w-full text-xs border-collapse table-fixed">
           <thead className="sticky top-0 z-20 bg-muted/70 backdrop-blur">
             <tr className="text-left">
               <Th sticky sortable onClick={() => toggleSort("consultantName")} active={sortKey === "consultantName"} dir={sortDir} highlight={hoverCol === "consultantName"}>Consultant</Th>
@@ -209,8 +209,8 @@ export function CandidateMarketTab({
           </tbody>
           <tfoot className="sticky bottom-0 z-20 bg-card border-t-2 border-border">
             <tr className="font-semibold">
-              <td className="sticky left-0 z-10 bg-card px-3 py-2 text-foreground border-r border-border">Totaal</td>
-              <td className="px-3 py-2 text-muted-foreground">{rows.length} consultants</td>
+              <td className="sticky left-0 z-10 bg-card px-2 py-2 text-foreground border-r border-border">Totaal</td>
+              <td className="px-2 py-2 text-muted-foreground">{rows.length} consultants</td>
               {lcbFunnelSteps.map((s, i) => {
                 let conv: number | null = null;
                 if (i > 0) {
@@ -244,7 +244,7 @@ function Th({
   return (
     <th
       className={cn(
-        "px-3 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap",
+        "px-2 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground",
         align === "right" && "text-right",
         sticky && "sticky left-0 z-30 bg-muted/70 backdrop-blur",
         sortable && "cursor-pointer select-none hover:text-foreground",
@@ -271,7 +271,7 @@ function Td({
     <td
       onMouseEnter={onEnter}
       className={cn(
-        "px-3 py-1.5",
+        "px-2 py-1.5",
         align === "right" && "text-right",
         sticky && "sticky left-0 z-10 bg-card border-r border-border",
         highlight && (sticky ? "bg-muted/40" : "bg-muted/30"),
