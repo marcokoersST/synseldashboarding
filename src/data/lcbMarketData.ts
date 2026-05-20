@@ -350,7 +350,7 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
       body: kind === "note" ? pick(rnd, ["Kort gesprek, follow-up gepland.", "Klant wil tweede gesprek inplannen."]) : undefined,
       date: fullDate(rnd),
       time: hhmm(rnd),
-      dealRef: rnd() < 0.6 ? `DEAL-${20000 + rint(rnd, 0, 99)}` : undefined,
+      dealRef: rnd() < 0.6 ? makeDealId(rnd) : undefined,
     };
   });
 }
