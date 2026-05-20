@@ -1,153 +1,135 @@
+## LC-B Round 3 — Polish, filters, split-overlay drill-down
 
-# LC-B round 2 — overview cleanup, table-first, full drill-down
+Goal: same page structure, but tables look better, all filters work, signals are compact, and the candidate / deal drill-down becomes a true split-pane workflow where the manager never loses context.
 
-Apply the round-2 feedback to `/manager-dashboard/LC-B`. The feedback brief is leading. Three categories remain: Candidate Market Approach, Consultant Development & Steering, Finance & Forecast. The overview must fit the viewport; details live in overlays.
+### 1. Global table polish (all 3 tabs)
 
-## 1. Page header (LCB.tsx)
+Build one shared `LcbDataTable` primitive in `src/components/manager/lcb/LcbDataTable.tsx` and use it in `CandidateMarketTab`, `FinanceForecastTab` and the new step / candidate / deal tables.
 
-- Remove the global health ring. Replace with title + colored status dot + label ("Op koers / Aandacht / Kritiek") and a tooltip explaining the inputs (operationeel %, performance %, omzet %).
-- Keep the "Last refreshed" pill.
+- Card-style wrapper: `rounded-md border bg-card shadow-sm`, height = `auto` based on row count, capped at remaining viewport. Only `tbody` scrolls; page itself never scrolls.
+- Sticky `<thead>` with subtle gradient + `sticky` total row at the bottom.
+- Right-aligned numerics, tabular-nums; left-aligned text; consistent 28px row height.
+- Subtle row striping (`even:bg-muted/20`) + colored left border per consultant performance class (good/avg/bad from existing `perf` field).
+- Sort: click a header to toggle `asc / desc / off`; show small arrow. Wire through to all numeric and text columns.
+- Cross-hair hover (already lifted): row gets `bg-muted/40`, column gets `bg-muted/40`, intersection cell gets `bg-muted/70` (darker than both).
+- Conversion ratio cells: tiny inline bar behind the percentage colored by traffic-light vs benchmark.
 
-## 2. Filter bar (LCBTopBar.tsx)
+### 2. Filter bar — marketing-style date filter
 
-- Compact row (~28px), smaller font, lighter background.
-- Trigger buttons auto-width so values never truncate; use `min-w` only.
-- Lighter visual weight: ghost-style chips, only active state gets a subtle border.
-- Order: Periode, Vergelijk, Units, Consultants, Zoek, Reset. Search input 200px, expands on focus.
+Replace today's small "Huidige periode" select in `LCBTopBar` with a popover modeled on `src/components/marketing/DateFilterPanel.tsx`, trimmed to four presets only:
 
-## 3. Signals row (LCBSignalRow.tsx)
+- **Week** (this ISO week, Mon–today)
+- **Maand** (this month, 1st–today)
+- **Periode** (current 4-week sales period from the existing period helper)
+- **Aangepast** (calendar range picker)
 
-- Remove horizontal scroll. Single non-wrapping line; overflow collapses to "+N meer" popover.
-- Each signal = small colored dot + short text (max ~32 chars). Colour is the primary cue.
-- Click routes to the correct overlay (current logic kept). Empty state: thin green "Alle signalen op groen".
+Inside the same popover:
+- Toggle "Vergelijk met" (Switch). When on, show second range + auto-computed default ("previous equal-length window") that the user can override.
+- Selected primary range and (if enabled) compare range render as two chips on the trigger: `Periode 17 nov – 23 nov • vs 10 – 16 nov`.
 
-## 4. Candidate Market Approach tab (CandidateMarketTab.tsx)
+All filters (units, consultants, search, date, compare) actually flow into the tab data:
+- `CandidateMarketTab`: filter `lcbMarketRows` by unit + consultant + name search.
+- `FinanceForecastTab`: same filter applied to `lcbFinancePerfRows`.
+- `ConsultantDevelopmentTab`: same.
+- Compare mode: each numeric column gets a small delta pill (reuses pattern, no new lib).
 
-Default view = consultant funnel table. Remove the "Cumulatieve funnel" toggle and SalesFunnelV2 from this tab.
+### 3. Signals — compact strip redesign
 
-Table:
-- Columns: Consultant, Unit, Toegewezen, Inschrijvingen, Acquisities, Voorstellen, Intakes, Uitnodigingen, Gesprekken, Vervolggesprekken, Plaatsingen, Grootste drop-off, Status.
-- Sticky header, sticky first column, sticky total row at the bottom (`position: sticky; bottom: 0`).
-- Internal vertical scroll; the page itself does not scroll.
-- Every numeric cell clickable → step overlay. Row click (non-number) → consultant overview overlay.
-- Each cell shows absolute number + conversion % (small, muted, colored vs benchmark).
-- Total row: sum of absolutes + weighted conversion % per step.
+Rewrite `LCBSignalRow` as a single-line horizontal strip:
 
-Cross-hair hover:
-- Hovering any data cell highlights its full row and full column (`bg-muted/30`). Intersection cell `bg-muted/60`.
-- Lift `{hoverRow, hoverCol}` state to the table; cells read it via props.
+- Pill per signal: `bg-{severity}/10 text-{severity} border-{severity}/30`, small dot + `consultant • short text` (max ~32 chars), severity colors red/amber/blue.
+- Trailing "+N meer" popover lists overflow.
+- Empty state: thin green line "Alle signalen op groen".
+- Click → existing `handleSignalClick` routing unchanged.
 
-Dummy data (new file `src/data/lcbMarketData.ts`, only for LC-B):
-- Weekly logic, one row per consultant in the 5 units, seeded RNG (mulberry32 by consultant id).
-- toegewezen ∈ [10,25]
-- inschrijvingen ∈ [0.9, 1.0] × toegewezen
-- acquisities ∈ [0.9, 1.0] × inschrijvingen
-- voorstellen: per candidate 20–65, summed across acquisities
-- intakes ∈ [0.30, 1.0] × inschrijvingen
-- uitnodigingen = voorstellen ÷ {15 good | 20 avg | 40 bad}
-- gesprekken ∈ [0.30, 1.0] × uitnodigingen
-- vervolggesprekken ∈ [0.10, 0.50] × gesprekken
-- plaatsingen = either [0, 30%] × gesprekken or [75, 90%] × vervolg
-- Performance class tagged per row, drives invitation ratio.
-- Leave `managerOperationalDataV2.ts` untouched (used by other dashboards).
+### 4. Candidate Market Approach — clearer language + step table
 
-Drill-down chain (Overlays.tsx):
-- Step overlay → candidate or deal table depending on entity:
-  - candidate: toegewezen, inschrijvingen, acquisities, intakes, plaatsingen.
-  - deal: voorstellen, uitnodigingen, gesprekken, vervolg.
-- Candidate columns: Naam, ID, Categorie (A+/A/B), Status (1|Inschrijven … Verdelen), # deals, # voorstellen, # e-mails, # calls, Last updated, CRM-link.
-- Deal columns: Deal naam, Deal ID, Deal status, Kandidaat naam, Kandidaat ID, Opdrachtgever naam, Opdrachtgever ID, Last updated, CRM-link.
-- Consultant overview overlay gains a conversions table (% per stap).
-- Candidate detail overlay: full funnel + outreach + CRM deeplink; breadcrumbs Consultant → Stap → Kandidaat.
+In `CandidateMarketTab`:
+- Rename the funnel-table header "Stap" pattern to `"[a] vs [b]"` ratio columns:
+  `Toegewezen vs Inschrijvingen`, `Inschrijvingen vs Acquisitie`, …, `Vervolggesprekken vs Plaatsingen`. Each cell shows `count` + ratio vs previous step.
+- Sortable on every column. Sticky consultant col + sticky totals row.
+- Add subtle category color accents (candidate steps = blue tint, deal steps = violet tint) on the header cells only.
 
-## 5. Consultant Development & Steering tab
+### 5. Split-overlay drill-down (the core change)
 
-Table stays compact. Detail overlay (`DevelopmentOverlay`) is rebuilt:
+New shell `LcbSplitOverlay` in `src/components/manager/lcb/LcbSplitOverlay.tsx`. Replaces today's single right-side `LCBOverlay` when entering candidate/deal detail.
 
-- Header: consultant name + overall status pill.
-- Section A — Market approach mini-overview: the consultant's row from the funnel table (absolutes + conversion %, color-coded).
-- Section B — Coaching suggestions, auto-derived from weakest funnel ratio and call/email volume (e.g. "Lage voorstel → uitnodiging: coachen op voorstelkwaliteit").
-- Section C — Goals as **tickets** (modeled after `/super-admin/prognose-dashboard`):
-  - Card per goal: title, owner, status (`Open | In progress | Done`), priority, due date, linked funnel step, description.
-  - Manager can create, edit, complete and reopen. `useReducer` seeded from `managerGoalsData`, persists within session.
-- Section D — Coaching notes timeline (render-only from current `OpvolgingCard` data).
+Behavior:
+- Click consultant → step → opens `StepDetailOverlay` (left pane, ~520px) listing candidates or deals (depending on step entity).
+- Click a row in that list → split-mode activates: left pane stays mounted, a second pane (~560px) slides in to its right with the detail.
+- Selected row in left pane gets strong highlight (`bg-primary/10 border-l-2 border-primary`).
+- Closing the right pane returns to single-pane list. Closing the left pane closes everything.
+- ESC closes only the rightmost pane.
 
-## 6. Finance & Forecast tab (FinanceForecastTab.tsx + overlays)
+Step list columns:
+- Candidate entity steps: Naam, ID, Categorie, Status, Deals, Voorstellen, Emails, Calls, **Datum**, **Tijd** (split from `lastUpdated`), RecruitCRM link.
+- Deal entity steps: Deal naam, Deal ID, Status, Kandidaat, Opdrachtgever, Datum, Tijd, RecruitCRM link.
 
-Replace single table with two perspectives via segmented control.
+### 6. Candidate detail overlay (right pane)
 
-KPI strip (always visible):
-- YTD realised (clickable → drill-down)
-- Forecast jaar (clickable → drill-down)
-- Brutomarge — subtitle "Marge ÷ omzet × 100" and tooltip explaining the calc.
-- Actieve plaatsingen
-- **Total revenue** (replaces "WNS revenue") = Detavast + Marge facturatie + W&S, with subtitle showing the split.
+New `CandidateDetailPane` replacing today's flat overlay. Sections:
+- Header: name, ID, category badge, status badge, RecruitCRM link, last updated date + time.
+- Summary line (role / unit / consultant).
+- 4 clickable scorecards: **Deals**, **Voorstellen**, **Emails**, **Calls** — each shows count.
+- Notes block (notes from mock data).
+- Outreach history (chronological mixed list of calls + emails + notes, styled like the screenshot — inbound/outbound icon, contact, subject, timestamp).
+- "Laatste activiteit" pill at top of history.
 
-### Perspective A — Margin (financial numbers central)
+Clicking any scorecard expands the right pane to wide mode and shows a tabbed view:
 
-Columns: Consultant, Revenue, Margin, Forecast, Realised revenue, Potentieel, Realised potentieel, Revenue risk, Marge/uur, Financiële categorie.
+**Tab 1 — Deals & Voorstellen**
+Columns: Deal naam, Deal ID, Deal status (from the allowed deal-stage list below), Kandidaat naam, Kandidaat ID, Opdrachtgever naam, Opdrachtgever ID, **Voorgesteld** (checkbox, checked if proposed), Datum, Tijd, link to deal.
 
-### Perspective B — Performance (active candidates central, with their financial consequences)
+**Tab 2 — Emails**
+Columns: richting-icoon (in/out), Contactpersoon of email-adres, Contactpersoon status (Nieuw / In dienst / Uit dienst / Geen contactpersoon), Onderwerp, Datum, Tijd, gerelateerde deal, link.
 
-The performance perspective answers: "given the live candidate pipeline, what does it mean for the books?". Every operational count is paired with its money impact, so the manager sees the financial consequence of performance.
+**Tab 3 — Calls**
+Columns: richting-icoon, Contactpersoon of telefoonnummer, status, Datum, Tijd, Duur `[H:M:S]`, gerelateerde deal, link.
 
-Columns:
-- Consultant
-- Actieve kandidaten (count)
-- Maandomzet actieve kandidaten (€) — sum of monthly revenue across active placements
-- Soon-to-start (count) — placements starting in the upcoming 30 days
-- Verwachte omzet soon-to-start (€) — pipeline revenue once they start
-- Verwachte stoppers (count)
-- Omzetrisico stoppers (€) — monthly revenue at risk if they don't extend
-- Verlenging waarschijnlijk (count) — subset of stoppers expected to extend, with the € they would secure
-- Plaatsingen YTD (count)
-- Gemiddelde marge per kandidaat (€)
-- Netto financiële impact (€) — `actieve omzet + soon-to-start omzet − omzetrisico stoppers`, colored green/red, primary steering number
-- Opdrachtgever-spread (badges: top 2 opdrachtgevers + "+N")
+Tab switching keeps the candidate header sticky.
 
-Both perspectives:
-- Sticky header, sticky first column, sticky total row over all numeric columns.
-- Every numeric cell clickable → drill-down overlay scoped to that consultant + metric.
-- Cross-hair hover identical to the market tab.
+### 7. Deal detail overlay (right pane)
 
-Drill-down overlays (extend `Overlays.tsx`):
-- `YtdRealisedOverlay` — deals: deal, kandidaat, opdrachtgever, potentieel, realised potentieel.
-- `ForecastYearOverlay` — deals: deal, kandidaat, opdrachtgever, potentieel, type (Actief | Soon-to-start).
-- `ActivePlacementsOverlay` — kandidaat, opdrachtgever, start, monthly revenue, marge/uur, contract type, status; total at bottom.
-- `SoonToStartOverlay` — kandidaat, opdrachtgever, startdatum, verwachte maandomzet, marge/uur.
-- `StopperOverlay` — kandidaat, opdrachtgever, expected end, omzetrisico, verlenging waarschijnlijk (ja/nee), reden, aanbevolen actie.
-- `NetImpactOverlay` — breakdown card per consultant: + actieve omzet, + soon-to-start, − omzetrisico, = net, with links into the three lists above.
-- All finance overlays end with a CRM/source link per row.
+When the step entity is a deal and a deal row is clicked:
+- Header: deal name, deal ID, status, kandidaat, opdrachtgever, RecruitCRM deal link, datum + tijd.
+- Body sections: Notes, Tasks, Meetings, Related emails, Related calls. Each as a small grouped list with the same activity-row visual language as the candidate overlay.
 
-## 7. Shared overlay updates (LCBOverlay.tsx)
+### 8. Deal-stage enum
 
-- Already sits below the global TopBar (kept).
-- Add a small "Volgende stap" line under the breadcrumb naming the next allowed drill (e.g. "Volgende stap: Kandidaatdetail → RecruitCRM").
+Add `src/data/lcbDealStages.ts` exporting the full allowed list (1.0 Goedgekeurd … Won). All mock deal rows use only these values. Status badge color groups: 1.x amber, 2.x blue, 3.x violet, 4.x emerald, 5/6 green, all negative outcomes red, Won emerald-bold.
 
-## 8. Files
+### 9. Mock data extensions
 
-Edit:
-- `src/pages/manager/LCB.tsx`
-- `src/components/manager/lcb/LCBTopBar.tsx`
-- `src/components/manager/lcb/LCBSignalRow.tsx`
-- `src/components/manager/lcb/CandidateMarketTab.tsx`
-- `src/components/manager/lcb/FinanceForecastTab.tsx`
-- `src/components/manager/lcb/Overlays.tsx`
-- `src/components/manager/lcb/LCBOverlay.tsx`
+Extend `src/data/lcbMarketData.ts`:
+- Split `lastUpdated` into `lastUpdatedDate` + `lastUpdatedTime`.
+- Add per-candidate `notes[]`, `activity[]` (mixed email/call/note with direction, contact, status, subject/duration, timestamp, dealRef).
+- Add per-deal `notes[]`, `tasks[]`, `meetings[]`, `emails[]`, `calls[]`.
+- Add `proposedForDeal: boolean` on the candidate-deal pairing used in Tab 1.
+- Use the new deal-stage enum.
+
+All seeded via existing `mulberry32` so values stay deterministic.
+
+### 10. Files
 
 Create:
-- `src/data/lcbMarketData.ts` — seeded weekly dummy + per-consultant rows, candidates, deals.
+- `src/components/manager/lcb/LcbDataTable.tsx`
+- `src/components/manager/lcb/LcbSplitOverlay.tsx`
+- `src/components/manager/lcb/CandidateDetailPane.tsx`
+- `src/components/manager/lcb/DealDetailPane.tsx`
+- `src/components/manager/lcb/LcbDateFilter.tsx`
+- `src/data/lcbDealStages.ts`
 
-Out of scope:
-- No backend, no auth changes.
-- Other manager dashboards, sidebar, routing unchanged.
-- No new design tokens.
+Edit:
+- `src/pages/manager/LCB.tsx` (split-overlay state, marketing-style date state)
+- `src/components/manager/lcb/LCBTopBar.tsx` (swap date control)
+- `src/components/manager/lcb/LCBSignalRow.tsx` (redesign)
+- `src/components/manager/lcb/CandidateMarketTab.tsx` (ratio headers, shared table)
+- `src/components/manager/lcb/FinanceForecastTab.tsx` (shared table, sorting, filters)
+- `src/components/manager/lcb/ConsultantDevelopmentTab.tsx` (filters)
+- `src/components/manager/lcb/Overlays.tsx` (route candidate/deal flows through `LcbSplitOverlay`; keep finance overlays as today)
+- `src/data/lcbMarketData.ts` (mock extensions)
 
-## Technical notes
-
-- Cross-hair hover: single `{hoverRow, hoverCol}` state on the table; cells receive `isRow`, `isCol`, `isCell` booleans. Row/col `bg-muted/30`, intersection `bg-muted/60`.
-- Sticky total row: `<tfoot>` with `sticky bottom-0 z-10 bg-card` inside the scroll container.
-- Conversion benchmarks per step = avg across consultants for that week; `statusFromRatio(actualConv / benchConv)` for cell color.
-- Goals tickets: `useReducer` keyed by consultantId, seeded from `managerGoalsData`. Actions: add | update | complete | reopen | delete.
-- Finance perspectives: single `useState<"margin" | "performance">` in `FinanceForecastTab`; both views render from the same `rows` memo with different columns.
-- Net financial impact = `actieveOmzet + soonToStartOmzet − omzetrisicoStoppers`, computed once per row.
+### Out of scope
+- No backend, auth, routing or sidebar changes.
+- Other dashboards untouched.
+- Old `LCBDetailPanel / BottleneckBand / BottleneckRanking / UnitDimensionMatrix / TopRiskConsultants / TileSparkline` stay as-is (unused).
