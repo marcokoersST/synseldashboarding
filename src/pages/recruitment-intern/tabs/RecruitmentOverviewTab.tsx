@@ -186,43 +186,6 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
       </div>
 
 
-      {/* Inflow section with afdeling filter */}
-      <div className="flex items-center gap-3">
-        <h2 className="text-lg font-semibold text-foreground">Inflow</h2>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="text-xs">
-              <Filter className="mr-1.5 h-3 w-3" />{afdelingFilterLabel}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-3" align="start">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Afdelingen</span>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setSelectedAfdelingen(new Set(AFDELINGEN))}>Alles aan</Button>
-                <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setSelectedAfdelingen(new Set())}>Alles uit</Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {AFDELINGEN.map((a) => (
-                <label key={a} className="flex items-center gap-2 cursor-pointer text-sm">
-                  <Checkbox
-                    checked={selectedAfdelingen.has(a)}
-                    onCheckedChange={() => {
-                      setSelectedAfdelingen((prev) => {
-                        const n = new Set(prev);
-                        n.has(a) ? n.delete(a) : n.add(a);
-                        return n;
-                      });
-                    }}
-                  />
-                  {a}
-                </label>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
 
       {/* Inflow scorecards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
