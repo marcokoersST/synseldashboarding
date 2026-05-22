@@ -132,7 +132,7 @@ export function ForecastTab() {
             <tr>
               <th className="text-left p-2 font-normal">Unit</th>
               <th className="text-left p-2 font-normal">Functiegroep</th>
-              <th className="p-2 font-normal text-right">Open</th>
+              <th className="p-2 font-normal text-right">Inschrijvingen</th>
               <th className="p-2 font-normal text-right">Verw. conv.</th>
               <th className="p-2 font-normal text-right">Verw. plaatsingen</th>
             </tr>
