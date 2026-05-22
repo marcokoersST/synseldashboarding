@@ -222,11 +222,13 @@ export const callAttempts: CallAttempt[] = (() => {
     if (c.status === "nieuw") continue;
     const fullSix = rng() < 0.70;
     const partial = fullSix ? 6 : Math.floor(rng() * 6); // 0-5
+    // At most ONE successful conversation per candidate
+    const successIdx = rng() < 0.55 && partial > 0 ? Math.floor(rng() * partial) : -1;
     let count = 0;
     for (const dagOffset of [1, 2] as const) {
       for (const dagdeel of DAG_DELEN) {
         const uitgevoerd = count < partial;
-        const succesvol = uitgevoerd && rng() < 0.35;
+        const succesvol = uitgevoerd && count === successIdx;
         const isFirst = dagOffset === 1 && dagdeel === "ochtend";
         out.push({
           candidateId: c.id,
@@ -241,6 +243,7 @@ export const callAttempts: CallAttempt[] = (() => {
   }
   return out;
 })();
+
 
 // ---------- Helpers ----------
 export const recruiterById = (id: string) => recruiters.find(r => r.id === id);
