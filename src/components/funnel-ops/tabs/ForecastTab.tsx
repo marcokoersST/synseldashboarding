@@ -26,11 +26,11 @@ export function ForecastTab() {
           <div className="flex items-start justify-between gap-2">
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (huidige distributie)</div>
             <TileInfo
-              title="Forecast — current distribution (P50)"
-              what="Median expected placements for this month given the current consultant assignments and their historical hit-rates per job family."
-              formula={`P50 = Σ ( open_candidates × hit_rate(consultant, job_family) )\nValue: ${fcst.p50}`}
+              title="Forecast — current distribution"
+              what="Expected placements based on the current assignment of candidates to consultants. For every candidate that reached status '1 | Inschrijven' in this period we look up the historical placement-rate of that consultant for the candidate's normalised job title and location, and sum those probabilities. Match quality will be added as a third dimension later."
+              formula={`expected = Σ candidate placement_rate( consultant , normalised_job_title , location )\n         where candidate reached '1 | Inschrijven' in selected period\nValue: ${fcst.p50}`}
               source="kpis.forecastMaand.p50"
-              notes="Hard-coded mock output; in production this comes from the forecast model."
+              notes="Placement-rate per (consultant × normalised job title × location) is precomputed mock data. Quality dimension is on the roadmap."
             />
           </div>
           <div className="text-3xl font-bold tabular-nums">{fcst.p50}</div>
@@ -52,10 +52,10 @@ export function ForecastTab() {
             <div className="text-xs uppercase tracking-wide text-muted-foreground">Verwacht (optimale distributie)</div>
             <TileInfo
               title="Forecast — optimal distribution"
-              what="Maximum forecast achievable when every open candidate is routed to the best-fitting consultant. The gap vs P50 is the optimisation upside."
-              formula={`Optimal = Σ ( open_candidates × max_hit_rate(*, job_family) )\nValue: ${fcst.ideal}\nUpside: +${fcst.ideal - fcst.p50}`}
+              what="For every candidate we check — per normalised job title and location — which consultant has the highest historical placement-score, and route the candidate there. The result is what we would have realised if every candidate had been assigned to the best-fitting consultant."
+              formula={`optimal = Σ candidate max_placement_rate( * , normalised_job_title , location )\n        where candidate reached '1 | Inschrijven' in selected period\nValue: ${fcst.ideal}\nUpside vs current: +${fcst.ideal - fcst.p50}`}
               source="kpis.forecastMaand.ideal · optimalReassignments()"
-              notes="Capacity per consultant in this round capped at 8 new matches."
+              notes="Capacity per consultant capped at 8 new matches per round."
             />
           </div>
           <div className="text-3xl font-bold tabular-nums">{fcst.ideal}</div>
@@ -69,19 +69,22 @@ export function ForecastTab() {
 
         <Card className="p-4">
           <div className="flex items-start justify-between gap-2">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">Scenario's</div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Verschil huidig vs optimaal</div>
             <TileInfo
-              title="Scenarios P10 / P50 / P90"
-              what="Pessimistic / expected / optimistic placement scenarios for the current month. Used to communicate forecast uncertainty to stakeholders."
-              formula={`P10 = P50 − 18\nP50 = ${fcst.p50}\nP90 = P50 + 22`}
-              source="forecastSeries() — last 3 months"
-              notes="Bandwidth is based on a historical standard deviation of ±15%."
+              title="Gap — current vs optimal distribution"
+              what="The pure delta between the current expected forecast and the optimal-distribution forecast. Shows how many extra placements could be realised this month by simply re-routing already-registered candidates to the best-fitting consultant per normalised job title and location."
+              formula={`gap = optimal − current\n    = ${fcst.ideal} − ${fcst.p50}\n    = +${fcst.ideal - fcst.p50} plaatsingen`}
+              source="kpis.forecastMaand.ideal − kpis.forecastMaand.p50"
+              notes="Same candidate set in both numbers — only the consultant assignment differs."
             />
           </div>
-          <div className="grid grid-cols-3 gap-2 mt-2 text-center">
-            <div><div className="text-[10px] text-muted-foreground">P10</div><div className="text-lg font-semibold tabular-nums">{fcst.p50 - 18}</div></div>
-            <div><div className="text-[10px] text-muted-foreground">P50</div><div className="text-lg font-semibold tabular-nums">{fcst.p50}</div></div>
-            <div><div className="text-[10px] text-muted-foreground">P90</div><div className="text-lg font-semibold tabular-nums">{fcst.p50 + 22}</div></div>
+          <div className="mt-2 flex items-baseline gap-3">
+            <div className="text-3xl font-bold tabular-nums text-orange-500">+{fcst.ideal - fcst.p50}</div>
+            <div className="text-xs text-muted-foreground">extra plaatsingen mogelijk</div>
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+            <div><div className="text-[10px] text-muted-foreground">Huidig</div><div className="text-lg font-semibold tabular-nums">{fcst.p50}</div></div>
+            <div><div className="text-[10px] text-muted-foreground">Optimaal</div><div className="text-lg font-semibold tabular-nums">{fcst.ideal}</div></div>
           </div>
         </Card>
       </div>
