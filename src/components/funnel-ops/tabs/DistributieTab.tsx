@@ -53,7 +53,8 @@ export function DistributieTab() {
                 })}
               </div>
             </Card>
-          ))}
+            );
+          })}
         </div>
       </section>
 
