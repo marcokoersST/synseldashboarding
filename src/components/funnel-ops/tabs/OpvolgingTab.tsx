@@ -50,12 +50,12 @@ export function OpvolgingTab() {
       <TabsContent value="bel" className="space-y-3">
         <Card className="p-3 flex items-start justify-between gap-3">
           <p className="text-xs text-muted-foreground">
-            6 belmomenten verdeeld over 2 dagen in vaste blokken (08:30 / 12:00 / 17:00). Komt een kandidaat bv. om 11:00 binnen, dan is Moment 1 het eerstvolgende blok (12:00). Per kandidaat is er maximaal één groene check (succesvol gesprek). Bel-data is read-only.
+            Scope: kandidaten die bij een consultant op status <strong>1 | Inschrijven</strong> staan. 6 belmomenten verdeeld over 2 dagen in vaste blokken (08:30 / 12:00 / 17:00). Komt een kandidaat bv. om 11:00 op '1 | Inschrijven', dan is Moment 1 het eerstvolgende blok (12:00). Per kandidaat is er maximaal één groene check (succesvol gesprek). Bel-data is read-only.
           </p>
           <TileInfo
             title="Call discipline grid"
             what={
-              "A 6-slot grid per candidate showing the status of each call moment. The 6 moments are spread over 2 working days in fixed day-part blocks (morning 08:30, afternoon 12:00, evening 17:00). 'Moment 1' is always the FIRST block that starts after the candidate is assigned — e.g. assigned at 11:00 → Moment 1 = the 12:00 block of that day. Moments 2–6 follow the same 3-per-day rhythm."
+              "Scope: only candidates currently on status '1 | Inschrijven' at a consultant. A 6-slot grid per candidate showing the status of each call moment. The 6 moments are spread over 2 working days in fixed day-part blocks (morning 08:30, afternoon 12:00, evening 17:00). 'Moment 1' is always the FIRST block that starts after the candidate is placed on '1 | Inschrijven' — e.g. placed at 11:00 → Moment 1 = the 12:00 block of that day. Moments 2–6 follow the same 3-per-day rhythm."
             }
             formula={
               "Icons per moment:\n" +
@@ -69,7 +69,7 @@ export function OpvolgingTab() {
               "  six = candidates with all 6 moments executed\n" +
               "  pct = six / total candidates × 100"
             }
-            source="recruiterCallGrids() · callAttempts (max 1 succesvol per candidate)"
+            source="recruiterCallGrids() · candidates on status '1 | Inschrijven' · callAttempts (max 1 succesvol per candidate)"
             notes="Mock assumption: ~70% of candidates reach 6/6 executed; of those with attempts, ~55% have one successful conversation."
           />
         </Card>
