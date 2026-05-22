@@ -82,7 +82,7 @@ export function DistributieTab() {
         <Card className="p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold flex items-center gap-2"><LayoutGrid className="w-4 h-4 text-primary" />Hit-rate matrix · consultant × functiegroep</h3>
-            <TileInfo title="Hit-rate matrix" what="Historical conversion percentage per consultant and job family. Cells with n<5 are hidden to avoid drawing conclusions on thin data." formula="hit_rate = placed / assigned × 100" source="hitRateMatrix(mode)" notes="Toggle 'historical' vs '12-week rolling' to inspect the stability of the scores." />
+            <TileInfo title="Hit-rate matrix" what="Shows the placement percentage per consultant per normalised job title. Use 'Historisch totaal' to see the placement rate across the entire available history, and 'Voortschrijdend 12w' to restrict the calculation to only the last 12 weeks. Cells with n<5 are greyed out to avoid drawing conclusions on thin data." formula={`hit_rate = placed / assigned × 100\n\nHistorisch totaal: all candidates ever assigned to this consultant × normalised job title\nVoortschrijdend 12w: only candidates assigned in the last 12 weeks (rolling window)`} source="hitRateMatrix(mode) — mode ∈ {'historisch','voortschrijdend'}" notes="Normalised job title = the cleaned/grouped vacancy title (job family). Toggle modes to inspect the stability of the scores over time." />
           </div>
           <HitRateMatrix />
         </Card>
