@@ -94,8 +94,8 @@ export function ForecastTab() {
           <div className="text-sm font-medium flex items-center gap-2"><LineIcon className="w-4 h-4 text-primary" />Plaatsingen — 12 maanden historie + 3 maanden forecast</div>
           <TileInfo
             title="History + forecast line"
-            what="Actual placements per month for the last 12 months and the P50 line plus P10–P90 band for the next 3 months."
-            formula="actual = sum(status='placed' per month)\nP10/P50/P90 = forecast model output"
+            what="Per month the actually created placements over the last 12 months, plus a forecast for the coming months. The forecast combines the candidates currently on status '1 | Inschrijven' with their expected placement-score (per consultant × normalised job title × location) and is calibrated against the average created placements per month over the last 12 months."
+            formula={`actual = count( placements created in month )\nforecast = Σ candidate_on_inschrijven expected_placement_score\n         calibrated on avg( actual placements , last 12 months )`}
             source="forecastSeries()"
             notes="Mock data; periods before May 2026 are deterministically generated."
           />
