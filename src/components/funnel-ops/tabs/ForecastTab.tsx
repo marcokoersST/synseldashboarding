@@ -118,13 +118,13 @@ export function ForecastTab() {
 
       <Card className="overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <div className="text-sm font-semibold flex items-center gap-2"><TableIcon className="w-4 h-4 text-primary" />Bijdrage deze maand · open kandidaten × verwachte conversie</div>
+          <div className="text-sm font-semibold flex items-center gap-2"><TableIcon className="w-4 h-4 text-primary" />Bijdrage deze maand · kandidaten op Inschrijven × verwachte conversie</div>
           <TileInfo
             title="Contribution table"
-            what="Top-12 Unit × Job-family combinations ranked by expected placements this month. Helps prioritise where additional sourcing or capacity will move the needle."
-            formula="exp_conversion = 0.08 + (avg_score / 1000)\nexp_placements = open_candidates × exp_conversion"
-            source="candidates filtered on status ≠ placed/closed"
-            notes="Simple conversion proxy — not the production model."
+            what="Per normalised job title within each unit: how many candidates reached status '1 | Inschrijven' in the selected period, their expected conversion rate, and the resulting expected placements. Helps prioritise where additional sourcing or capacity will move the needle."
+            formula={`for each ( unit , normalised_job_title ):\n  inschrijvingen     = count( candidates that reached '1 | Inschrijven' in selected period )\n  expected_conversion = avg placement_rate( consultant , normalised_job_title , location )\n  expected_placements = inschrijvingen × expected_conversion`}
+            source="candidates filtered op status '1 | Inschrijven' in selected period · grouped by unit × normalised job title"
+            notes="Top 12 combinations shown, ranked by expected placements."
           />
         </div>
         <table className="w-full text-xs">
