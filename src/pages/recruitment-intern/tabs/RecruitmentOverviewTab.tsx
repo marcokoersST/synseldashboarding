@@ -100,7 +100,9 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
   const kpis = useMemo(() => {
     const items = [
       { label: "Inschrijven", value: 4 },
-      { label: "Gesprekken", value: 5 },
+      { label: "In procedure", value: 25 },
+      { label: "Gesprek 1", value: 5 },
+      { label: "Gesprek 2", value: 5 },
       { label: "Aangenomen", value: 2 },
     ];
     return items.map((it) => ({
@@ -131,8 +133,46 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
 
   return (
     <div className="space-y-6">
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Inflow heading + afdeling filter (above tiles) */}
+      <div className="flex items-center gap-3">
+        <h2 className="text-lg font-semibold text-foreground">Inflow</h2>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="text-xs">
+              <Filter className="mr-1.5 h-3 w-3" />{afdelingFilterLabel}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-3" align="start">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Afdelingen</span>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setSelectedAfdelingen(new Set(AFDELINGEN))}>Alles aan</Button>
+                <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => setSelectedAfdelingen(new Set())}>Alles uit</Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {AFDELINGEN.map((a) => (
+                <label key={a} className="flex items-center gap-2 cursor-pointer text-sm">
+                  <Checkbox
+                    checked={selectedAfdelingen.has(a)}
+                    onCheckedChange={() => {
+                      setSelectedAfdelingen((prev) => {
+                        const n = new Set(prev);
+                        n.has(a) ? n.delete(a) : n.add(a);
+                        return n;
+                      });
+                    }}
+                  />
+                  {a}
+                </label>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* KPI cards — 5 tiles side by side */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {kpis.map((kpi) => (
           <Card key={kpi.label}>
             <CardContent className="p-5">
@@ -144,6 +184,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
           </Card>
         ))}
       </div>
+
 
       {/* Inflow section with afdeling filter */}
       <div className="flex items-center gap-3">
