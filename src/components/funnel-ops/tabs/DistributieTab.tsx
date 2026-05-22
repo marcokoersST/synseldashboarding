@@ -17,11 +17,24 @@ export function DistributieTab() {
       <section className="space-y-3">
         <h2 className="text-base font-semibold flex items-center gap-2"><Gauge className="w-4 h-4 text-primary" />B3 · Distributie-snelheid</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {(["Toewijzen","Eerste contact","Eerste gesprek"] as const).map((label, idx) => (
+          {(["Toewijzen","Eerste contact","Eerste gesprek"] as const).map((label, idx) => {
+            const what =
+              label === "Toewijzen"
+                ? "Speed at which a candidate is moved from status 'Nieuw' to status '1 | Inschrijven' per Tier. Shows how quickly the recruitment team registers an incoming application as an actual signup."
+                : label === "Eerste contact"
+                ? "Time between the moment a candidate lands on status '1 | Inschrijven' with a Consultant and the first outgoing call attempt to that candidate."
+                : "Time between the moment a candidate lands on status '1 | Inschrijven' and the first real phone conversation with the candidate (minimum 2 minutes of talk time).";
+            const formula =
+              label === "Toewijzen"
+                ? "hours_to_assign = ts('1 | Inschrijven') − ts('Nieuw')\np50 / p90 aggregated per tier\nbar fill = value / SLA × 100"
+                : label === "Eerste contact"
+                ? "hours_to_first_call = ts(first_outbound_call) − ts('1 | Inschrijven')\np50 / p90 aggregated per tier\nbar fill = value / SLA × 100"
+                : "hours_to_first_conversation = ts(first_call WHERE talk_time ≥ 120s) − ts('1 | Inschrijven')\np50 / p90 aggregated per tier\nbar fill = value / SLA × 100";
+            return (
             <Card key={label} className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="text-xs text-muted-foreground">{label} · lead-time per tier</div>
-                <TileInfo title={`${label} · lead time`} what={`P50 and P90 lead time per tier for the "${label.toLowerCase()}" step. Reveals where the funnel slows down for the most valuable cohorts.`} formula="p50 = median(hours); p90 = 90th percentile\nbar fill = value / SLA × 100" source="leadTimeMeters()" notes="Tier SLAs are defined in SLA_MATRIX." />
+                <TileInfo title={`${label} · lead time`} what={what} formula={formula} source="leadTimeMeters()" notes="Tier SLAs are defined in SLA_MATRIX." />
               </div>
               <div className="space-y-1.5">
                 {meters.map(m => {
