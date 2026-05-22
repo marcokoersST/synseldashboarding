@@ -24,7 +24,7 @@ export function InstroomTab() {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-xs font-medium text-muted-foreground">Instroom per dag (8 weken) — nieuw vs bestaand</div>
-            <TileInfo title="Daily inflow" what="Trend line chart of daily candidate inflow over 8 weeks, split by new vs returning candidates. Used to detect demand patterns and channel-mix shifts." formula="bucket per day from candidates.toegewezenOp\nsplit on candidate.type" source="dailyInstroom" notes="Seeded PRNG (seed 1729) — values are deliberately stable across sessions." />
+            <TileInfo title="Daily inflow" what={"This tile shows the total number of candidates that reach status '1 | Inschrijven' per day, over the last 8 weeks.\n\n• Green line: total candidates entering status '1 | Inschrijven' on that day.\n• Orange line: the subset of those candidates that we already know (returning candidates already present in our database)."} formula="green  = count(candidates reaching status '1 | Inschrijven' on day d)\norange = count(of those WHERE candidate.type = 'bestaand' / already in DB)" source="dailyInstroom" notes="Seeded PRNG (seed 1729) — values are deliberately stable across sessions." />
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
