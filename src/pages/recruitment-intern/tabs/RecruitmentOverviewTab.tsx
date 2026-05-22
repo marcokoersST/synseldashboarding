@@ -100,7 +100,9 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
   const kpis = useMemo(() => {
     const items = [
       { label: "Inschrijven", value: 4 },
-      { label: "Gesprekken", value: 5 },
+      { label: "In procedure", value: 25 },
+      { label: "Gesprek 1", value: 5 },
+      { label: "Gesprek 2", value: 5 },
       { label: "Aangenomen", value: 2 },
     ];
     return items.map((it) => ({
@@ -131,21 +133,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
 
   return (
     <div className="space-y-6">
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {kpis.map((kpi) => (
-          <Card key={kpi.label}>
-            <CardContent className="p-5">
-              <p className="text-xs font-medium text-muted-foreground mb-1">{kpi.label}</p>
-              <p className="text-2xl font-bold text-foreground">{kpi.value.toLocaleString("nl-NL")}</p>
-              <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} />
-              <ProgressBar current={kpi.value} previous={kpi.previous} />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Inflow section with afdeling filter */}
+      {/* Inflow heading + afdeling filter (above tiles) */}
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-foreground">Inflow</h2>
         <Popover>
@@ -182,6 +170,22 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
           </PopoverContent>
         </Popover>
       </div>
+
+      {/* KPI cards — 5 tiles side by side */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {kpis.map((kpi) => (
+          <Card key={kpi.label}>
+            <CardContent className="p-5">
+              <p className="text-xs font-medium text-muted-foreground mb-1">{kpi.label}</p>
+              <p className="text-2xl font-bold text-foreground">{kpi.value.toLocaleString("nl-NL")}</p>
+              <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} />
+              <ProgressBar current={kpi.value} previous={kpi.previous} />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+
 
       {/* Inflow scorecards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
