@@ -1,4 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { WatZieIkHier } from "@/components/dashboard/WatZieIkHier";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
