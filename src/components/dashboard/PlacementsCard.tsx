@@ -229,7 +229,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
               Lopend jaar {ytdYear} · alle plaatsingstypen
             </p>
-            <Tooltip>
+            <UITooltip>
               <TooltipTrigger asChild>
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background border border-border text-[10px] font-medium text-muted-foreground cursor-help">
                   <Lock size={9} />
@@ -239,7 +239,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
               <TooltipContent side="left" className="max-w-[260px] text-xs">
                 Telt alle plaatsingen vanaf 1 januari {ytdYear} — Detavast, Werving & Selectie en Marge Facturatie. <strong>Niet</strong> beïnvloed door de periodeselector hieronder.
               </TooltipContent>
-            </Tooltip>
+            </UITooltip>
           </div>
           <div className="flex items-end gap-3">
             <AnimatedNumber value={ytdTotal} delay={delay + 300} className="text-3xl font-bold text-foreground" />
@@ -260,14 +260,14 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
             <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
               Detachering · per periode
             </p>
-            <Tooltip>
+            <UITooltip>
               <TooltipTrigger asChild>
                 <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-border text-[9px] text-muted-foreground cursor-help">i</span>
               </TooltipTrigger>
               <TooltipContent side="right" className="max-w-[260px] text-xs">
                 De periodeselector geldt alleen voor Starters, Gedetacheerden, Afvallers, de grafiek en de lijst actieve gedetacheerden — uitsluitend detachering.
               </TooltipContent>
-            </Tooltip>
+            </UITooltip>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] text-muted-foreground">Periode:</span>
