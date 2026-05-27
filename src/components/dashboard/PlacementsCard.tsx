@@ -505,6 +505,7 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
           </div>
         )}
       </div>
+      </TooltipProvider>
     </AnimatedCard>
   );
 }
