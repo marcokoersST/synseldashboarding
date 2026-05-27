@@ -186,42 +186,90 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
     { key: "bestPerformer", label: "Best Perf.", swatch: <div className="w-3.5 h-[2px] rounded-full" style={{ backgroundColor: COLORS.bestPerformer }} /> },
   ];
 
+  const ytdYear = new Date().getFullYear();
+  const ytdBreakdown = { detavast: 12, ws: 9, margeFac: 7 };
+  const ytdTotal = ytdBreakdown.detavast + ytdBreakdown.ws + ytdBreakdown.margeFac;
+
   return (
     <AnimatedCard delay={delay}>
       <WatZieIkHier
-        what="Het aantal plaatsingen en gedetacheerden per periode, plus hoeveel kandidaten weer afhaken (afvallers)."
-        insight="Je ziet of je pipeline daadwerkelijk omzet wordt, of dat je veel kandidaten verliest die je weer moet vervangen."
+        what={`Twee scopes in één tegel: (1) Plaatsingen YTD ${ytdYear} — alle typen (Detavast, W&S, Marge Fac), niet afhankelijk van de periodeselector. (2) Detachering per periode — Starters, Gedetacheerden, Afvallers, grafiek en actieve-gedetacheerdenlijst, gestuurd door de periodeselector.`}
+        insight="Het YTD-totaal toont commerciële output over het hele jaar; de periodeblok-cijfers tonen de actuele detacheringsdynamiek."
       />
+      <TooltipProvider delayDuration={200}>
       <div className="bg-card rounded-xl p-5 border border-border group flex flex-col">
-        <div className="mb-4">
-          {/* Row 1: Title | Percentage + Toggle */}
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-foreground">Plaatsingen & Gedetacheerden</h3>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
-                <span>0.0%</span>
-              </div>
-              <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
-                <button
-                  onClick={() => setDetailMode(d => !d)}
-                  className={`p-1.5 rounded-md transition-all duration-200 ${!detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <List size={14} />
-                </button>
-                <button
-                  onClick={() => setDetailMode(d => !d)}
-                  className={`p-1.5 rounded-md transition-all duration-200 ${detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <BarChart3 size={14} />
-                </button>
-              </div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium text-foreground">Plaatsingen & Gedetacheerden</h3>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
+              <span>0.0%</span>
+            </div>
+            <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+              <button
+                onClick={() => setDetailMode(d => !d)}
+                className={`p-1.5 rounded-md transition-all duration-200 ${!detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                <List size={14} />
+              </button>
+              <button
+                onClick={() => setDetailMode(d => !d)}
+                className={`p-1.5 rounded-md transition-all duration-200 ${detailMode ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                <BarChart3 size={14} />
+              </button>
             </div>
           </div>
-          {/* Row 2: Subtitle | Period Selector */}
-          <div className="flex items-center justify-between mt-1">
-            <p className="text-xs text-muted-foreground">
-              {selectedPeriod === 6 ? "Huidige actieve plaatsingen" : `Periode ${selectedPeriod} - historisch overzicht`}
+        </div>
+
+        {/* BLOK A — YTD (vast, niet stuurbaar door periodeselector) */}
+        <div className="rounded-lg border border-border bg-muted/30 p-4 mb-4">
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
+              Lopend jaar {ytdYear} · alle plaatsingstypen
             </p>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background border border-border text-[10px] font-medium text-muted-foreground cursor-help">
+                  <Lock size={9} />
+                  YTD
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="max-w-[260px] text-xs">
+                Telt alle plaatsingen vanaf 1 januari {ytdYear} — Detavast, Werving & Selectie en Marge Facturatie. <strong>Niet</strong> beïnvloed door de periodeselector hieronder.
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div className="flex items-end gap-3">
+            <AnimatedNumber value={ytdTotal} delay={delay + 300} className="text-3xl font-bold text-foreground" />
+            <p className="text-xs text-muted-foreground pb-1.5">Plaatsingen YTD</p>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            <span className="font-medium text-foreground">{ytdBreakdown.detavast}</span> Detavast
+            <span className="mx-1.5 text-border">·</span>
+            <span className="font-medium text-foreground">{ytdBreakdown.ws}</span> W&S
+            <span className="mx-1.5 text-border">·</span>
+            <span className="font-medium text-foreground">{ytdBreakdown.margeFac}</span> Marge Fac
+          </p>
+        </div>
+
+        {/* BLOK B — Detachering · per periode */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
+              Detachering · per periode
+            </p>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-border text-[9px] text-muted-foreground cursor-help">i</span>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-[260px] text-xs">
+                De periodeselector geldt alleen voor Starters, Gedetacheerden, Afvallers, de grafiek en de lijst actieve gedetacheerden — uitsluitend detachering.
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-muted-foreground">Periode:</span>
             <select
               value={selectedPeriod}
               onChange={(e) => { setSelectedPeriod(Number(e.target.value)); setLockedPeriod(null); }}
@@ -236,12 +284,8 @@ export function PlacementsCard({ delay = 0 }: PlacementsCardProps) {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-end gap-6 mb-4">
-          <div>
-            <AnimatedNumber value={stats.totaal} delay={delay + 300} className="text-3xl font-bold text-foreground" />
-            <p className="text-xs text-muted-foreground mt-0.5">Plaatsingen</p>
-          </div>
+        {/* Stats (period-scoped) */}
+        <div className="flex items-end gap-6 mb-3">
           <div>
             <AnimatedNumber value={stats.starters} delay={delay + 350} className="text-xl font-semibold text-primary" />
             <p className="text-xs text-muted-foreground mt-0.5">Starters</p>
