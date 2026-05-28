@@ -25,6 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -54,6 +55,12 @@ function distribute(total: number, keys: string[], seed: string): Record<string,
 
 type Status = "concept" | "gepland" | "verzonden";
 
+interface PlanChange {
+  label: string;
+  from: string;
+  to: string;
+}
+
 interface PlanItem {
   id: string;
   date: Date;
@@ -65,6 +72,7 @@ interface PlanItem {
   berichttype?: string;
   categorie?: string;
   customized?: boolean;
+  changes?: PlanChange[];
 }
 
 const STATUS_META: Record<Status, { label: string; dot: string; bg: string; text: string }> = {
@@ -237,18 +245,37 @@ const PlanningTab = () => {
     if (!editItemId) return;
     const validTime = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
     setItems((prev) =>
-      prev.map((it) =>
-        it.id === editItemId
-          ? {
-              ...it,
-              verzendtijd: validTime,
-              functie: editForm.functies[0] ?? it.functie,
-              berichttype: editForm.berichttypes.join(", "),
-              categorie: editForm.categorieen.join(", "),
-              customized: true,
-            }
-          : it
-      )
+      prev.map((it) => {
+        if (it.id !== editItemId) return it;
+        const beforeTijd = it.verzendtijd ?? verzendtijd;
+        const beforeFunctie = it.functie;
+        const beforeBericht = it.berichttype ?? "Alle berichttypes";
+        const beforeCat = it.categorie ?? "Alle categorieën";
+        const afterFunctie = editForm.functies[0] ?? it.functie;
+        const afterBericht = editForm.berichttypes.join(", ");
+        const afterCat = editForm.categorieen.join(", ");
+        const newChanges: PlanChange[] = [...(it.changes ?? [])];
+        const push = (label: string, from: string, to: string) => {
+          if (from === to) return;
+          // replace existing entry for this label so we only show latest delta vs original
+          const existingIdx = newChanges.findIndex((c) => c.label === label);
+          if (existingIdx >= 0) newChanges[existingIdx] = { label, from: newChanges[existingIdx].from, to };
+          else newChanges.push({ label, from, to });
+        };
+        push("Verzendtijd", beforeTijd, validTime);
+        push("Functiegroep", beforeFunctie, afterFunctie);
+        push("Berichttype", beforeBericht, afterBericht);
+        push("Categorie", beforeCat, afterCat);
+        return {
+          ...it,
+          verzendtijd: validTime,
+          functie: afterFunctie,
+          berichttype: afterBericht,
+          categorie: afterCat,
+          customized: newChanges.length > 0 || it.customized,
+          changes: newChanges,
+        };
+      })
     );
     setEditOpen(false);
     setEditItemId(null);
@@ -686,9 +713,35 @@ const PlanningTab = () => {
                               <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
                               <span className="truncate flex-1">{meta?.short ?? functie}</span>
                               {repr?.customized && (
-                                <span className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide">
-                                  Aangepast
-                                </span>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide cursor-help"
+                                    >
+                                      Aangepast
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs p-2.5">
+                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Wijzigingen</p>
+                                    {repr.changes && repr.changes.length > 0 ? (
+                                      <ul className="space-y-1.5 text-xs">
+                                        {repr.changes.map((c, i) => (
+                                          <li key={i}>
+                                            <p className="font-semibold text-foreground">{c.label}</p>
+                                            <p className="text-muted-foreground">
+                                              <span className="line-through">{c.from}</span>
+                                              <span className="mx-1">→</span>
+                                              <span className="text-foreground font-medium">{c.to}</span>
+                                            </p>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground">Handmatig aangepast</p>
+                                    )}
+                                  </TooltipContent>
+                                </Tooltip>
                               )}
                               <span className="font-bold">{count}</span>
                               {editMode && repr && isFuture && (
