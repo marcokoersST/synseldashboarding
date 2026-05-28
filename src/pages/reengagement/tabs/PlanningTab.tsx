@@ -790,6 +790,24 @@ const PlanningTab = () => {
                 className="mt-1"
               />
             </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">Max. berichten per dag</Label>
+                <span className="text-xs font-semibold tabular-nums">{editForm.maxPerDag}</span>
+              </div>
+              <Slider
+                className="mt-2"
+                value={[editForm.maxPerDag]}
+                min={0}
+                max={500}
+                step={5}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, maxPerDag: v[0] ?? 0 }))}
+              />
+              <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                <span>0</span>
+                <span>500</span>
+              </div>
+            </div>
             {([
               { key: "functies" as const, label: "Functiegroepen", opts: FUNCTIE_OPTS },
               { key: "berichttypes" as const, label: "Berichttypes", opts: BERICHT_OPTS },
