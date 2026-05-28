@@ -899,7 +899,7 @@ const PlanningTab = () => {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setTimeOpen(false)}>Annuleren</Button>
-            <Button onClick={() => { const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00"; setVerzendtijd(t); setTimeOpen(false); }}>Opslaan</Button>
+            <Button onClick={() => { const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00"; setTimeOpen(false); setTimeWarning(t); }}>Opslaan</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
