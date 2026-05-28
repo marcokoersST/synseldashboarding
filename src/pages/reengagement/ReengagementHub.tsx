@@ -5,7 +5,7 @@ import type { DeltaMode } from "@/components/marketing/DeltaCell";
 
 import DateFilterPanel from "@/components/marketing/DateFilterPanel";
 import ReengagementDashboardTab from "@/pages/reengagement/tabs/ReengagementDashboardTab";
-import PaidChannelsTab from "@/pages/marketing/tabs/PaidChannelsTab";
+import PlanningTab from "@/pages/reengagement/tabs/PlanningTab";
 import { cn } from "@/lib/utils";
 
 const tabs = [
