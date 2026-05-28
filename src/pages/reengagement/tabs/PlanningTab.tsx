@@ -539,10 +539,11 @@ const PlanningTab = () => {
                               }}
                               onDragEnd={() => setDragId(null)}
                               className={cn(
-                                "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing",
+                                "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing transition-opacity",
                                 meta?.bg,
                                 meta?.text,
-                                dragId === repr?.id && "opacity-50"
+                                isFuture ? "opacity-50" : "opacity-100",
+                                dragId === repr?.id && "opacity-30"
                               )}
                             >
                               <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
