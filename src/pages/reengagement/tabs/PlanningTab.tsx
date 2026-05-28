@@ -876,6 +876,35 @@ const PlanningTab = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Move confirm dialog */}
+      <Dialog open={!!pendingMove} onOpenChange={(o) => { if (!o) setPendingMove(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Bericht verplaatsen</DialogTitle>
+          </DialogHeader>
+          {pendingMove && (
+            <div className="py-2 text-sm text-foreground">
+              Je verplaatst <span className="font-semibold">{pendingMove.count}</span>{" "}
+              <span className="font-semibold">{pendingMove.functie}</span>{" "}
+              bericht{pendingMove.count === 1 ? "" : "en"} van{" "}
+              <span className="font-semibold capitalize">{format(pendingMove.from, "EEEE d MMMM", { locale: nl })}</span>{" "}
+              naar{" "}
+              <span className="font-semibold capitalize">{format(pendingMove.to, "EEEE d MMMM", { locale: nl })}</span>.
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" size="icon" onClick={() => setPendingMove(null)} aria-label="Annuleren">
+              <X className="h-4 w-4" />
+            </Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white gap-1" onClick={confirmMove}>
+              <Check className="h-4 w-4" /> Akkoord
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
+
     </div>
   );
 };
