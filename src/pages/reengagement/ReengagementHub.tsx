@@ -4,21 +4,13 @@ import type { DateRange } from "react-day-picker";
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
 
 import DateFilterPanel from "@/components/marketing/DateFilterPanel";
-import OverviewTab from "@/pages/marketing/tabs/OverviewTab";
+import ReengagementDashboardTab from "@/pages/reengagement/tabs/ReengagementDashboardTab";
 import PaidChannelsTab from "@/pages/marketing/tabs/PaidChannelsTab";
-import JobboardsTab from "@/pages/marketing/tabs/JobboardsTab";
-import PaidSocialTab from "@/pages/marketing/tabs/PaidSocialTab";
-import PaidSocialAdLevelTab from "@/pages/marketing/tabs/PaidSocialAdLevelTab";
-import InschrijvingenTab from "@/pages/marketing/tabs/InschrijvingenTab";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { id: "overview", label: "Overview" },
-  { id: "paid-channels", label: "Paid Channels" },
-  { id: "jobboards", label: "Jobboards" },
-  { id: "paid-social", label: "Paid Social" },
-  { id: "paid-social-ad", label: "Paid Social – Ad level" },
-  { id: "inschrijvingen", label: "Inschrijvingen" },
+  { id: "dashboard", label: "Dashboard" },
+  { id: "planning", label: "Planning" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -33,7 +25,7 @@ function getDefaultCompareRange(range: DateRange): DateRange | null {
 }
 
 const ReengagementHub = () => {
-  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [dateRange, setDateRange] = useState<DateRange>({ from: monday, to: today });
   const [compareEnabled, setCompareEnabled] = useState(false);
   const [compareRange, setCompareRange] = useState<DateRange | null>(null);
@@ -49,12 +41,8 @@ const ReengagementHub = () => {
   const renderTab = () => {
     const sharedProps = { dateRange, compareRange: effectiveCompareRange, deltaMode };
     switch (activeTab) {
-      case "overview": return <OverviewTab {...sharedProps} onTabChange={setActiveTab} />;
-      case "paid-channels": return <PaidChannelsTab {...sharedProps} />;
-      case "jobboards": return <JobboardsTab {...sharedProps} />;
-      case "paid-social": return <PaidSocialTab {...sharedProps} />;
-      case "paid-social-ad": return <PaidSocialAdLevelTab {...sharedProps} />;
-      case "inschrijvingen": return <InschrijvingenTab {...sharedProps} />;
+      case "dashboard": return <ReengagementDashboardTab {...sharedProps} onTabChange={setActiveTab} />;
+      case "planning": return <PaidChannelsTab {...sharedProps} />;
       default: return null;
     }
   };

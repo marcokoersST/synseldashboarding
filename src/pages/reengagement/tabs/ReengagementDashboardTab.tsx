@@ -1,0 +1,347 @@
+import { useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
+import { TrendingUp, TrendingDown, Filter } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
+import { deltaPercent, MARKETING_COLORS } from "@/data/marketingHubData";
+import type { DateRange } from "react-day-picker";
+
+interface Props {
+  dateRange: DateRange;
+  compareRange: DateRange | null;
+  deltaMode?: string;
+  onTabChange: (tab: any) => void;
+}
+
+const BERICHT_TYPES = [
+  "Niet kunnen spreken",
+  "Bezig met Studie",
+  "ZZP/Freelance",
+  "Nu niet werkzoekend",
+  "Nieuwe baan eigen",
+  "Blijft bij huidige werkgever",
+];
+
+const FUNCTIEGROEPEN = ["Engineering Mechanical", "Engineering Allround", "Operators", "Productie"];
+const MEDIA = ["Whatsapp", "Mail"];
+const CATEGORIEEN = ["A+", "A", "B"];
+const PERIODES = ["Per dag", "Per week", "Per maand"];
+
+// Mock data per berichttype
+const berichtData: Record<string, { verzonden: number; gelezen: number; reactie: number; inschrijven: number; failed: number }> = {
+  "Niet kunnen spreken": { verzonden: 210, gelezen: 178, reactie: 32, inschrijven: 18, failed: 6 },
+  "Bezig met Studie": { verzonden: 140, gelezen: 119, reactie: 24, inschrijven: 12, failed: 3 },
+  "ZZP/Freelance": { verzonden: 165, gelezen: 132, reactie: 22, inschrijven: 9, failed: 4 },
+  "Nu niet werkzoekend": { verzonden: 198, gelezen: 154, reactie: 26, inschrijven: 11, failed: 5 },
+  "Nieuwe baan eigen": { verzonden: 122, gelezen: 96, reactie: 17, inschrijven: 7, failed: 2 },
+  "Blijft bij huidige werkgever": { verzonden: 88, gelezen: 64, reactie: 9, inschrijven: 3, failed: 2 },
+};
+
+const trendData = [
+  { label: "W1", verzonden: 180, inschrijven: 12 },
+  { label: "W2", verzonden: 195, inschrijven: 14 },
+  { label: "W3", verzonden: 210, inschrijven: 13 },
+  { label: "W4", verzonden: 188, inschrijven: 16 },
+  { label: "W5", verzonden: 225, inschrijven: 18 },
+  { label: "W6", verzonden: 240, inschrijven: 21 },
+];
+
+function DeltaBadge({ current, previous, compareLabel, invert }: { current: number; previous: number; compareLabel: string; invert?: boolean }) {
+  const d = deltaPercent(current, previous);
+  if (d === null) return null;
+  const isPositive = invert ? d < 0 : d > 0;
+  return (
+    <div className={cn("flex items-center gap-1 mt-1 text-xs", isPositive ? "text-emerald-600" : "text-red-500")}>
+      {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+      <span>{d > 0 ? "+" : ""}{d.toFixed(1)}%</span>
+      <span className="text-muted-foreground ml-1">{compareLabel}</span>
+    </div>
+  );
+}
+
+function ProgressBar({ current, previous, invert }: { current: number; previous: number; invert?: boolean }) {
+  const d = deltaPercent(current, previous);
+  const isPositive = d === null ? true : invert ? d < 0 : d > 0;
+  const ratio = previous > 0 ? Math.min((current / previous) * 100, 150) : 100;
+  const ratioLabel = previous > 0 ? Math.round((current / previous) * 100) : 100;
+  return (
+    <div className="mt-2">
+      <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+        <div
+          className={cn("h-full rounded-full transition-all", isPositive ? "bg-emerald-500" : "bg-red-400")}
+          style={{ width: `${Math.min(ratio / 1.5, 100)}%` }}
+        />
+      </div>
+      <p className="text-[10px] text-muted-foreground mt-0.5">{ratioLabel}% van vorige week</p>
+    </div>
+  );
+}
+
+interface MultiFilterProps {
+  label: string;
+  options: string[];
+  selected: Set<string>;
+  onChange: (s: Set<string>) => void;
+}
+const MultiFilter = ({ label, options, selected, onChange }: MultiFilterProps) => {
+  const buttonLabel = selected.size === options.length
+    ? `Alle ${label.toLowerCase()}`
+    : selected.size === 0
+      ? `Geen ${label.toLowerCase()}`
+      : `${selected.size} geselecteerd`;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="text-xs">
+          <Filter className="mr-1.5 h-3 w-3" />{label}: {buttonLabel}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-3" align="start">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium">{label}</span>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => onChange(new Set(options))}>Alles aan</Button>
+            <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => onChange(new Set())}>Alles uit</Button>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {options.map((opt) => (
+            <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm">
+              <Checkbox checked={selected.has(opt)} onCheckedChange={() => {
+                const n = new Set(selected); n.has(opt) ? n.delete(opt) : n.add(opt); onChange(n);
+              }} />
+              {opt}
+            </label>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+interface SingleFilterProps {
+  options: string[];
+  selected: string;
+  onChange: (v: string) => void;
+}
+const SingleFilter = ({ options, selected, onChange }: SingleFilterProps) => {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="text-xs">
+          <Filter className="mr-1.5 h-3 w-3" />{selected}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 p-2" align="start">
+        <div className="space-y-1">
+          {options.map((opt) => (
+            <button
+              key={opt}
+              onClick={() => onChange(opt)}
+              className={cn(
+                "w-full text-left text-sm rounded px-2 py-1.5 hover:bg-muted transition-colors",
+                selected === opt && "bg-primary/10 text-primary font-medium"
+              )}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
+  const compareLabel = getCompareDisplayText(compareRange);
+
+  const [periode, setPeriode] = useState<string>("Per dag");
+  const [functiegroep, setFunctiegroep] = useState<Set<string>>(new Set(FUNCTIEGROEPEN));
+  const [berichttype, setBerichttype] = useState<Set<string>>(new Set(BERICHT_TYPES));
+  const [medium, setMedium] = useState<Set<string>>(new Set(MEDIA));
+  const [categorie, setCategorie] = useState<Set<string>>(new Set(CATEGORIEEN));
+  const [showPct, setShowPct] = useState(false);
+
+  const kpis = useMemo(() => {
+    const verzonden = 923;
+    const reacties = 130;
+    const inschrijven = 15;
+    return [
+      {
+        label: "Verzonden",
+        value: verzonden,
+        previous: getComparisonValue(verzonden, { dateRange, compareRange, seed: "re-verzonden" }),
+      },
+      {
+        label: "Reacties",
+        value: reacties,
+        previous: getComparisonValue(reacties, { dateRange, compareRange, seed: "re-reacties" }),
+      },
+      {
+        label: "Inschrijven",
+        value: inschrijven,
+        previous: getComparisonValue(inschrijven, { dateRange, compareRange, seed: "re-inschrijven" }),
+      },
+    ];
+  }, [dateRange, compareRange]);
+
+  const filteredRows = useMemo(
+    () => BERICHT_TYPES.filter((b) => berichttype.has(b)).map((b) => ({ name: b, ...berichtData[b] })),
+    [berichttype]
+  );
+
+  const totals = useMemo(() => filteredRows.reduce(
+    (acc, r) => ({
+      verzonden: acc.verzonden + r.verzonden,
+      gelezen: acc.gelezen + r.gelezen,
+      reactie: acc.reactie + r.reactie,
+      inschrijven: acc.inschrijven + r.inschrijven,
+      failed: acc.failed + r.failed,
+    }),
+    { verzonden: 0, gelezen: 0, reactie: 0, inschrijven: 0, failed: 0 }
+  ), [filteredRows]);
+
+  const pct = (n: number, d: number) => d > 0 ? `${((n / d) * 100).toFixed(1)}%` : "0%";
+
+  return (
+    <div className="space-y-6">
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        {kpis.map((kpi) => (
+          <Card key={kpi.label}>
+            <CardContent className="p-5">
+              <p className="text-xs font-medium text-muted-foreground mb-1">{kpi.label}</p>
+              <p className="text-2xl font-bold text-foreground">{kpi.value.toLocaleString("nl-NL")}</p>
+              <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} />
+              <ProgressBar current={kpi.value} previous={kpi.previous} />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Reengagement filter row */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <h2 className="text-lg font-semibold text-foreground">Reengagement</h2>
+        <SingleFilter options={PERIODES} selected={periode} onChange={setPeriode} />
+        <MultiFilter label="Functiegroep" options={FUNCTIEGROEPEN} selected={functiegroep} onChange={setFunctiegroep} />
+        <MultiFilter label="Berichttype" options={BERICHT_TYPES} selected={berichttype} onChange={setBerichttype} />
+        <MultiFilter label="Medium" options={MEDIA} selected={medium} onChange={setMedium} />
+        <MultiFilter label="Categorie" options={CATEGORIEEN} selected={categorie} onChange={setCategorie} />
+      </div>
+
+      {/* Trend chart */}
+      <Card>
+        <CardContent className="p-5">
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={trendData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+              <Tooltip />
+              <Legend wrapperStyle={{ fontSize: "12px" }} />
+              <Line type="monotone" dataKey="verzonden" name="Verzonden" stroke={MARKETING_COLORS[0]} strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="inschrijven" name="Inschrijven" stroke={MARKETING_COLORS[1]} strokeWidth={2} dot={{ r: 3 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Full-width berichttype table */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center justify-end">
+          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+            <Switch checked={showPct} onCheckedChange={setShowPct} />
+            Show %
+          </label>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Berichttype</th>
+                  <th className="py-2 px-3 text-right font-medium text-muted-foreground">Verzonden</th>
+                  <th className="py-2 px-3 text-right font-medium text-muted-foreground">Gelezen</th>
+                  {showPct && <th className="py-2 px-3 text-right font-medium text-muted-foreground">% Gelezen</th>}
+                  <th className="py-2 px-3 text-right font-medium text-muted-foreground">Reactie</th>
+                  {showPct && <th className="py-2 px-3 text-right font-medium text-muted-foreground">% Reactie</th>}
+                  <th className="py-2 px-3 text-right font-medium text-muted-foreground">Inschrijven</th>
+                  {showPct && <th className="py-2 px-3 text-right font-medium text-muted-foreground">% Inschrijven</th>}
+                  <th className="py-2 px-3 text-right font-medium text-muted-foreground">Verzonden Failed</th>
+                  {showPct && <th className="py-2 px-3 text-right font-medium text-muted-foreground">% Failed</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRows.map((r) => (
+                  <tr key={r.name} className="border-b hover:bg-muted/50">
+                    <td className="font-medium py-2 px-3">{r.name}</td>
+                    <td className="text-right tabular-nums py-2 px-3">{r.verzonden}</td>
+                    <td className="text-right tabular-nums py-2 px-3">{r.gelezen}</td>
+                    {showPct && <td className="text-right tabular-nums py-2 px-3 text-muted-foreground">{pct(r.gelezen, r.verzonden)}</td>}
+                    <td className="text-right tabular-nums py-2 px-3">{r.reactie}</td>
+                    {showPct && <td className="text-right tabular-nums py-2 px-3 text-muted-foreground">{pct(r.reactie, r.verzonden)}</td>}
+                    <td className="text-right tabular-nums py-2 px-3">{r.inschrijven}</td>
+                    {showPct && <td className="text-right tabular-nums py-2 px-3 text-muted-foreground">{pct(r.inschrijven, r.verzonden)}</td>}
+                    <td className="text-right tabular-nums py-2 px-3">{r.failed}</td>
+                    {showPct && <td className="text-right tabular-nums py-2 px-3 text-muted-foreground">{pct(r.failed, r.verzonden)}</td>}
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t bg-muted/50 font-semibold">
+                  <td className="py-2 px-3">Totaal</td>
+                  <td className="text-right tabular-nums py-2 px-3">{totals.verzonden}</td>
+                  <td className="text-right tabular-nums py-2 px-3">{totals.gelezen}</td>
+                  {showPct && <td className="text-right tabular-nums py-2 px-3 text-muted-foreground">{pct(totals.gelezen, totals.verzonden)}</td>}
+                  <td className="text-right tabular-nums py-2 px-3">{totals.reactie}</td>
+                  {showPct && <td className="text-right tabular-nums py-2 px-3 text-muted-foreground">{pct(totals.reactie, totals.verzonden)}</td>}
+                  <td className="text-right tabular-nums py-2 px-3">{totals.inschrijven}</td>
+                  {showPct && <td className="text-right tabular-nums py-2 px-3 text-muted-foreground">{pct(totals.inschrijven, totals.verzonden)}</td>}
+                  <td className="text-right tabular-nums py-2 px-3">{totals.failed}</td>
+                  {showPct && <td className="text-right tabular-nums py-2 px-3 text-muted-foreground">{pct(totals.failed, totals.verzonden)}</td>}
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Highlights */}
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base">Highlights</CardTitle></CardHeader>
+        <CardContent>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between p-2 rounded bg-emerald-500/10">
+              <span className="text-muted-foreground">Best presterende bericht type</span>
+              <span className="font-semibold text-emerald-700">Niet kunnen spreken (18)</span>
+            </div>
+            <div className="flex justify-between p-2 rounded bg-blue-500/10">
+              <span className="text-muted-foreground">Hoogste reactie %</span>
+              <span className="font-semibold text-blue-700">Bezig met studie (8,6%)</span>
+            </div>
+            <div className="flex justify-between items-center p-2 rounded bg-red-500/10">
+              <span className="text-muted-foreground">Snelst dalende % Inschrijven</span>
+              <span className="font-semibold text-red-700">ZZP/Freelance (-6,4%)</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default ReengagementDashboardTab;
