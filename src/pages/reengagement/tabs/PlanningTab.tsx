@@ -238,6 +238,23 @@ const PlanningTab = () => {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, date: target } : it)));
   };
 
+  const [pendingMove, setPendingMove] = useState<{ id: string; from: Date; to: Date; functie: string; count: number } | null>(null);
+
+  const requestMove = (id: string, target: Date) => {
+    const src = items.find((i) => i.id === id);
+    if (!src) return;
+    if (isSameDay(src.date, target)) return;
+    const count = items.filter((i) => isSameDay(i.date, src.date) && i.functie === src.functie).length;
+    setPendingMove({ id, from: src.date, to: target, functie: src.functie, count });
+  };
+
+  const confirmMove = () => {
+    if (!pendingMove) return;
+    const { from, to, functie } = pendingMove;
+    setItems((prev) => prev.map((it) => (isSameDay(it.date, from) && it.functie === functie ? { ...it, date: to } : it)));
+    setPendingMove(null);
+  };
+
   const gridDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(cursor), { weekStartsOn: 1 });
     const end = endOfWeek(endOfMonth(cursor), { weekStartsOn: 1 });
