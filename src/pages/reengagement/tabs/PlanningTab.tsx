@@ -365,17 +365,34 @@ const PlanningTab = () => {
           <div className="grid grid-cols-7">
             {gridDays.map((day, idx) => {
               const inMonth = isSameMonth(day, cursor);
-              const dayItems = items.filter((i) => isSameDay(i.date, day));
+              const dayItems = items.filter((i) => isSameDay(i.date, day) && functies.includes(i.functie));
               const isSel = selected && isSameDay(selected, day);
+              const dayKey = format(day, "yyyy-MM-dd");
+              const isDragOver = dragOverKey === dayKey;
+              const byFunctie = FUNCTIE_OPTS
+                .filter((f) => functies.includes(f))
+                .map((f) => ({ functie: f, count: dayItems.filter((i) => i.functie === f).length }))
+                .filter((g) => g.count > 0);
+
               return (
-                <button
+                <div
                   key={idx}
                   onClick={() => setSelected(day)}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverKey(dayKey); }}
+                  onDragLeave={() => setDragOverKey((k) => (k === dayKey ? null : k))}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const id = e.dataTransfer.getData("text/plain");
+                    if (id) moveItem(id, day);
+                    setDragOverKey(null);
+                    setDragId(null);
+                  }}
                   className={cn(
-                    "min-h-[90px] border-b border-r border-border p-1.5 text-left transition-colors",
+                    "min-h-[90px] border-b border-r border-border p-1.5 text-left transition-colors cursor-pointer",
                     "hover:bg-muted/50",
                     !inMonth && "bg-muted/20 text-muted-foreground/50",
                     isSel && "ring-2 ring-primary ring-inset",
+                    isDragOver && "bg-primary/10 ring-2 ring-primary/40 ring-inset",
                     (idx + 1) % 7 === 0 && "border-r-0"
                   )}
                 >
@@ -388,25 +405,43 @@ const PlanningTab = () => {
                     >
                       {format(day, "d")}
                     </span>
-                  </div>
-                  <div className="mt-1 space-y-0.5">
-                    {dayItems.slice(0, 2).map((it) => (
-                      <div
-                        key={it.id}
-                        className={cn(
-                          "truncate rounded px-1.5 py-0.5 text-[10px] font-medium",
-                          STATUS_META[it.status].bg,
-                          STATUS_META[it.status].text
-                        )}
-                      >
-                        {it.title}
-                      </div>
-                    ))}
-                    {dayItems.length > 2 && (
-                      <div className="text-[10px] text-muted-foreground">+{dayItems.length - 2} meer</div>
+                    {dayItems.length > 0 && (
+                      <span className="text-[10px] font-medium text-muted-foreground">{dayItems.length}</span>
                     )}
                   </div>
-                </button>
+                  <div className="mt-1 space-y-0.5">
+                    {byFunctie.map(({ functie, count }) => {
+                      const meta = FUNCTIE_META[functie];
+                      const repr = dayItems.find((i) => i.functie === functie);
+                      return (
+                        <div
+                          key={functie}
+                          draggable={!!repr}
+                          onDragStart={(e) => {
+                            if (repr) {
+                              e.stopPropagation();
+                              e.dataTransfer.setData("text/plain", repr.id);
+                              e.dataTransfer.effectAllowed = "move";
+                              setDragId(repr.id);
+                            }
+                          }}
+                          onDragEnd={() => setDragId(null)}
+                          title={`${functie}: ${count} bericht${count > 1 ? "en" : ""} (sleep om te verplaatsen)`}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing",
+                            meta?.bg,
+                            meta?.text,
+                            dragId === repr?.id && "opacity-50"
+                          )}
+                        >
+                          <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
+                          <span className="truncate flex-1">{meta?.short ?? functie}</span>
+                          <span className="font-bold">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
