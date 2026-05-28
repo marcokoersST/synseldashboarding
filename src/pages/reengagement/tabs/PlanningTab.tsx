@@ -120,7 +120,7 @@ const PlanningTab = () => {
         {/* Standaard Instellingen */}
         <div>
           <h3 className="text-sm font-semibold text-foreground mb-3">Standaard Instellingen</h3>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Card className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Verzendtijd</p>
@@ -147,6 +147,110 @@ const PlanningTab = () => {
                 <Pencil className="h-4 w-4" />
               </button>
             </Card>
+
+            {/* Standaard verdeling */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Standaard verdeling</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{verdeling}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-1" align="end">
+                <RadioGroup value={verdeling} onValueChange={(v) => setVerdeling(v as Verdeling)} className="space-y-0">
+                  {VERDELING_OPTS.map((opt) => (
+                    <label key={opt} htmlFor={`verd-${opt}`} className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-accent cursor-pointer text-sm">
+                      <RadioGroupItem value={opt} id={`verd-${opt}`} />
+                      <span>{opt}</span>
+                    </label>
+                  ))}
+                </RadioGroup>
+              </PopoverContent>
+            </Popover>
+
+            {/* Functiegroep */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Functiegroep</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(functies, FUNCTIE_OPTS)}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2" align="end">
+                <div className="flex items-center justify-between mb-1 px-1">
+                  <span className="text-xs font-medium text-muted-foreground">Functiegroepen</span>
+                  <button className="text-xs text-primary hover:underline" onClick={() => setFuncties(functies.length === FUNCTIE_OPTS.length ? [] : [...FUNCTIE_OPTS])}>
+                    {functies.length === FUNCTIE_OPTS.length ? "Alles uit" : "Alles aan"}
+                  </button>
+                </div>
+                {FUNCTIE_OPTS.map((opt) => (
+                  <label key={opt} className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-accent cursor-pointer text-sm">
+                    <Checkbox checked={functies.includes(opt)} onCheckedChange={() => setFuncties(toggle(functies, opt))} />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </PopoverContent>
+            </Popover>
+
+            {/* Berichttype */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Berichttype</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(berichten, BERICHT_OPTS)}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2" align="end">
+                <div className="flex items-center justify-between mb-1 px-1">
+                  <span className="text-xs font-medium text-muted-foreground">Berichttypes</span>
+                  <button className="text-xs text-primary hover:underline" onClick={() => setBerichten(berichten.length === BERICHT_OPTS.length ? [] : [...BERICHT_OPTS])}>
+                    {berichten.length === BERICHT_OPTS.length ? "Alles uit" : "Alles aan"}
+                  </button>
+                </div>
+                {BERICHT_OPTS.map((opt) => (
+                  <label key={opt} className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-accent cursor-pointer text-sm">
+                    <Checkbox checked={berichten.includes(opt)} onCheckedChange={() => setBerichten(toggle(berichten, opt))} />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </PopoverContent>
+            </Popover>
+
+            {/* Categorie */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Categorie</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(categorieen, CATEGORIE_OPTS)}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-2" align="end">
+                <div className="flex items-center justify-between mb-1 px-1">
+                  <span className="text-xs font-medium text-muted-foreground">Categorieën</span>
+                  <button className="text-xs text-primary hover:underline" onClick={() => setCategorieen(categorieen.length === CATEGORIE_OPTS.length ? [] : [...CATEGORIE_OPTS])}>
+                    {categorieen.length === CATEGORIE_OPTS.length ? "Alles uit" : "Alles aan"}
+                  </button>
+                </div>
+                {CATEGORIE_OPTS.map((opt) => (
+                  <label key={opt} className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-accent cursor-pointer text-sm">
+                    <Checkbox checked={categorieen.includes(opt)} onCheckedChange={() => setCategorieen(toggle(categorieen, opt))} />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
