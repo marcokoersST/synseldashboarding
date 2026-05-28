@@ -182,11 +182,12 @@ const PlanningTab = () => {
   const [editMode, setEditMode] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editItemId, setEditItemId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ verzendtijd: string; functies: string[]; berichttypes: string[]; categorieen: string[] }>({
+  const [editForm, setEditForm] = useState<{ verzendtijd: string; functies: string[]; berichttypes: string[]; categorieen: string[]; maxPerDag: number }>({
     verzendtijd: verzendtijd,
     functies: [FUNCTIE_OPTS[0]],
     berichttypes: [BERICHT_OPTS[0]],
     categorieen: [CATEGORIE_OPTS[0]],
+    maxPerDag: 150,
   });
 
   const openEdit = (item: PlanItem) => {
@@ -196,6 +197,7 @@ const PlanningTab = () => {
       functies: [item.functie],
       berichttypes: item.berichttype ? [item.berichttype] : [BERICHT_OPTS[0]],
       categorieen: item.categorie ? [item.categorie] : [CATEGORIE_OPTS[0]],
+      maxPerDag: maxPerDag,
     });
     setEditOpen(true);
   };
