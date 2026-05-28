@@ -504,45 +504,117 @@ const PlanningTab = () => {
                     {byFunctie.map(({ functie, count }) => {
                       const meta = FUNCTIE_META[functie];
                       const repr = dayItems.find((i) => i.functie === functie);
+                      const isFuture = effectiveStatus(day) === "gepland";
+                      const seed = `${dayKey}-${functie}`;
+                      const btSplit = distribute(count, berichten, seed + "-bt");
+                      const catSplit = distribute(count, categorieen, seed + "-cat");
+                      const sent = count;
+                      const read = Math.round(count * 0.72);
+                      const replies = Math.round(count * 0.18);
+                      const failed = Math.max(0, count - read - replies > 0 ? Math.round(count * 0.04) : 0);
                       return (
-                        <div
-                          key={functie}
-                          draggable={!!repr}
-                          onDragStart={(e) => {
-                            if (repr) {
-                              e.stopPropagation();
-                              e.dataTransfer.setData("text/plain", repr.id);
-                              e.dataTransfer.effectAllowed = "move";
-                              setDragId(repr.id);
-                            }
-                          }}
-                          onDragEnd={() => setDragId(null)}
-                          title={`${functie}: ${count} bericht${count > 1 ? "en" : ""} (sleep om te verplaatsen)`}
-                          className={cn(
-                            "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing",
-                            meta?.bg,
-                            meta?.text,
-                            dragId === repr?.id && "opacity-50"
-                          )}
-                        >
-                          <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
-                          <span className="truncate flex-1">{meta?.short ?? functie}</span>
-                          {repr?.customized && (
-                            <span className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide">
-                              Aangepast
-                            </span>
-                          )}
-                          <span className="font-bold">{count}</span>
-                          {editMode && repr && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); openEdit(repr); }}
-                              className="ml-0.5 rounded p-0.5 hover:bg-background/60"
-                              aria-label="Bericht aanpassen"
+                        <HoverCard key={functie} openDelay={120} closeDelay={80}>
+                          <HoverCardTrigger asChild>
+                            <div
+                              draggable={!!repr}
+                              onDragStart={(e) => {
+                                if (repr) {
+                                  e.stopPropagation();
+                                  e.dataTransfer.setData("text/plain", repr.id);
+                                  e.dataTransfer.effectAllowed = "move";
+                                  setDragId(repr.id);
+                                }
+                              }}
+                              onDragEnd={() => setDragId(null)}
+                              className={cn(
+                                "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing",
+                                meta?.bg,
+                                meta?.text,
+                                dragId === repr?.id && "opacity-50"
+                              )}
                             >
-                              <Pencil className="h-2.5 w-2.5" />
-                            </button>
-                          )}
-                        </div>
+                              <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
+                              <span className="truncate flex-1">{meta?.short ?? functie}</span>
+                              {repr?.customized && (
+                                <span className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide">
+                                  Aangepast
+                                </span>
+                              )}
+                              <span className="font-bold">{count}</span>
+                              {editMode && repr && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); openEdit(repr); }}
+                                  className="ml-0.5 rounded p-0.5 hover:bg-background/60"
+                                  aria-label="Bericht aanpassen"
+                                >
+                                  <Pencil className="h-2.5 w-2.5" />
+                                </button>
+                              )}
+                            </div>
+                          </HoverCardTrigger>
+                          <HoverCardContent side="right" align="start" className="w-72 p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("h-2 w-2 rounded-full", meta?.dot)} />
+                                <span className="text-sm font-semibold">{functie}</span>
+                              </div>
+                              <span className={cn(
+                                "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase",
+                                isFuture ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                              )}>
+                                {isFuture ? "Gepland" : "Verzonden"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {format(day, "EEEE d MMMM", { locale: nl })} · {count} bericht{count > 1 ? "en" : ""}
+                            </p>
+                            {isFuture ? (
+                              <div className="space-y-3">
+                                <div>
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Per berichttype</p>
+                                  <div className="space-y-1">
+                                    {berichten.map((bt) => (
+                                      <div key={bt} className="flex items-center justify-between text-xs">
+                                        <span className="truncate text-foreground">{bt}</span>
+                                        <span className="font-semibold tabular-nums text-muted-foreground">{btSplit[bt] ?? 0}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Per categorie</p>
+                                  <div className="flex items-center gap-2">
+                                    {categorieen.map((c) => (
+                                      <div key={c} className="flex-1 rounded-md border border-border px-2 py-1.5 text-center">
+                                        <p className="text-[10px] text-muted-foreground">{c}</p>
+                                        <p className="text-sm font-bold tabular-nums">{catSplit[c] ?? 0}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="rounded-md border border-border p-2">
+                                  <div className="flex items-center gap-1.5 text-muted-foreground"><CheckCircle2 className="h-3 w-3" /><span className="text-[10px]">Verzonden</span></div>
+                                  <p className="mt-0.5 text-base font-bold tabular-nums">{sent}</p>
+                                </div>
+                                <div className="rounded-md border border-border p-2">
+                                  <div className="flex items-center gap-1.5 text-muted-foreground"><Eye className="h-3 w-3" /><span className="text-[10px]">Gelezen</span></div>
+                                  <p className="mt-0.5 text-base font-bold tabular-nums">{read}</p>
+                                </div>
+                                <div className="rounded-md border border-border p-2">
+                                  <div className="flex items-center gap-1.5 text-muted-foreground"><MessageSquare className="h-3 w-3" /><span className="text-[10px]">Reacties</span></div>
+                                  <p className="mt-0.5 text-base font-bold tabular-nums">{replies}</p>
+                                </div>
+                                <div className="rounded-md border border-border p-2">
+                                  <div className="flex items-center gap-1.5 text-muted-foreground"><AlertTriangle className="h-3 w-3" /><span className="text-[10px]">Failed</span></div>
+                                  <p className="mt-0.5 text-base font-bold tabular-nums">{failed}</p>
+                                </div>
+                              </div>
+                            )}
+                          </HoverCardContent>
+                        </HoverCard>
                       );
                     })}
                   </div>
