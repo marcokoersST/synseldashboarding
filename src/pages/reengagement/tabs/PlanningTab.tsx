@@ -521,12 +521,20 @@ const PlanningTab = () => {
           <div className="grid grid-cols-7">
             {gridDays.map((day, idx) => {
               const inMonth = isSameMonth(day, cursor);
-              const dayItems = items.filter((i) => isSameDay(i.date, day) && functies.includes(i.functie));
+              // Filters in de tegels gelden alleen voor geplande berichten.
+              // Verzonden berichten blijven altijd zichtbaar.
+              const dayItems = items.filter((i) => {
+                if (!isSameDay(i.date, day)) return false;
+                const future = effectiveStatus(i.date) === "gepland";
+                if (!future) return true;
+                return functies.includes(i.functie);
+              });
               const isSel = selected && isSameDay(selected, day);
               const dayKey = format(day, "yyyy-MM-dd");
               const isDragOver = dragOverKey === dayKey;
+              const presentFuncties = Array.from(new Set(dayItems.map((i) => i.functie)));
               const byFunctie = FUNCTIE_OPTS
-                .filter((f) => functies.includes(f))
+                .filter((f) => presentFuncties.includes(f))
                 .map((f) => ({ functie: f, count: dayItems.filter((i) => i.functie === f).length }))
                 .filter((g) => g.count > 0);
 
