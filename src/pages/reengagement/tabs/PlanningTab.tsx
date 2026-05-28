@@ -55,9 +55,18 @@ function buildMockItems(monthDate: Date): PlanItem[] {
   ];
 }
 
+type Medium = "App & Mail" | "App" | "Mail";
+
 const PlanningTab = () => {
   const [cursor, setCursor] = useState<Date>(new Date(2026, 4, 1)); // mei 2026
   const [selected, setSelected] = useState<Date | null>(null);
+
+  const [verzendtijd, setVerzendtijd] = useState("11:00");
+  const [medium, setMedium] = useState<Medium>("App & Mail");
+  const [timeOpen, setTimeOpen] = useState(false);
+  const [mediumOpen, setMediumOpen] = useState(false);
+  const [tempTime, setTempTime] = useState(verzendtijd);
+  const [tempMedium, setTempMedium] = useState<Medium>(medium);
 
   const items = useMemo(() => buildMockItems(cursor), [cursor]);
 
