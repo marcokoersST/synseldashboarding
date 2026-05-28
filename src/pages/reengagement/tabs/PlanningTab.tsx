@@ -35,6 +35,10 @@ interface PlanItem {
   status: Status;
   channel: "app" | "mail";
   functie: string;
+  verzendtijd?: string;
+  berichttype?: string;
+  categorie?: string;
+  customized?: boolean;
 }
 
 const STATUS_META: Record<Status, { label: string; dot: string; bg: string; text: string }> = {
@@ -147,6 +151,47 @@ const PlanningTab = () => {
 
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+
+  const [editMode, setEditMode] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editItemId, setEditItemId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{ verzendtijd: string; functie: string; berichttype: string; categorie: string }>({
+    verzendtijd: verzendtijd,
+    functie: FUNCTIE_OPTS[0],
+    berichttype: BERICHT_OPTS[0],
+    categorie: CATEGORIE_OPTS[0],
+  });
+
+  const openEdit = (item: PlanItem) => {
+    setEditItemId(item.id);
+    setEditForm({
+      verzendtijd: item.verzendtijd ?? verzendtijd,
+      functie: item.functie,
+      berichttype: item.berichttype ?? BERICHT_OPTS[0],
+      categorie: item.categorie ?? CATEGORIE_OPTS[0],
+    });
+    setEditOpen(true);
+  };
+
+  const saveEdit = () => {
+    if (!editItemId) return;
+    setItems((prev) =>
+      prev.map((it) =>
+        it.id === editItemId
+          ? {
+              ...it,
+              verzendtijd: editForm.verzendtijd,
+              functie: editForm.functie,
+              berichttype: editForm.berichttype,
+              categorie: editForm.categorie,
+              customized: true,
+            }
+          : it
+      )
+    );
+    setEditOpen(false);
+    setEditItemId(null);
+  };
 
   const moveItem = (id: string, target: Date) => {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, date: target } : it)));
@@ -325,7 +370,8 @@ const PlanningTab = () => {
         </div>
 
         {/* Calendar card */}
-        <Card className="p-4">
+        <Card className={cn("p-4 transition-colors", editMode && "border-2 border-emerald-500 shadow-[0_0_0_3px_hsl(var(--background))_inset]")}>
+
           {/* Header row */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -346,8 +392,16 @@ const PlanningTab = () => {
                   <span className="text-muted-foreground">{STATUS_META[s].label}</span>
                 </div>
               ))}
-              <Button size="sm" variant="outline" className="h-7 gap-1">
-                <Pencil className="h-3.5 w-3.5" /> Pas aan
+              <Button
+                size="sm"
+                variant={editMode ? "default" : "outline"}
+                onClick={() => setEditMode((v) => !v)}
+                className={cn(
+                  "h-7 gap-1",
+                  editMode && "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
+                )}
+              >
+                <Pencil className="h-3.5 w-3.5" /> {editMode ? "Klaar" : "Pas aan"}
               </Button>
             </div>
           </div>
@@ -436,7 +490,21 @@ const PlanningTab = () => {
                         >
                           <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
                           <span className="truncate flex-1">{meta?.short ?? functie}</span>
+                          {repr?.customized && (
+                            <span className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide">
+                              Aangepast
+                            </span>
+                          )}
                           <span className="font-bold">{count}</span>
+                          {editMode && repr && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); openEdit(repr); }}
+                              className="ml-0.5 rounded p-0.5 hover:bg-background/60"
+                              aria-label="Bericht aanpassen"
+                            >
+                              <Pencil className="h-2.5 w-2.5" />
+                            </button>
+                          )}
                         </div>
                       );
                     })}
@@ -544,6 +612,57 @@ const PlanningTab = () => {
           <DialogFooter>
             <Button variant="ghost" onClick={() => setTimeOpen(false)}>Annuleren</Button>
             <Button onClick={() => { setVerzendtijd(tempTime || "11:00"); setTimeOpen(false); }}>Opslaan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit message dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bericht aanpassen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">Verzendtijd</Label>
+              <Input
+                type="time"
+                value={editForm.verzendtijd}
+                onChange={(e) => setEditForm((f) => ({ ...f, verzendtijd: e.target.value }))}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Functiegroep</Label>
+              <Select value={editForm.functie} onValueChange={(v) => setEditForm((f) => ({ ...f, functie: v }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {FUNCTIE_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Berichttype</Label>
+              <Select value={editForm.berichttype} onValueChange={(v) => setEditForm((f) => ({ ...f, berichttype: v }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {BERICHT_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Categorie</Label>
+              <Select value={editForm.categorie} onValueChange={(v) => setEditForm((f) => ({ ...f, categorie: v }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORIE_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" onClick={saveEdit}>Opslaan</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
