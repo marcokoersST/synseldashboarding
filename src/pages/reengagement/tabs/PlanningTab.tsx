@@ -180,20 +180,20 @@ const PlanningTab = () => {
   const [editMode, setEditMode] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editItemId, setEditItemId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ verzendtijd: string; functie: string; berichttype: string; categorie: string }>({
+  const [editForm, setEditForm] = useState<{ verzendtijd: string; functies: string[]; berichttypes: string[]; categorieen: string[] }>({
     verzendtijd: verzendtijd,
-    functie: FUNCTIE_OPTS[0],
-    berichttype: BERICHT_OPTS[0],
-    categorie: CATEGORIE_OPTS[0],
+    functies: [FUNCTIE_OPTS[0]],
+    berichttypes: [BERICHT_OPTS[0]],
+    categorieen: [CATEGORIE_OPTS[0]],
   });
 
   const openEdit = (item: PlanItem) => {
     setEditItemId(item.id);
     setEditForm({
       verzendtijd: item.verzendtijd ?? verzendtijd,
-      functie: item.functie,
-      berichttype: item.berichttype ?? BERICHT_OPTS[0],
-      categorie: item.categorie ?? CATEGORIE_OPTS[0],
+      functies: [item.functie],
+      berichttypes: item.berichttype ? [item.berichttype] : [BERICHT_OPTS[0]],
+      categorieen: item.categorie ? [item.categorie] : [CATEGORIE_OPTS[0]],
     });
     setEditOpen(true);
   };
@@ -206,9 +206,9 @@ const PlanningTab = () => {
           ? {
               ...it,
               verzendtijd: editForm.verzendtijd,
-              functie: editForm.functie,
-              berichttype: editForm.berichttype,
-              categorie: editForm.categorie,
+              functie: editForm.functies[0] ?? it.functie,
+              berichttype: editForm.berichttypes.join(", "),
+              categorie: editForm.categorieen.join(", "),
               customized: true,
             }
           : it
@@ -216,6 +216,18 @@ const PlanningTab = () => {
     );
     setEditOpen(false);
     setEditItemId(null);
+  };
+
+  // status afleiden uit datum: verleden = verzonden, vandaag/toekomst = gepland
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+  const effectiveStatus = (date: Date): Status => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d < today ? "verzonden" : "gepland";
   };
 
   const moveItem = (id: string, target: Date) => {
