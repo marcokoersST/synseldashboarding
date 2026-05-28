@@ -212,11 +212,17 @@ const ViewBar = ({ scope, periode, setPeriode, functiegroep, setFunctiegroep, be
 const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
   const compareLabel = getCompareDisplayText(compareRange);
 
+  // Chart-specific view state
   const [periode, setPeriode] = useState<string>("Per dag");
-  const [functiegroep, setFunctiegroep] = useState<Set<string>>(new Set(FUNCTIEGROEPEN));
-  const [berichttype, setBerichttype] = useState<Set<string>>(new Set(BERICHT_TYPES));
-  const [medium, setMedium] = useState<Set<string>>(new Set(MEDIA));
-  const [categorie, setCategorie] = useState<Set<string>>(new Set(CATEGORIEEN));
+  const [chartFunctiegroep, setChartFunctiegroep] = useState<Set<string>>(new Set(FUNCTIEGROEPEN));
+  const [chartBerichttype, setChartBerichttype] = useState<Set<string>>(new Set(BERICHT_TYPES));
+  const [chartMedium, setChartMedium] = useState<Set<string>>(new Set(MEDIA));
+  const [chartCategorie, setChartCategorie] = useState<Set<string>>(new Set(CATEGORIEEN));
+  // Table-specific view state
+  const [tableFunctiegroep, setTableFunctiegroep] = useState<Set<string>>(new Set(FUNCTIEGROEPEN));
+  const [tableBerichttype, setTableBerichttype] = useState<Set<string>>(new Set(BERICHT_TYPES));
+  const [tableMedium, setTableMedium] = useState<Set<string>>(new Set(MEDIA));
+  const [tableCategorie, setTableCategorie] = useState<Set<string>>(new Set(CATEGORIEEN));
   const [showPct, setShowPct] = useState(false);
 
   const kpis = useMemo(() => {
