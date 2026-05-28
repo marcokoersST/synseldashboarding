@@ -328,14 +328,14 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
         showPeriode
         periode={periode}
         setPeriode={setPeriode}
-        functiegroep={functiegroep}
-        setFunctiegroep={setFunctiegroep}
-        berichttype={berichttype}
-        setBerichttype={setBerichttype}
-        medium={medium}
-        setMedium={setMedium}
-        categorie={categorie}
-        setCategorie={setCategorie}
+        functiegroep={chartFunctiegroep}
+        setFunctiegroep={setChartFunctiegroep}
+        berichttype={chartBerichttype}
+        setBerichttype={setChartBerichttype}
+        medium={chartMedium}
+        setMedium={setChartMedium}
+        categorie={chartCategorie}
+        setCategorie={setChartCategorie}
       />
 
       {/* Trend chart */}
