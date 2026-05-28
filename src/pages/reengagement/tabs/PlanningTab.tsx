@@ -331,6 +331,41 @@ const PlanningTab = () => {
                 <Pencil className="h-4 w-4" />
               </button>
             </Card>
+
+            {/* Verzenddagen */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">Verzenddagen</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">
+                      {verzenddagen.length === VERZENDDAG_OPTS.length
+                        ? "Ma t/m Za"
+                        : verzenddagen.length === 0
+                          ? "Geen"
+                          : `${verzenddagen.length} dagen`}
+                    </p>
+                  </div>
+                  <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="end">
+                <div className="flex items-center justify-between mb-1 px-1">
+                  <span className="text-xs font-medium text-muted-foreground">Verzenddagen</span>
+                  <button className="text-xs text-primary hover:underline" onClick={() => setVerzenddagen(verzenddagen.length === VERZENDDAG_OPTS.length ? [] : [...VERZENDDAG_OPTS])}>
+                    {verzenddagen.length === VERZENDDAG_OPTS.length ? "Alles uit" : "Alles aan"}
+                  </button>
+                </div>
+                {VERZENDDAG_OPTS.map((opt) => (
+                  <label key={opt} className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-accent cursor-pointer text-sm">
+                    <Checkbox checked={verzenddagen.includes(opt)} onCheckedChange={() => setVerzenddagen(toggle(verzenddagen, opt))} />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+                <p className="px-2 pt-1 text-[10px] text-muted-foreground">Op zondag worden geen berichten verstuurd.</p>
+              </PopoverContent>
+            </Popover>
+
             <Popover>
               <PopoverTrigger asChild>
                 <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
