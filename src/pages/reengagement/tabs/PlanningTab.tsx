@@ -84,25 +84,29 @@ const PlanningTab = () => {
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
       {/* LEFT: KPI row + calendar */}
       <div className="space-y-4">
-        {/* Top tiles */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground">Campagne kenmerken</p>
-            <p className="mt-1 text-2xl font-bold text-foreground">7</p>
-            <p className="text-xs text-muted-foreground">actief deze maand</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground">Verzonden afgelopen 7 dagen</p>
-            <p className="mt-1 text-2xl font-bold text-foreground">{last7}</p>
-            <p className="text-xs text-muted-foreground">berichten</p>
-          </Card>
-          <Card className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Vandaag aan today</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">Klaar</p>
-            </div>
-            <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-0">OK</Badge>
-          </Card>
+        {/* Standaard Instellingen */}
+        <div>
+          <h3 className="text-sm font-semibold text-foreground mb-3">Standaard Instellingen</h3>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Card className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Verzendtijd</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">11:00</p>
+              </div>
+              <button className="text-muted-foreground hover:text-foreground transition-colors">
+                <Pencil className="h-4 w-4" />
+              </button>
+            </Card>
+            <Card className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Medium</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">App & Mail</p>
+              </div>
+              <button className="text-muted-foreground hover:text-foreground transition-colors">
+                <Pencil className="h-4 w-4" />
+              </button>
+            </Card>
+          </div>
         </div>
 
         {/* Calendar card */}
