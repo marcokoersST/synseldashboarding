@@ -12,7 +12,7 @@ import {
   isSameDay,
 } from "date-fns";
 import { nl } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil, CheckCircle2, Eye, MessageSquare, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil, CheckCircle2, Eye, MessageSquare, AlertTriangle, X, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -236,6 +236,23 @@ const PlanningTab = () => {
 
   const moveItem = (id: string, target: Date) => {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, date: target } : it)));
+  };
+
+  const [pendingMove, setPendingMove] = useState<{ id: string; from: Date; to: Date; functie: string; count: number } | null>(null);
+
+  const requestMove = (id: string, target: Date) => {
+    const src = items.find((i) => i.id === id);
+    if (!src) return;
+    if (isSameDay(src.date, target)) return;
+    const count = items.filter((i) => isSameDay(i.date, src.date) && i.functie === src.functie).length;
+    setPendingMove({ id, from: src.date, to: target, functie: src.functie, count });
+  };
+
+  const confirmMove = () => {
+    if (!pendingMove) return;
+    const { from, to, functie } = pendingMove;
+    setItems((prev) => prev.map((it) => (isSameDay(it.date, from) && it.functie === functie ? { ...it, date: to } : it)));
+    setPendingMove(null);
   };
 
   const gridDays = useMemo(() => {
@@ -521,7 +538,7 @@ const PlanningTab = () => {
                   onDrop={(e) => {
                     e.preventDefault();
                     const id = e.dataTransfer.getData("text/plain");
-                    if (id) moveItem(id, day);
+                    if (id) requestMove(id, day);
                     setDragOverKey(null);
                     setDragId(null);
                   }}
@@ -858,6 +875,35 @@ const PlanningTab = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Move confirm dialog */}
+      <Dialog open={!!pendingMove} onOpenChange={(o) => { if (!o) setPendingMove(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Bericht verplaatsen</DialogTitle>
+          </DialogHeader>
+          {pendingMove && (
+            <div className="py-2 text-sm text-foreground">
+              Je verplaatst <span className="font-semibold">{pendingMove.count}</span>{" "}
+              <span className="font-semibold">{pendingMove.functie}</span>{" "}
+              bericht{pendingMove.count === 1 ? "" : "en"} van{" "}
+              <span className="font-semibold capitalize">{format(pendingMove.from, "EEEE d MMMM", { locale: nl })}</span>{" "}
+              naar{" "}
+              <span className="font-semibold capitalize">{format(pendingMove.to, "EEEE d MMMM", { locale: nl })}</span>.
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" size="icon" onClick={() => setPendingMove(null)} aria-label="Annuleren">
+              <X className="h-4 w-4" />
+            </Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white gap-1" onClick={confirmMove}>
+              <Check className="h-4 w-4" /> Akkoord
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
 
     </div>
   );
