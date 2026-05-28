@@ -104,18 +104,26 @@ const PlanningTab = () => {
             <Card className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Verzendtijd</p>
-                <p className="mt-1 text-2xl font-bold text-foreground">11:00</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">{verzendtijd}</p>
               </div>
-              <button className="text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={() => { setTempTime(verzendtijd); setTimeOpen(true); }}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Verzendtijd aanpassen"
+              >
                 <Pencil className="h-4 w-4" />
               </button>
             </Card>
             <Card className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Medium</p>
-                <p className="mt-1 text-2xl font-bold text-foreground">App & Mail</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">{medium}</p>
               </div>
-              <button className="text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={() => { setTempMedium(medium); setMediumOpen(true); }}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Medium aanpassen"
+              >
                 <Pencil className="h-4 w-4" />
               </button>
             </Card>
