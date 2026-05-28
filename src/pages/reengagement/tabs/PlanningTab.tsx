@@ -1040,8 +1040,13 @@ const PlanningTab = () => {
               disabled={editForm.functies.length === 0 || editForm.berichttypes.length === 0 || editForm.categorieen.length === 0}
               onClick={() => {
                 const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
-                setEditTimeWarning(t);
-                setEditOpen(false);
+                const hour = parseInt(t.split(":")[0], 10);
+                if (hour < 8 || hour >= 18) {
+                  setEditTimeWarning(t);
+                  setEditOpen(false);
+                } else {
+                  saveEdit(t);
+                }
               }}
             >
               Opslaan
