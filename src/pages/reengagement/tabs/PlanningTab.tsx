@@ -22,6 +22,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ interface PlanItem {
   title: string;
   status: Status;
   channel: "app" | "mail";
+  functie: string;
 }
 
 const STATUS_META: Record<Status, { label: string; dot: string; bg: string; text: string }> = {
@@ -41,21 +43,65 @@ const STATUS_META: Record<Status, { label: string; dot: string; bg: string; text
   verzonden: { label: "Verzonden", dot: "bg-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-500/20", text: "text-emerald-700 dark:text-emerald-300" },
 };
 
+const FUNCTIE_META: Record<string, { short: string; dot: string; bg: string; text: string }> = {
+  "Engineering Mechanical": { short: "EM", dot: "bg-blue-500", bg: "bg-blue-100 dark:bg-blue-500/20", text: "text-blue-700 dark:text-blue-300" },
+  "Engineering Allround": { short: "EA", dot: "bg-violet-500", bg: "bg-violet-100 dark:bg-violet-500/20", text: "text-violet-700 dark:text-violet-300" },
+  "Operators": { short: "OP", dot: "bg-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-500/20", text: "text-emerald-700 dark:text-emerald-300" },
+  "Productie": { short: "PR", dot: "bg-amber-500", bg: "bg-amber-100 dark:bg-amber-500/20", text: "text-amber-700 dark:text-amber-300" },
+};
+
 const WEEKDAYS = ["Maa", "Di", "Wo", "Do", "Vr", "Zat", "Zon"];
+
+const FUNCTIES_DEFAULT = ["Engineering Mechanical", "Engineering Allround", "Operators", "Productie"];
 
 function buildMockItems(monthDate: Date): PlanItem[] {
   const base = startOfMonth(monthDate);
-  return [
-    { id: "1", date: addDays(base, 0), title: "Welkom terug", status: "verzonden", channel: "mail" },
-    { id: "2", date: addDays(base, 1), title: "Nieuwe vacatures", status: "verzonden", channel: "app" },
-    { id: "3", date: addDays(base, 3), title: "Tip van je consultant", status: "gepland", channel: "mail" },
-    { id: "4", date: addDays(base, 6), title: "Beschikbaarheid check", status: "gepland", channel: "app" },
-    { id: "5", date: addDays(base, 9), title: "CV update herinnering", status: "concept", channel: "mail" },
-    { id: "6", date: addDays(base, 13), title: "Maandelijkse nieuwsbrief", status: "gepland", channel: "mail" },
-    { id: "7", date: addDays(base, 16), title: "Marktupdate", status: "concept", channel: "app" },
-    { id: "8", date: addDays(base, 20), title: "Re-engagement campagne", status: "gepland", channel: "mail" },
-    { id: "9", date: addDays(base, 24), title: "Salaris benchmark", status: "concept", channel: "mail" },
+  const items: PlanItem[] = [];
+  // Spread items across the month per functie
+  const plan: Array<[number, string, Status, "app" | "mail", number]> = [
+    // [dayOffset, functie, status, channel, count]
+    [0, "Engineering Mechanical", "verzonden", "mail", 3],
+    [0, "Operators", "verzonden", "app", 2],
+    [1, "Engineering Allround", "verzonden", "mail", 4],
+    [2, "Productie", "verzonden", "app", 2],
+    [3, "Engineering Mechanical", "gepland", "mail", 5],
+    [4, "Operators", "gepland", "app", 3],
+    [5, "Productie", "gepland", "mail", 4],
+    [6, "Engineering Allround", "gepland", "app", 2],
+    [7, "Engineering Mechanical", "gepland", "mail", 3],
+    [8, "Operators", "gepland", "app", 5],
+    [9, "Productie", "gepland", "mail", 2],
+    [10, "Engineering Allround", "gepland", "mail", 4],
+    [11, "Engineering Mechanical", "gepland", "app", 3],
+    [13, "Productie", "gepland", "mail", 6],
+    [14, "Operators", "gepland", "app", 2],
+    [15, "Engineering Allround", "gepland", "mail", 3],
+    [16, "Engineering Mechanical", "concept", "app", 4],
+    [17, "Productie", "concept", "mail", 2],
+    [18, "Operators", "concept", "app", 3],
+    [20, "Engineering Allround", "gepland", "mail", 5],
+    [21, "Engineering Mechanical", "gepland", "app", 2],
+    [22, "Productie", "concept", "mail", 3],
+    [23, "Operators", "concept", "app", 4],
+    [24, "Engineering Mechanical", "concept", "mail", 2],
+    [25, "Engineering Allround", "concept", "mail", 3],
+    [27, "Productie", "concept", "app", 2],
+    [28, "Operators", "concept", "mail", 3],
   ];
+  let counter = 1;
+  plan.forEach(([offset, functie, status, channel, count]) => {
+    for (let i = 0; i < count; i++) {
+      items.push({
+        id: `m-${counter++}`,
+        date: addDays(base, offset),
+        title: `${functie} bericht`,
+        status,
+        channel,
+        functie,
+      });
+    }
+  });
+  return items;
 }
 
 type Medium = "App & Mail" | "App" | "Mail";
@@ -67,20 +113,23 @@ const PlanningTab = () => {
   const [verzendtijd, setVerzendtijd] = useState("11:00");
   const [medium, setMedium] = useState<Medium>("App & Mail");
   const [timeOpen, setTimeOpen] = useState(false);
-  const [mediumOpen, setMediumOpen] = useState(false);
   const [tempTime, setTempTime] = useState(verzendtijd);
-  const [tempMedium, setTempMedium] = useState<Medium>(medium);
 
   type Verdeling = "Evenredig" | "Begin week" | "Eind week" | "Begin maand" | "Eind maand";
   const VERDELING_OPTS: Verdeling[] = ["Evenredig", "Begin week", "Eind week", "Begin maand", "Eind maand"];
-  const FUNCTIE_OPTS = ["Engineering Mechanical", "Engineering Allround", "Operators", "Productie"];
+  const MEDIUM_OPTS: Medium[] = ["App & Mail", "App", "Mail"];
+  const FUNCTIE_OPTS = FUNCTIES_DEFAULT;
   const BERICHT_OPTS = ["Bezig met Studie", "ZZP/Freelance", "Nu niet werkzoekend", "Nieuwe baan eigen", "Blijft bij huidige werkgever"];
   const CATEGORIE_OPTS = ["A+", "A", "B"];
+  const VERSIE_OPTS = ["Versie 1", "Versie 2", "Versie 3"];
 
   const [verdeling, setVerdeling] = useState<Verdeling>("Evenredig");
   const [functies, setFuncties] = useState<string[]>([...FUNCTIE_OPTS]);
   const [berichten, setBerichten] = useState<string[]>([...BERICHT_OPTS]);
   const [categorieen, setCategorieen] = useState<string[]>([...CATEGORIE_OPTS]);
+  const [berichtVersies, setBerichtVersies] = useState<Record<string, string>>(
+    Object.fromEntries(BERICHT_OPTS.map((b, i) => [b, VERSIE_OPTS[i % VERSIE_OPTS.length]]))
+  );
 
   const summarize = (sel: string[], all: string[]) =>
     sel.length === 0 ? "Geen" : sel.length === all.length ? "Alle" : `${sel.length} geselecteerd`;
@@ -88,7 +137,20 @@ const PlanningTab = () => {
   const toggle = (arr: string[], v: string) =>
     arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 
-  const items = useMemo(() => buildMockItems(cursor), [cursor]);
+  const [items, setItems] = useState<PlanItem[]>(() => buildMockItems(cursor));
+  // Rebuild when month changes
+  const monthKey = format(cursor, "yyyy-MM");
+  useMemo(() => {
+    setItems(buildMockItems(cursor));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthKey]);
+
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+
+  const moveItem = (id: string, target: Date) => {
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, date: target } : it)));
+  };
 
   const gridDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(cursor), { weekStartsOn: 1 });
@@ -134,19 +196,27 @@ const PlanningTab = () => {
                 <Pencil className="h-4 w-4" />
               </button>
             </Card>
-            <Card className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Medium</p>
-                <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
-              </div>
-              <button
-                onClick={() => { setTempMedium(medium); setMediumOpen(true); }}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Medium aanpassen"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-            </Card>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Medium</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-1" align="end">
+                <RadioGroup value={medium} onValueChange={(v) => setMedium(v as Medium)} className="space-y-0">
+                  {MEDIUM_OPTS.map((opt) => (
+                    <label key={opt} htmlFor={`med-${opt}`} className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-accent cursor-pointer text-sm">
+                      <RadioGroupItem value={opt} id={`med-${opt}`} />
+                      <span>{opt}</span>
+                    </label>
+                  ))}
+                </RadioGroup>
+              </PopoverContent>
+            </Popover>
 
             {/* Standaard verdeling */}
             <Popover>
@@ -276,8 +346,8 @@ const PlanningTab = () => {
                   <span className="text-muted-foreground">{STATUS_META[s].label}</span>
                 </div>
               ))}
-              <Button size="sm" className="h-7 gap-1">
-                <Plus className="h-3.5 w-3.5" /> Nieuw
+              <Button size="sm" variant="outline" className="h-7 gap-1">
+                <Pencil className="h-3.5 w-3.5" /> Pas aan
               </Button>
             </div>
           </div>
@@ -295,17 +365,34 @@ const PlanningTab = () => {
           <div className="grid grid-cols-7">
             {gridDays.map((day, idx) => {
               const inMonth = isSameMonth(day, cursor);
-              const dayItems = items.filter((i) => isSameDay(i.date, day));
+              const dayItems = items.filter((i) => isSameDay(i.date, day) && functies.includes(i.functie));
               const isSel = selected && isSameDay(selected, day);
+              const dayKey = format(day, "yyyy-MM-dd");
+              const isDragOver = dragOverKey === dayKey;
+              const byFunctie = FUNCTIE_OPTS
+                .filter((f) => functies.includes(f))
+                .map((f) => ({ functie: f, count: dayItems.filter((i) => i.functie === f).length }))
+                .filter((g) => g.count > 0);
+
               return (
-                <button
+                <div
                   key={idx}
                   onClick={() => setSelected(day)}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverKey(dayKey); }}
+                  onDragLeave={() => setDragOverKey((k) => (k === dayKey ? null : k))}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const id = e.dataTransfer.getData("text/plain");
+                    if (id) moveItem(id, day);
+                    setDragOverKey(null);
+                    setDragId(null);
+                  }}
                   className={cn(
-                    "min-h-[90px] border-b border-r border-border p-1.5 text-left transition-colors",
+                    "min-h-[90px] border-b border-r border-border p-1.5 text-left transition-colors cursor-pointer",
                     "hover:bg-muted/50",
                     !inMonth && "bg-muted/20 text-muted-foreground/50",
                     isSel && "ring-2 ring-primary ring-inset",
+                    isDragOver && "bg-primary/10 ring-2 ring-primary/40 ring-inset",
                     (idx + 1) % 7 === 0 && "border-r-0"
                   )}
                 >
@@ -318,25 +405,43 @@ const PlanningTab = () => {
                     >
                       {format(day, "d")}
                     </span>
-                  </div>
-                  <div className="mt-1 space-y-0.5">
-                    {dayItems.slice(0, 2).map((it) => (
-                      <div
-                        key={it.id}
-                        className={cn(
-                          "truncate rounded px-1.5 py-0.5 text-[10px] font-medium",
-                          STATUS_META[it.status].bg,
-                          STATUS_META[it.status].text
-                        )}
-                      >
-                        {it.title}
-                      </div>
-                    ))}
-                    {dayItems.length > 2 && (
-                      <div className="text-[10px] text-muted-foreground">+{dayItems.length - 2} meer</div>
+                    {dayItems.length > 0 && (
+                      <span className="text-[10px] font-medium text-muted-foreground">{dayItems.length}</span>
                     )}
                   </div>
-                </button>
+                  <div className="mt-1 space-y-0.5">
+                    {byFunctie.map(({ functie, count }) => {
+                      const meta = FUNCTIE_META[functie];
+                      const repr = dayItems.find((i) => i.functie === functie);
+                      return (
+                        <div
+                          key={functie}
+                          draggable={!!repr}
+                          onDragStart={(e) => {
+                            if (repr) {
+                              e.stopPropagation();
+                              e.dataTransfer.setData("text/plain", repr.id);
+                              e.dataTransfer.effectAllowed = "move";
+                              setDragId(repr.id);
+                            }
+                          }}
+                          onDragEnd={() => setDragId(null)}
+                          title={`${functie}: ${count} bericht${count > 1 ? "en" : ""} (sleep om te verplaatsen)`}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing",
+                            meta?.bg,
+                            meta?.text,
+                            dragId === repr?.id && "opacity-50"
+                          )}
+                        >
+                          <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
+                          <span className="truncate flex-1">{meta?.short ?? functie}</span>
+                          <span className="font-bold">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -395,17 +500,27 @@ const PlanningTab = () => {
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-3">
             <Settings className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold">Standaard instellingen</h4>
+            <h4 className="text-sm font-semibold">Instellingen Berichttype</h4>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button className="rounded-md border border-border p-3 text-left hover:bg-muted/40 transition-colors">
-              <p className="text-xs font-medium">Template A</p>
-              <p className="text-[10px] text-muted-foreground mt-1">Standaard mail</p>
-            </button>
-            <button className="rounded-md border border-border p-3 text-left hover:bg-muted/40 transition-colors">
-              <p className="text-xs font-medium">Template B</p>
-              <p className="text-[10px] text-muted-foreground mt-1">Standaard app</p>
-            </button>
+          <div className="space-y-2">
+            {BERICHT_OPTS.map((bt) => (
+              <div key={bt} className="flex items-center justify-between gap-2 rounded-md border border-border p-2">
+                <span className="text-xs font-medium text-foreground flex-1 truncate" title={bt}>{bt}</span>
+                <Select
+                  value={berichtVersies[bt]}
+                  onValueChange={(v) => setBerichtVersies((prev) => ({ ...prev, [bt]: v }))}
+                >
+                  <SelectTrigger className="h-7 w-[92px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VERSIE_OPTS.map((v) => (
+                      <SelectItem key={v} value={v} className="text-xs">{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
@@ -433,26 +548,6 @@ const PlanningTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Medium dialog */}
-      <Dialog open={mediumOpen} onOpenChange={setMediumOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Medium aanpassen</DialogTitle>
-          </DialogHeader>
-          <RadioGroup value={tempMedium} onValueChange={(v) => setTempMedium(v as Medium)} className="py-2 space-y-2">
-            {(["App & Mail", "App", "Mail"] as Medium[]).map((opt) => (
-              <div key={opt} className="flex items-center space-x-2 rounded-md border border-border p-3 hover:bg-accent/40">
-                <RadioGroupItem value={opt} id={`medium-${opt}`} />
-                <Label htmlFor={`medium-${opt}`} className="flex-1 cursor-pointer">{opt}</Label>
-              </div>
-            ))}
-          </RadioGroup>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setMediumOpen(false)}>Annuleren</Button>
-            <Button onClick={() => { setMedium(tempMedium); setMediumOpen(false); }}>Opslaan</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
