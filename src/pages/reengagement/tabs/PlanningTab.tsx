@@ -392,8 +392,16 @@ const PlanningTab = () => {
                   <span className="text-muted-foreground">{STATUS_META[s].label}</span>
                 </div>
               ))}
-              <Button size="sm" variant="outline" className="h-7 gap-1">
-                <Pencil className="h-3.5 w-3.5" /> Pas aan
+              <Button
+                size="sm"
+                variant={editMode ? "default" : "outline"}
+                onClick={() => setEditMode((v) => !v)}
+                className={cn(
+                  "h-7 gap-1",
+                  editMode && "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
+                )}
+              >
+                <Pencil className="h-3.5 w-3.5" /> {editMode ? "Klaar" : "Pas aan"}
               </Button>
             </div>
           </div>
