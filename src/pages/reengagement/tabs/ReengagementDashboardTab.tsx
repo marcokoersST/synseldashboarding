@@ -317,6 +317,22 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
         <MultiFilter label="Categorie" options={CATEGORIEEN} selected={categorie} onChange={setCategorie} />
       </div>
 
+      {/* Chart view bar */}
+      <ViewBar
+        scope="grafiek"
+        showPeriode
+        periode={periode}
+        setPeriode={setPeriode}
+        functiegroep={functiegroep}
+        setFunctiegroep={setFunctiegroep}
+        berichttype={berichttype}
+        setBerichttype={setBerichttype}
+        medium={medium}
+        setMedium={setMedium}
+        categorie={categorie}
+        setCategorie={setCategorie}
+      />
+
       {/* Trend chart */}
       <Card>
         <CardContent className="p-5">
@@ -324,15 +340,29 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
             <LineChart data={scaledTrendData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="left" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} label={{ value: "Verzonden", angle: -90, position: "insideLeft", style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" } }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} label={{ value: "Inschrijven", angle: 90, position: "insideRight", style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" } }} />
               <Tooltip />
               <Legend wrapperStyle={{ fontSize: "12px" }} />
-              <Line type="monotone" dataKey="verzonden" name="Verzonden" stroke={MARKETING_COLORS[0]} strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="inschrijven" name="Inschrijven" stroke={MARKETING_COLORS[1]} strokeWidth={2} dot={{ r: 3 }} />
+              <Line yAxisId="left" type="monotone" dataKey="verzonden" name="Verzonden" stroke={MARKETING_COLORS[0]} strokeWidth={2} dot={{ r: 3 }} />
+              <Line yAxisId="right" type="monotone" dataKey="inschrijven" name="Inschrijven" stroke={MARKETING_COLORS[1]} strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
+
+      {/* Table view bar */}
+      <ViewBar
+        scope="tabel"
+        functiegroep={functiegroep}
+        setFunctiegroep={setFunctiegroep}
+        berichttype={berichttype}
+        setBerichttype={setBerichttype}
+        medium={medium}
+        setMedium={setMedium}
+        categorie={categorie}
+        setCategorie={setCategorie}
+      />
 
       {/* Full-width berichttype table */}
       <Card>
