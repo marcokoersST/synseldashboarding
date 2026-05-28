@@ -245,18 +245,37 @@ const PlanningTab = () => {
     if (!editItemId) return;
     const validTime = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
     setItems((prev) =>
-      prev.map((it) =>
-        it.id === editItemId
-          ? {
-              ...it,
-              verzendtijd: validTime,
-              functie: editForm.functies[0] ?? it.functie,
-              berichttype: editForm.berichttypes.join(", "),
-              categorie: editForm.categorieen.join(", "),
-              customized: true,
-            }
-          : it
-      )
+      prev.map((it) => {
+        if (it.id !== editItemId) return it;
+        const beforeTijd = it.verzendtijd ?? verzendtijd;
+        const beforeFunctie = it.functie;
+        const beforeBericht = it.berichttype ?? "Alle berichttypes";
+        const beforeCat = it.categorie ?? "Alle categorieën";
+        const afterFunctie = editForm.functies[0] ?? it.functie;
+        const afterBericht = editForm.berichttypes.join(", ");
+        const afterCat = editForm.categorieen.join(", ");
+        const newChanges: PlanChange[] = [...(it.changes ?? [])];
+        const push = (label: string, from: string, to: string) => {
+          if (from === to) return;
+          // replace existing entry for this label so we only show latest delta vs original
+          const existingIdx = newChanges.findIndex((c) => c.label === label);
+          if (existingIdx >= 0) newChanges[existingIdx] = { label, from: newChanges[existingIdx].from, to };
+          else newChanges.push({ label, from, to });
+        };
+        push("Verzendtijd", beforeTijd, validTime);
+        push("Functiegroep", beforeFunctie, afterFunctie);
+        push("Berichttype", beforeBericht, afterBericht);
+        push("Categorie", beforeCat, afterCat);
+        return {
+          ...it,
+          verzendtijd: validTime,
+          functie: afterFunctie,
+          berichttype: afterBericht,
+          categorie: afterCat,
+          customized: newChanges.length > 0 || it.customized,
+          changes: newChanges,
+        };
+      })
     );
     setEditOpen(false);
     setEditItemId(null);
