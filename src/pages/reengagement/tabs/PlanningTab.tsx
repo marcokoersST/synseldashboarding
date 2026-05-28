@@ -197,7 +197,7 @@ const PlanningTab = () => {
       functies: [item.functie],
       berichttypes: item.berichttype ? [item.berichttype] : [BERICHT_OPTS[0]],
       categorieen: item.categorie ? [item.categorie] : [CATEGORIE_OPTS[0]],
-      maxPerDag: maxPerDag,
+      maxPerDag: 150,
     });
     setEditOpen(true);
   };
