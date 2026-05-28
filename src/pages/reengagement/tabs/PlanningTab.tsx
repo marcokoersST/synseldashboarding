@@ -12,7 +12,7 @@ import {
   isSameDay,
 } from "date-fns";
 import { nl } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil, CheckCircle2, Eye, MessageSquare, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +23,33 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Deterministic split of `total` across `keys` based on a stable seed
+function distribute(total: number, keys: string[], seed: string): Record<string, number> {
+  const result: Record<string, number> = {};
+  if (keys.length === 0 || total <= 0) {
+    keys.forEach((k) => (result[k] = 0));
+    return result;
+  }
+  // simple hash
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const weights = keys.map((_, i) => ((h >> (i % 16)) & 7) + 1);
+  const sum = weights.reduce((a, b) => a + b, 0);
+  let assigned = 0;
+  keys.forEach((k, i) => {
+    const v = i === keys.length - 1 ? total - assigned : Math.max(0, Math.round((total * weights[i]) / sum));
+    result[k] = v;
+    assigned += v;
+  });
+  // fix rounding drift
+  const drift = total - Object.values(result).reduce((a, b) => a + b, 0);
+  if (drift !== 0) result[keys[0]] = Math.max(0, result[keys[0]] + drift);
+  return result;
+}
 
 type Status = "concept" | "gepland" | "verzonden";
 
@@ -155,20 +180,20 @@ const PlanningTab = () => {
   const [editMode, setEditMode] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editItemId, setEditItemId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ verzendtijd: string; functie: string; berichttype: string; categorie: string }>({
+  const [editForm, setEditForm] = useState<{ verzendtijd: string; functies: string[]; berichttypes: string[]; categorieen: string[] }>({
     verzendtijd: verzendtijd,
-    functie: FUNCTIE_OPTS[0],
-    berichttype: BERICHT_OPTS[0],
-    categorie: CATEGORIE_OPTS[0],
+    functies: [FUNCTIE_OPTS[0]],
+    berichttypes: [BERICHT_OPTS[0]],
+    categorieen: [CATEGORIE_OPTS[0]],
   });
 
   const openEdit = (item: PlanItem) => {
     setEditItemId(item.id);
     setEditForm({
       verzendtijd: item.verzendtijd ?? verzendtijd,
-      functie: item.functie,
-      berichttype: item.berichttype ?? BERICHT_OPTS[0],
-      categorie: item.categorie ?? CATEGORIE_OPTS[0],
+      functies: [item.functie],
+      berichttypes: item.berichttype ? [item.berichttype] : [BERICHT_OPTS[0]],
+      categorieen: item.categorie ? [item.categorie] : [CATEGORIE_OPTS[0]],
     });
     setEditOpen(true);
   };
@@ -181,9 +206,9 @@ const PlanningTab = () => {
           ? {
               ...it,
               verzendtijd: editForm.verzendtijd,
-              functie: editForm.functie,
-              berichttype: editForm.berichttype,
-              categorie: editForm.categorie,
+              functie: editForm.functies[0] ?? it.functie,
+              berichttype: editForm.berichttypes.join(", "),
+              categorie: editForm.categorieen.join(", "),
               customized: true,
             }
           : it
@@ -191,6 +216,18 @@ const PlanningTab = () => {
     );
     setEditOpen(false);
     setEditItemId(null);
+  };
+
+  // status afleiden uit datum: verleden = verzonden, vandaag/toekomst = gepland
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+  const effectiveStatus = (date: Date): Status => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d < today ? "verzonden" : "gepland";
   };
 
   const moveItem = (id: string, target: Date) => {
@@ -211,9 +248,9 @@ const PlanningTab = () => {
 
   const counts = useMemo(() => {
     const c: Record<Status, number> = { concept: 0, gepland: 0, verzonden: 0 };
-    items.forEach((i) => c[i.status]++);
+    items.forEach((i) => c[effectiveStatus(i.date)]++);
     return c;
-  }, [items]);
+  }, [items, today]);
 
   const last7 = useMemo(
     () => items.filter((i) => i.status === "verzonden").length,
@@ -467,45 +504,117 @@ const PlanningTab = () => {
                     {byFunctie.map(({ functie, count }) => {
                       const meta = FUNCTIE_META[functie];
                       const repr = dayItems.find((i) => i.functie === functie);
+                      const isFuture = effectiveStatus(day) === "gepland";
+                      const seed = `${dayKey}-${functie}`;
+                      const btSplit = distribute(count, berichten, seed + "-bt");
+                      const catSplit = distribute(count, categorieen, seed + "-cat");
+                      const sent = count;
+                      const read = Math.round(count * 0.72);
+                      const replies = Math.round(count * 0.18);
+                      const failed = Math.max(0, count - read - replies > 0 ? Math.round(count * 0.04) : 0);
                       return (
-                        <div
-                          key={functie}
-                          draggable={!!repr}
-                          onDragStart={(e) => {
-                            if (repr) {
-                              e.stopPropagation();
-                              e.dataTransfer.setData("text/plain", repr.id);
-                              e.dataTransfer.effectAllowed = "move";
-                              setDragId(repr.id);
-                            }
-                          }}
-                          onDragEnd={() => setDragId(null)}
-                          title={`${functie}: ${count} bericht${count > 1 ? "en" : ""} (sleep om te verplaatsen)`}
-                          className={cn(
-                            "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing",
-                            meta?.bg,
-                            meta?.text,
-                            dragId === repr?.id && "opacity-50"
-                          )}
-                        >
-                          <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
-                          <span className="truncate flex-1">{meta?.short ?? functie}</span>
-                          {repr?.customized && (
-                            <span className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide">
-                              Aangepast
-                            </span>
-                          )}
-                          <span className="font-bold">{count}</span>
-                          {editMode && repr && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); openEdit(repr); }}
-                              className="ml-0.5 rounded p-0.5 hover:bg-background/60"
-                              aria-label="Bericht aanpassen"
+                        <HoverCard key={functie} openDelay={120} closeDelay={80}>
+                          <HoverCardTrigger asChild>
+                            <div
+                              draggable={!!repr}
+                              onDragStart={(e) => {
+                                if (repr) {
+                                  e.stopPropagation();
+                                  e.dataTransfer.setData("text/plain", repr.id);
+                                  e.dataTransfer.effectAllowed = "move";
+                                  setDragId(repr.id);
+                                }
+                              }}
+                              onDragEnd={() => setDragId(null)}
+                              className={cn(
+                                "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing",
+                                meta?.bg,
+                                meta?.text,
+                                dragId === repr?.id && "opacity-50"
+                              )}
                             >
-                              <Pencil className="h-2.5 w-2.5" />
-                            </button>
-                          )}
-                        </div>
+                              <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
+                              <span className="truncate flex-1">{meta?.short ?? functie}</span>
+                              {repr?.customized && (
+                                <span className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide">
+                                  Aangepast
+                                </span>
+                              )}
+                              <span className="font-bold">{count}</span>
+                              {editMode && repr && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); openEdit(repr); }}
+                                  className="ml-0.5 rounded p-0.5 hover:bg-background/60"
+                                  aria-label="Bericht aanpassen"
+                                >
+                                  <Pencil className="h-2.5 w-2.5" />
+                                </button>
+                              )}
+                            </div>
+                          </HoverCardTrigger>
+                          <HoverCardContent side="right" align="start" className="w-72 p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("h-2 w-2 rounded-full", meta?.dot)} />
+                                <span className="text-sm font-semibold">{functie}</span>
+                              </div>
+                              <span className={cn(
+                                "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase",
+                                isFuture ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                              )}>
+                                {isFuture ? "Gepland" : "Verzonden"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {format(day, "EEEE d MMMM", { locale: nl })} · {count} bericht{count > 1 ? "en" : ""}
+                            </p>
+                            {isFuture ? (
+                              <div className="space-y-3">
+                                <div>
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Per berichttype</p>
+                                  <div className="space-y-1">
+                                    {berichten.map((bt) => (
+                                      <div key={bt} className="flex items-center justify-between text-xs">
+                                        <span className="truncate text-foreground">{bt}</span>
+                                        <span className="font-semibold tabular-nums text-muted-foreground">{btSplit[bt] ?? 0}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Per categorie</p>
+                                  <div className="flex items-center gap-2">
+                                    {categorieen.map((c) => (
+                                      <div key={c} className="flex-1 rounded-md border border-border px-2 py-1.5 text-center">
+                                        <p className="text-[10px] text-muted-foreground">{c}</p>
+                                        <p className="text-sm font-bold tabular-nums">{catSplit[c] ?? 0}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="rounded-md border border-border p-2">
+                                  <div className="flex items-center gap-1.5 text-muted-foreground"><CheckCircle2 className="h-3 w-3" /><span className="text-[10px]">Verzonden</span></div>
+                                  <p className="mt-0.5 text-base font-bold tabular-nums">{sent}</p>
+                                </div>
+                                <div className="rounded-md border border-border p-2">
+                                  <div className="flex items-center gap-1.5 text-muted-foreground"><Eye className="h-3 w-3" /><span className="text-[10px]">Gelezen</span></div>
+                                  <p className="mt-0.5 text-base font-bold tabular-nums">{read}</p>
+                                </div>
+                                <div className="rounded-md border border-border p-2">
+                                  <div className="flex items-center gap-1.5 text-muted-foreground"><MessageSquare className="h-3 w-3" /><span className="text-[10px]">Reacties</span></div>
+                                  <p className="mt-0.5 text-base font-bold tabular-nums">{replies}</p>
+                                </div>
+                                <div className="rounded-md border border-border p-2">
+                                  <div className="flex items-center gap-1.5 text-muted-foreground"><AlertTriangle className="h-3 w-3" /><span className="text-[10px]">Failed</span></div>
+                                  <p className="mt-0.5 text-base font-bold tabular-nums">{failed}</p>
+                                </div>
+                              </div>
+                            )}
+                          </HoverCardContent>
+                        </HoverCard>
                       );
                     })}
                   </div>
@@ -632,33 +741,39 @@ const PlanningTab = () => {
                 className="mt-1"
               />
             </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Functiegroep</Label>
-              <Select value={editForm.functie} onValueChange={(v) => setEditForm((f) => ({ ...f, functie: v }))}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {FUNCTIE_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Berichttype</Label>
-              <Select value={editForm.berichttype} onValueChange={(v) => setEditForm((f) => ({ ...f, berichttype: v }))}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {BERICHT_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Categorie</Label>
-              <Select value={editForm.categorie} onValueChange={(v) => setEditForm((f) => ({ ...f, categorie: v }))}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIE_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {([
+              { key: "functies" as const, label: "Functiegroepen", opts: FUNCTIE_OPTS },
+              { key: "berichttypes" as const, label: "Berichttypes", opts: BERICHT_OPTS },
+              { key: "categorieen" as const, label: "Categorieën", opts: CATEGORIE_OPTS },
+            ]).map(({ key, label, opts }) => {
+              const sel = editForm[key];
+              return (
+                <div key={key}>
+                  <Label className="text-xs text-muted-foreground">{label}</Label>
+                  <div className="mt-1 rounded-md border border-border p-2 space-y-1 max-h-44 overflow-y-auto">
+                    <div className="flex items-center justify-between pb-1 border-b border-border mb-1">
+                      <span className="text-[10px] text-muted-foreground">{sel.length} van {opts.length} geselecteerd</span>
+                      <button
+                        type="button"
+                        className="text-[10px] text-primary hover:underline"
+                        onClick={() => setEditForm((f) => ({ ...f, [key]: sel.length === opts.length ? [] : [...opts] }))}
+                      >
+                        {sel.length === opts.length ? "Alles uit" : "Alles aan"}
+                      </button>
+                    </div>
+                    {opts.map((o) => (
+                      <label key={o} className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-accent cursor-pointer text-sm">
+                        <Checkbox
+                          checked={sel.includes(o)}
+                          onCheckedChange={() => setEditForm((f) => ({ ...f, [key]: toggle(f[key], o) }))}
+                        />
+                        <span>{o}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
