@@ -233,9 +233,8 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
         ))}
       </div>
 
-      {/* Reengagement filter row */}
+      {/* Filter row */}
       <div className="flex items-center gap-3 flex-wrap">
-        <h2 className="text-lg font-semibold text-foreground">Reengagement</h2>
         <SingleFilter options={PERIODES} selected={periode} onChange={setPeriode} />
         <MultiFilter label="Functiegroep" options={FUNCTIEGROEPEN} selected={functiegroep} onChange={setFunctiegroep} />
         <MultiFilter label="Berichttype" options={BERICHT_TYPES} selected={berichttype} onChange={setBerichttype} />
@@ -247,7 +246,7 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
       <Card>
         <CardContent className="p-5">
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={trendData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
+            <LineChart data={scaledTrendData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
