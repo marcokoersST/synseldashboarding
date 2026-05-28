@@ -152,6 +152,47 @@ const PlanningTab = () => {
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
 
+  const [editMode, setEditMode] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editItemId, setEditItemId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{ verzendtijd: string; functie: string; berichttype: string; categorie: string }>({
+    verzendtijd: verzendtijd,
+    functie: FUNCTIE_OPTS[0],
+    berichttype: BERICHT_OPTS[0],
+    categorie: CATEGORIE_OPTS[0],
+  });
+
+  const openEdit = (item: PlanItem) => {
+    setEditItemId(item.id);
+    setEditForm({
+      verzendtijd: item.verzendtijd ?? verzendtijd,
+      functie: item.functie,
+      berichttype: item.berichttype ?? BERICHT_OPTS[0],
+      categorie: item.categorie ?? CATEGORIE_OPTS[0],
+    });
+    setEditOpen(true);
+  };
+
+  const saveEdit = () => {
+    if (!editItemId) return;
+    setItems((prev) =>
+      prev.map((it) =>
+        it.id === editItemId
+          ? {
+              ...it,
+              verzendtijd: editForm.verzendtijd,
+              functie: editForm.functie,
+              berichttype: editForm.berichttype,
+              categorie: editForm.categorie,
+              customized: true,
+            }
+          : it
+      )
+    );
+    setEditOpen(false);
+    setEditItemId(null);
+  };
+
   const moveItem = (id: string, target: Date) => {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, date: target } : it)));
   };
