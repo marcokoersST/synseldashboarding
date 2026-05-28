@@ -84,12 +84,41 @@ const WEEKDAYS = ["Maa", "Di", "Wo", "Do", "Vr", "Zat", "Zon"];
 
 const FUNCTIES_DEFAULT = ["Engineering Mechanical", "Engineering Allround", "Operators", "Productie"];
 
+const VERZENDDAG_OPTS = ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
+
+interface Contact {
+  name: string;
+  functie: string;
+  categorie: string;
+  status: Status;
+  telefoon: string;
+  email: string;
+}
+
+const VOORNAMEN = ["Jan","Lisa","Mark","Sofie","Ahmed","Eva","Tom","Anna","Karim","Iris","Luuk","Noor","Daan","Sara","Bram","Fleur","Sam","Naomi","Pieter","Mila","Joris","Yara","Ruben","Lotte","Sven","Maud","Bas","Femke","Niels","Lieke"];
+const ACHTERNAMEN = ["de Vries","Jansen","Bakker","Visser","Smit","Meijer","de Boer","Mulder","Hendriks","Peters","Dekker","Brouwer","van Dijk","van den Berg","Kuiper","Vermeulen","Bos","de Jong","Hoekstra","van Leeuwen"];
+
+function genContacts(seed: string, count: number, functie: string, status: Status, fixedCat?: string): Contact[] {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const cats = ["A+", "A", "B"];
+  const out: Contact[] = [];
+  for (let i = 0; i < count; i++) {
+    h = (h * 1103515245 + 12345 + i * 2654435761) >>> 0;
+    const vn = VOORNAMEN[(h >> 4) % VOORNAMEN.length];
+    const an = ACHTERNAMEN[(h >> 8) % ACHTERNAMEN.length];
+    const cat = fixedCat ?? cats[(h >> 12) % cats.length];
+    const tel = `06 ${String(((h >> 2) % 90) + 10)} ${String(((h >> 5) % 9000) + 1000)} ${String(((h >> 9) % 9000) + 1000)}`;
+    const email = `${vn.toLowerCase()}.${an.toLowerCase().replace(/[^a-z]/g, "")}@mail.nl`;
+    out.push({ name: `${vn} ${an}`, functie, categorie: cat, status, telefoon: tel, email });
+  }
+  return out;
+}
+
 function buildMockItems(monthDate: Date): PlanItem[] {
   const base = startOfMonth(monthDate);
   const items: PlanItem[] = [];
-  // Spread items across the month per functie
   const plan: Array<[number, string, Status, "app" | "mail", number]> = [
-    // [dayOffset, functie, status, channel, count]
     [0, "Engineering Mechanical", "verzonden", "mail", 3],
     [0, "Operators", "verzonden", "app", 2],
     [1, "Engineering Allround", "verzonden", "mail", 4],
@@ -120,15 +149,10 @@ function buildMockItems(monthDate: Date): PlanItem[] {
   ];
   let counter = 1;
   plan.forEach(([offset, functie, status, channel, count]) => {
+    const date = addDays(base, offset);
+    if (date.getDay() === 0) return; // skip Sunday
     for (let i = 0; i < count; i++) {
-      items.push({
-        id: `m-${counter++}`,
-        date: addDays(base, offset),
-        title: `${functie} bericht`,
-        status,
-        channel,
-        functie,
-      });
+      items.push({ id: `m-${counter++}`, date, title: `${functie} bericht`, status, channel, functie });
     }
   });
   return items;
