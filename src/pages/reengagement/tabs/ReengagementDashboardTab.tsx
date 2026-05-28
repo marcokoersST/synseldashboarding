@@ -359,14 +359,14 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
       {/* Table view bar */}
       <ViewBar
         scope="tabel"
-        functiegroep={functiegroep}
-        setFunctiegroep={setFunctiegroep}
-        berichttype={berichttype}
-        setBerichttype={setBerichttype}
-        medium={medium}
-        setMedium={setMedium}
-        categorie={categorie}
-        setCategorie={setCategorie}
+        functiegroep={tableFunctiegroep}
+        setFunctiegroep={setTableFunctiegroep}
+        berichttype={tableBerichttype}
+        setBerichttype={setTableBerichttype}
+        medium={tableMedium}
+        setMedium={setTableMedium}
+        categorie={tableCategorie}
+        setCategorie={setTableCategorie}
       />
 
       {/* Full-width berichttype table */}
