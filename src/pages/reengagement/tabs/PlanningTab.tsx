@@ -346,8 +346,8 @@ const PlanningTab = () => {
                   <span className="text-muted-foreground">{STATUS_META[s].label}</span>
                 </div>
               ))}
-              <Button size="sm" className="h-7 gap-1">
-                <Plus className="h-3.5 w-3.5" /> Nieuw
+              <Button size="sm" variant="outline" className="h-7 gap-1">
+                <Pencil className="h-3.5 w-3.5" /> Pas aan
               </Button>
             </div>
           </div>
