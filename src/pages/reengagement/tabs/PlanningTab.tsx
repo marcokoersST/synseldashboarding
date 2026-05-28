@@ -775,18 +775,21 @@ const PlanningTab = () => {
             <DialogTitle>Verzendtijd aanpassen</DialogTitle>
           </DialogHeader>
           <div className="py-2">
-            <Label htmlFor="verzendtijd-input" className="text-xs text-muted-foreground">Tijd</Label>
+            <Label htmlFor="verzendtijd-input" className="text-xs text-muted-foreground">Tijd (24-uurs)</Label>
             <Input
               id="verzendtijd-input"
-              type="time"
+              type="text"
+              inputMode="numeric"
+              placeholder="09:00"
+              maxLength={5}
               value={tempTime}
-              onChange={(e) => setTempTime(e.target.value)}
+              onChange={(e) => setTempTime(e.target.value.replace(/[^0-9:]/g, ""))}
               className="mt-1"
             />
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setTimeOpen(false)}>Annuleren</Button>
-            <Button onClick={() => { setVerzendtijd(tempTime || "11:00"); setTimeOpen(false); }}>Opslaan</Button>
+            <Button onClick={() => { const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00"; setVerzendtijd(t); setTimeOpen(false); }}>Opslaan</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -799,11 +802,14 @@ const PlanningTab = () => {
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <Label className="text-xs text-muted-foreground">Verzendtijd</Label>
+              <Label className="text-xs text-muted-foreground">Verzendtijd (24-uurs)</Label>
               <Input
-                type="time"
+                type="text"
+                inputMode="numeric"
+                placeholder="09:00"
+                maxLength={5}
                 value={editForm.verzendtijd}
-                onChange={(e) => setEditForm((f) => ({ ...f, verzendtijd: e.target.value }))}
+                onChange={(e) => setEditForm((f) => ({ ...f, verzendtijd: e.target.value.replace(/[^0-9:]/g, "") }))}
                 className="mt-1"
               />
             </div>
