@@ -604,13 +604,15 @@ const PlanningTab = () => {
                 .map((f) => ({ functie: f, count: dayItems.filter((i) => i.functie === f).length }))
                 .filter((g) => g.count > 0);
 
+              const isSunday = day.getDay() === 0;
               return (
                 <div
                   key={idx}
-                  onClick={() => setSelected(day)}
-                  onDragOver={(e) => { e.preventDefault(); setDragOverKey(dayKey); }}
+                  onClick={() => { if (!isSunday) setSelected(day); }}
+                  onDragOver={(e) => { if (isSunday) return; e.preventDefault(); setDragOverKey(dayKey); }}
                   onDragLeave={() => setDragOverKey((k) => (k === dayKey ? null : k))}
                   onDrop={(e) => {
+                    if (isSunday) { setDragOverKey(null); setDragId(null); return; }
                     e.preventDefault();
                     const id = e.dataTransfer.getData("text/plain");
                     if (id) requestMove(id, day);
@@ -618,13 +620,16 @@ const PlanningTab = () => {
                     setDragId(null);
                   }}
                   className={cn(
-                    "min-h-[90px] border-b border-r border-border p-1.5 text-left transition-colors cursor-pointer",
-                    "hover:bg-muted/50",
-                    !inMonth && "bg-muted/20 text-muted-foreground/50",
-                    isSel && "ring-2 ring-primary ring-inset",
-                    isDragOver && "bg-primary/10 ring-2 ring-primary/40 ring-inset",
+                    "min-h-[90px] border-b border-r border-border p-1.5 text-left transition-colors",
+                    isSunday
+                      ? "bg-muted/40 text-muted-foreground/60 cursor-not-allowed [background-image:repeating-linear-gradient(45deg,transparent,transparent_6px,hsl(var(--muted))_6px,hsl(var(--muted))_7px)]"
+                      : "hover:bg-muted/50 cursor-pointer",
+                    !inMonth && !isSunday && "bg-muted/20 text-muted-foreground/50",
+                    isSel && !isSunday && "ring-2 ring-primary ring-inset",
+                    isDragOver && !isSunday && "bg-primary/10 ring-2 ring-primary/40 ring-inset",
                     (idx + 1) % 7 === 0 && "border-r-0"
                   )}
+                  title={isSunday ? "Op zondag worden geen berichten verstuurd" : undefined}
                 >
                   <div className="flex items-center justify-between">
                     <span
@@ -635,8 +640,12 @@ const PlanningTab = () => {
                     >
                       {format(day, "d")}
                     </span>
-                    {dayItems.length > 0 && (
-                      <span className="text-[10px] font-medium text-muted-foreground">{dayItems.length}</span>
+                    {isSunday ? (
+                      <span className="text-[9px] uppercase tracking-wide text-muted-foreground/70">Geen verz.</span>
+                    ) : (
+                      dayItems.length > 0 && (
+                        <span className="text-[10px] font-medium text-muted-foreground">{dayItems.length}</span>
+                      )
                     )}
                   </div>
                   <div className="mt-1 space-y-0.5">
