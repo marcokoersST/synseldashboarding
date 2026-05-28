@@ -157,6 +157,7 @@ const PlanningTab = () => {
   const [functies, setFuncties] = useState<string[]>([...FUNCTIE_OPTS]);
   const [berichten, setBerichten] = useState<string[]>([...BERICHT_OPTS]);
   const [categorieen, setCategorieen] = useState<string[]>([...CATEGORIE_OPTS]);
+  const [maxPerDag, setMaxPerDag] = useState<number>(150);
   const [berichtVersies, setBerichtVersies] = useState<Record<string, string>>(
     Object.fromEntries(BERICHT_OPTS.map((b, i) => [b, VERSIE_OPTS[i % VERSIE_OPTS.length]]))
   );
