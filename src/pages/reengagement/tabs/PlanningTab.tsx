@@ -1101,6 +1101,30 @@ const PlanningTab = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit verzendtijd warning dialog */}
+      <Dialog open={!!editTimeWarning} onOpenChange={(o) => { if (!o) setEditTimeWarning(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Verzendmoment verplaatst</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground">
+              <span className="font-semibold">Let op!</span> Je verplaatst de verzendtijd naar{" "}
+              <span className="font-semibold">{editTimeWarning}</span>, buiten de standaard werktijden (08:00 – 18:00).
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="icon" onClick={() => setEditTimeWarning(null)} aria-label="Annuleren">
+              <X className="h-4 w-4" />
+            </Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white gap-1" onClick={() => { if (editTimeWarning) saveEdit(editTimeWarning); setEditTimeWarning(null); }}>
+              <Check className="h-4 w-4" /> Akkoord
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Contactenlijst dialog */}
       <Dialog open={!!contactDialog} onOpenChange={(o) => { if (!o) setContactDialog(null); }}>
         <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
