@@ -51,14 +51,21 @@ const berichtData: Record<string, { verzonden: number; gelezen: number; reactie:
   "Blijft bij huidige werkgever": { verzonden: 88, gelezen: 64, reactie: 9, inschrijven: 3, failed: 2 },
 };
 
-const trendData = [
-  { label: "W1", verzonden: 180, inschrijven: 12 },
-  { label: "W2", verzonden: 195, inschrijven: 14 },
-  { label: "W3", verzonden: 210, inschrijven: 13 },
-  { label: "W4", verzonden: 188, inschrijven: 16 },
-  { label: "W5", verzonden: 225, inschrijven: 18 },
-  { label: "W6", verzonden: 240, inschrijven: 21 },
+const trendBaseData = [
+  { verzonden: 180, inschrijven: 12 },
+  { verzonden: 195, inschrijven: 14 },
+  { verzonden: 210, inschrijven: 13 },
+  { verzonden: 188, inschrijven: 16 },
+  { verzonden: 225, inschrijven: 18 },
+  { verzonden: 240, inschrijven: 21 },
+  { verzonden: 215, inschrijven: 17 },
 ];
+
+const PERIODE_LABELS: Record<string, string[]> = {
+  "Per week": ["W1", "W2", "W3", "W4", "W5", "W6", "W7"],
+  "Per dag": ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Zondag"],
+  "Per maand": ["December", "Januari", "Februari", "Maart", "April", "Mei"],
+};
 
 function DeltaBadge({ current, previous, compareLabel, invert }: { current: number; previous: number; compareLabel: string; invert?: boolean }) {
   const d = deltaPercent(current, previous);
@@ -238,14 +245,14 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
 
   // Berichttype filter also scales the trend (proportional to selected berichttype share)
   const berichtScale = berichttype.size / BERICHT_TYPES.length || 0.01;
-  const scaledTrendData = useMemo(
-    () => trendData.map((d) => ({
-      label: d.label,
+  const scaledTrendData = useMemo(() => {
+    const labels = PERIODE_LABELS[periode] || PERIODE_LABELS["Per week"];
+    return trendBaseData.slice(0, labels.length).map((d, i) => ({
+      label: labels[i],
       verzonden: Math.round(d.verzonden * filterScale * berichtScale),
       inschrijven: Math.round(d.inschrijven * filterScale * berichtScale),
-    })),
-    [filterScale, berichtScale]
-  );
+    }));
+  }, [filterScale, berichtScale, periode]);
 
   const pct = (n: number, d: number) => d > 0 ? `${((n / d) * 100).toFixed(1)}%` : "0%";
 
