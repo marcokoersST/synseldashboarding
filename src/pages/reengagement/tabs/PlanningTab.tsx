@@ -248,9 +248,9 @@ const PlanningTab = () => {
 
   const counts = useMemo(() => {
     const c: Record<Status, number> = { concept: 0, gepland: 0, verzonden: 0 };
-    items.forEach((i) => c[i.status]++);
+    items.forEach((i) => c[effectiveStatus(i.date)]++);
     return c;
-  }, [items]);
+  }, [items, today]);
 
   const last7 = useMemo(
     () => items.filter((i) => i.status === "verzonden").length,
