@@ -1019,7 +1019,85 @@ const PlanningTab = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Verzendtijd warning dialog */}
+      <Dialog open={!!timeWarning} onOpenChange={(o) => { if (!o) setTimeWarning(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Verzendmoment verplaatst</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground">
+              <span className="font-semibold">Let op!</span> Je verplaatst de verzendtijd naar{" "}
+              <span className="font-semibold">{timeWarning}</span>, buiten de standaard werktijden (08:00 – 18:00).
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="icon" onClick={() => setTimeWarning(null)} aria-label="Annuleren">
+              <X className="h-4 w-4" />
+            </Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white gap-1" onClick={() => { if (timeWarning) setVerzendtijd(timeWarning); setTimeWarning(null); }}>
+              <Check className="h-4 w-4" /> Akkoord
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
+      {/* Contactenlijst dialog */}
+      <Dialog open={!!contactDialog} onOpenChange={(o) => { if (!o) setContactDialog(null); }}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{contactDialog?.title}</DialogTitle>
+            {contactDialog?.subtitle && (
+              <p className="text-xs text-muted-foreground capitalize">{contactDialog.subtitle} · {contactDialog.contacts.length} contactpersonen</p>
+            )}
+          </DialogHeader>
+          <div className="overflow-y-auto -mx-2 px-2">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-background border-b border-border">
+                <tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <th className="py-2 pr-2 font-medium">Naam</th>
+                  <th className="py-2 pr-2 font-medium">Functie</th>
+                  <th className="py-2 pr-2 font-medium">Categorie</th>
+                  <th className="py-2 pr-2 font-medium">Status</th>
+                  <th className="py-2 pr-2 font-medium">Telefoon</th>
+                  <th className="py-2 pr-2 font-medium">Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contactDialog?.contacts.map((c, i) => {
+                  const sMeta = STATUS_META[c.status];
+                  return (
+                    <tr key={i} className="border-b border-border/60 hover:bg-muted/40">
+                      <td className="py-2 pr-2 font-medium text-foreground">{c.name}</td>
+                      <td className="py-2 pr-2 text-muted-foreground">{c.functie}</td>
+                      <td className="py-2 pr-2">
+                        <span className="inline-block rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold">{c.categorie}</span>
+                      </td>
+                      <td className="py-2 pr-2">
+                        <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold", sMeta.bg, sMeta.text)}>
+                          <span className={cn("h-1.5 w-1.5 rounded-full", sMeta.dot)} />
+                          {sMeta.label}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-2 text-muted-foreground tabular-nums whitespace-nowrap">
+                        <a href={`tel:${c.telefoon.replace(/\s/g, "")}`} className="hover:text-primary inline-flex items-center gap-1">
+                          <Phone className="h-3 w-3" /> {c.telefoon}
+                        </a>
+                      </td>
+                      <td className="py-2 pr-2 text-muted-foreground">
+                        <a href={`mailto:${c.email}`} className="hover:text-primary inline-flex items-center gap-1">
+                          <Mail className="h-3 w-3" /> {c.email}
+                        </a>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
