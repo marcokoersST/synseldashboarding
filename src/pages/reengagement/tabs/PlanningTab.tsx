@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -156,6 +157,7 @@ const PlanningTab = () => {
   const [functies, setFuncties] = useState<string[]>([...FUNCTIE_OPTS]);
   const [berichten, setBerichten] = useState<string[]>([...BERICHT_OPTS]);
   const [categorieen, setCategorieen] = useState<string[]>([...CATEGORIE_OPTS]);
+  const [maxPerDag, setMaxPerDag] = useState<number>(150);
   const [berichtVersies, setBerichtVersies] = useState<Record<string, string>>(
     Object.fromEntries(BERICHT_OPTS.map((b, i) => [b, VERSIE_OPTS[i % VERSIE_OPTS.length]]))
   );
@@ -180,11 +182,12 @@ const PlanningTab = () => {
   const [editMode, setEditMode] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editItemId, setEditItemId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ verzendtijd: string; functies: string[]; berichttypes: string[]; categorieen: string[] }>({
+  const [editForm, setEditForm] = useState<{ verzendtijd: string; functies: string[]; berichttypes: string[]; categorieen: string[]; maxPerDag: number }>({
     verzendtijd: verzendtijd,
     functies: [FUNCTIE_OPTS[0]],
     berichttypes: [BERICHT_OPTS[0]],
     categorieen: [CATEGORIE_OPTS[0]],
+    maxPerDag: 150,
   });
 
   const openEdit = (item: PlanItem) => {
@@ -194,6 +197,7 @@ const PlanningTab = () => {
       functies: [item.functie],
       berichttypes: item.berichttype ? [item.berichttype] : [BERICHT_OPTS[0]],
       categorieen: item.categorie ? [item.categorie] : [CATEGORIE_OPTS[0]],
+      maxPerDag: maxPerDag,
     });
     setEditOpen(true);
   };
@@ -403,8 +407,39 @@ const PlanningTab = () => {
                 ))}
               </PopoverContent>
             </Popover>
+
+            {/* Max. berichten per dag */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Max. berichten per dag</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{maxPerDag}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-4" align="end">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-medium text-muted-foreground">Max. per dag</span>
+                  <span className="text-sm font-bold tabular-nums">{maxPerDag}</span>
+                </div>
+                <Slider
+                  value={[maxPerDag]}
+                  min={0}
+                  max={500}
+                  step={5}
+                  onValueChange={(v) => setMaxPerDag(v[0] ?? 0)}
+                />
+                <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
+                  <span>0</span>
+                  <span>500</span>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
+
 
         {/* Calendar card */}
         <Card className={cn("p-4 transition-colors", editMode && "border-2 border-emerald-500 shadow-[0_0_0_3px_hsl(var(--background))_inset]")}>
@@ -754,6 +789,24 @@ const PlanningTab = () => {
                 onChange={(e) => setEditForm((f) => ({ ...f, verzendtijd: e.target.value }))}
                 className="mt-1"
               />
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">Max. berichten per dag</Label>
+                <span className="text-xs font-semibold tabular-nums">{editForm.maxPerDag}</span>
+              </div>
+              <Slider
+                className="mt-2"
+                value={[editForm.maxPerDag]}
+                min={0}
+                max={500}
+                step={5}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, maxPerDag: v[0] ?? 0 }))}
+              />
+              <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                <span>0</span>
+                <span>500</span>
+              </div>
             </div>
             {([
               { key: "functies" as const, label: "Functiegroepen", opts: FUNCTIE_OPTS },
