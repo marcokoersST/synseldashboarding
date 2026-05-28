@@ -248,30 +248,37 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
     ];
   }, [dateRange, compareRange]);
 
-  // Scale factor: each multi-select filter narrows data proportionally; berichttype filter narrows rows directly.
-  const filterScale = useMemo(() => {
-    const fg = functiegroep.size / FUNCTIEGROEPEN.length || 0.01;
-    const md = medium.size / MEDIA.length || 0.01;
-    const cat = categorie.size / CATEGORIEEN.length || 0.01;
-    // Periode acts as a granularity hint, not a volume cut — keep at 1
+  // Chart scaling — driven by chart view state
+  const chartFilterScale = useMemo(() => {
+    const fg = chartFunctiegroep.size / FUNCTIEGROEPEN.length || 0.01;
+    const md = chartMedium.size / MEDIA.length || 0.01;
+    const cat = chartCategorie.size / CATEGORIEEN.length || 0.01;
     return fg * md * cat;
-  }, [functiegroep, medium, categorie]);
+  }, [chartFunctiegroep, chartMedium, chartCategorie]);
 
-  const scale = (n: number) => Math.round(n * filterScale);
+  // Table scaling — driven by table view state
+  const tableFilterScale = useMemo(() => {
+    const fg = tableFunctiegroep.size / FUNCTIEGROEPEN.length || 0.01;
+    const md = tableMedium.size / MEDIA.length || 0.01;
+    const cat = tableCategorie.size / CATEGORIEEN.length || 0.01;
+    return fg * md * cat;
+  }, [tableFunctiegroep, tableMedium, tableCategorie]);
+
+  const scaleTable = (n: number) => Math.round(n * tableFilterScale);
 
   const filteredRows = useMemo(
-    () => BERICHT_TYPES.filter((b) => berichttype.has(b)).map((b) => {
+    () => BERICHT_TYPES.filter((b) => tableBerichttype.has(b)).map((b) => {
       const d = berichtData[b];
       return {
         name: b,
-        verzonden: scale(d.verzonden),
-        gelezen: scale(d.gelezen),
-        reactie: scale(d.reactie),
-        inschrijven: scale(d.inschrijven),
-        failed: scale(d.failed),
+        verzonden: scaleTable(d.verzonden),
+        gelezen: scaleTable(d.gelezen),
+        reactie: scaleTable(d.reactie),
+        inschrijven: scaleTable(d.inschrijven),
+        failed: scaleTable(d.failed),
       };
     }),
-    [berichttype, filterScale]
+    [tableBerichttype, tableFilterScale]
   );
 
   const totals = useMemo(() => filteredRows.reduce(
@@ -285,16 +292,16 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
     { verzonden: 0, gelezen: 0, reactie: 0, inschrijven: 0, failed: 0 }
   ), [filteredRows]);
 
-  // Berichttype filter also scales the trend (proportional to selected berichttype share)
-  const berichtScale = berichttype.size / BERICHT_TYPES.length || 0.01;
+  // Trend uses chart view state
+  const chartBerichtScale = chartBerichttype.size / BERICHT_TYPES.length || 0.01;
   const scaledTrendData = useMemo(() => {
     const labels = PERIODE_LABELS[periode] || PERIODE_LABELS["Per week"];
     return trendBaseData.slice(0, labels.length).map((d, i) => ({
       label: labels[i],
-      verzonden: Math.round(d.verzonden * filterScale * berichtScale),
-      inschrijven: Math.round(d.inschrijven * filterScale * berichtScale),
+      verzonden: Math.round(d.verzonden * chartFilterScale * chartBerichtScale),
+      inschrijven: Math.round(d.inschrijven * chartFilterScale * chartBerichtScale),
     }));
-  }, [filterScale, berichtScale, periode]);
+  }, [chartFilterScale, chartBerichtScale, periode]);
 
   const pct = (n: number, d: number) => d > 0 ? `${((n / d) * 100).toFixed(1)}%` : "0%";
 
