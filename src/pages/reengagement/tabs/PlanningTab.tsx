@@ -723,26 +723,52 @@ const PlanningTab = () => {
                                 <div>
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Per berichttype</p>
                                   <div className="space-y-1">
-                                    {berichten.map((bt) => (
-                                      <div key={bt} className="flex items-center justify-between text-xs">
-                                        <span className="truncate text-foreground">{bt}</span>
-                                        <span className="font-semibold tabular-nums text-muted-foreground">{btSplit[bt] ?? 0}</span>
-                                      </div>
-                                    ))}
+                                    {berichten.map((bt) => {
+                                      const n = btSplit[bt] ?? 0;
+                                      return (
+                                        <div key={bt} className="flex items-center justify-between text-xs">
+                                          <span className="truncate text-foreground">{bt}</span>
+                                          <button
+                                            type="button"
+                                            disabled={n === 0}
+                                            onClick={(e) => { e.stopPropagation(); openContacts(`${functie} – ${bt}`, `${format(day, "EEEE d MMMM", { locale: nl })}`, n, functie, isFuture ? "gepland" : "verzonden"); }}
+                                            className={cn(
+                                              "font-semibold tabular-nums",
+                                              n === 0 ? "text-muted-foreground/50" : "text-primary hover:underline cursor-pointer"
+                                            )}
+                                          >
+                                            {n}
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                                 <div>
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Per categorie</p>
                                   <div className="flex items-center gap-2">
-                                    {categorieen.map((c) => (
-                                      <div key={c} className="flex-1 rounded-md border border-border px-2 py-1.5 text-center">
-                                        <p className="text-[10px] text-muted-foreground">{c}</p>
-                                        <p className="text-sm font-bold tabular-nums">{catSplit[c] ?? 0}</p>
-                                      </div>
-                                    ))}
+                                    {categorieen.map((c) => {
+                                      const n = catSplit[c] ?? 0;
+                                      return (
+                                        <button
+                                          key={c}
+                                          type="button"
+                                          disabled={n === 0}
+                                          onClick={(e) => { e.stopPropagation(); openContacts(`${functie} – Categorie ${c}`, `${format(day, "EEEE d MMMM", { locale: nl })}`, n, functie, isFuture ? "gepland" : "verzonden", c); }}
+                                          className={cn(
+                                            "flex-1 rounded-md border border-border px-2 py-1.5 text-center transition-colors",
+                                            n === 0 ? "opacity-50 cursor-default" : "hover:border-primary hover:bg-primary/5 cursor-pointer"
+                                          )}
+                                        >
+                                          <p className="text-[10px] text-muted-foreground">{c}</p>
+                                          <p className={cn("text-sm font-bold tabular-nums", n > 0 && "text-primary")}>{n}</p>
+                                        </button>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               </div>
+
                             ) : (
                               <div className="grid grid-cols-2 gap-2">
                                 <div className="rounded-md border border-border p-2">
