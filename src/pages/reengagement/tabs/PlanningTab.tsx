@@ -795,7 +795,13 @@ const PlanningTab = () => {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" onClick={saveEdit}>Opslaan</Button>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white"
+              disabled={editForm.functies.length === 0 || editForm.berichttypes.length === 0 || editForm.categorieen.length === 0}
+              onClick={saveEdit}
+            >
+              Opslaan
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
