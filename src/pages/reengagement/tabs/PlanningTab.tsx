@@ -490,7 +490,21 @@ const PlanningTab = () => {
                         >
                           <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
                           <span className="truncate flex-1">{meta?.short ?? functie}</span>
+                          {repr?.customized && (
+                            <span className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide">
+                              Aangepast
+                            </span>
+                          )}
                           <span className="font-bold">{count}</span>
+                          {editMode && repr && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); openEdit(repr); }}
+                              className="ml-0.5 rounded p-0.5 hover:bg-background/60"
+                              aria-label="Bericht aanpassen"
+                            >
+                              <Pencil className="h-2.5 w-2.5" />
+                            </button>
+                          )}
                         </div>
                       );
                     })}
