@@ -35,6 +35,10 @@ interface PlanItem {
   status: Status;
   channel: "app" | "mail";
   functie: string;
+  verzendtijd?: string;
+  berichttype?: string;
+  categorie?: string;
+  customized?: boolean;
 }
 
 const STATUS_META: Record<Status, { label: string; dot: string; bg: string; text: string }> = {
