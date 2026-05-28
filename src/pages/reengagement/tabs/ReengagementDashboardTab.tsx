@@ -308,14 +308,6 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
         ))}
       </div>
 
-      {/* Filter row */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <SingleFilter options={PERIODES} selected={periode} onChange={setPeriode} />
-        <MultiFilter label="Functiegroep" options={FUNCTIEGROEPEN} selected={functiegroep} onChange={setFunctiegroep} />
-        <MultiFilter label="Berichttype" options={BERICHT_TYPES} selected={berichttype} onChange={setBerichttype} />
-        <MultiFilter label="Medium" options={MEDIA} selected={medium} onChange={setMedium} />
-        <MultiFilter label="Categorie" options={CATEGORIEEN} selected={categorie} onChange={setCategorie} />
-      </div>
 
       {/* Chart view bar */}
       <ViewBar
