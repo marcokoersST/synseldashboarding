@@ -538,7 +538,7 @@ const PlanningTab = () => {
                   onDrop={(e) => {
                     e.preventDefault();
                     const id = e.dataTransfer.getData("text/plain");
-                    if (id) moveItem(id, day);
+                    if (id) requestMove(id, day);
                     setDragOverKey(null);
                     setDragId(null);
                   }}
