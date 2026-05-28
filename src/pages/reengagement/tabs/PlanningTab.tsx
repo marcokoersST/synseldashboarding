@@ -204,12 +204,13 @@ const PlanningTab = () => {
 
   const saveEdit = () => {
     if (!editItemId) return;
+    const validTime = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
     setItems((prev) =>
       prev.map((it) =>
         it.id === editItemId
           ? {
               ...it,
-              verzendtijd: editForm.verzendtijd,
+              verzendtijd: validTime,
               functie: editForm.functies[0] ?? it.functie,
               berichttype: editForm.berichttypes.join(", "),
               categorie: editForm.categorieen.join(", "),
