@@ -16,6 +16,10 @@ import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil } f
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 type Status = "concept" | "gepland" | "verzonden";
@@ -51,9 +55,18 @@ function buildMockItems(monthDate: Date): PlanItem[] {
   ];
 }
 
+type Medium = "App & Mail" | "App" | "Mail";
+
 const PlanningTab = () => {
   const [cursor, setCursor] = useState<Date>(new Date(2026, 4, 1)); // mei 2026
   const [selected, setSelected] = useState<Date | null>(null);
+
+  const [verzendtijd, setVerzendtijd] = useState("11:00");
+  const [medium, setMedium] = useState<Medium>("App & Mail");
+  const [timeOpen, setTimeOpen] = useState(false);
+  const [mediumOpen, setMediumOpen] = useState(false);
+  const [tempTime, setTempTime] = useState(verzendtijd);
+  const [tempMedium, setTempMedium] = useState<Medium>(medium);
 
   const items = useMemo(() => buildMockItems(cursor), [cursor]);
 
@@ -91,18 +104,26 @@ const PlanningTab = () => {
             <Card className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Verzendtijd</p>
-                <p className="mt-1 text-2xl font-bold text-foreground">11:00</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">{verzendtijd}</p>
               </div>
-              <button className="text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={() => { setTempTime(verzendtijd); setTimeOpen(true); }}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Verzendtijd aanpassen"
+              >
                 <Pencil className="h-4 w-4" />
               </button>
             </Card>
             <Card className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Medium</p>
-                <p className="mt-1 text-2xl font-bold text-foreground">App & Mail</p>
+                <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
               </div>
-              <button className="text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={() => { setTempMedium(medium); setMediumOpen(true); }}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Medium aanpassen"
+              >
                 <Pencil className="h-4 w-4" />
               </button>
             </Card>
@@ -264,6 +285,50 @@ const PlanningTab = () => {
           </div>
         </Card>
       </div>
+
+      {/* Verzendtijd dialog */}
+      <Dialog open={timeOpen} onOpenChange={setTimeOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Verzendtijd aanpassen</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Label htmlFor="verzendtijd-input" className="text-xs text-muted-foreground">Tijd</Label>
+            <Input
+              id="verzendtijd-input"
+              type="time"
+              value={tempTime}
+              onChange={(e) => setTempTime(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setTimeOpen(false)}>Annuleren</Button>
+            <Button onClick={() => { setVerzendtijd(tempTime || "11:00"); setTimeOpen(false); }}>Opslaan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Medium dialog */}
+      <Dialog open={mediumOpen} onOpenChange={setMediumOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Medium aanpassen</DialogTitle>
+          </DialogHeader>
+          <RadioGroup value={tempMedium} onValueChange={(v) => setTempMedium(v as Medium)} className="py-2 space-y-2">
+            {(["App & Mail", "App", "Mail"] as Medium[]).map((opt) => (
+              <div key={opt} className="flex items-center space-x-2 rounded-md border border-border p-3 hover:bg-accent/40">
+                <RadioGroupItem value={opt} id={`medium-${opt}`} />
+                <Label htmlFor={`medium-${opt}`} className="flex-1 cursor-pointer">{opt}</Label>
+              </div>
+            ))}
+          </RadioGroup>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setMediumOpen(false)}>Annuleren</Button>
+            <Button onClick={() => { setMedium(tempMedium); setMediumOpen(false); }}>Opslaan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
