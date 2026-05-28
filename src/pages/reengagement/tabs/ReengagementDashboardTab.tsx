@@ -106,15 +106,16 @@ interface MultiFilterProps {
 }
 const MultiFilter = ({ label, options, selected, onChange }: MultiFilterProps) => {
   const buttonLabel = selected.size === options.length
-    ? `Alle ${label.toLowerCase()}`
+    ? `Alle`
     : selected.size === 0
-      ? `Geen ${label.toLowerCase()}`
-      : `${selected.size} geselecteerd`;
+      ? `Geen`
+      : `${selected.size}`;
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="text-xs">
-          <Filter className="mr-1.5 h-3 w-3" />{label}: {buttonLabel}
+        <Button variant="ghost" size="sm" className="text-xs h-8 px-2 gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/60">
+          <span className="text-[11px] uppercase tracking-wide">{label}</span>
+          <span className="font-medium text-foreground">{buttonLabel}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-3" align="start">
@@ -144,13 +145,15 @@ interface SingleFilterProps {
   options: string[];
   selected: string;
   onChange: (v: string) => void;
+  label?: string;
 }
-const SingleFilter = ({ options, selected, onChange }: SingleFilterProps) => {
+const SingleFilter = ({ options, selected, onChange, label }: SingleFilterProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="text-xs">
-          <Filter className="mr-1.5 h-3 w-3" />{selected}
+        <Button variant="ghost" size="sm" className="text-xs h-8 px-2 gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/60">
+          {label && <span className="text-[11px] uppercase tracking-wide">{label}</span>}
+          <span className="font-medium text-foreground">{selected}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-48 p-2" align="start">
@@ -170,6 +173,39 @@ const SingleFilter = ({ options, selected, onChange }: SingleFilterProps) => {
         </div>
       </PopoverContent>
     </Popover>
+  );
+};
+
+interface ViewBarProps {
+  scope: string;
+  periode?: string;
+  setPeriode?: (v: string) => void;
+  functiegroep: Set<string>;
+  setFunctiegroep: (s: Set<string>) => void;
+  berichttype: Set<string>;
+  setBerichttype: (s: Set<string>) => void;
+  medium: Set<string>;
+  setMedium: (s: Set<string>) => void;
+  categorie: Set<string>;
+  setCategorie: (s: Set<string>) => void;
+  showPeriode?: boolean;
+}
+const ViewBar = ({ scope, periode, setPeriode, functiegroep, setFunctiegroep, berichttype, setBerichttype, medium, setMedium, categorie, setCategorie, showPeriode }: ViewBarProps) => {
+  return (
+    <div className="flex items-center gap-1 flex-wrap rounded-md border border-dashed border-border bg-muted/30 px-3 py-1.5">
+      <div className="flex items-center gap-1.5 mr-2 text-xs text-muted-foreground">
+        <Eye className="h-3.5 w-3.5" />
+        <span className="font-medium">Weergave {scope}</span>
+      </div>
+      <div className="h-4 w-px bg-border mr-1" />
+      {showPeriode && periode && setPeriode && (
+        <SingleFilter options={PERIODES} selected={periode} onChange={setPeriode} label="Periode" />
+      )}
+      <MultiFilter label="Functiegroep" options={FUNCTIEGROEPEN} selected={functiegroep} onChange={setFunctiegroep} />
+      <MultiFilter label="Berichttype" options={BERICHT_TYPES} selected={berichttype} onChange={setBerichttype} />
+      <MultiFilter label="Medium" options={MEDIA} selected={medium} onChange={setMedium} />
+      <MultiFilter label="Categorie" options={CATEGORIEEN} selected={categorie} onChange={setCategorie} />
+    </div>
   );
 };
 
