@@ -33,6 +33,7 @@ interface PlanItem {
   title: string;
   status: Status;
   channel: "app" | "mail";
+  functie: string;
 }
 
 const STATUS_META: Record<Status, { label: string; dot: string; bg: string; text: string }> = {
@@ -41,21 +42,65 @@ const STATUS_META: Record<Status, { label: string; dot: string; bg: string; text
   verzonden: { label: "Verzonden", dot: "bg-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-500/20", text: "text-emerald-700 dark:text-emerald-300" },
 };
 
+const FUNCTIE_META: Record<string, { short: string; dot: string; bg: string; text: string }> = {
+  "Engineering Mechanical": { short: "EM", dot: "bg-blue-500", bg: "bg-blue-100 dark:bg-blue-500/20", text: "text-blue-700 dark:text-blue-300" },
+  "Engineering Allround": { short: "EA", dot: "bg-violet-500", bg: "bg-violet-100 dark:bg-violet-500/20", text: "text-violet-700 dark:text-violet-300" },
+  "Operators": { short: "OP", dot: "bg-emerald-500", bg: "bg-emerald-100 dark:bg-emerald-500/20", text: "text-emerald-700 dark:text-emerald-300" },
+  "Productie": { short: "PR", dot: "bg-amber-500", bg: "bg-amber-100 dark:bg-amber-500/20", text: "text-amber-700 dark:text-amber-300" },
+};
+
 const WEEKDAYS = ["Maa", "Di", "Wo", "Do", "Vr", "Zat", "Zon"];
+
+const FUNCTIES_DEFAULT = ["Engineering Mechanical", "Engineering Allround", "Operators", "Productie"];
 
 function buildMockItems(monthDate: Date): PlanItem[] {
   const base = startOfMonth(monthDate);
-  return [
-    { id: "1", date: addDays(base, 0), title: "Welkom terug", status: "verzonden", channel: "mail" },
-    { id: "2", date: addDays(base, 1), title: "Nieuwe vacatures", status: "verzonden", channel: "app" },
-    { id: "3", date: addDays(base, 3), title: "Tip van je consultant", status: "gepland", channel: "mail" },
-    { id: "4", date: addDays(base, 6), title: "Beschikbaarheid check", status: "gepland", channel: "app" },
-    { id: "5", date: addDays(base, 9), title: "CV update herinnering", status: "concept", channel: "mail" },
-    { id: "6", date: addDays(base, 13), title: "Maandelijkse nieuwsbrief", status: "gepland", channel: "mail" },
-    { id: "7", date: addDays(base, 16), title: "Marktupdate", status: "concept", channel: "app" },
-    { id: "8", date: addDays(base, 20), title: "Re-engagement campagne", status: "gepland", channel: "mail" },
-    { id: "9", date: addDays(base, 24), title: "Salaris benchmark", status: "concept", channel: "mail" },
+  const items: PlanItem[] = [];
+  // Spread items across the month per functie
+  const plan: Array<[number, string, Status, "app" | "mail", number]> = [
+    // [dayOffset, functie, status, channel, count]
+    [0, "Engineering Mechanical", "verzonden", "mail", 3],
+    [0, "Operators", "verzonden", "app", 2],
+    [1, "Engineering Allround", "verzonden", "mail", 4],
+    [2, "Productie", "verzonden", "app", 2],
+    [3, "Engineering Mechanical", "gepland", "mail", 5],
+    [4, "Operators", "gepland", "app", 3],
+    [5, "Productie", "gepland", "mail", 4],
+    [6, "Engineering Allround", "gepland", "app", 2],
+    [7, "Engineering Mechanical", "gepland", "mail", 3],
+    [8, "Operators", "gepland", "app", 5],
+    [9, "Productie", "gepland", "mail", 2],
+    [10, "Engineering Allround", "gepland", "mail", 4],
+    [11, "Engineering Mechanical", "gepland", "app", 3],
+    [13, "Productie", "gepland", "mail", 6],
+    [14, "Operators", "gepland", "app", 2],
+    [15, "Engineering Allround", "gepland", "mail", 3],
+    [16, "Engineering Mechanical", "concept", "app", 4],
+    [17, "Productie", "concept", "mail", 2],
+    [18, "Operators", "concept", "app", 3],
+    [20, "Engineering Allround", "gepland", "mail", 5],
+    [21, "Engineering Mechanical", "gepland", "app", 2],
+    [22, "Productie", "concept", "mail", 3],
+    [23, "Operators", "concept", "app", 4],
+    [24, "Engineering Mechanical", "concept", "mail", 2],
+    [25, "Engineering Allround", "concept", "mail", 3],
+    [27, "Productie", "concept", "app", 2],
+    [28, "Operators", "concept", "mail", 3],
   ];
+  let counter = 1;
+  plan.forEach(([offset, functie, status, channel, count]) => {
+    for (let i = 0; i < count; i++) {
+      items.push({
+        id: `m-${counter++}`,
+        date: addDays(base, offset),
+        title: `${functie} bericht`,
+        status,
+        channel,
+        functie,
+      });
+    }
+  });
+  return items;
 }
 
 type Medium = "App & Mail" | "App" | "Mail";
