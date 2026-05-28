@@ -761,10 +761,11 @@ const PlanningTab = () => {
               { key: "categorieen" as const, label: "Categorieën", opts: CATEGORIE_OPTS },
             ]).map(({ key, label, opts }) => {
               const sel = editForm[key];
+              const isEmpty = sel.length === 0;
               return (
                 <div key={key}>
                   <Label className="text-xs text-muted-foreground">{label}</Label>
-                  <div className="mt-1 rounded-md border border-border p-2 space-y-1 max-h-44 overflow-y-auto">
+                  <div className={cn("mt-1 rounded-md border p-2 space-y-1 max-h-44 overflow-y-auto", isEmpty ? "border-destructive" : "border-border")}>
                     <div className="flex items-center justify-between pb-1 border-b border-border mb-1">
                       <span className="text-[10px] text-muted-foreground">{sel.length} van {opts.length} geselecteerd</span>
                       <button
@@ -785,13 +786,22 @@ const PlanningTab = () => {
                       </label>
                     ))}
                   </div>
+                  {isEmpty && (
+                    <p className="mt-1 text-xs text-destructive font-medium">Selecteer minimaal één {label.toLowerCase().replace("functiegroepen", "functiegroep").replace("berichttypes", "berichttype").replace("categorieën", "categorie")}.</p>
+                  )}
                 </div>
               );
             })}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" onClick={saveEdit}>Opslaan</Button>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white"
+              disabled={editForm.functies.length === 0 || editForm.berichttypes.length === 0 || editForm.categorieen.length === 0}
+              onClick={saveEdit}
+            >
+              Opslaan
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
