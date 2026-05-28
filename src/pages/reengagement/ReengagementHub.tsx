@@ -42,7 +42,7 @@ const ReengagementHub = () => {
     const sharedProps = { dateRange, compareRange: effectiveCompareRange, deltaMode };
     switch (activeTab) {
       case "dashboard": return <ReengagementDashboardTab {...sharedProps} onTabChange={setActiveTab} />;
-      case "planning": return <PaidChannelsTab {...sharedProps} />;
+      case "planning": return <PlanningTab />;
       default: return null;
     }
   };
