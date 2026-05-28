@@ -71,6 +71,23 @@ const PlanningTab = () => {
   const [tempTime, setTempTime] = useState(verzendtijd);
   const [tempMedium, setTempMedium] = useState<Medium>(medium);
 
+  type Verdeling = "Evenredig" | "Begin week" | "Eind week" | "Begin maand" | "Eind maand";
+  const VERDELING_OPTS: Verdeling[] = ["Evenredig", "Begin week", "Eind week", "Begin maand", "Eind maand"];
+  const FUNCTIE_OPTS = ["Engineering Mechanical", "Engineering Allround", "Operators", "Productie"];
+  const BERICHT_OPTS = ["Bezig met Studie", "ZZP/Freelance", "Nu niet werkzoekend", "Nieuwe baan eigen", "Blijft bij huidige werkgever"];
+  const CATEGORIE_OPTS = ["A+", "A", "B"];
+
+  const [verdeling, setVerdeling] = useState<Verdeling>("Evenredig");
+  const [functies, setFuncties] = useState<string[]>([...FUNCTIE_OPTS]);
+  const [berichten, setBerichten] = useState<string[]>([...BERICHT_OPTS]);
+  const [categorieen, setCategorieen] = useState<string[]>([...CATEGORIE_OPTS]);
+
+  const summarize = (sel: string[], all: string[]) =>
+    sel.length === 0 ? "Geen" : sel.length === all.length ? "Alle" : `${sel.length} geselecteerd`;
+
+  const toggle = (arr: string[], v: string) =>
+    arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+
   const items = useMemo(() => buildMockItems(cursor), [cursor]);
 
   const gridDays = useMemo(() => {
