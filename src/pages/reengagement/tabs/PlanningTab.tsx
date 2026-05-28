@@ -616,6 +616,57 @@ const PlanningTab = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit message dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bericht aanpassen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">Verzendtijd</Label>
+              <Input
+                type="time"
+                value={editForm.verzendtijd}
+                onChange={(e) => setEditForm((f) => ({ ...f, verzendtijd: e.target.value }))}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Functiegroep</Label>
+              <Select value={editForm.functie} onValueChange={(v) => setEditForm((f) => ({ ...f, functie: v }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {FUNCTIE_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Berichttype</Label>
+              <Select value={editForm.berichttype} onValueChange={(v) => setEditForm((f) => ({ ...f, berichttype: v }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {BERICHT_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Categorie</Label>
+              <Select value={editForm.categorie} onValueChange={(v) => setEditForm((f) => ({ ...f, categorie: v }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORIE_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" onClick={saveEdit}>Opslaan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };
