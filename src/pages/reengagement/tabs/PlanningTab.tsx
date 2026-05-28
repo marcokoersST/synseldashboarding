@@ -713,9 +713,35 @@ const PlanningTab = () => {
                               <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
                               <span className="truncate flex-1">{meta?.short ?? functie}</span>
                               {repr?.customized && (
-                                <span className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide">
-                                  Aangepast
-                                </span>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide cursor-help"
+                                    >
+                                      Aangepast
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs p-2.5">
+                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Wijzigingen</p>
+                                    {repr.changes && repr.changes.length > 0 ? (
+                                      <ul className="space-y-1.5 text-xs">
+                                        {repr.changes.map((c, i) => (
+                                          <li key={i}>
+                                            <p className="font-semibold text-foreground">{c.label}</p>
+                                            <p className="text-muted-foreground">
+                                              <span className="line-through">{c.from}</span>
+                                              <span className="mx-1">→</span>
+                                              <span className="text-foreground font-medium">{c.to}</span>
+                                            </p>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground">Handmatig aangepast</p>
+                                    )}
+                                  </TooltipContent>
+                                </Tooltip>
                               )}
                               <span className="font-bold">{count}</span>
                               {editMode && repr && isFuture && (
