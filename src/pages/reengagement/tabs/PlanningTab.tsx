@@ -370,7 +370,8 @@ const PlanningTab = () => {
         </div>
 
         {/* Calendar card */}
-        <Card className="p-4">
+        <Card className={cn("p-4 transition-colors", editMode && "border-2 border-emerald-500 shadow-[0_0_0_3px_hsl(var(--background))_inset]")}>
+
           {/* Header row */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
