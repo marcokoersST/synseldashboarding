@@ -196,19 +196,27 @@ const PlanningTab = () => {
                 <Pencil className="h-4 w-4" />
               </button>
             </Card>
-            <Card className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Medium</p>
-                <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
-              </div>
-              <button
-                onClick={() => { setTempMedium(medium); setMediumOpen(true); }}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Medium aanpassen"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-            </Card>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Medium</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-1" align="end">
+                <RadioGroup value={medium} onValueChange={(v) => setMedium(v as Medium)} className="space-y-0">
+                  {MEDIUM_OPTS.map((opt) => (
+                    <label key={opt} htmlFor={`med-${opt}`} className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-accent cursor-pointer text-sm">
+                      <RadioGroupItem value={opt} id={`med-${opt}`} />
+                      <span>{opt}</span>
+                    </label>
+                  ))}
+                </RadioGroup>
+              </PopoverContent>
+            </Popover>
 
             {/* Standaard verdeling */}
             <Popover>
