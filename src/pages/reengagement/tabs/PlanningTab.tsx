@@ -500,17 +500,27 @@ const PlanningTab = () => {
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-3">
             <Settings className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold">Standaard instellingen</h4>
+            <h4 className="text-sm font-semibold">Instellingen Berichttype</h4>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button className="rounded-md border border-border p-3 text-left hover:bg-muted/40 transition-colors">
-              <p className="text-xs font-medium">Template A</p>
-              <p className="text-[10px] text-muted-foreground mt-1">Standaard mail</p>
-            </button>
-            <button className="rounded-md border border-border p-3 text-left hover:bg-muted/40 transition-colors">
-              <p className="text-xs font-medium">Template B</p>
-              <p className="text-[10px] text-muted-foreground mt-1">Standaard app</p>
-            </button>
+          <div className="space-y-2">
+            {BERICHT_OPTS.map((bt) => (
+              <div key={bt} className="flex items-center justify-between gap-2 rounded-md border border-border p-2">
+                <span className="text-xs font-medium text-foreground flex-1 truncate" title={bt}>{bt}</span>
+                <Select
+                  value={berichtVersies[bt]}
+                  onValueChange={(v) => setBerichtVersies((prev) => ({ ...prev, [bt]: v }))}
+                >
+                  <SelectTrigger className="h-7 w-[92px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VERSIE_OPTS.map((v) => (
+                      <SelectItem key={v} value={v} className="text-xs">{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
