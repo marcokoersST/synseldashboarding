@@ -422,13 +422,25 @@ const PlanningTab = () => {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex items-center gap-4 text-xs">
-              {(Object.keys(STATUS_META) as Status[]).map((s) => (
-                <div key={s} className="flex items-center gap-1.5">
-                  <span className={cn("h-2 w-2 rounded-full", STATUS_META[s].dot)} />
-                  <span className="text-muted-foreground">{STATUS_META[s].label}</span>
-                </div>
-              ))}
+            <div className="flex items-center gap-4 text-xs flex-wrap justify-end">
+              {FUNCTIE_OPTS.filter((f) => functies.includes(f)).map((f) => {
+                const meta = FUNCTIE_META[f];
+                return (
+                  <div key={f} className="flex items-center gap-1.5">
+                    <span className={cn("h-2 w-2 rounded-full", meta?.dot)} />
+                    <span className="text-muted-foreground">{f}</span>
+                  </div>
+                );
+              })}
+              <span className="h-4 w-px bg-border" />
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-foreground/80" />
+                <span className="text-muted-foreground">Verzonden</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-foreground/80 opacity-50" />
+                <span className="text-muted-foreground">Gepland</span>
+              </div>
               <Button
                 size="sm"
                 variant={editMode ? "default" : "outline"}
@@ -527,10 +539,11 @@ const PlanningTab = () => {
                               }}
                               onDragEnd={() => setDragId(null)}
                               className={cn(
-                                "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing",
+                                "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing transition-opacity",
                                 meta?.bg,
                                 meta?.text,
-                                dragId === repr?.id && "opacity-50"
+                                isFuture ? "opacity-50" : "opacity-100",
+                                dragId === repr?.id && "opacity-30"
                               )}
                             >
                               <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
