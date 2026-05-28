@@ -177,6 +177,7 @@ const PlanningTab = () => {
   const [timeOpen, setTimeOpen] = useState(false);
   const [tempTime, setTempTime] = useState(verzendtijd);
   const [timeWarning, setTimeWarning] = useState<string | null>(null);
+  const [editTimeWarning, setEditTimeWarning] = useState<string | null>(null);
   const [verzenddagen, setVerzenddagen] = useState<string[]>([...VERZENDDAG_OPTS]);
   const [contactDialog, setContactDialog] = useState<{ title: string; subtitle?: string; contacts: Contact[] } | null>(null);
   const openContacts = (title: string, subtitle: string, count: number, functie: string, status: Status, fixedCat?: string) => {
