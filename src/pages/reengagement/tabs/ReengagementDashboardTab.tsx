@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { TrendingUp, TrendingDown, Filter } from "lucide-react";
+import { TrendingUp, TrendingDown, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   LineChart,
