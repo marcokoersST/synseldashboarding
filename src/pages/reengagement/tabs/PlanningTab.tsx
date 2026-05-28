@@ -528,9 +528,9 @@ const PlanningTab = () => {
                         <HoverCard key={functie} openDelay={120} closeDelay={80}>
                           <HoverCardTrigger asChild>
                             <div
-                              draggable={!!repr}
+                              draggable={!!repr && isFuture}
                               onDragStart={(e) => {
-                                if (repr) {
+                                if (repr && isFuture) {
                                   e.stopPropagation();
                                   e.dataTransfer.setData("text/plain", repr.id);
                                   e.dataTransfer.effectAllowed = "move";
@@ -539,7 +539,8 @@ const PlanningTab = () => {
                               }}
                               onDragEnd={() => setDragId(null)}
                               className={cn(
-                                "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium cursor-grab active:cursor-grabbing transition-opacity",
+                                "flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium transition-opacity",
+                                isFuture && "cursor-grab active:cursor-grabbing",
                                 meta?.bg,
                                 meta?.text,
                                 isFuture ? "opacity-50" : "opacity-100",
@@ -554,7 +555,7 @@ const PlanningTab = () => {
                                 </span>
                               )}
                               <span className="font-bold">{count}</span>
-                              {editMode && repr && (
+                              {editMode && repr && isFuture && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); openEdit(repr); }}
                                   className="ml-0.5 rounded p-0.5 hover:bg-background/60"
