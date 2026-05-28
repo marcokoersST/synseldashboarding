@@ -503,26 +503,6 @@ const PlanningTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Medium dialog */}
-      <Dialog open={mediumOpen} onOpenChange={setMediumOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Medium aanpassen</DialogTitle>
-          </DialogHeader>
-          <RadioGroup value={tempMedium} onValueChange={(v) => setTempMedium(v as Medium)} className="py-2 space-y-2">
-            {(["App & Mail", "App", "Mail"] as Medium[]).map((opt) => (
-              <div key={opt} className="flex items-center space-x-2 rounded-md border border-border p-3 hover:bg-accent/40">
-                <RadioGroupItem value={opt} id={`medium-${opt}`} />
-                <Label htmlFor={`medium-${opt}`} className="flex-1 cursor-pointer">{opt}</Label>
-              </div>
-            ))}
-          </RadioGroup>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setMediumOpen(false)}>Annuleren</Button>
-            <Button onClick={() => { setMedium(tempMedium); setMediumOpen(false); }}>Opslaan</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
