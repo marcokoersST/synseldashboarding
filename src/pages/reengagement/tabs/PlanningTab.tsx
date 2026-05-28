@@ -407,8 +407,39 @@ const PlanningTab = () => {
                 ))}
               </PopoverContent>
             </Popover>
+
+            {/* Max. berichten per dag */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Max. berichten per dag</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{maxPerDag}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-4" align="end">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-medium text-muted-foreground">Max. per dag</span>
+                  <span className="text-sm font-bold tabular-nums">{maxPerDag}</span>
+                </div>
+                <Slider
+                  value={[maxPerDag]}
+                  min={0}
+                  max={500}
+                  step={5}
+                  onValueChange={(v) => setMaxPerDag(v[0] ?? 0)}
+                />
+                <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
+                  <span>0</span>
+                  <span>500</span>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
+
 
         {/* Calendar card */}
         <Card className={cn("p-4 transition-colors", editMode && "border-2 border-emerald-500 shadow-[0_0_0_3px_hsl(var(--background))_inset]")}>
