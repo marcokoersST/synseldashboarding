@@ -12,7 +12,7 @@ import {
   isSameDay,
 } from "date-fns";
 import { nl } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
