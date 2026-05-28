@@ -168,6 +168,13 @@ const PlanningTab = () => {
   const [medium, setMedium] = useState<Medium>("App & Mail");
   const [timeOpen, setTimeOpen] = useState(false);
   const [tempTime, setTempTime] = useState(verzendtijd);
+  const [timeWarning, setTimeWarning] = useState<string | null>(null);
+  const [verzenddagen, setVerzenddagen] = useState<string[]>([...VERZENDDAG_OPTS]);
+  const [contactDialog, setContactDialog] = useState<{ title: string; subtitle?: string; contacts: Contact[] } | null>(null);
+  const openContacts = (title: string, subtitle: string, count: number, functie: string, status: Status, fixedCat?: string) => {
+    const seed = `${title}|${functie}|${subtitle}`;
+    setContactDialog({ title, subtitle, contacts: genContacts(seed, count, functie, status, fixedCat) });
+  };
 
   type Verdeling = "Evenredig" | "Begin week" | "Eind week" | "Begin maand" | "Eind maand";
   const VERDELING_OPTS: Verdeling[] = ["Evenredig", "Begin week", "Eind week", "Begin maand", "Eind maand"];
