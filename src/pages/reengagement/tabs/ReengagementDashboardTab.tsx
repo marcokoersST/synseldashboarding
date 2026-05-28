@@ -199,9 +199,30 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
     ];
   }, [dateRange, compareRange]);
 
+  // Scale factor: each multi-select filter narrows data proportionally; berichttype filter narrows rows directly.
+  const filterScale = useMemo(() => {
+    const fg = functiegroep.size / FUNCTIEGROEPEN.length || 0.01;
+    const md = medium.size / MEDIA.length || 0.01;
+    const cat = categorie.size / CATEGORIEEN.length || 0.01;
+    // Periode acts as a granularity hint, not a volume cut — keep at 1
+    return fg * md * cat;
+  }, [functiegroep, medium, categorie]);
+
+  const scale = (n: number) => Math.round(n * filterScale);
+
   const filteredRows = useMemo(
-    () => BERICHT_TYPES.filter((b) => berichttype.has(b)).map((b) => ({ name: b, ...berichtData[b] })),
-    [berichttype]
+    () => BERICHT_TYPES.filter((b) => berichttype.has(b)).map((b) => {
+      const d = berichtData[b];
+      return {
+        name: b,
+        verzonden: scale(d.verzonden),
+        gelezen: scale(d.gelezen),
+        reactie: scale(d.reactie),
+        inschrijven: scale(d.inschrijven),
+        failed: scale(d.failed),
+      };
+    }),
+    [berichttype, filterScale]
   );
 
   const totals = useMemo(() => filteredRows.reduce(
@@ -214,6 +235,17 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
     }),
     { verzonden: 0, gelezen: 0, reactie: 0, inschrijven: 0, failed: 0 }
   ), [filteredRows]);
+
+  // Berichttype filter also scales the trend (proportional to selected berichttype share)
+  const berichtScale = berichttype.size / BERICHT_TYPES.length || 0.01;
+  const scaledTrendData = useMemo(
+    () => trendData.map((d) => ({
+      label: d.label,
+      verzonden: Math.round(d.verzonden * filterScale * berichtScale),
+      inschrijven: Math.round(d.inschrijven * filterScale * berichtScale),
+    })),
+    [filterScale, berichtScale]
+  );
 
   const pct = (n: number, d: number) => d > 0 ? `${((n / d) * 100).toFixed(1)}%` : "0%";
 
