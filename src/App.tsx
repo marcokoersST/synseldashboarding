@@ -164,6 +164,7 @@ const App = () => (
               <Route path="/marketing/inschrijvingen" element={<MarketingHub />} />
               <Route path="/marketing/vacature-aanvraag-funnel" element={<MarketingHub />} />
               <Route path="/marketing/vacature-funnel" element={<MarketingVacatureFunnel />} />
+              <Route path="/reengagement" element={<ReengagementHub />} />
               <Route path="/recruitment-intern" element={<RecruitmentInternHub />} />
               <Route path="/corporate-recruitment/inflow" element={<CorporateRecruitmentInflow />} />
               <Route path="/marco/productiviteit" element={<ProductiviteitDashboard />} />
