@@ -54,6 +54,12 @@ function distribute(total: number, keys: string[], seed: string): Record<string,
 
 type Status = "concept" | "gepland" | "verzonden";
 
+interface PlanChange {
+  label: string;
+  from: string;
+  to: string;
+}
+
 interface PlanItem {
   id: string;
   date: Date;
@@ -65,6 +71,7 @@ interface PlanItem {
   berichttype?: string;
   categorie?: string;
   customized?: boolean;
+  changes?: PlanChange[];
 }
 
 const STATUS_META: Record<Status, { label: string; dot: string; bg: string; text: string }> = {
