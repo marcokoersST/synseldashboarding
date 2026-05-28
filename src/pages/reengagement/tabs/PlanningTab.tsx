@@ -177,6 +177,7 @@ const PlanningTab = () => {
   const [timeOpen, setTimeOpen] = useState(false);
   const [tempTime, setTempTime] = useState(verzendtijd);
   const [timeWarning, setTimeWarning] = useState<string | null>(null);
+  const [editTimeWarning, setEditTimeWarning] = useState<string | null>(null);
   const [verzenddagen, setVerzenddagen] = useState<string[]>([...VERZENDDAG_OPTS]);
   const [contactDialog, setContactDialog] = useState<{ title: string; subtitle?: string; contacts: Contact[] } | null>(null);
   const openContacts = (title: string, subtitle: string, count: number, functie: string, status: Status, fixedCat?: string) => {
@@ -241,9 +242,9 @@ const PlanningTab = () => {
     setEditOpen(true);
   };
 
-  const saveEdit = () => {
+  const saveEdit = (overrideTime?: string) => {
     if (!editItemId) return;
-    const validTime = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
+    const validTime = overrideTime ?? (/^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00");
     setItems((prev) =>
       prev.map((it) => {
         if (it.id !== editItemId) return it;
@@ -1037,7 +1038,11 @@ const PlanningTab = () => {
             <Button
               className="bg-emerald-500 hover:bg-emerald-600 text-white"
               disabled={editForm.functies.length === 0 || editForm.berichttypes.length === 0 || editForm.categorieen.length === 0}
-              onClick={saveEdit}
+              onClick={() => {
+                const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
+                setEditTimeWarning(t);
+                setEditOpen(false);
+              }}
             >
               Opslaan
             </Button>
@@ -1090,6 +1095,30 @@ const PlanningTab = () => {
               <X className="h-4 w-4" />
             </Button>
             <Button className="bg-emerald-500 hover:bg-emerald-600 text-white gap-1" onClick={() => { if (timeWarning) setVerzendtijd(timeWarning); setTimeWarning(null); }}>
+              <Check className="h-4 w-4" /> Akkoord
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit verzendtijd warning dialog */}
+      <Dialog open={!!editTimeWarning} onOpenChange={(o) => { if (!o) setEditTimeWarning(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Verzendmoment verplaatst</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground">
+              <span className="font-semibold">Let op!</span> Je verplaatst de verzendtijd naar{" "}
+              <span className="font-semibold">{editTimeWarning}</span>, buiten de standaard werktijden (08:00 – 18:00).
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="icon" onClick={() => setEditTimeWarning(null)} aria-label="Annuleren">
+              <X className="h-4 w-4" />
+            </Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white gap-1" onClick={() => { if (editTimeWarning) saveEdit(editTimeWarning); setEditTimeWarning(null); }}>
               <Check className="h-4 w-4" /> Akkoord
             </Button>
           </DialogFooter>
