@@ -285,6 +285,50 @@ const PlanningTab = () => {
           </div>
         </Card>
       </div>
+
+      {/* Verzendtijd dialog */}
+      <Dialog open={timeOpen} onOpenChange={setTimeOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Verzendtijd aanpassen</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Label htmlFor="verzendtijd-input" className="text-xs text-muted-foreground">Tijd</Label>
+            <Input
+              id="verzendtijd-input"
+              type="time"
+              value={tempTime}
+              onChange={(e) => setTempTime(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setTimeOpen(false)}>Annuleren</Button>
+            <Button onClick={() => { setVerzendtijd(tempTime || "11:00"); setTimeOpen(false); }}>Opslaan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Medium dialog */}
+      <Dialog open={mediumOpen} onOpenChange={setMediumOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Medium aanpassen</DialogTitle>
+          </DialogHeader>
+          <RadioGroup value={tempMedium} onValueChange={(v) => setTempMedium(v as Medium)} className="py-2 space-y-2">
+            {(["App & Mail", "App", "Mail"] as Medium[]).map((opt) => (
+              <div key={opt} className="flex items-center space-x-2 rounded-md border border-border p-3 hover:bg-accent/40">
+                <RadioGroupItem value={opt} id={`medium-${opt}`} />
+                <Label htmlFor={`medium-${opt}`} className="flex-1 cursor-pointer">{opt}</Label>
+              </div>
+            ))}
+          </RadioGroup>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setMediumOpen(false)}>Annuleren</Button>
+            <Button onClick={() => { setMedium(tempMedium); setMediumOpen(false); }}>Opslaan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
