@@ -1038,7 +1038,11 @@ const PlanningTab = () => {
             <Button
               className="bg-emerald-500 hover:bg-emerald-600 text-white"
               disabled={editForm.functies.length === 0 || editForm.berichttypes.length === 0 || editForm.categorieen.length === 0}
-              onClick={saveEdit}
+              onClick={() => {
+                const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
+                setEditTimeWarning(t);
+                setEditOpen(false);
+              }}
             >
               Opslaan
             </Button>
