@@ -245,14 +245,14 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
 
   // Berichttype filter also scales the trend (proportional to selected berichttype share)
   const berichtScale = berichttype.size / BERICHT_TYPES.length || 0.01;
-  const scaledTrendData = useMemo(
-    () => trendData.map((d) => ({
-      label: d.label,
+  const scaledTrendData = useMemo(() => {
+    const labels = PERIODE_LABELS[periode] || PERIODE_LABELS["Per week"];
+    return trendBaseData.slice(0, labels.length).map((d, i) => ({
+      label: labels[i],
       verzonden: Math.round(d.verzonden * filterScale * berichtScale),
       inschrijven: Math.round(d.inschrijven * filterScale * berichtScale),
-    })),
-    [filterScale, berichtScale]
-  );
+    }));
+  }, [filterScale, berichtScale, periode]);
 
   const pct = (n: number, d: number) => d > 0 ? `${((n / d) * 100).toFixed(1)}%` : "0%";
 
