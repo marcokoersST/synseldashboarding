@@ -242,9 +242,9 @@ const PlanningTab = () => {
     setEditOpen(true);
   };
 
-  const saveEdit = () => {
+  const saveEdit = (overrideTime?: string) => {
     if (!editItemId) return;
-    const validTime = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
+    const validTime = overrideTime ?? (/^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00");
     setItems((prev) =>
       prev.map((it) => {
         if (it.id !== editItemId) return it;
