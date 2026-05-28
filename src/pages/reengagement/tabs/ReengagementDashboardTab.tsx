@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { TrendingUp, TrendingDown, Filter } from "lucide-react";
+import { TrendingUp, TrendingDown, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   LineChart,
@@ -106,15 +106,16 @@ interface MultiFilterProps {
 }
 const MultiFilter = ({ label, options, selected, onChange }: MultiFilterProps) => {
   const buttonLabel = selected.size === options.length
-    ? `Alle ${label.toLowerCase()}`
+    ? `Alle`
     : selected.size === 0
-      ? `Geen ${label.toLowerCase()}`
-      : `${selected.size} geselecteerd`;
+      ? `Geen`
+      : `${selected.size}`;
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="text-xs">
-          <Filter className="mr-1.5 h-3 w-3" />{label}: {buttonLabel}
+        <Button variant="ghost" size="sm" className="text-xs h-8 px-2 gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/60">
+          <span className="text-[11px] uppercase tracking-wide">{label}</span>
+          <span className="font-medium text-foreground">{buttonLabel}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-3" align="start">
@@ -144,13 +145,15 @@ interface SingleFilterProps {
   options: string[];
   selected: string;
   onChange: (v: string) => void;
+  label?: string;
 }
-const SingleFilter = ({ options, selected, onChange }: SingleFilterProps) => {
+const SingleFilter = ({ options, selected, onChange, label }: SingleFilterProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="text-xs">
-          <Filter className="mr-1.5 h-3 w-3" />{selected}
+        <Button variant="ghost" size="sm" className="text-xs h-8 px-2 gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/60">
+          {label && <span className="text-[11px] uppercase tracking-wide">{label}</span>}
+          <span className="font-medium text-foreground">{selected}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-48 p-2" align="start">
@@ -170,6 +173,39 @@ const SingleFilter = ({ options, selected, onChange }: SingleFilterProps) => {
         </div>
       </PopoverContent>
     </Popover>
+  );
+};
+
+interface ViewBarProps {
+  scope: string;
+  periode?: string;
+  setPeriode?: (v: string) => void;
+  functiegroep: Set<string>;
+  setFunctiegroep: (s: Set<string>) => void;
+  berichttype: Set<string>;
+  setBerichttype: (s: Set<string>) => void;
+  medium: Set<string>;
+  setMedium: (s: Set<string>) => void;
+  categorie: Set<string>;
+  setCategorie: (s: Set<string>) => void;
+  showPeriode?: boolean;
+}
+const ViewBar = ({ scope, periode, setPeriode, functiegroep, setFunctiegroep, berichttype, setBerichttype, medium, setMedium, categorie, setCategorie, showPeriode }: ViewBarProps) => {
+  return (
+    <div className="flex items-center gap-1 flex-wrap rounded-md border border-dashed border-border bg-muted/30 px-3 py-1.5">
+      <div className="flex items-center gap-1.5 mr-2 text-xs text-muted-foreground">
+        <Eye className="h-3.5 w-3.5" />
+        <span className="font-medium">Weergave {scope}</span>
+      </div>
+      <div className="h-4 w-px bg-border mr-1" />
+      {showPeriode && periode && setPeriode && (
+        <SingleFilter options={PERIODES} selected={periode} onChange={setPeriode} label="Periode" />
+      )}
+      <MultiFilter label="Functiegroep" options={FUNCTIEGROEPEN} selected={functiegroep} onChange={setFunctiegroep} />
+      <MultiFilter label="Berichttype" options={BERICHT_TYPES} selected={berichttype} onChange={setBerichttype} />
+      <MultiFilter label="Medium" options={MEDIA} selected={medium} onChange={setMedium} />
+      <MultiFilter label="Categorie" options={CATEGORIEEN} selected={categorie} onChange={setCategorie} />
+    </div>
   );
 };
 
@@ -272,14 +308,22 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
         ))}
       </div>
 
-      {/* Filter row */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <SingleFilter options={PERIODES} selected={periode} onChange={setPeriode} />
-        <MultiFilter label="Functiegroep" options={FUNCTIEGROEPEN} selected={functiegroep} onChange={setFunctiegroep} />
-        <MultiFilter label="Berichttype" options={BERICHT_TYPES} selected={berichttype} onChange={setBerichttype} />
-        <MultiFilter label="Medium" options={MEDIA} selected={medium} onChange={setMedium} />
-        <MultiFilter label="Categorie" options={CATEGORIEEN} selected={categorie} onChange={setCategorie} />
-      </div>
+
+      {/* Chart view bar */}
+      <ViewBar
+        scope="grafiek"
+        showPeriode
+        periode={periode}
+        setPeriode={setPeriode}
+        functiegroep={functiegroep}
+        setFunctiegroep={setFunctiegroep}
+        berichttype={berichttype}
+        setBerichttype={setBerichttype}
+        medium={medium}
+        setMedium={setMedium}
+        categorie={categorie}
+        setCategorie={setCategorie}
+      />
 
       {/* Trend chart */}
       <Card>
@@ -288,15 +332,29 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
             <LineChart data={scaledTrendData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="left" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} label={{ value: "Verzonden", angle: -90, position: "insideLeft", style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" } }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} label={{ value: "Inschrijven", angle: 90, position: "insideRight", style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" } }} />
               <Tooltip />
               <Legend wrapperStyle={{ fontSize: "12px" }} />
-              <Line type="monotone" dataKey="verzonden" name="Verzonden" stroke={MARKETING_COLORS[0]} strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="inschrijven" name="Inschrijven" stroke={MARKETING_COLORS[1]} strokeWidth={2} dot={{ r: 3 }} />
+              <Line yAxisId="left" type="monotone" dataKey="verzonden" name="Verzonden" stroke={MARKETING_COLORS[0]} strokeWidth={2} dot={{ r: 3 }} />
+              <Line yAxisId="right" type="monotone" dataKey="inschrijven" name="Inschrijven" stroke={MARKETING_COLORS[1]} strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
+
+      {/* Table view bar */}
+      <ViewBar
+        scope="tabel"
+        functiegroep={functiegroep}
+        setFunctiegroep={setFunctiegroep}
+        berichttype={berichttype}
+        setBerichttype={setBerichttype}
+        medium={medium}
+        setMedium={setMedium}
+        categorie={categorie}
+        setCategorie={setCategorie}
+      />
 
       {/* Full-width berichttype table */}
       <Card>
