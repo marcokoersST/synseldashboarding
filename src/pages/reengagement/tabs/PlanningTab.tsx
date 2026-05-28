@@ -117,7 +117,7 @@ const PlanningTab = () => {
             <Card className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Medium</p>
-                <p className="mt-1 text-2xl font-bold text-foreground">{medium}</p>
+                <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
               </div>
               <button
                 onClick={() => { setTempMedium(medium); setMediumOpen(true); }}
