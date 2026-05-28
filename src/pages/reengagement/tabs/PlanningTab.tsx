@@ -12,7 +12,7 @@ import {
   isSameDay,
 } from "date-fns";
 import { nl } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil, CheckCircle2, Eye, MessageSquare, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +23,33 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Deterministic split of `total` across `keys` based on a stable seed
+function distribute(total: number, keys: string[], seed: string): Record<string, number> {
+  const result: Record<string, number> = {};
+  if (keys.length === 0 || total <= 0) {
+    keys.forEach((k) => (result[k] = 0));
+    return result;
+  }
+  // simple hash
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const weights = keys.map((_, i) => ((h >> (i % 16)) & 7) + 1);
+  const sum = weights.reduce((a, b) => a + b, 0);
+  let assigned = 0;
+  keys.forEach((k, i) => {
+    const v = i === keys.length - 1 ? total - assigned : Math.max(0, Math.round((total * weights[i]) / sum));
+    result[k] = v;
+    assigned += v;
+  });
+  // fix rounding drift
+  const drift = total - Object.values(result).reduce((a, b) => a + b, 0);
+  if (drift !== 0) result[keys[0]] = Math.max(0, result[keys[0]] + drift);
+  return result;
+}
 
 type Status = "concept" | "gepland" | "verzonden";
 
