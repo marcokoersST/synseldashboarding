@@ -12,7 +12,7 @@ import {
   isSameDay,
 } from "date-fns";
 import { nl } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil, CheckCircle2, Eye, MessageSquare, AlertTriangle, X, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil, CheckCircle2, Eye, MessageSquare, AlertTriangle, X, Check, Phone, CalendarDays } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -84,12 +84,41 @@ const WEEKDAYS = ["Maa", "Di", "Wo", "Do", "Vr", "Zat", "Zon"];
 
 const FUNCTIES_DEFAULT = ["Engineering Mechanical", "Engineering Allround", "Operators", "Productie"];
 
+const VERZENDDAG_OPTS = ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
+
+interface Contact {
+  name: string;
+  functie: string;
+  categorie: string;
+  status: Status;
+  telefoon: string;
+  email: string;
+}
+
+const VOORNAMEN = ["Jan","Lisa","Mark","Sofie","Ahmed","Eva","Tom","Anna","Karim","Iris","Luuk","Noor","Daan","Sara","Bram","Fleur","Sam","Naomi","Pieter","Mila","Joris","Yara","Ruben","Lotte","Sven","Maud","Bas","Femke","Niels","Lieke"];
+const ACHTERNAMEN = ["de Vries","Jansen","Bakker","Visser","Smit","Meijer","de Boer","Mulder","Hendriks","Peters","Dekker","Brouwer","van Dijk","van den Berg","Kuiper","Vermeulen","Bos","de Jong","Hoekstra","van Leeuwen"];
+
+function genContacts(seed: string, count: number, functie: string, status: Status, fixedCat?: string): Contact[] {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const cats = ["A+", "A", "B"];
+  const out: Contact[] = [];
+  for (let i = 0; i < count; i++) {
+    h = (h * 1103515245 + 12345 + i * 2654435761) >>> 0;
+    const vn = VOORNAMEN[(h >> 4) % VOORNAMEN.length];
+    const an = ACHTERNAMEN[(h >> 8) % ACHTERNAMEN.length];
+    const cat = fixedCat ?? cats[(h >> 12) % cats.length];
+    const tel = `06 ${String(((h >> 2) % 90) + 10)} ${String(((h >> 5) % 9000) + 1000)} ${String(((h >> 9) % 9000) + 1000)}`;
+    const email = `${vn.toLowerCase()}.${an.toLowerCase().replace(/[^a-z]/g, "")}@mail.nl`;
+    out.push({ name: `${vn} ${an}`, functie, categorie: cat, status, telefoon: tel, email });
+  }
+  return out;
+}
+
 function buildMockItems(monthDate: Date): PlanItem[] {
   const base = startOfMonth(monthDate);
   const items: PlanItem[] = [];
-  // Spread items across the month per functie
   const plan: Array<[number, string, Status, "app" | "mail", number]> = [
-    // [dayOffset, functie, status, channel, count]
     [0, "Engineering Mechanical", "verzonden", "mail", 3],
     [0, "Operators", "verzonden", "app", 2],
     [1, "Engineering Allround", "verzonden", "mail", 4],
@@ -120,15 +149,10 @@ function buildMockItems(monthDate: Date): PlanItem[] {
   ];
   let counter = 1;
   plan.forEach(([offset, functie, status, channel, count]) => {
+    const date = addDays(base, offset);
+    if (date.getDay() === 0) return; // skip Sunday
     for (let i = 0; i < count; i++) {
-      items.push({
-        id: `m-${counter++}`,
-        date: addDays(base, offset),
-        title: `${functie} bericht`,
-        status,
-        channel,
-        functie,
-      });
+      items.push({ id: `m-${counter++}`, date, title: `${functie} bericht`, status, channel, functie });
     }
   });
   return items;
@@ -144,6 +168,13 @@ const PlanningTab = () => {
   const [medium, setMedium] = useState<Medium>("App & Mail");
   const [timeOpen, setTimeOpen] = useState(false);
   const [tempTime, setTempTime] = useState(verzendtijd);
+  const [timeWarning, setTimeWarning] = useState<string | null>(null);
+  const [verzenddagen, setVerzenddagen] = useState<string[]>([...VERZENDDAG_OPTS]);
+  const [contactDialog, setContactDialog] = useState<{ title: string; subtitle?: string; contacts: Contact[] } | null>(null);
+  const openContacts = (title: string, subtitle: string, count: number, functie: string, status: Status, fixedCat?: string) => {
+    const seed = `${title}|${functie}|${subtitle}`;
+    setContactDialog({ title, subtitle, contacts: genContacts(seed, count, functie, status, fixedCat) });
+  };
 
   type Verdeling = "Evenredig" | "Begin week" | "Eind week" | "Begin maand" | "Eind maand";
   const VERDELING_OPTS: Verdeling[] = ["Evenredig", "Begin week", "Eind week", "Begin maand", "Eind maand"];
@@ -300,6 +331,41 @@ const PlanningTab = () => {
                 <Pencil className="h-4 w-4" />
               </button>
             </Card>
+
+            {/* Verzenddagen */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">Verzenddagen</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">
+                      {verzenddagen.length === VERZENDDAG_OPTS.length
+                        ? "Ma t/m Za"
+                        : verzenddagen.length === 0
+                          ? "Geen"
+                          : `${verzenddagen.length} dagen`}
+                    </p>
+                  </div>
+                  <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                </Card>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="end">
+                <div className="flex items-center justify-between mb-1 px-1">
+                  <span className="text-xs font-medium text-muted-foreground">Verzenddagen</span>
+                  <button className="text-xs text-primary hover:underline" onClick={() => setVerzenddagen(verzenddagen.length === VERZENDDAG_OPTS.length ? [] : [...VERZENDDAG_OPTS])}>
+                    {verzenddagen.length === VERZENDDAG_OPTS.length ? "Alles uit" : "Alles aan"}
+                  </button>
+                </div>
+                {VERZENDDAG_OPTS.map((opt) => (
+                  <label key={opt} className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-accent cursor-pointer text-sm">
+                    <Checkbox checked={verzenddagen.includes(opt)} onCheckedChange={() => setVerzenddagen(toggle(verzenddagen, opt))} />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+                <p className="px-2 pt-1 text-[10px] text-muted-foreground">Op zondag worden geen berichten verstuurd.</p>
+              </PopoverContent>
+            </Popover>
+
             <Popover>
               <PopoverTrigger asChild>
                 <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
@@ -538,13 +604,15 @@ const PlanningTab = () => {
                 .map((f) => ({ functie: f, count: dayItems.filter((i) => i.functie === f).length }))
                 .filter((g) => g.count > 0);
 
+              const isSunday = day.getDay() === 0;
               return (
                 <div
                   key={idx}
-                  onClick={() => setSelected(day)}
-                  onDragOver={(e) => { e.preventDefault(); setDragOverKey(dayKey); }}
+                  onClick={() => { if (!isSunday) setSelected(day); }}
+                  onDragOver={(e) => { if (isSunday) return; e.preventDefault(); setDragOverKey(dayKey); }}
                   onDragLeave={() => setDragOverKey((k) => (k === dayKey ? null : k))}
                   onDrop={(e) => {
+                    if (isSunday) { setDragOverKey(null); setDragId(null); return; }
                     e.preventDefault();
                     const id = e.dataTransfer.getData("text/plain");
                     if (id) requestMove(id, day);
@@ -552,13 +620,16 @@ const PlanningTab = () => {
                     setDragId(null);
                   }}
                   className={cn(
-                    "min-h-[90px] border-b border-r border-border p-1.5 text-left transition-colors cursor-pointer",
-                    "hover:bg-muted/50",
-                    !inMonth && "bg-muted/20 text-muted-foreground/50",
-                    isSel && "ring-2 ring-primary ring-inset",
-                    isDragOver && "bg-primary/10 ring-2 ring-primary/40 ring-inset",
+                    "min-h-[90px] border-b border-r border-border p-1.5 text-left transition-colors",
+                    isSunday
+                      ? "bg-muted/40 text-muted-foreground/60 cursor-not-allowed [background-image:repeating-linear-gradient(45deg,transparent,transparent_6px,hsl(var(--muted))_6px,hsl(var(--muted))_7px)]"
+                      : "hover:bg-muted/50 cursor-pointer",
+                    !inMonth && !isSunday && "bg-muted/20 text-muted-foreground/50",
+                    isSel && !isSunday && "ring-2 ring-primary ring-inset",
+                    isDragOver && !isSunday && "bg-primary/10 ring-2 ring-primary/40 ring-inset",
                     (idx + 1) % 7 === 0 && "border-r-0"
                   )}
+                  title={isSunday ? "Op zondag worden geen berichten verstuurd" : undefined}
                 >
                   <div className="flex items-center justify-between">
                     <span
@@ -569,8 +640,12 @@ const PlanningTab = () => {
                     >
                       {format(day, "d")}
                     </span>
-                    {dayItems.length > 0 && (
-                      <span className="text-[10px] font-medium text-muted-foreground">{dayItems.length}</span>
+                    {isSunday ? (
+                      <span className="text-[9px] uppercase tracking-wide text-muted-foreground/70">Geen verz.</span>
+                    ) : (
+                      dayItems.length > 0 && (
+                        <span className="text-[10px] font-medium text-muted-foreground">{dayItems.length}</span>
+                      )
                     )}
                   </div>
                   <div className="mt-1 space-y-0.5">
@@ -648,26 +723,52 @@ const PlanningTab = () => {
                                 <div>
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Per berichttype</p>
                                   <div className="space-y-1">
-                                    {berichten.map((bt) => (
-                                      <div key={bt} className="flex items-center justify-between text-xs">
-                                        <span className="truncate text-foreground">{bt}</span>
-                                        <span className="font-semibold tabular-nums text-muted-foreground">{btSplit[bt] ?? 0}</span>
-                                      </div>
-                                    ))}
+                                    {berichten.map((bt) => {
+                                      const n = btSplit[bt] ?? 0;
+                                      return (
+                                        <div key={bt} className="flex items-center justify-between text-xs">
+                                          <span className="truncate text-foreground">{bt}</span>
+                                          <button
+                                            type="button"
+                                            disabled={n === 0}
+                                            onClick={(e) => { e.stopPropagation(); openContacts(`${functie} – ${bt}`, `${format(day, "EEEE d MMMM", { locale: nl })}`, n, functie, isFuture ? "gepland" : "verzonden"); }}
+                                            className={cn(
+                                              "font-semibold tabular-nums",
+                                              n === 0 ? "text-muted-foreground/50" : "text-primary hover:underline cursor-pointer"
+                                            )}
+                                          >
+                                            {n}
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                                 <div>
                                   <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Per categorie</p>
                                   <div className="flex items-center gap-2">
-                                    {categorieen.map((c) => (
-                                      <div key={c} className="flex-1 rounded-md border border-border px-2 py-1.5 text-center">
-                                        <p className="text-[10px] text-muted-foreground">{c}</p>
-                                        <p className="text-sm font-bold tabular-nums">{catSplit[c] ?? 0}</p>
-                                      </div>
-                                    ))}
+                                    {categorieen.map((c) => {
+                                      const n = catSplit[c] ?? 0;
+                                      return (
+                                        <button
+                                          key={c}
+                                          type="button"
+                                          disabled={n === 0}
+                                          onClick={(e) => { e.stopPropagation(); openContacts(`${functie} – Categorie ${c}`, `${format(day, "EEEE d MMMM", { locale: nl })}`, n, functie, isFuture ? "gepland" : "verzonden", c); }}
+                                          className={cn(
+                                            "flex-1 rounded-md border border-border px-2 py-1.5 text-center transition-colors",
+                                            n === 0 ? "opacity-50 cursor-default" : "hover:border-primary hover:bg-primary/5 cursor-pointer"
+                                          )}
+                                        >
+                                          <p className="text-[10px] text-muted-foreground">{c}</p>
+                                          <p className={cn("text-sm font-bold tabular-nums", n > 0 && "text-primary")}>{n}</p>
+                                        </button>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               </div>
+
                             ) : (
                               <div className="grid grid-cols-2 gap-2">
                                 <div className="rounded-md border border-border p-2">
@@ -798,7 +899,7 @@ const PlanningTab = () => {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setTimeOpen(false)}>Annuleren</Button>
-            <Button onClick={() => { const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00"; setVerzendtijd(t); setTimeOpen(false); }}>Opslaan</Button>
+            <Button onClick={() => { const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00"; setTimeOpen(false); setTimeWarning(t); }}>Opslaan</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -918,7 +1019,85 @@ const PlanningTab = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Verzendtijd warning dialog */}
+      <Dialog open={!!timeWarning} onOpenChange={(o) => { if (!o) setTimeWarning(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Verzendmoment verplaatst</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground">
+              <span className="font-semibold">Let op!</span> Je verplaatst de verzendtijd naar{" "}
+              <span className="font-semibold">{timeWarning}</span>, buiten de standaard werktijden (08:00 – 18:00).
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="icon" onClick={() => setTimeWarning(null)} aria-label="Annuleren">
+              <X className="h-4 w-4" />
+            </Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white gap-1" onClick={() => { if (timeWarning) setVerzendtijd(timeWarning); setTimeWarning(null); }}>
+              <Check className="h-4 w-4" /> Akkoord
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
+      {/* Contactenlijst dialog */}
+      <Dialog open={!!contactDialog} onOpenChange={(o) => { if (!o) setContactDialog(null); }}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{contactDialog?.title}</DialogTitle>
+            {contactDialog?.subtitle && (
+              <p className="text-xs text-muted-foreground capitalize">{contactDialog.subtitle} · {contactDialog.contacts.length} contactpersonen</p>
+            )}
+          </DialogHeader>
+          <div className="overflow-y-auto -mx-2 px-2">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-background border-b border-border">
+                <tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <th className="py-2 pr-2 font-medium">Naam</th>
+                  <th className="py-2 pr-2 font-medium">Functie</th>
+                  <th className="py-2 pr-2 font-medium">Categorie</th>
+                  <th className="py-2 pr-2 font-medium">Status</th>
+                  <th className="py-2 pr-2 font-medium">Telefoon</th>
+                  <th className="py-2 pr-2 font-medium">Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contactDialog?.contacts.map((c, i) => {
+                  const sMeta = STATUS_META[c.status];
+                  return (
+                    <tr key={i} className="border-b border-border/60 hover:bg-muted/40">
+                      <td className="py-2 pr-2 font-medium text-foreground">{c.name}</td>
+                      <td className="py-2 pr-2 text-muted-foreground">{c.functie}</td>
+                      <td className="py-2 pr-2">
+                        <span className="inline-block rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold">{c.categorie}</span>
+                      </td>
+                      <td className="py-2 pr-2">
+                        <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold", sMeta.bg, sMeta.text)}>
+                          <span className={cn("h-1.5 w-1.5 rounded-full", sMeta.dot)} />
+                          {sMeta.label}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-2 text-muted-foreground tabular-nums whitespace-nowrap">
+                        <a href={`tel:${c.telefoon.replace(/\s/g, "")}`} className="hover:text-primary inline-flex items-center gap-1">
+                          <Phone className="h-3 w-3" /> {c.telefoon}
+                        </a>
+                      </td>
+                      <td className="py-2 pr-2 text-muted-foreground">
+                        <a href={`mailto:${c.email}`} className="hover:text-primary inline-flex items-center gap-1">
+                          <Mail className="h-3 w-3" /> {c.email}
+                        </a>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
