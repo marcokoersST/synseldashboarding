@@ -741,33 +741,39 @@ const PlanningTab = () => {
                 className="mt-1"
               />
             </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Functiegroep</Label>
-              <Select value={editForm.functie} onValueChange={(v) => setEditForm((f) => ({ ...f, functie: v }))}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {FUNCTIE_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Berichttype</Label>
-              <Select value={editForm.berichttype} onValueChange={(v) => setEditForm((f) => ({ ...f, berichttype: v }))}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {BERICHT_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Categorie</Label>
-              <Select value={editForm.categorie} onValueChange={(v) => setEditForm((f) => ({ ...f, categorie: v }))}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIE_OPTS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {([
+              { key: "functies" as const, label: "Functiegroepen", opts: FUNCTIE_OPTS },
+              { key: "berichttypes" as const, label: "Berichttypes", opts: BERICHT_OPTS },
+              { key: "categorieen" as const, label: "Categorieën", opts: CATEGORIE_OPTS },
+            ]).map(({ key, label, opts }) => {
+              const sel = editForm[key];
+              return (
+                <div key={key}>
+                  <Label className="text-xs text-muted-foreground">{label}</Label>
+                  <div className="mt-1 rounded-md border border-border p-2 space-y-1 max-h-44 overflow-y-auto">
+                    <div className="flex items-center justify-between pb-1 border-b border-border mb-1">
+                      <span className="text-[10px] text-muted-foreground">{sel.length} van {opts.length} geselecteerd</span>
+                      <button
+                        type="button"
+                        className="text-[10px] text-primary hover:underline"
+                        onClick={() => setEditForm((f) => ({ ...f, [key]: sel.length === opts.length ? [] : [...opts] }))}
+                      >
+                        {sel.length === opts.length ? "Alles uit" : "Alles aan"}
+                      </button>
+                    </div>
+                    {opts.map((o) => (
+                      <label key={o} className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-accent cursor-pointer text-sm">
+                        <Checkbox
+                          checked={sel.includes(o)}
+                          onCheckedChange={() => setEditForm((f) => ({ ...f, [key]: toggle(f[key], o) }))}
+                        />
+                        <span>{o}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
