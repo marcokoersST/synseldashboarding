@@ -140,12 +140,17 @@ export function CandidateMarketTab({
               return (
                 <tr
                   key={row.consultantId}
-                  className={cn("border-t border-border cursor-pointer", isRow && "bg-muted/30")}
-                  onClick={() => onOpenConsultant(row.consultantId)}
+                  className={cn("border-t border-border", isRow && "bg-muted/30")}
                   onMouseLeave={() => { if (hoverRow === row.consultantId) setHoverRow(null); }}
                 >
                   <Td sticky highlight={isRow || hoverCol === "consultantName"} intersect={isRow && hoverCol === "consultantName"} onEnter={() => { setHoverRow(row.consultantId); setHoverCol("consultantName"); }}>
-                    <span className="font-medium text-foreground whitespace-nowrap">{row.consultantName}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onOpenConsultant(row.consultantId); }}
+                      className="font-medium text-foreground whitespace-nowrap hover:text-primary text-left"
+                    >
+                      {row.consultantName}
+                    </button>
                   </Td>
                   <Td highlight={isRow || hoverCol === "unit"} intersect={isRow && hoverCol === "unit"} onEnter={() => { setHoverRow(row.consultantId); setHoverCol("unit"); }}>
                     <span className="text-muted-foreground">{row.unit}</span>
