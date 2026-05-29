@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { myTeamConsultants } from "@/data/managerData";
 import { generateAlerts, type DashboardAlert } from "@/data/managerOperationalDataV2";
 import {
-  lcbMarketRows, lcbFunnelSteps,
+  lcbMarketRows, lcbFunnelSteps, lcbTeam, LCB_UNITS,
   getCandidatesForStep, getDealsForStep,
   type LcbStepKey, type CandidateRow, type DealRow,
 } from "@/data/lcbMarketData";
@@ -33,7 +33,7 @@ import {
 import { CallConversionsOverlay } from "@/components/manager/lcb/CallConversionsOverlay";
 import { Button } from "@/components/ui/button";
 
-const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
+const UNITS = [...LCB_UNITS];
 type TabId = "market" | "development" | "finance" | "signals";
 const TABS: { id: TabId; label: string; subtitle: string }[] = [
   { id: "market", label: "Candidate Market Approach", subtitle: "Acquisitie & funnel" },
@@ -115,7 +115,7 @@ export default function LCB() {
   };
 
   // Compose split overlay
-  const stepConsultant = stepCtx ? myTeamConsultants.find((c) => c.id === stepCtx.consultantId) : null;
+  const stepConsultant = stepCtx ? lcbTeam.find((c) => c.id === stepCtx.consultantId) : null;
   const stepDef = stepCtx ? lcbFunnelSteps.find((s) => s.key === stepCtx.step) : null;
   const stepEntity = stepDef?.entity;
   const stepCandidates: CandidateRow[] = stepCtx && stepEntity === "candidate" ? getCandidatesForStep(stepCtx.consultantId, stepCtx.step) : [];
@@ -152,7 +152,7 @@ export default function LCB() {
         date={date} onDate={setDate}
         units={UNITS}
         selectedUnits={selectedUnits} onSelectedUnits={setSelectedUnits}
-        consultants={myTeamConsultants.map((c) => ({ id: c.id, name: c.name }))}
+        consultants={lcbTeam.map((c) => ({ id: c.id, name: c.name }))}
         selectedConsultants={selectedConsultants} onSelectedConsultants={setSelectedConsultants}
         search={search} onSearch={setSearch}
         onReset={onResetFilters}
