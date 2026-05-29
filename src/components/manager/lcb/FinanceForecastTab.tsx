@@ -6,6 +6,7 @@ import { consultantRevenueDetailData, attritionProjectionData, activeSecondments
 import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromRatio } from "@/lib/lcbStatus";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { buildFinancePerfRow } from "@/data/lcbMarketData";
+import { RevenueForecastChart } from "./RevenueForecastChart";
 
 type Perspective = "margin" | "performance";
 
