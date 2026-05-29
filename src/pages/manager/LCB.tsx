@@ -152,7 +152,7 @@ export default function LCB() {
         date={date} onDate={setDate}
         units={UNITS}
         selectedUnits={selectedUnits} onSelectedUnits={setSelectedUnits}
-        consultants={myTeamConsultants.map((c) => ({ id: c.id, name: c.name }))}
+        consultants={lcbTeam.map((c) => ({ id: c.id, name: c.name }))}
         selectedConsultants={selectedConsultants} onSelectedConsultants={setSelectedConsultants}
         search={search} onSearch={setSearch}
         onReset={onResetFilters}
