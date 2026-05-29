@@ -63,7 +63,29 @@ export default function LCB() {
   const [selectedConsultants, setSelectedConsultants] = useState<number[]>([]);
   const [search, setSearch] = useState("");
 
-  const [tab, setTab] = useState<TabId>("market");
+  const [tab, _setTab] = useState<TabId>("market");
+  const setTab = (t: TabId) => {
+    // Filter datasets differ per tab (lcbTeam vs myTeamConsultants), so clear stale selections.
+    _setTab((prev) => {
+      if (prev !== t) { setSelectedUnits([]); setSelectedConsultants([]); }
+      return t;
+    });
+  };
+
+  // Filter options depend on which dataset the active tab consumes.
+  const usesTeamData = tab === "development" || tab === "finance";
+  const unitOptions = useMemo(
+    () => usesTeamData
+      ? Array.from(new Set(myTeamConsultants.map((c) => c.unit)))
+      : [...LCB_UNITS],
+    [usesTeamData],
+  );
+  const consultantOptions = useMemo(
+    () => usesTeamData
+      ? myTeamConsultants.map((c) => ({ id: c.id, name: c.name }))
+      : lcbTeam.map((c) => ({ id: c.id, name: c.name })),
+    [usesTeamData],
+  );
 
   // Split-overlay state for candidate market drill-down
   const [stepCtx, setStepCtx] = useState<{ consultantId: number; step: LcbStepKey } | null>(null);
