@@ -204,7 +204,7 @@ export function CandidateMarketTab({
                     );
                   })}
                   <Td highlight={isRow || hoverCol === "drop"} intersect={isRow && hoverCol === "drop"} onEnter={() => { setHoverRow(row.consultantId); setHoverCol("drop"); }}>
-                    <span className="text-[11px] text-muted-foreground">{worst ? worst.label : "—"}</span>
+                    <span className="text-[11px] text-muted-foreground truncate block" title={worst ? worst.label : undefined}>{worst ? worst.label : "—"}</span>
                   </Td>
                   <Td highlight={isRow || hoverCol === "status"} intersect={isRow && hoverCol === "status"} onEnter={() => { setHoverRow(row.consultantId); setHoverCol("status"); }}>
                     <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium", LCB_STATUS_BG[status])}>
