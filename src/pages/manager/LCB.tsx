@@ -115,7 +115,7 @@ export default function LCB() {
   };
 
   // Compose split overlay
-  const stepConsultant = stepCtx ? myTeamConsultants.find((c) => c.id === stepCtx.consultantId) : null;
+  const stepConsultant = stepCtx ? lcbTeam.find((c) => c.id === stepCtx.consultantId) : null;
   const stepDef = stepCtx ? lcbFunnelSteps.find((s) => s.key === stepCtx.step) : null;
   const stepEntity = stepDef?.entity;
   const stepCandidates: CandidateRow[] = stepCtx && stepEntity === "candidate" ? getCandidatesForStep(stepCtx.consultantId, stepCtx.step) : [];
