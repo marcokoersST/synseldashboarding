@@ -277,12 +277,7 @@ function PerformanceTable({ rows, totals, hoverRow, hoverCol, setHoverRow, setHo
                 </button>
               </Td>
               <Td highlight={cell("ops")} intersect={isRow && hoverCol === "ops"} onEnter={enter("ops")}>
-                <div className="flex items-center gap-1 flex-wrap">
-                  {r.topOpdrachtgevers.map((o: string) => (
-                    <span key={o} className="inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px]">{o}</span>
-                  ))}
-                  {r.totalOpdrachtgevers > 2 && <span className="text-[10px] text-muted-foreground">+{r.totalOpdrachtgevers - 2}</span>}
-                </div>
+                <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px]">{r.topOpdrachtgevers[0]}</span>
               </Td>
             </tr>
           );

@@ -637,7 +637,7 @@ export function buildFinancePerfRow(consultantId: number, consultantName: string
     expectedStoppers: stoppers, stopperRiskRevenue: stopperRev,
     likelyExtensions: likely, likelyExtensionRevenue: likelyRev,
     placementsYTD: placements, avgMarginPerCandidate: avgMargin,
-    netImpact, topOpdrachtgevers: ops.slice(0, 2), totalOpdrachtgevers: totalOps,
+    netImpact, topOpdrachtgevers: ops.slice(0, 1), totalOpdrachtgevers: 1,
   };
 }
 
