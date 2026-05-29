@@ -3,7 +3,7 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import { LCB_STATUS_BG, LCB_STATUS_LABEL, type LcbStatus } from "@/lib/lcbStatus";
+import { LCB_STATUS_BG, LCB_STATUS_LABEL, type LCBStatus } from "@/lib/lcbStatus";
 
 type MetricKey = "revenue" | "forecast" | "potentieel" | "revRisk" | "margin" | "realisedPot";
 
@@ -32,7 +32,7 @@ interface Row {
   margin: number;
   revRisk: number;
   financialCat: string;
-  status: LcbStatus;
+  status: LCBStatus;
 }
 
 interface Props {
@@ -154,7 +154,7 @@ function ConsultantTooltip({ active, payload }: any) {
   if (!active || !payload || !payload.length) return null;
   const p = payload[0].payload as {
     name: string; revenue: number; forecast: number; potentieel: number;
-    revRiskRaw: number; categorie: string; status: LcbStatus;
+    revRiskRaw: number; categorie: string; status: LCBStatus;
   };
   const fmtK = (v: number) => `€${v}k`;
   const fmtE = (v: number) => `€${v.toLocaleString("nl-NL")}`;
