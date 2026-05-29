@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Info } from "lucide-react";
-import { myTeamConsultants } from "@/data/managerData";
 import { consultantRevenueDetailData, attritionProjectionData, activeSecondmentsData } from "@/data/managerRevenueDetailData";
 import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromRatio } from "@/lib/lcbStatus";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { buildFinancePerfRow } from "@/data/lcbMarketData";
+import { buildFinancePerfRow, lcbTeam } from "@/data/lcbMarketData";
 import { RevenueForecastChart } from "./RevenueForecastChart";
 
 type Perspective = "margin" | "performance";
@@ -33,7 +32,7 @@ export function FinanceForecastTab({
   const [hoverCol, setHoverCol] = useState<string | null>(null);
 
   const consultants = useMemo(() => {
-    let r = myTeamConsultants;
+    let r = lcbTeam;
     if (selectedUnits.length > 0) r = r.filter((c) => selectedUnits.includes(c.unit));
     if (selectedConsultants.length > 0) r = r.filter((c) => selectedConsultants.includes(c.id));
     if (search.trim()) {
@@ -46,7 +45,7 @@ export function FinanceForecastTab({
   // ─── Margin perspective rows ───
   const marginRows = useMemo(() => consultants.map((c) => {
     const detail = consultantRevenueDetailData.find((d) => d.consultantId === c.id);
-    const target = Math.round(c.revenue / 1000);
+    const target = 600 + ((c.id * 53) % 1200);
     const seedR = ((c.id * 131) % 100) / 100;
     const realised = Math.round(target * (0.7 + seedR * 0.35));
     const forecast = Math.round(realised * (1 + ((c.id * 7) % 25) / 100));
