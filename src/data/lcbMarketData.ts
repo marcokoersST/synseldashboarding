@@ -313,11 +313,14 @@ export interface ActivityItem {
   contactStatus: ContactStatus;
   subject?: string;
   duration?: string; // for calls
-  body?: string;     // for notes
+  body?: string;     // for notes / emails (long body)
   date: string;
   time: string;
   dealRef?: string;
+  callId?: string;     // 6-digit, calls only
+  transcript?: string; // multi-line mock transcript, calls only
 }
+
 
 export interface CandidateDealLink {
   dealName: string;
