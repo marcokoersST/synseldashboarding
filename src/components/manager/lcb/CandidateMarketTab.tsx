@@ -114,7 +114,7 @@ export function CandidateMarketTab({
         <div>
           <h2 className="text-sm font-semibold text-foreground">Sales funnel per consultant</h2>
           <p className="text-[11px] text-muted-foreground">
-            Klik een cel om de onderliggende kandidaten of deals te zien. Klik een rij voor het volledige consultantoverzicht.
+            Klik een cel voor de onderliggende kandidaten of deals. Klik op de naam voor het volledige consultantoverzicht.
           </p>
         </div>
       </div>
