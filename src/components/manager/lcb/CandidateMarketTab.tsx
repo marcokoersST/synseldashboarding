@@ -121,6 +121,15 @@ export function CandidateMarketTab({
 
       <div className="overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-card relative" style={{ maxHeight: "calc(100vh - 280px)" }}>
         <table className="w-full text-xs border-collapse table-fixed">
+          <colgroup>
+            <col style={{ width: 200 }} />
+            <col style={{ width: 120 }} />
+            {lcbFunnelSteps.map((s) => (
+              <col key={s.key} style={{ width: 90 }} />
+            ))}
+            <col style={{ width: 170 }} />
+            <col style={{ width: 110 }} />
+          </colgroup>
           <thead className="sticky top-0 z-20 bg-muted/70 backdrop-blur">
             <tr className="text-left">
               <Th sticky sortable onClick={() => toggleSort("consultantName")} active={sortKey === "consultantName"} dir={sortDir} highlight={hoverCol === "consultantName"}>Consultant</Th>
@@ -147,13 +156,14 @@ export function CandidateMarketTab({
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); onOpenConsultant(row.consultantId); }}
-                      className="font-medium text-foreground whitespace-nowrap hover:text-primary text-left"
+                      title={row.consultantName}
+                      className="font-medium text-foreground hover:text-primary text-left truncate block w-full"
                     >
                       {row.consultantName}
                     </button>
                   </Td>
                   <Td highlight={isRow || hoverCol === "unit"} intersect={isRow && hoverCol === "unit"} onEnter={() => { setHoverRow(row.consultantId); setHoverCol("unit"); }}>
-                    <span className="text-muted-foreground">{row.unit}</span>
+                    <span className="text-muted-foreground truncate block" title={row.unit}>{row.unit}</span>
                   </Td>
                   {lcbFunnelSteps.map((s, i) => {
                     const val = row[s.key] as number;
@@ -194,7 +204,7 @@ export function CandidateMarketTab({
                     );
                   })}
                   <Td highlight={isRow || hoverCol === "drop"} intersect={isRow && hoverCol === "drop"} onEnter={() => { setHoverRow(row.consultantId); setHoverCol("drop"); }}>
-                    <span className="text-[11px] text-muted-foreground">{worst ? worst.label : "—"}</span>
+                    <span className="text-[11px] text-muted-foreground truncate block" title={worst ? worst.label : undefined}>{worst ? worst.label : "—"}</span>
                   </Td>
                   <Td highlight={isRow || hoverCol === "status"} intersect={isRow && hoverCol === "status"} onEnter={() => { setHoverRow(row.consultantId); setHoverCol("status"); }}>
                     <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium", LCB_STATUS_BG[status])}>
@@ -245,7 +255,7 @@ function Th({
   return (
     <th
       className={cn(
-        "px-2 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground",
+        "px-1.5 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground align-top",
         align === "right" && "text-right",
         sticky && "sticky left-0 z-30 bg-muted/70 backdrop-blur",
         sortable && "cursor-pointer select-none hover:text-foreground",
@@ -254,9 +264,9 @@ function Th({
       )}
       onClick={onClick}
     >
-      <span className={cn("inline-flex items-center gap-1", align === "right" && "justify-end w-full")}>
+      <span className={cn("inline-flex items-start gap-1 whitespace-normal break-words leading-tight", align === "right" && "justify-end w-full")}>
         {children}
-        {sortable && active && (dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+        {sortable && active && (dir === "asc" ? <ChevronUp className="h-3 w-3 flex-shrink-0 mt-0.5" /> : <ChevronDown className="h-3 w-3 flex-shrink-0 mt-0.5" />)}
       </span>
     </th>
   );
