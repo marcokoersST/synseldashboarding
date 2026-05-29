@@ -109,21 +109,6 @@ export function DealDetailPane({ deal, onOpenCandidate, onOpenComm }: Props) {
           )}
         </Section>
 
-        <Section title="Taken">
-          {tasks.length === 0 ? <Empty>Geen taken.</Empty> : (
-            <ul className="rounded-md border border-border bg-card divide-y divide-border overflow-hidden">
-              {tasks.map((t) => (
-                <li key={t.id} className="flex items-center gap-2 px-2.5 py-1.5 text-xs">
-                  <span className={cn("h-4 w-4 rounded border flex items-center justify-center shrink-0", t.done ? "bg-emerald-500 border-emerald-500 text-white" : "border-border")}>
-                    {t.done && <Check className="h-3 w-3" />}
-                  </span>
-                  <span className={cn("flex-1", t.done && "line-through text-muted-foreground")}>{t.title}</span>
-                  <span className="text-muted-foreground tabular-nums text-[10px]">{t.due}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
 
         <Section title="Meetings">
           {meetings.length === 0 ? <Empty>Geen meetings.</Empty> : (
