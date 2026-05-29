@@ -24,7 +24,7 @@ export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm }: Props
   const [dealsInitialFilter, setDealsInitialFilter] = useState<"open" | null>(null);
   const activity = useMemo(() => getCandidateActivity(candidate.id), [candidate.id]);
   const notes = useMemo(() => getCandidateNotes(candidate.id), [candidate.id]);
-  const dealLinks = useMemo(() => getCandidateDealLinks(candidate.id, candidate.deals), [candidate.id, candidate.deals]);
+  const dealLinks = useMemo(() => getCandidateDealLinks(candidate.id, candidate.deals, candidate.consultantId), [candidate.id, candidate.deals, candidate.consultantId]);
   const evidence = useMemo(() => getCandidateEvidence(candidate.id, candidate.deals), [candidate.id, candidate.deals]);
   const emails = useMemo(() => activity.filter((a) => a.kind === "email"), [activity]);
   const calls = useMemo(() => activity.filter((a) => a.kind === "call"), [activity]);

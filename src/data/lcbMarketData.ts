@@ -195,6 +195,7 @@ function firstName(full: string): string {
 export interface CandidateRow {
   name: string;
   id: string;
+  consultantId?: number;
   category: CandidateCategory;
   status: CandidateStatus;
   deals: number;
@@ -253,6 +254,7 @@ export function getCandidatesForStep(consultantId: number, step: LcbStepKey): Ca
     return {
       name: n,
       id: makeCandidateId(rnd),
+      consultantId,
       category: CATEGORIES[rint(rnd, 0, 2)],
       status: STATUSES[rint(rnd, 0, STATUSES.length - 1)],
       deals: 1 + rint(rnd, 0, 3),
@@ -274,7 +276,9 @@ export function getDealsForStep(consultantId: number, step: LcbStepKey): DealRow
   const count = row ? Math.min(25, Math.max(1, row[step] as number)) : 10;
   return Array.from({ length: count }, (_, i) => {
     const cand = CANDIDATE_NAMES[(consultantId + i) % CANDIDATE_NAMES.length];
-    const co = COMPANIES[(consultantId * 2 + i) % COMPANIES.length];
+    const candidateId = makeCandidateId(rnd);
+    const opdrachtgever = getConsultantOpdrachtgever(consultantId);
+    const co = opdrachtgever.name;
     const role = ROLES[(consultantId + i * 3) % ROLES.length];
     const stage = LCB_DEAL_STAGES[rint(rnd, 0, LCB_DEAL_STAGES.length - 1)];
     const date = fullDate(rnd);
@@ -284,9 +288,9 @@ export function getDealsForStep(consultantId: number, step: LcbStepKey): DealRow
       dealId: makeDealId(rnd),
       dealStatus: stage,
       candidateName: cand,
-      candidateId: makeCandidateId(rnd),
+      candidateId,
       opdrachtgeverName: co,
-      opdrachtgeverId: makeOpdrachtgeverId(rnd),
+      opdrachtgeverId: opdrachtgever.id,
       lastUpdated: ddmm(rnd),
       lastUpdatedDate: date,
       lastUpdatedTime: time,
@@ -339,6 +343,22 @@ function seedFromId(id: string) {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   return mulberry32(h);
+}
+
+function getCandidateOpdrachtgever(candidateId: string): { name: string; id: string } {
+  const rnd = seedFromId(`${candidateId}-opdrachtgever`);
+  return {
+    name: pick(rnd, COMPANIES),
+    id: makeOpdrachtgeverId(rnd),
+  };
+}
+
+function getConsultantOpdrachtgever(consultantId: number): { name: string; id: string } {
+  const rnd = mulberry32(consultantId * 4441 + 29);
+  return {
+    name: pick(rnd, COMPANIES),
+    id: makeOpdrachtgeverId(rnd),
+  };
 }
 
 export function getCandidateNotes(candidateId: string): CandidateNote[] {
@@ -408,20 +428,20 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
 }
 
 
-export function getCandidateDealLinks(candidateId: string, dealsCount: number): CandidateDealLink[] {
+export function getCandidateDealLinks(candidateId: string, dealsCount: number, consultantId?: number): CandidateDealLink[] {
   const rnd = seedFromId(candidateId + "deals");
   const n = Math.max(1, Math.min(dealsCount + 2, 8));
+  const opdrachtgever = consultantId ? getConsultantOpdrachtgever(consultantId) : getCandidateOpdrachtgever(candidateId);
   return Array.from({ length: n }, (_, i) => {
-    const co = pick(rnd, COMPANIES);
     const role = pick(rnd, ROLES);
     return {
-      dealName: `Kandidaat ${candidateId} - ${co} - ${role}`,
+      dealName: `Kandidaat ${candidateId} - ${opdrachtgever.name} - ${role}`,
       dealId: makeDealId(rnd),
       dealStatus: pick(rnd, LCB_DEAL_STAGES),
       candidateName: "—",
       candidateId,
-      opdrachtgeverName: co,
-      opdrachtgeverId: makeOpdrachtgeverId(rnd),
+      opdrachtgeverName: opdrachtgever.name,
+      opdrachtgeverId: opdrachtgever.id,
       proposed: rnd() < 0.6,
       date: fullDate(rnd),
       time: hhmm(rnd),
@@ -628,8 +648,7 @@ export function buildFinancePerfRow(consultantId: number, consultantName: string
   const placements = rint(rnd, 3, 18);
   const avgMargin = rint(rnd, 1800, 4200);
   const netImpact = activeRev + soonRev - stopperRev;
-  const ops = [...COMPANIES].sort(() => rnd() - 0.5);
-  const totalOps = rint(rnd, 3, 6);
+  const opdrachtgever = getConsultantOpdrachtgever(consultantId);
   return {
     consultantId, consultantName,
     activeCandidates: active, activeMonthlyRevenue: activeRev,
@@ -637,7 +656,7 @@ export function buildFinancePerfRow(consultantId: number, consultantName: string
     expectedStoppers: stoppers, stopperRiskRevenue: stopperRev,
     likelyExtensions: likely, likelyExtensionRevenue: likelyRev,
     placementsYTD: placements, avgMarginPerCandidate: avgMargin,
-    netImpact, topOpdrachtgevers: ops.slice(0, 1), totalOpdrachtgevers: 1,
+    netImpact, topOpdrachtgevers: [opdrachtgever.name], totalOpdrachtgevers: 1,
   };
 }
 
