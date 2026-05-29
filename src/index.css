@@ -283,3 +283,46 @@
 /* LC-B detail panel marker (components render unframed via the `framed` prop) */
 .lcb-detail-flat {
 }
+
+/* ─────────────────────────────────────────────────────────────
+   LC-B visual skin — matches Synsel AI tool styling.
+   Scoped to descendants of `.lcb-skin` so no other route is affected.
+   Pure paint: tokens only, no spacing/layout changes.
+   ───────────────────────────────────────────────────────────── */
+.lcb-skin {
+  /* warm near-white app surface */
+  --background: 40 14% 96%;
+  --foreground: 220 25% 12%;
+
+  /* crisp white cards with hairline borders */
+  --card: 0 0% 100%;
+  --card-foreground: 220 25% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 25% 12%;
+
+  --muted: 40 14% 94%;
+  --muted-foreground: 220 10% 42%;
+  --secondary: 40 14% 94%;
+  --secondary-foreground: 220 25% 12%;
+
+  --border: 30 10% 88%;
+  --input: 30 10% 88%;
+
+  /* warm gold accent (Synsel "Relatie wijzigen" / Feedback pill) */
+  --primary: 38 38% 52%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 38 38% 52%;
+  --accent: 38 38% 52%;
+  --accent-foreground: 0 0% 100%;
+
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Soft white surface lift on key panels so the layout reads like the reference */
+.lcb-skin .lcb-surface {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border) / 0.7);
+  box-shadow: 0 1px 2px hsl(220 25% 12% / 0.04);
+}
+
