@@ -521,6 +521,6 @@ export function buildFinancePerfRow(consultantId: number, consultantName: string
   };
 }
 
-export const lcbFinancePerfRows: LcbFinancePerfRow[] = myTeamConsultants.map((c) =>
+export const lcbFinancePerfRows: LcbFinancePerfRow[] = lcbTeam.map((c) =>
   buildFinancePerfRow(c.id, c.name),
 );
