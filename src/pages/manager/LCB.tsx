@@ -219,9 +219,9 @@ export default function LCB() {
 
       <LCBTopBar
         date={date} onDate={setDate}
-        units={UNITS}
+        units={unitOptions}
         selectedUnits={selectedUnits} onSelectedUnits={setSelectedUnits}
-        consultants={lcbTeam.map((c) => ({ id: c.id, name: c.name }))}
+        consultants={consultantOptions}
         selectedConsultants={selectedConsultants} onSelectedConsultants={setSelectedConsultants}
         search={search} onSearch={setSearch}
         onReset={onResetFilters}
