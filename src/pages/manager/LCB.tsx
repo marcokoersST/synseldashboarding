@@ -69,6 +69,8 @@ export default function LCB() {
   const [stepCtx, setStepCtx] = useState<{ consultantId: number; step: LcbStepKey } | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateRow | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<DealRow | null>(null);
+  const [commPane, setCommPane] = useState<{ item: ActivityItem; contextLabel: string } | null>(null);
+
 
   const [consultantOverlay, setConsultantOverlay] = useState<number | null>(null);
   const [devOverlay, setDevOverlay] = useState<number | null>(null);
