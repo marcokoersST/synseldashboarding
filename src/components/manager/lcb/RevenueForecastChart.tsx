@@ -130,14 +130,10 @@ export function RevenueForecastChart({ rows, onOpenRevenue }: Props) {
                   strokeWidth={2}
                   strokeDasharray={m.dash}
                   dot={{ r: 3, fill: m.color, strokeWidth: 0 }}
-                  activeDot={{
-                    r: 5,
-                    fill: m.color,
-                    strokeWidth: 0,
-                    style: { cursor: "pointer" },
-                    onClick: (_: unknown, e: { payload?: { id: number } }) => {
-                      if (e?.payload?.id != null) onOpenRevenue(e.payload.id);
-                    },
+                  activeDot={{ r: 5, fill: m.color, strokeWidth: 0, style: { cursor: "pointer" } }}
+                  onClick={(d: any) => {
+                    const id = d?.payload?.id ?? d?.activePayload?.[0]?.payload?.id;
+                    if (id != null) onOpenRevenue(id);
                   }}
                   isAnimationActive={false}
                 />
