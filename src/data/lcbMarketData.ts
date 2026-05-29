@@ -1,7 +1,49 @@
 // LC-B weekly market data — seeded, deterministic. Used only by /manager-dashboard/LC-B.
 
-import { myTeamConsultants } from "./managerData";
 import { LCB_DEAL_STAGES, CONTACT_STATUSES, type LcbDealStage, type ContactStatus } from "./lcbDealStages";
+
+// ─── LC-B team roster (from uploaded sheet) ────────────────────────────
+export const LCB_UNITS = ["Operators", "Monteurs", "Engineers", "Installatietechniek"] as const;
+
+export const lcbTeam: { id: number; name: string; unit: string }[] = [
+  { id: 101, name: "Amer Faraman", unit: "Operators" },
+  { id: 102, name: "Bas de Ruiter", unit: "Operators" },
+  { id: 103, name: "Dees Beeking", unit: "Operators" },
+  { id: 104, name: "Dyon Makel", unit: "Operators" },
+  { id: 105, name: "Elmar Koopman", unit: "Monteurs" },
+  { id: 106, name: "Emily Huigens", unit: "Operators" },
+  { id: 107, name: "Eric Hutchison", unit: "Engineers" },
+  { id: 108, name: "Falco Zegveld", unit: "Engineers" },
+  { id: 109, name: "Jelle van Enck", unit: "Engineers" },
+  { id: 110, name: "Joey de Vries", unit: "Monteurs" },
+  { id: 111, name: "Joey Pol", unit: "Installatietechniek" },
+  { id: 112, name: "Jort Koggel", unit: "Engineers" },
+  { id: 113, name: "Joshua Westendorp", unit: "Operators" },
+  { id: 114, name: "Kaylee van den Berg", unit: "Monteurs" },
+  { id: 115, name: "Lars van Suntenmaartensdijk", unit: "Operators" },
+  { id: 116, name: "Levi van den Brink", unit: "Operators" },
+  { id: 117, name: "Marco Schaap", unit: "Installatietechniek" },
+  { id: 118, name: "Mart van Offeren", unit: "Operators" },
+  { id: 119, name: "Mattijs Gijse", unit: "Operators" },
+  { id: 120, name: "Niels Florijn", unit: "Engineers" },
+  { id: 121, name: "Nino Boot", unit: "Monteurs" },
+  { id: 122, name: "Paul Geers", unit: "Operators" },
+  { id: 123, name: "Rens van den Brink", unit: "Operators" },
+  { id: 124, name: "Rick Karssen", unit: "Engineers" },
+  { id: 125, name: "Robert Zielhuis", unit: "Operators" },
+  { id: 126, name: "Robin Jansen", unit: "Operators" },
+  { id: 127, name: "Robin van Bruggen", unit: "Monteurs" },
+  { id: 128, name: "Senna Ekkers", unit: "Monteurs" },
+  { id: 129, name: "Sijmen Bossenbroek", unit: "Monteurs" },
+  { id: 130, name: "Thijs Pisa", unit: "Operators" },
+  { id: 131, name: "Thijs Udink", unit: "Operators" },
+  { id: 132, name: "Thom Auf der Masch", unit: "Operators" },
+  { id: 133, name: "Ties Ganzevles", unit: "Operators" },
+  { id: 134, name: "Tim Kuik", unit: "Engineers" },
+  { id: 135, name: "Toby Bruinier", unit: "Monteurs" },
+  { id: 136, name: "Tom Kolkman", unit: "Engineers" },
+  { id: 137, name: "Tomas Jansen", unit: "Engineers" },
+];
 
 // ─── Funnel steps (round-2 labels) ──────────────────────────────────────
 export const lcbFunnelSteps = [
