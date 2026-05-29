@@ -255,7 +255,7 @@ function Th({
   return (
     <th
       className={cn(
-        "px-2 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground",
+        "px-1.5 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground align-top",
         align === "right" && "text-right",
         sticky && "sticky left-0 z-30 bg-muted/70 backdrop-blur",
         sortable && "cursor-pointer select-none hover:text-foreground",
@@ -264,9 +264,9 @@ function Th({
       )}
       onClick={onClick}
     >
-      <span className={cn("inline-flex items-center gap-1", align === "right" && "justify-end w-full")}>
+      <span className={cn("inline-flex items-start gap-1 whitespace-normal break-words leading-tight", align === "right" && "justify-end w-full")}>
         {children}
-        {sortable && active && (dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+        {sortable && active && (dir === "asc" ? <ChevronUp className="h-3 w-3 flex-shrink-0 mt-0.5" /> : <ChevronDown className="h-3 w-3 flex-shrink-0 mt-0.5" />)}
       </span>
     </th>
   );
