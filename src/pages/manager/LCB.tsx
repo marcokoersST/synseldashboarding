@@ -294,12 +294,30 @@ export default function LCB() {
         } : null}
         right={
           selectedCandidate
-            ? { breadcrumbs: ["Candidate Market", stepConsultant?.name ?? "", stepDef?.label ?? "", selectedCandidate.name], title: selectedCandidate.name, subtitle: "Kandidaatdetail", content: <CandidateDetailPane candidate={selectedCandidate} /> }
+            ? { breadcrumbs: ["Candidate Market", stepConsultant?.name ?? "", stepDef?.label ?? "", selectedCandidate.name], title: selectedCandidate.name, subtitle: "Kandidaatdetail",
+                content: <CandidateDetailPane
+                  candidate={selectedCandidate}
+                  onOpenDeal={openDealFromCandidate}
+                  onOpenComm={(item, contextLabel) => setCommPane({ item, contextLabel })}
+                /> }
             : selectedDeal
-              ? { breadcrumbs: ["Candidate Market", stepConsultant?.name ?? "", stepDef?.label ?? "", selectedDeal.dealName], title: selectedDeal.dealName, subtitle: "Dealdetail", content: <DealDetailPane deal={selectedDeal} /> }
+              ? { breadcrumbs: ["Candidate Market", stepConsultant?.name ?? "", stepDef?.label ?? "", selectedDeal.dealName], title: selectedDeal.dealName, subtitle: "Dealdetail",
+                  content: <DealDetailPane
+                    deal={selectedDeal}
+                    onOpenCandidate={openCandidateFromDeal}
+                    onOpenComm={(item, contextLabel) => setCommPane({ item, contextLabel })}
+                  /> }
               : null
         }
+        extra={commPane ? {
+          breadcrumbs: ["Communicatie", commPane.contextLabel, commPane.item.kind === "call" ? "Call" : "Email"],
+          title: commPane.item.kind === "call" ? "Call detail" : "Email detail",
+          subtitle: `${commPane.item.date} · ${commPane.item.time}`,
+          content: <CommunicationPane item={commPane.item} contextLabel={commPane.contextLabel} />,
+        } : null}
+        onCloseExtra={() => setCommPane(null)}
       />
+
 
       <ConsultantOverviewOverlay
         open={!!consultantOverlay}
