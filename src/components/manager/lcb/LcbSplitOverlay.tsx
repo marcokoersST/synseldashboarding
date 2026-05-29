@@ -65,7 +65,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
         onClick={onClose}
         className="flex-1 bg-background/60 backdrop-blur-sm animate-in fade-in duration-150"
       />
-      <div className={cn("h-full flex transition-opacity duration-200", dim && "opacity-50 pointer-events-none")}>
+      <div className="relative h-full flex">
         <Pane
           breadcrumbs={left.breadcrumbs}
           title={left.title}
@@ -90,6 +90,14 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
             {right.content}
           </Pane>
         )}
+        {dim && (
+          <button
+            type="button"
+            aria-label="Sluit communicatie"
+            onClick={onCloseExtra ?? onClose}
+            className="absolute inset-0 bg-background/55 backdrop-blur-[1px] animate-in fade-in duration-150 z-10"
+          />
+        )}
       </div>
       {extra && (
         <Pane
@@ -108,6 +116,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
     document.body,
   );
 }
+
 
 
 function Pane({

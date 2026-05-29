@@ -1,9 +1,10 @@
-## Plan
+## Problem
+When the third "extra" communication pane (email/call detail) opens, the existing left + right panes get `opacity-50`, which makes them translucent so the underlying dashboard bleeds through and looks like overlapping text.
 
-Remove the "Taken" section from `src/components/manager/lcb/DealDetailPane.tsx` since it's been replaced by the AI step checks at the top of the pane.
+## Fix
+In `src/components/manager/lcb/LcbSplitOverlay.tsx`:
+- Remove `opacity-50` from the panes group so the panes stay fully opaque.
+- Add a separate dim overlay (`bg-background/60 backdrop-blur-sm`) layered on top of the left+right panes only when `extra` is open. Clicking it closes the extra pane.
+- Keep `pointer-events-none` semantics via the overlay catching clicks.
 
-### Change
-- Delete the `TAKEN` section header and its tasks list rendering in `DealDetailPane.tsx`.
-- Leave Notities, Meetings, Emails, AI step checks, and Contact check intact.
-
-No other files affected.
+No other files changed.
