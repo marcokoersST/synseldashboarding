@@ -1,20 +1,28 @@
-## Finance & Forecast op zelfde dataset als rest van LC-B
+## Plan
 
-Doel: tabel + line graph in Finance & Forecast tonen dezelfde consultants en units als Candidate Market (de 56 LCB-consultants in 5 units), in plaats van `myTeamConsultants` (6).
+The previous change only fixed the **Finance & Forecast performance table**. The screenshot shows the issue is still present in the **Candidate Market drilldown**, where one candidate can still have multiple deal rows with different opdrachtgevers.
 
-### Wijzigingen
+I will make opdrachtgevers consistent at the data-source level so each candidate is tied to **one opdrachtgever only** across the LC-B flow.
 
-**1. `src/components/manager/lcb/FinanceForecastTab.tsx`**
-- Vervang import `myTeamConsultants` door `lcbTeam` uit `@/data/lcbMarketData`.
-- In de `consultants` useMemo: gebruik `lcbTeam` als bron.
-- `marginRows`: `lcbTeam` heeft geen `revenue`-veld → genereer `target` deterministisch uit `c.id` (zelfde seed-stijl als bestaande code, bijv. `target = 600 + ((c.id * 53) % 1200)`) zodat `realised`, `forecast`, `potential`, `margin` consistent en stabiel zijn. Alle overige logica blijft identiek.
-- `consultantRevenueDetailData.find(...)` blijft staan; voor lcbTeam-ids levert dit `undefined` op → bestaande `detail ? ... : 0` fallback dekt dat af.
+## Changes
 
-**2. `src/pages/manager/LCB.tsx`**
-- `usesTeamData` alleen nog `true` voor `development` (niet meer voor `finance`). Daarmee tonen Units- en Consultants-filters voor Finance dezelfde opties als Candidate Market (`LCB_UNITS` / `lcbTeam`).
-- `setTab` reset-logica blijft; clear-on-switch voorkomt stale selecties tussen development en de overige tabs.
+1. **Centralize candidate opdrachtgever mapping**
+   - Add a deterministic helper in `src/data/lcbMarketData.ts` that returns one fixed opdrachtgever + opdrachtgever ID for a candidate ID.
+   - This prevents different functions from randomly assigning different opdrachtgevers for the same candidate.
 
-### Niet gewijzigd
-- Performance-perspectief gebruikt al `buildFinancePerfRow` met dezelfde ids — werkt automatisch mee.
-- Consultant Development tab blijft op `myTeamConsultants` (niet aangevraagd).
-- Overlays, KPI-strip, grafiek, kolommen, styling — ongewijzigd.
+2. **Apply it to candidate deal links**
+   - Update `getCandidateDealLinks(...)` so all deal rows for one candidate use the same opdrachtgever.
+   - Deal names will also use that same opdrachtgever, so the breadcrumb/header/table stay aligned.
+
+3. **Apply it to deal generation where possible**
+   - Update `getDealsForStep(...)` to use the same deterministic opdrachtgever logic for the generated candidate ID used by each deal row.
+   - This keeps the row clicked in the sales funnel aligned with the detail pane.
+
+4. **Keep Finance & Forecast table max-one behavior**
+   - Keep the `FinanceForecastTab` display limited to one opdrachtgever chip.
+   - Keep `totalOpdrachtgevers` at `1` for those summary rows.
+
+## Validation
+
+- Search for remaining multi-opdrachtgever display logic (`+N`, `.map(topOpdrachtgevers)`, random opdrachtgever picks in candidate deal links).
+- Verify the LC-B drilldown path shown in the screenshot: consultant row → candidate/deal detail → related deals all show a single opdrachtgever for that candidate.

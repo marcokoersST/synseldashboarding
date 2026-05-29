@@ -274,7 +274,9 @@ export function getDealsForStep(consultantId: number, step: LcbStepKey): DealRow
   const count = row ? Math.min(25, Math.max(1, row[step] as number)) : 10;
   return Array.from({ length: count }, (_, i) => {
     const cand = CANDIDATE_NAMES[(consultantId + i) % CANDIDATE_NAMES.length];
-    const co = COMPANIES[(consultantId * 2 + i) % COMPANIES.length];
+    const candidateId = makeCandidateId(rnd);
+    const opdrachtgever = getCandidateOpdrachtgever(candidateId);
+    const co = opdrachtgever.name;
     const role = ROLES[(consultantId + i * 3) % ROLES.length];
     const stage = LCB_DEAL_STAGES[rint(rnd, 0, LCB_DEAL_STAGES.length - 1)];
     const date = fullDate(rnd);
@@ -284,9 +286,9 @@ export function getDealsForStep(consultantId: number, step: LcbStepKey): DealRow
       dealId: makeDealId(rnd),
       dealStatus: stage,
       candidateName: cand,
-      candidateId: makeCandidateId(rnd),
+      candidateId,
       opdrachtgeverName: co,
-      opdrachtgeverId: makeOpdrachtgeverId(rnd),
+      opdrachtgeverId: opdrachtgever.id,
       lastUpdated: ddmm(rnd),
       lastUpdatedDate: date,
       lastUpdatedTime: time,
@@ -339,6 +341,14 @@ function seedFromId(id: string) {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   return mulberry32(h);
+}
+
+function getCandidateOpdrachtgever(candidateId: string): { name: string; id: string } {
+  const rnd = seedFromId(`${candidateId}-opdrachtgever`);
+  return {
+    name: pick(rnd, COMPANIES),
+    id: makeOpdrachtgeverId(rnd),
+  };
 }
 
 export function getCandidateNotes(candidateId: string): CandidateNote[] {
@@ -411,17 +421,17 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
 export function getCandidateDealLinks(candidateId: string, dealsCount: number): CandidateDealLink[] {
   const rnd = seedFromId(candidateId + "deals");
   const n = Math.max(1, Math.min(dealsCount + 2, 8));
+  const opdrachtgever = getCandidateOpdrachtgever(candidateId);
   return Array.from({ length: n }, (_, i) => {
-    const co = pick(rnd, COMPANIES);
     const role = pick(rnd, ROLES);
     return {
-      dealName: `Kandidaat ${candidateId} - ${co} - ${role}`,
+      dealName: `Kandidaat ${candidateId} - ${opdrachtgever.name} - ${role}`,
       dealId: makeDealId(rnd),
       dealStatus: pick(rnd, LCB_DEAL_STAGES),
       candidateName: "—",
       candidateId,
-      opdrachtgeverName: co,
-      opdrachtgeverId: makeOpdrachtgeverId(rnd),
+      opdrachtgeverName: opdrachtgever.name,
+      opdrachtgeverId: opdrachtgever.id,
       proposed: rnd() < 0.6,
       date: fullDate(rnd),
       time: hhmm(rnd),
