@@ -73,7 +73,7 @@ export default function LCB() {
   };
 
   // Filter options depend on which dataset the active tab consumes.
-  const usesTeamData = tab === "development" || tab === "finance";
+  const usesTeamData = tab === "development";
   const unitOptions = useMemo(
     () => usesTeamData
       ? Array.from(new Set(myTeamConsultants.map((c) => c.unit)))
