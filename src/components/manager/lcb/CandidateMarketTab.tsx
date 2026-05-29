@@ -121,6 +121,15 @@ export function CandidateMarketTab({
 
       <div className="overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-card relative" style={{ maxHeight: "calc(100vh - 280px)" }}>
         <table className="w-full text-xs border-collapse table-fixed">
+          <colgroup>
+            <col style={{ width: 200 }} />
+            <col style={{ width: 120 }} />
+            {lcbFunnelSteps.map((s) => (
+              <col key={s.key} style={{ width: 90 }} />
+            ))}
+            <col style={{ width: 170 }} />
+            <col style={{ width: 110 }} />
+          </colgroup>
           <thead className="sticky top-0 z-20 bg-muted/70 backdrop-blur">
             <tr className="text-left">
               <Th sticky sortable onClick={() => toggleSort("consultantName")} active={sortKey === "consultantName"} dir={sortDir} highlight={hoverCol === "consultantName"}>Consultant</Th>
@@ -147,13 +156,14 @@ export function CandidateMarketTab({
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); onOpenConsultant(row.consultantId); }}
-                      className="font-medium text-foreground whitespace-nowrap hover:text-primary text-left"
+                      title={row.consultantName}
+                      className="font-medium text-foreground hover:text-primary text-left truncate block w-full"
                     >
                       {row.consultantName}
                     </button>
                   </Td>
                   <Td highlight={isRow || hoverCol === "unit"} intersect={isRow && hoverCol === "unit"} onEnter={() => { setHoverRow(row.consultantId); setHoverCol("unit"); }}>
-                    <span className="text-muted-foreground">{row.unit}</span>
+                    <span className="text-muted-foreground truncate block" title={row.unit}>{row.unit}</span>
                   </Td>
                   {lcbFunnelSteps.map((s, i) => {
                     const val = row[s.key] as number;

@@ -1,27 +1,33 @@
-## Wijzigingen in /manager-dashboard/LC-B → tab Candidate Market
+## Fix visual overlap/clipping on /manager-dashboard/LC-B
 
-### 1. Klikgedrag corrigeren
+In `src/components/manager/lcb/CandidateMarketTab.tsx` the funnel table uses `table-fixed` without column widths or overflow handling, which causes two issues visible in the screenshots:
 
-Nu opent een rij-klik (waar dan ook in de rij) het overlay **"Candidate Market > [consultant]"** (volledige consultant-overview). Dat moet alleen gebeuren wanneer de **naam** wordt aangeklikt — niet bij klikken op een funnel-cel zoals *Toegewezen*. Het "tweede keer"-effect ontstaat doordat na het sluiten van de step-overlay de rij nog steeds de consultant-overlay triggert.
+- Long consultant names ("Thom Auf der Masch…") overflow the sticky Consultant column and visually cover the Unit cell ("Operators").
+- Long uppercase header labels ("VERVOLGGESPREKKEN") overflow narrow equal-width columns and collide with the neighboring header ("GESPREKKEN").
 
-In `src/components/manager/lcb/CandidateMarketTab.tsx`:
-- Verwijder `onClick={() => onOpenConsultant(row.consultantId)}` van het `<tr>`.
-- Voeg de klik alleen toe op de naam-`<Td>` (kolom Consultant) — alleen daar opent "Candidate Market > [consultant]".
-- Cel-knoppen (toegewezen, inschrijvingen, etc.) blijven `onOpenStep` triggeren via hun eigen button met `stopPropagation`. Hint-tekst onder de tabel aanpassen: *"Klik een cel voor de onderliggende kandidaten/deals. Klik op de naam voor het volledige consultantoverzicht."*
+### Changes (single file)
 
-### 2. Data vullen vanuit de geüploade PDF
+1. **Add a `<colgroup>`** above `<thead>` with explicit widths so columns don't all share equal space:
+   - Consultant: `w-[200px]`
+   - Unit: `w-[120px]`
+   - One `<col>` per `lcbFunnelSteps` entry: `w-[90px]` (right-aligned numeric cells)
+   - Drop-off: `w-[170px]`
+   - Status: `w-[110px]`
 
-In `src/data/lcbMarketData.ts`:
-- Vervang `myTeamConsultants.map(buildRow)` door een lokale lijst van de 37 consultants uit de PDF, elk met `id`, `name`, `unit`. De units komen 1-op-1 uit de PDF: **Operators, Monteurs, Engineers, Installatietechniek**.
-- `buildRow` blijft ongewijzigd zodat de seeded mock-cijfers per consultant deterministisch berekend worden.
-- Exporteer ook `LCB_UNITS = ["Operators","Monteurs","Engineers","Installatietechniek"]` voor hergebruik.
+2. **Consultant cell**: replace `whitespace-nowrap` on the name button with `truncate block w-full` and add `title={row.consultantName}` so the full name shows on hover. Ensure the sticky `<Td>` clips overflow (add `overflow-hidden` + `max-w-0` pattern, or simply `truncate` on the inner button now that the column has a fixed width).
 
-### 3. Filters actief maken
+3. **Unit cell**: wrap the unit `<span>` with `truncate block` and `title={row.unit}` for safety.
 
-In `src/pages/manager/LCB.tsx`:
-- Vervang de hardcoded `UNITS = ["Engineering","Monteurs","Operators","Trainingsunit","Early Performers"]` door de nieuwe `LCB_UNITS` uit `lcbMarketData`. Reden: de huidige units matchen niet met de data, waardoor het Units-filter niets filterde.
-- Vervang `consultants={myTeamConsultants...}` in `<LCBTopBar>` door de nieuwe 37-consultantlijst uit `lcbMarketData`, zodat het Consultants-filter alle juiste namen toont en daadwerkelijk filtert.
-- Filter-state (`selectedUnits`, `selectedConsultants`) wordt al doorgegeven aan `CandidateMarketTab`, `ConsultantDevelopmentTab` en `FinanceForecastTab` — geen wijziging daar nodig.
+4. **`Th` component**: allow header text to wrap by switching the inner `<span>` from default `inline-flex` no-wrap behavior to `whitespace-normal leading-tight break-words`, and reduce horizontal padding slightly (`px-1.5`) so two-line headers like "Vervolg­gesprekken" fit cleanly. Keep the sort chevron aligned with the first line via `items-start`.
 
-### Scope
-Alleen de Candidate Market-flow + data/filters op LC-B. Geen aanpassingen aan andere tabs of overlays.
+5. **Drop-off cell**: add `truncate block` with `title={worst.label}` to prevent the "X → Y" string from spilling.
+
+### Out of scope
+
+- No data, routing, or business-logic changes.
+- Other LC-B tabs untouched.
+- Overlay components untouched (their breadcrumbs already truncate via the existing overlay layout).
+
+### Verification
+
+After edit, navigate to `/manager-dashboard/LC-B` and screenshot the funnel table to confirm: consultant names truncate with ellipsis inside their column, Unit shows cleanly next to them, and the funnel step headers wrap onto two lines without overlapping.
