@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   type DealRow, type ActivityItem,
-  getDealNotes, getDealTasks, getDealMeetings, getDealActivity, getDealEvidence,
+  getDealNotes, getDealMeetings, getDealActivity, getDealEvidence,
   getCandidateNotes,
 } from "@/data/lcbMarketData";
 import { dealStageBadgeClass, contactStatusBadgeClass, CONTACT_STATUSES } from "@/data/lcbDealStages";
