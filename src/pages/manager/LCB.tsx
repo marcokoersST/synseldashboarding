@@ -14,7 +14,7 @@ import {
 } from "@/data/lcbMarketData";
 import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
 import { consultantSkillData } from "@/data/managerPerformanceData";
-import { dealStageBadgeClass, LCB_DEAL_STAGES, type LcbDealStage } from "@/data/lcbDealStages";
+import { dealStageBadgeClass } from "@/data/lcbDealStages";
 
 import { LCB_STATUS_COLOR, LCB_STATUS_LABEL, statusFromScore } from "@/lib/lcbStatus";
 import { LCBTopBar } from "@/components/manager/lcb/LCBTopBar";
