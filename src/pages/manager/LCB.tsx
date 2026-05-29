@@ -10,8 +10,8 @@ import {
   getCandidatesForStep, getDealsForStep,
   type LcbStepKey, type CandidateRow, type DealRow,
   type ActivityItem, type CandidateDealLink,
-  isEndStage,
 } from "@/data/lcbMarketData";
+
 import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
 import { consultantSkillData } from "@/data/managerPerformanceData";
 import { dealStageBadgeClass } from "@/data/lcbDealStages";
