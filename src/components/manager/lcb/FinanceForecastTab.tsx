@@ -45,7 +45,7 @@ export function FinanceForecastTab({
   // ─── Margin perspective rows ───
   const marginRows = useMemo(() => consultants.map((c) => {
     const detail = consultantRevenueDetailData.find((d) => d.consultantId === c.id);
-    const target = Math.round(c.revenue / 1000);
+    const target = 600 + ((c.id * 53) % 1200);
     const seedR = ((c.id * 131) % 100) / 100;
     const realised = Math.round(target * (0.7 + seedR * 0.35));
     const forecast = Math.round(realised * (1 + ((c.id * 7) % 25) / 100));
