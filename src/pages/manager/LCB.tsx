@@ -27,7 +27,7 @@ import { LcbSplitOverlay } from "@/components/manager/lcb/LcbSplitOverlay";
 import { CandidateDetailPane } from "@/components/manager/lcb/CandidateDetailPane";
 import { DealDetailPane } from "@/components/manager/lcb/DealDetailPane";
 import { CommunicationPane } from "@/components/manager/lcb/CommunicationPane";
-import { MultiSelectFilter, SortableTh, useSort, ResetButton, filterBy } from "@/components/manager/lcb/tableControls";
+// shared table controls used inside the panes
 import {
   ConsultantOverviewOverlay,
   DevelopmentOverlay, StopperOverlay, ActivePlacementsOverlay,
