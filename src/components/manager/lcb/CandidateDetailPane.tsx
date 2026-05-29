@@ -1,27 +1,40 @@
-import { useMemo, useState } from "react";
-import { Mail, Phone, StickyNote, ArrowDownLeft, ArrowUpRight, ExternalLink } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { Mail, Phone, StickyNote, ArrowDownLeft, ArrowUpRight, ExternalLink, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  type CandidateRow,
-  getCandidateActivity, getCandidateNotes, getCandidateDealLinks,
+  type CandidateRow, type CandidateDealLink, type ActivityItem,
+  getCandidateActivity, getCandidateNotes, getCandidateDealLinks, getCandidateEvidence,
+  isEndStage,
 } from "@/data/lcbMarketData";
-import { dealStageBadgeClass, contactStatusBadgeClass } from "@/data/lcbDealStages";
+import { dealStageBadgeClass, contactStatusBadgeClass, LCB_DEAL_STAGES, CONTACT_STATUSES } from "@/data/lcbDealStages";
+import { MultiSelectFilter, SortableTh, useSort, ResetButton, filterBy } from "./tableControls";
 
 type Tab = "summary" | "deals" | "emails" | "calls";
 
 interface Props {
   candidate: CandidateRow;
+  onOpenDeal?: (dealLink: CandidateDealLink) => void;
+  onOpenComm?: (item: ActivityItem, contextLabel: string) => void;
 }
 
-export function CandidateDetailPane({ candidate }: Props) {
+export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm }: Props) {
   const [tab, setTab] = useState<Tab>("summary");
+  const [dealsInitialFilter, setDealsInitialFilter] = useState<"open" | null>(null);
   const activity = useMemo(() => getCandidateActivity(candidate.id), [candidate.id]);
   const notes = useMemo(() => getCandidateNotes(candidate.id), [candidate.id]);
   const dealLinks = useMemo(() => getCandidateDealLinks(candidate.id, candidate.deals), [candidate.id, candidate.deals]);
+  const evidence = useMemo(() => getCandidateEvidence(candidate.id, candidate.deals), [candidate.id, candidate.deals]);
   const emails = useMemo(() => activity.filter((a) => a.kind === "email"), [activity]);
   const calls = useMemo(() => activity.filter((a) => a.kind === "call"), [activity]);
+
+  const contextLabel = `Kandidaat · ${candidate.name}`;
+
+  const goDeals = (filter: "open" | null = null) => {
+    setDealsInitialFilter(filter);
+    setTab("deals");
+  };
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
@@ -62,20 +75,95 @@ export function CandidateDetailPane({ candidate }: Props) {
       {/* Tabs body */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
         {tab === "summary" && (
-          <SummaryBody notes={notes} activity={activity} />
+          <SummaryBody
+            evidence={evidence}
+            notes={notes}
+            activity={activity}
+            onGoDeals={goDeals}
+          />
         )}
-        {tab === "deals" && <DealsTab rows={dealLinks} />}
-        {tab === "emails" && <EmailsTab rows={emails} />}
-        {tab === "calls" && <CallsTab rows={calls} />}
+        {tab === "deals" && <DealsTab rows={dealLinks} initialFilter={dealsInitialFilter} onOpenDeal={onOpenDeal} />}
+        {tab === "emails" && <EmailsTab rows={emails} onOpenComm={onOpenComm} contextLabel={contextLabel} />}
+        {tab === "calls" && <CallsTab rows={calls} onOpenComm={onOpenComm} contextLabel={contextLabel} />}
       </div>
     </div>
   );
 }
 
-function SummaryBody({ notes, activity }: { notes: ReturnType<typeof getCandidateNotes>; activity: ReturnType<typeof getCandidateActivity> }) {
+function AiCandidateChecks({
+  evidence, onGoDeals,
+}: {
+  evidence: ReturnType<typeof getCandidateEvidence>;
+  onGoDeals: (filter: "open" | null) => void;
+}) {
+  const approachOk = evidence.approached.viaMail || evidence.approached.viaCall;
+  return (
+    <section className="rounded-md border border-border bg-card divide-y divide-border overflow-hidden">
+      <CheckRow
+        passed={approachOk}
+        label="Benadering"
+        detail={
+          approachOk
+            ? `${evidence.approached.viaMail ? "mail" : ""}${evidence.approached.viaMail && evidence.approached.viaCall ? " + " : ""}${evidence.approached.viaCall ? "call" : ""}${evidence.approached.success ? " · succes" : ""}`
+            : "Nog geen mail of call gevonden."
+        }
+      />
+      <CheckRow
+        passed={evidence.matched.matched}
+        label={`Match → ${evidence.matched.dealCount} deals`}
+        detail={evidence.matched.matched ? "Klik om alle deals te zien." : "Nog niet gematcht."}
+        onClick={evidence.matched.matched ? () => onGoDeals(null) : undefined}
+      />
+      <CheckRow
+        passed={evidence.endStage.total > 0 && evidence.endStage.notEndStage === 0}
+        label={`Open deals → ${evidence.endStage.notEndStage}/${evidence.endStage.total}`}
+        detail={evidence.endStage.notEndStage > 0 ? "Nog niet alle deals afgerond." : "Alle deals in eindstatus."}
+        onClick={evidence.endStage.total > 0 ? () => onGoDeals("open") : undefined}
+      />
+      <CheckRow
+        passed={evidence.intakeDone}
+        label="Intake gedaan"
+        detail={evidence.intakeDone ? "Intake aanwezig in activiteit." : "Geen intake gevonden."}
+        onClick={evidence.matched.matched ? () => onGoDeals(null) : undefined}
+      />
+    </section>
+  );
+}
+
+function CheckRow({ passed, label, detail, onClick }: { passed: boolean; label: string; detail: string; onClick?: () => void }) {
+  const Comp = onClick ? "button" : "div";
+  return (
+    <Comp
+      type={onClick ? "button" : undefined as any}
+      onClick={onClick}
+      className={cn(
+        "w-full text-left flex items-center gap-2 px-2.5 py-1.5 text-xs",
+        onClick && "hover:bg-muted/40 cursor-pointer",
+      )}
+    >
+      <span className={cn("h-2 w-2 rounded-full shrink-0", passed ? "bg-emerald-500" : "bg-amber-500")} />
+      <span className="font-medium flex-1 min-w-0 truncate">{label}</span>
+      <span className="text-[10px] text-muted-foreground truncate max-w-[260px]">{detail}</span>
+      {onClick && <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />}
+    </Comp>
+  );
+}
+
+function SummaryBody({
+  evidence, notes, activity, onGoDeals,
+}: {
+  evidence: ReturnType<typeof getCandidateEvidence>;
+  notes: ReturnType<typeof getCandidateNotes>;
+  activity: ReturnType<typeof getCandidateActivity>;
+  onGoDeals: (filter: "open" | null) => void;
+}) {
   const latest = activity[0];
   return (
     <div className="space-y-4">
+      <Section title="AI candidate checks">
+        <AiCandidateChecks evidence={evidence} onGoDeals={onGoDeals} />
+      </Section>
+
       {latest && (
         <div className="rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-[11px] flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">Laatste activiteit</span>
@@ -101,184 +189,191 @@ function SummaryBody({ notes, activity }: { notes: ReturnType<typeof getCandidat
           </ul>
         )}
       </Section>
+    </div>
+  );
+}
 
-      <Section title="Outreach historie">
-        <div className="rounded-md border border-border bg-card overflow-hidden">
-          <div
-            className="grid items-center gap-2 px-2.5 py-1.5 bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground font-medium border-b border-border"
-            style={{ gridTemplateColumns: "16px 140px 110px minmax(0,1fr) 64px 110px 24px" }}
-          >
-            <span />
-            <span>Contact</span>
-            <span>Status</span>
-            <span>Onderwerp</span>
-            <span className="text-right">Duur</span>
-            <span className="text-right">Datum</span>
-            <span />
-          </div>
-          <ul className="divide-y divide-border">
-            {activity.map((a) => {
-              const fallback =
-                a.kind === "email" ? "No subject" :
-                a.kind === "call" ? "Call activity" :
-                a.kind === "note" ? "Note" :
-                "Activity without subject";
-              const subjectText = a.subject ?? a.body ?? fallback;
-              const isFallback = !a.subject && !a.body;
-              return (
-                <li
-                  key={a.id}
-                  className="grid items-center gap-2 px-2.5 py-1.5 min-h-[34px] text-xs leading-tight hover:bg-muted/30"
-                  style={{ gridTemplateColumns: "16px 140px 110px minmax(0,1fr) 64px 110px 24px" }}
-                >
-                  <ActivityIcon kind={a.kind} direction={a.direction} />
-                  <span className="font-medium truncate">{a.contact}</span>
-                  <span className="min-w-0">
-                    <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] whitespace-nowrap max-w-full truncate", contactStatusBadgeClass(a.contactStatus))}>
-                      {a.contactStatus}
-                    </span>
+function DealsTab({
+  rows, initialFilter, onOpenDeal,
+}: {
+  rows: CandidateDealLink[];
+  initialFilter: "open" | null;
+  onOpenDeal?: (d: CandidateDealLink) => void;
+}) {
+  const [openOnly, setOpenOnly] = useState(initialFilter === "open");
+  const [stageFilter, setStageFilter] = useState<string[]>([]);
+  useEffect(() => { setOpenOnly(initialFilter === "open"); }, [initialFilter]);
+
+  const filtered = useMemo(() => {
+    let r = rows;
+    if (openOnly) r = r.filter((d) => !isEndStage(d.dealStatus));
+    r = filterBy(r, (d) => d.dealStatus, stageFilter);
+    return r;
+  }, [rows, openOnly, stageFilter]);
+
+  const { sortKey, sortDir, toggle, sorted } = useSort<CandidateDealLink, "dealName" | "dealStatus" | "opdrachtgeverName" | "date">(filtered, (k) => (r) => {
+    if (k === "date") return `${r.date} ${r.time}`;
+    return (r as any)[k] ?? "";
+  }, { key: "date", dir: "desc" });
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <MultiSelectFilter label="Deal stage" options={LCB_DEAL_STAGES} value={stageFilter as any} onChange={(v) => setStageFilter(v as string[])} />
+        <label className="inline-flex items-center gap-1.5 text-[11px] cursor-pointer">
+          <Checkbox checked={openOnly} onCheckedChange={(v) => setOpenOnly(!!v)} />
+          <span>Alleen open</span>
+        </label>
+        {(stageFilter.length > 0 || openOnly) && <ResetButton onClick={() => { setStageFilter([]); setOpenOnly(false); }} />}
+      </div>
+      <div className="rounded-md border border-border overflow-auto">
+        <table className="w-full text-[11px]">
+          <thead className="bg-muted/60 sticky top-0">
+            <tr className="text-left">
+              <SortableTh active={sortKey === "dealName"} dir={sortDir} onClick={() => toggle("dealName")}>Deal</SortableTh>
+              <SortableTh active={sortKey === "dealStatus"} dir={sortDir} onClick={() => toggle("dealStatus")}>Status</SortableTh>
+              <SortableTh active={sortKey === "opdrachtgeverName"} dir={sortDir} onClick={() => toggle("opdrachtgeverName")}>Opdrachtgever</SortableTh>
+              <th className="px-2 py-1.5 font-medium text-[10px] uppercase tracking-wider text-muted-foreground text-center">Voorgesteld</th>
+              <SortableTh active={sortKey === "date"} dir={sortDir} onClick={() => toggle("date")} align="right">Datum · Tijd</SortableTh>
+              <th className="px-2 py-1.5" />
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((r) => (
+              <tr
+                key={r.dealId}
+                className="border-t border-border hover:bg-muted/30 cursor-pointer"
+                onClick={() => onOpenDeal?.(r)}
+              >
+                <td className="px-2 py-1.5 font-medium whitespace-nowrap">
+                  <div>{r.dealName}</div>
+                  <div className="text-[10px] text-muted-foreground">{r.dealId}</div>
+                </td>
+                <td className="px-2 py-1.5">
+                  <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium whitespace-nowrap max-w-[180px] truncate", dealStageBadgeClass(r.dealStatus))}>
+                    {r.dealStatus}
                   </span>
-                  <span className={cn("truncate", isFallback ? "italic text-muted-foreground/60" : "text-muted-foreground")}>
-                    {subjectText}
-                  </span>
-                  <span className="text-muted-foreground tabular-nums text-[10px] text-right font-mono">{a.duration ?? ""}</span>
-                  <span className="text-muted-foreground tabular-nums text-[10px] text-right whitespace-nowrap">{a.date} · {a.time}</span>
-                  <a
-                    href="https://app.recruitcrm.io/v2/contacts"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center justify-center text-muted-foreground hover:text-primary"
-                    title="Open contact in Recruit CRM"
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </Section>
-
+                </td>
+                <td className="px-2 py-1.5">
+                  <div>{r.opdrachtgeverName}</div>
+                  <div className="text-[10px] text-muted-foreground">{r.opdrachtgeverId}</div>
+                </td>
+                <td className="px-2 py-1.5 text-center"><Checkbox checked={r.proposed} className="pointer-events-none" /></td>
+                <td className="px-2 py-1.5 text-muted-foreground tabular-nums text-right whitespace-nowrap">{r.date} · {r.time}</td>
+                <td className="px-2 py-1.5"><CRMIcon /></td>
+              </tr>
+            ))}
+            {sorted.length === 0 && <tr><td colSpan={6} className="px-2 py-6 text-center text-muted-foreground">Geen deals.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-function DealsTab({ rows }: { rows: ReturnType<typeof getCandidateDealLinks> }) {
+function EmailsTab({
+  rows, onOpenComm, contextLabel,
+}: {
+  rows: ActivityItem[];
+  onOpenComm?: (item: ActivityItem, contextLabel: string) => void;
+  contextLabel: string;
+}) {
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const filtered = useMemo(() => filterBy(rows, (r) => r.contactStatus, statusFilter), [rows, statusFilter]);
+  const { sortKey, sortDir, toggle, sorted } = useSort<ActivityItem, "contact" | "contactStatus" | "subject" | "date">(filtered, (k) => (r) => {
+    if (k === "date") return `${r.date} ${r.time}`;
+    return (r as any)[k] ?? "";
+  }, { key: "date", dir: "desc" });
+
   return (
-    <div className="rounded-md border border-border overflow-auto">
-      <table className="w-full text-[11px]">
-        <thead className="bg-muted/60 sticky top-0">
-          <tr className="text-left">
-            <Th>Deal</Th><Th>Status</Th><Th>Opdrachtgever</Th>
-            <Th className="text-center">Voorgesteld</Th><Th>Datum</Th><Th>Tijd</Th><Th>CRM</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.dealId} className="border-t border-border hover:bg-muted/30">
-              <td className="px-2 py-1.5 font-medium whitespace-nowrap">
-                <div>{r.dealName}</div>
-                <div className="text-[10px] text-muted-foreground">{r.dealId}</div>
-              </td>
-              <td className="px-2 py-1.5">
-                <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium whitespace-nowrap max-w-[180px] truncate", dealStageBadgeClass(r.dealStatus))}>
-                  {r.dealStatus}
-                </span>
-              </td>
-              <td className="px-2 py-1.5">
-                <div>{r.opdrachtgeverName}</div>
-                <div className="text-[10px] text-muted-foreground">{r.opdrachtgeverId}</div>
-              </td>
-              <td className="px-2 py-1.5 text-center"><Checkbox checked={r.proposed} className="pointer-events-none" /></td>
-              <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.date}</td>
-              <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.time}</td>
-              <td className="px-2 py-1.5"><CRMIcon /></td>
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <MultiSelectFilter label="Status" options={CONTACT_STATUSES} value={statusFilter as any} onChange={(v) => setStatusFilter(v as string[])} />
+        {statusFilter.length > 0 && <ResetButton onClick={() => setStatusFilter([])} />}
+      </div>
+      <div className="rounded-md border border-border overflow-auto">
+        <table className="w-full text-[11px]">
+          <thead className="bg-muted/60 sticky top-0">
+            <tr className="text-left">
+              <th className="px-2 py-1.5 w-6" />
+              <SortableTh active={sortKey === "contact"} dir={sortDir} onClick={() => toggle("contact")}>Contact</SortableTh>
+              <SortableTh active={sortKey === "contactStatus"} dir={sortDir} onClick={() => toggle("contactStatus")}>Status</SortableTh>
+              <SortableTh active={sortKey === "subject"} dir={sortDir} onClick={() => toggle("subject")}>Onderwerp</SortableTh>
+              <SortableTh active={sortKey === "date"} dir={sortDir} onClick={() => toggle("date")} align="right">Datum · Tijd</SortableTh>
             </tr>
-          ))}
-          {rows.length === 0 && <tr><td colSpan={7} className="px-2 py-6 text-center text-muted-foreground">Geen deals.</td></tr>}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {sorted.map((r) => (
+              <tr key={r.id} className="border-t border-border hover:bg-muted/30 cursor-pointer" onClick={() => onOpenComm?.(r, contextLabel)}>
+                <td className="px-2 py-1.5"><DirIcon dir={r.direction} kind="email" /></td>
+                <td className="px-2 py-1.5">{r.contact}</td>
+                <td className="px-2 py-1.5">
+                  <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px]", contactStatusBadgeClass(r.contactStatus))}>{r.contactStatus}</span>
+                </td>
+                <td className="px-2 py-1.5 truncate max-w-[260px]">{r.subject}</td>
+                <td className="px-2 py-1.5 text-muted-foreground tabular-nums text-right whitespace-nowrap">{r.date} · {r.time}</td>
+              </tr>
+            ))}
+            {sorted.length === 0 && <tr><td colSpan={5} className="px-2 py-6 text-center text-muted-foreground">Geen emails.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-function EmailsTab({ rows }: { rows: ReturnType<typeof getCandidateActivity> }) {
-  return (
-    <div className="rounded-md border border-border overflow-auto">
-      <table className="w-full text-[11px]">
-        <thead className="bg-muted/60 sticky top-0">
-          <tr className="text-left">
-            <Th></Th><Th>Contact</Th><Th>Status</Th><Th>Onderwerp</Th><Th>Datum</Th><Th>Tijd</Th><Th>Deal</Th><Th>Link</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-              <td className="px-2 py-1.5"><DirIcon dir={r.direction} kind="email" /></td>
-              <td className="px-2 py-1.5">{r.contact}</td>
-              <td className="px-2 py-1.5">
-                <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px]", contactStatusBadgeClass(r.contactStatus))}>{r.contactStatus}</span>
-              </td>
-              <td className="px-2 py-1.5 truncate max-w-[260px]">{r.subject}</td>
-              <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.date}</td>
-              <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.time}</td>
-              <td className="px-2 py-1.5 text-muted-foreground text-[10px]">{r.dealRef ?? "—"}</td>
-              <td className="px-2 py-1.5"><ExternalLink className="h-3 w-3 text-muted-foreground" /></td>
-            </tr>
-          ))}
-          {rows.length === 0 && <tr><td colSpan={8} className="px-2 py-6 text-center text-muted-foreground">Geen emails.</td></tr>}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+function CallsTab({
+  rows, onOpenComm, contextLabel,
+}: {
+  rows: ActivityItem[];
+  onOpenComm?: (item: ActivityItem, contextLabel: string) => void;
+  contextLabel: string;
+}) {
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const filtered = useMemo(() => filterBy(rows, (r) => r.contactStatus, statusFilter), [rows, statusFilter]);
+  const { sortKey, sortDir, toggle, sorted } = useSort<ActivityItem, "contact" | "contactStatus" | "duration" | "date">(filtered, (k) => (r) => {
+    if (k === "date") return `${r.date} ${r.time}`;
+    return (r as any)[k] ?? "";
+  }, { key: "date", dir: "desc" });
 
-function CallsTab({ rows }: { rows: ReturnType<typeof getCandidateActivity> }) {
   return (
-    <div className="rounded-md border border-border overflow-auto">
-      <table className="w-full text-[11px]">
-        <thead className="bg-muted/60 sticky top-0">
-          <tr className="text-left">
-            <Th></Th><Th>Contact</Th><Th>Status</Th><Th>Datum</Th><Th>Tijd</Th><Th>Duur</Th><Th>Deal</Th><Th>Link</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-              <td className="px-2 py-1.5"><DirIcon dir={r.direction} kind="call" /></td>
-              <td className="px-2 py-1.5">{r.contact}</td>
-              <td className="px-2 py-1.5">
-                <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px]", contactStatusBadgeClass(r.contactStatus))}>{r.contactStatus}</span>
-              </td>
-              <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.date}</td>
-              <td className="px-2 py-1.5 text-muted-foreground tabular-nums">{r.time}</td>
-              <td className="px-2 py-1.5 tabular-nums font-mono text-[10px]">{r.duration}</td>
-              <td className="px-2 py-1.5 text-muted-foreground text-[10px]">{r.dealRef ?? "—"}</td>
-              <td className="px-2 py-1.5">
-                <a
-                  href="https://ai.synsel.nl/recordings"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center text-muted-foreground hover:text-primary"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </td>
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <MultiSelectFilter label="Status" options={CONTACT_STATUSES} value={statusFilter as any} onChange={(v) => setStatusFilter(v as string[])} />
+        {statusFilter.length > 0 && <ResetButton onClick={() => setStatusFilter([])} />}
+      </div>
+      <div className="rounded-md border border-border overflow-auto">
+        <table className="w-full text-[11px]">
+          <thead className="bg-muted/60 sticky top-0">
+            <tr className="text-left">
+              <th className="px-2 py-1.5 w-6" />
+              <SortableTh active={sortKey === "contact"} dir={sortDir} onClick={() => toggle("contact")}>Contact</SortableTh>
+              <SortableTh active={sortKey === "contactStatus"} dir={sortDir} onClick={() => toggle("contactStatus")}>Status</SortableTh>
+              <SortableTh active={sortKey === "duration"} dir={sortDir} onClick={() => toggle("duration")} align="right">Duur</SortableTh>
+              <SortableTh active={sortKey === "date"} dir={sortDir} onClick={() => toggle("date")} align="right">Datum · Tijd</SortableTh>
             </tr>
-          ))}
-          {rows.length === 0 && <tr><td colSpan={8} className="px-2 py-6 text-center text-muted-foreground">Geen calls.</td></tr>}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {sorted.map((r) => (
+              <tr key={r.id} className="border-t border-border hover:bg-muted/30 cursor-pointer" onClick={() => onOpenComm?.(r, contextLabel)}>
+                <td className="px-2 py-1.5"><DirIcon dir={r.direction} kind="call" /></td>
+                <td className="px-2 py-1.5">{r.contact}</td>
+                <td className="px-2 py-1.5">
+                  <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px]", contactStatusBadgeClass(r.contactStatus))}>{r.contactStatus}</span>
+                </td>
+                <td className="px-2 py-1.5 tabular-nums font-mono text-[10px] text-right">{r.duration}</td>
+                <td className="px-2 py-1.5 text-muted-foreground tabular-nums text-right whitespace-nowrap">{r.date} · {r.time}</td>
+              </tr>
+            ))}
+            {sorted.length === 0 && <tr><td colSpan={5} className="px-2 py-6 text-center text-muted-foreground">Geen calls.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
 // ─── helpers ───
-function Th({ children, className }: { children?: React.ReactNode; className?: string }) {
-  return <th className={cn("px-2 py-1.5 font-medium text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap text-left", className)}>{children}</th>;
-}
 function ScoreCard({ label, value, active, onClick }: { label: string; value: number; active?: boolean; onClick: () => void }) {
   return (
     <button
@@ -323,7 +418,7 @@ function DirIcon({ dir, kind }: { dir: "in" | "out"; kind: "email" | "call" }) {
   return (
     <span className={cn("inline-flex items-center gap-0.5", color)}>
       <Arrow className="h-3 w-3" />
-      <Icon className="h-3 w-3" />
+      <Icon className={cn("h-3 w-3")} />
     </span>
   );
 }

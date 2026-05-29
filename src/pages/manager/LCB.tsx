@@ -9,7 +9,9 @@ import {
   lcbMarketRows, lcbFunnelSteps, lcbTeam, LCB_UNITS,
   getCandidatesForStep, getDealsForStep,
   type LcbStepKey, type CandidateRow, type DealRow,
+  type ActivityItem, type CandidateDealLink,
 } from "@/data/lcbMarketData";
+
 import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
 import { consultantSkillData } from "@/data/managerPerformanceData";
 import { dealStageBadgeClass } from "@/data/lcbDealStages";
@@ -24,6 +26,8 @@ import { initialLcbDateState, type LcbDateState } from "@/components/manager/lcb
 import { LcbSplitOverlay } from "@/components/manager/lcb/LcbSplitOverlay";
 import { CandidateDetailPane } from "@/components/manager/lcb/CandidateDetailPane";
 import { DealDetailPane } from "@/components/manager/lcb/DealDetailPane";
+import { CommunicationPane } from "@/components/manager/lcb/CommunicationPane";
+// shared table controls used inside the panes
 import {
   ConsultantOverviewOverlay,
   DevelopmentOverlay, StopperOverlay, ActivePlacementsOverlay,
@@ -32,6 +36,7 @@ import {
 } from "@/components/manager/lcb/Overlays";
 import { CallConversionsOverlay } from "@/components/manager/lcb/CallConversionsOverlay";
 import { Button } from "@/components/ui/button";
+
 
 const UNITS = [...LCB_UNITS];
 type TabId = "market" | "development" | "finance" | "signals";
@@ -64,6 +69,8 @@ export default function LCB() {
   const [stepCtx, setStepCtx] = useState<{ consultantId: number; step: LcbStepKey } | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateRow | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<DealRow | null>(null);
+  const [commPane, setCommPane] = useState<{ item: ActivityItem; contextLabel: string } | null>(null);
+
 
   const [consultantOverlay, setConsultantOverlay] = useState<number | null>(null);
   const [devOverlay, setDevOverlay] = useState<number | null>(null);
@@ -100,8 +107,48 @@ export default function LCB() {
   };
 
   const closeAllOverlays = () => {
-    setStepCtx(null); setSelectedCandidate(null); setSelectedDeal(null);
+    setStepCtx(null); setSelectedCandidate(null); setSelectedDeal(null); setCommPane(null);
   };
+
+  // Resolve candidate (from deal) into a CandidateRow by scanning current step's candidate pool
+  const openCandidateFromDeal = (candidateId: string, candidateName: string) => {
+    // Try existing candidate lists for this consultant first
+    if (stepCtx) {
+      for (const s of lcbFunnelSteps) {
+        if (s.entity !== "candidate") continue;
+        const list = getCandidatesForStep(stepCtx.consultantId, s.key);
+        const hit = list.find((c) => c.id === candidateId);
+        if (hit) { setSelectedDeal(null); setSelectedCandidate(hit); setCommPane(null); return; }
+      }
+    }
+    // Fallback: synthesize a minimal CandidateRow
+    setSelectedDeal(null);
+    setSelectedCandidate({
+      id: candidateId, name: candidateName,
+      category: "A", status: "3 | In procedure",
+      deals: 1, proposals: 0, emails: 0, calls: 0,
+      lastUpdated: "", lastUpdatedDate: "—", lastUpdatedTime: "—",
+    });
+    setCommPane(null);
+  };
+
+  const openDealFromCandidate = (link: CandidateDealLink) => {
+    setSelectedCandidate(null);
+    setSelectedDeal({
+      dealName: link.dealName,
+      dealId: link.dealId,
+      dealStatus: link.dealStatus,
+      candidateName: link.candidateName,
+      candidateId: link.candidateId,
+      opdrachtgeverName: link.opdrachtgeverName,
+      opdrachtgeverId: link.opdrachtgeverId,
+      lastUpdated: link.date,
+      lastUpdatedDate: link.date,
+      lastUpdatedTime: link.time,
+    });
+    setCommPane(null);
+  };
+
 
   const handleSignalClick = (a: DashboardAlert) => {
     const c = myTeamConsultants.find((x) => x.name === a.consultantName);
@@ -247,12 +294,30 @@ export default function LCB() {
         } : null}
         right={
           selectedCandidate
-            ? { breadcrumbs: ["Candidate Market", stepConsultant?.name ?? "", stepDef?.label ?? "", selectedCandidate.name], title: selectedCandidate.name, subtitle: "Kandidaatdetail", content: <CandidateDetailPane candidate={selectedCandidate} /> }
+            ? { breadcrumbs: ["Candidate Market", stepConsultant?.name ?? "", stepDef?.label ?? "", selectedCandidate.name], title: selectedCandidate.name, subtitle: "Kandidaatdetail",
+                content: <CandidateDetailPane
+                  candidate={selectedCandidate}
+                  onOpenDeal={openDealFromCandidate}
+                  onOpenComm={(item, contextLabel) => setCommPane({ item, contextLabel })}
+                /> }
             : selectedDeal
-              ? { breadcrumbs: ["Candidate Market", stepConsultant?.name ?? "", stepDef?.label ?? "", selectedDeal.dealName], title: selectedDeal.dealName, subtitle: "Dealdetail", content: <DealDetailPane deal={selectedDeal} /> }
+              ? { breadcrumbs: ["Candidate Market", stepConsultant?.name ?? "", stepDef?.label ?? "", selectedDeal.dealName], title: selectedDeal.dealName, subtitle: "Dealdetail",
+                  content: <DealDetailPane
+                    deal={selectedDeal}
+                    onOpenCandidate={openCandidateFromDeal}
+                    onOpenComm={(item, contextLabel) => setCommPane({ item, contextLabel })}
+                  /> }
               : null
         }
+        extra={commPane ? {
+          breadcrumbs: ["Communicatie", commPane.contextLabel, commPane.item.kind === "call" ? "Call" : "Email"],
+          title: commPane.item.kind === "call" ? "Call detail" : "Email detail",
+          subtitle: `${commPane.item.date} · ${commPane.item.time}`,
+          content: <CommunicationPane item={commPane.item} contextLabel={commPane.contextLabel} />,
+        } : null}
+        onCloseExtra={() => setCommPane(null)}
       />
+
 
       <ConsultantOverviewOverlay
         open={!!consultantOverlay}

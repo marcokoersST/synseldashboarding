@@ -20,30 +20,42 @@ interface RightPane {
   width?: number | string;
   content: ReactNode;
 }
+interface ExtraPane {
+  breadcrumbs: string[];
+  title: string;
+  subtitle?: string;
+  width?: number | string;
+  content: ReactNode;
+}
 
 interface Props {
   open: boolean;
   onClose: () => void;
   left: LeftPane | null;
   right?: RightPane | null;
+  extra?: ExtraPane | null;
   onCloseRight?: () => void;
+  onCloseExtra?: () => void;
 }
 
-export function LcbSplitOverlay({ open, onClose, left, right, onCloseRight }: Props) {
+export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRight, onCloseExtra }: Props) {
   useForceSidebarCollapse(open);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      if (right && onCloseRight) onCloseRight();
+      if (extra && onCloseExtra) onCloseExtra();
+      else if (right && onCloseRight) onCloseRight();
       else onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose, right, onCloseRight]);
+  }, [open, onClose, right, onCloseRight, extra, onCloseExtra]);
 
   if (!open || !left) return null;
+
+  const dim = !!extra;
 
   return createPortal(
     <div className="fixed inset-x-0 bottom-0 top-14 z-[60] flex">
@@ -53,34 +65,50 @@ export function LcbSplitOverlay({ open, onClose, left, right, onCloseRight }: Pr
         onClick={onClose}
         className="flex-1 bg-background/60 backdrop-blur-sm animate-in fade-in duration-150"
       />
-      <Pane
-        breadcrumbs={left.breadcrumbs}
-        title={left.title}
-        subtitle={left.subtitle}
-        width={left.width ?? (right ? "clamp(360px, 30vw, 520px)" : "clamp(720px, 70vw, 1100px)")}
-        onBack={left.onBack}
-        onClose={onClose}
-        slideFrom="right"
-        bordered
-      >
-        {left.content}
-      </Pane>
-      {right && (
+      <div className={cn("h-full flex transition-opacity duration-200", dim && "opacity-50 pointer-events-none")}>
         <Pane
-          breadcrumbs={right.breadcrumbs}
-          title={right.title}
-          subtitle={right.subtitle}
-          width={right.width ?? "clamp(720px, 62vw, 1100px)"}
-          onClose={onCloseRight ?? onClose}
+          breadcrumbs={left.breadcrumbs}
+          title={left.title}
+          subtitle={left.subtitle}
+          width={left.width ?? (right ? "clamp(360px, 30vw, 520px)" : "clamp(720px, 70vw, 1100px)")}
+          onBack={left.onBack}
+          onClose={onClose}
           slideFrom="right"
+          bordered
         >
-          {right.content}
+          {left.content}
+        </Pane>
+        {right && (
+          <Pane
+            breadcrumbs={right.breadcrumbs}
+            title={right.title}
+            subtitle={right.subtitle}
+            width={right.width ?? "clamp(720px, 62vw, 1100px)"}
+            onClose={onCloseRight ?? onClose}
+            slideFrom="right"
+          >
+            {right.content}
+          </Pane>
+        )}
+      </div>
+      {extra && (
+        <Pane
+          breadcrumbs={extra.breadcrumbs}
+          title={extra.title}
+          subtitle={extra.subtitle}
+          width={extra.width ?? "clamp(420px, 32vw, 560px)"}
+          onClose={onCloseExtra ?? onClose}
+          slideFrom="right"
+          bordered
+        >
+          {extra.content}
         </Pane>
       )}
     </div>,
     document.body,
   );
 }
+
 
 function Pane({
   breadcrumbs, title, subtitle, width, children, onClose, onBack, slideFrom, bordered,
