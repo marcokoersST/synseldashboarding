@@ -1,27 +1,27 @@
-## Plan: Duplicate Marketing Hub → "Reengagement"
+## Wijzigingen in /manager-dashboard/LC-B → tab Candidate Market
 
-Create an identical copy of the Marketing Hub accessible via a new sidebar item and route, without touching the existing Marketing Hub.
+### 1. Klikgedrag corrigeren
 
-### Changes
+Nu opent een rij-klik (waar dan ook in de rij) het overlay **"Candidate Market > [consultant]"** (volledige consultant-overview). Dat moet alleen gebeuren wanneer de **naam** wordt aangeklikt — niet bij klikken op een funnel-cel zoals *Toegewezen*. Het "tweede keer"-effect ontstaat doordat na het sluiten van de step-overlay de rij nog steeds de consultant-overlay triggert.
 
-1. **New page** `src/pages/reengagement/ReengagementHub.tsx`
-   - Copy of `src/pages/marketing/MarketingHub.tsx`
-   - Title changed to `"Reengagement"`
-   - Reuses all existing tab components (`OverviewTab`, `PaidChannelsTab`, `JobboardsTab`, `PaidSocialTab`, `PaidSocialAdLevelTab`, `InschrijvingenTab`) from `src/pages/marketing/tabs/` — no duplication of tab content, so future edits to those tabs continue to apply to both hubs (matches the user's likely intent of a true duplicate at this stage; can be forked later on request).
+In `src/components/manager/lcb/CandidateMarketTab.tsx`:
+- Verwijder `onClick={() => onOpenConsultant(row.consultantId)}` van het `<tr>`.
+- Voeg de klik alleen toe op de naam-`<Td>` (kolom Consultant) — alleen daar opent "Candidate Market > [consultant]".
+- Cel-knoppen (toegewezen, inschrijvingen, etc.) blijven `onOpenStep` triggeren via hun eigen button met `stopPropagation`. Hint-tekst onder de tabel aanpassen: *"Klik een cel voor de onderliggende kandidaten/deals. Klik op de naam voor het volledige consultantoverzicht."*
 
-2. **Routing** `src/App.tsx`
-   - Lazy import `ReengagementHub`
-   - Add route `<Route path="/reengagement" element={<ReengagementHub />} />`
+### 2. Data vullen vanuit de geüploade PDF
 
-3. **Sidebar** `src/components/dashboard/Sidebar.tsx`
-   - Add entry right under "Marketing Hub":
-     ```
-     { icon: Megaphone, label: "Reengagement", path: "/reengagement" }
-     ```
+In `src/data/lcbMarketData.ts`:
+- Vervang `myTeamConsultants.map(buildRow)` door een lokale lijst van de 37 consultants uit de PDF, elk met `id`, `name`, `unit`. De units komen 1-op-1 uit de PDF: **Operators, Monteurs, Engineers, Installatietechniek**.
+- `buildRow` blijft ongewijzigd zodat de seeded mock-cijfers per consultant deterministisch berekend worden.
+- Exporteer ook `LCB_UNITS = ["Operators","Monteurs","Engineers","Installatietechniek"]` voor hergebruik.
 
-### Out of scope
-- No data/logic changes
-- No new tab variants — tabs are shared with Marketing Hub for now
-- No analytics, no sub-routes (`/reengagement/inflow`, etc.) unless requested
+### 3. Filters actief maken
 
-Let me know if you'd rather fully fork the tab files so Reengagement can diverge independently.
+In `src/pages/manager/LCB.tsx`:
+- Vervang de hardcoded `UNITS = ["Engineering","Monteurs","Operators","Trainingsunit","Early Performers"]` door de nieuwe `LCB_UNITS` uit `lcbMarketData`. Reden: de huidige units matchen niet met de data, waardoor het Units-filter niets filterde.
+- Vervang `consultants={myTeamConsultants...}` in `<LCBTopBar>` door de nieuwe 37-consultantlijst uit `lcbMarketData`, zodat het Consultants-filter alle juiste namen toont en daadwerkelijk filtert.
+- Filter-state (`selectedUnits`, `selectedConsultants`) wordt al doorgegeven aan `CandidateMarketTab`, `ConsultantDevelopmentTab` en `FinanceForecastTab` — geen wijziging daar nodig.
+
+### Scope
+Alleen de Candidate Market-flow + data/filters op LC-B. Geen aanpassingen aan andere tabs of overlays.
