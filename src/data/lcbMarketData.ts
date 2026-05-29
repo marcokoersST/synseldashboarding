@@ -277,7 +277,7 @@ export function getDealsForStep(consultantId: number, step: LcbStepKey): DealRow
   return Array.from({ length: count }, (_, i) => {
     const cand = CANDIDATE_NAMES[(consultantId + i) % CANDIDATE_NAMES.length];
     const candidateId = makeCandidateId(rnd);
-    const opdrachtgever = getCandidateOpdrachtgever(candidateId);
+    const opdrachtgever = getConsultantOpdrachtgever(consultantId);
     const co = opdrachtgever.name;
     const role = ROLES[(consultantId + i * 3) % ROLES.length];
     const stage = LCB_DEAL_STAGES[rint(rnd, 0, LCB_DEAL_STAGES.length - 1)];
