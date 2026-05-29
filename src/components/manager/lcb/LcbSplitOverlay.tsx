@@ -55,7 +55,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
 
   if (!open || !left) return null;
 
-  const dim = !!extra;
+  const showExtra = !!extra;
 
   return createPortal(
     <div className="fixed inset-x-0 bottom-0 top-14 z-[60] flex">
@@ -66,39 +66,41 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
         className="flex-1 bg-background/60 backdrop-blur-sm animate-in fade-in duration-150"
       />
       <div className="relative h-full flex">
-        <Pane
-          breadcrumbs={left.breadcrumbs}
-          title={left.title}
-          subtitle={left.subtitle}
-          width={left.width ?? (right ? "clamp(360px, 30vw, 520px)" : "clamp(720px, 70vw, 1100px)")}
-          onBack={left.onBack}
-          onClose={onClose}
-          slideFrom="right"
-          bordered
+        <div
+          className={cn(
+            "h-full shrink-0 transition-all duration-200 ease-out",
+            showExtra && right && "-mr-32 opacity-40",
+          )}
         >
-          {left.content}
-        </Pane>
-        {right && (
           <Pane
-            breadcrumbs={right.breadcrumbs}
-            title={right.title}
-            subtitle={right.subtitle}
-            width={right.width ?? "clamp(720px, 62vw, 1100px)"}
-            onClose={onCloseRight ?? onClose}
+            breadcrumbs={left.breadcrumbs}
+            title={left.title}
+            subtitle={left.subtitle}
+            width={left.width ?? (right ? "clamp(360px, 30vw, 520px)" : "clamp(720px, 70vw, 1100px)")}
+            onBack={left.onBack}
+            onClose={onClose}
             slideFrom="right"
+            bordered
           >
-            {right.content}
+            {left.content}
           </Pane>
-        )}
-        {dim && (
-          <button
-            type="button"
-            aria-label="Sluit communicatie"
-            onClick={onCloseExtra ?? onClose}
-            className="absolute inset-0 bg-background/55 backdrop-blur-[1px] animate-in fade-in duration-150 z-10"
-          />
+        </div>
+        {right && (
+          <div className="relative z-[1]">
+            <Pane
+              breadcrumbs={right.breadcrumbs}
+              title={right.title}
+              subtitle={right.subtitle}
+              width={right.width ?? "clamp(720px, 62vw, 1100px)"}
+              onClose={onCloseRight ?? onClose}
+              slideFrom="right"
+            >
+              {right.content}
+            </Pane>
+          </div>
         )}
       </div>
+
       {extra && (
         <Pane
           breadcrumbs={extra.breadcrumbs}

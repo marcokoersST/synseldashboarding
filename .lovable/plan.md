@@ -1,10 +1,15 @@
-## Problem
-When the third "extra" communication pane (email/call detail) opens, the existing left + right panes get `opacity-50`, which makes them translucent so the underlying dashboard bleeds through and looks like overlapping text.
+## Plan
 
-## Fix
-In `src/components/manager/lcb/LcbSplitOverlay.tsx`:
-- Remove `opacity-50` from the panes group so the panes stay fully opaque.
-- Add a separate dim overlay (`bg-background/60 backdrop-blur-sm`) layered on top of the left+right panes only when `extra` is open. Clicking it closes the extra pane.
-- Keep `pointer-events-none` semantics via the overlay catching clicks.
+Update `src/components/manager/lcb/LcbSplitOverlay.tsx` so opening a mail/call detail pane keeps the deal overview clear and fully visible, while the list pane shifts slightly behind it.
 
-No other files changed.
+### Changes
+- Remove the full dim overlay that currently covers both list and deal panes.
+- Wrap only the left/list pane in a transition container.
+- When the communication pane is open:
+  - move the list pane slightly underneath/behind the deal overview with a negative right margin,
+  - lower only the list pane opacity,
+  - keep the deal overview pane at full opacity and fully readable.
+- Keep the mail/call detail pane unchanged on the far right.
+- Preserve existing close behavior via X and Escape.
+
+No other files affected.
