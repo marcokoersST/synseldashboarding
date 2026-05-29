@@ -32,7 +32,7 @@ export function FinanceForecastTab({
   const [hoverCol, setHoverCol] = useState<string | null>(null);
 
   const consultants = useMemo(() => {
-    let r = myTeamConsultants;
+    let r = lcbTeam;
     if (selectedUnits.length > 0) r = r.filter((c) => selectedUnits.includes(c.unit));
     if (selectedConsultants.length > 0) r = r.filter((c) => selectedConsultants.includes(c.id));
     if (search.trim()) {
