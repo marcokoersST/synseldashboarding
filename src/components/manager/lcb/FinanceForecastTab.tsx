@@ -6,6 +6,7 @@ import { consultantRevenueDetailData, attritionProjectionData, activeSecondments
 import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromRatio } from "@/lib/lcbStatus";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { buildFinancePerfRow } from "@/data/lcbMarketData";
+import { RevenueForecastChart } from "./RevenueForecastChart";
 
 type Perspective = "margin" | "performance";
 
@@ -118,24 +119,29 @@ export function FinanceForecastTab({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto rounded-lg border border-border bg-card">
-        {perspective === "margin" ? (
-          <MarginTable
-            rows={marginRows} totals={marginTotals}
-            hoverRow={hoverRow} hoverCol={hoverCol}
-            setHoverRow={setHoverRow} setHoverCol={setHoverCol}
-            onOpenRevenue={onOpenRevenue}
-          />
-        ) : (
-          <PerformanceTable
-            rows={perfRows} totals={perfTotals}
-            hoverRow={hoverRow} hoverCol={hoverCol}
-            setHoverRow={setHoverRow} setHoverCol={setHoverCol}
-            onOpenPlacements={onOpenPlacements}
-            onOpenSoonToStart={onOpenSoonToStart}
-            onOpenStoppers={onOpenStoppers}
-            onOpenNetImpact={onOpenNetImpact}
-          />
+      <div className="flex-1 overflow-auto">
+        <div className="rounded-lg border border-border bg-card">
+          {perspective === "margin" ? (
+            <MarginTable
+              rows={marginRows} totals={marginTotals}
+              hoverRow={hoverRow} hoverCol={hoverCol}
+              setHoverRow={setHoverRow} setHoverCol={setHoverCol}
+              onOpenRevenue={onOpenRevenue}
+            />
+          ) : (
+            <PerformanceTable
+              rows={perfRows} totals={perfTotals}
+              hoverRow={hoverRow} hoverCol={hoverCol}
+              setHoverRow={setHoverRow} setHoverCol={setHoverCol}
+              onOpenPlacements={onOpenPlacements}
+              onOpenSoonToStart={onOpenSoonToStart}
+              onOpenStoppers={onOpenStoppers}
+              onOpenNetImpact={onOpenNetImpact}
+            />
+          )}
+        </div>
+        {perspective === "margin" && (
+          <RevenueForecastChart rows={marginRows} onOpenRevenue={onOpenRevenue} />
         )}
       </div>
     </div>
