@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { myTeamConsultants } from "@/data/managerData";
 import { generateAlerts, type DashboardAlert } from "@/data/managerOperationalDataV2";
 import {
-  lcbMarketRows, lcbFunnelSteps,
+  lcbMarketRows, lcbFunnelSteps, lcbTeam, LCB_UNITS,
   getCandidatesForStep, getDealsForStep,
   type LcbStepKey, type CandidateRow, type DealRow,
 } from "@/data/lcbMarketData";
