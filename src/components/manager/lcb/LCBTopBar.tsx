@@ -29,7 +29,7 @@ export function LCBTopBar({
 }: Props) {
   const [focused, setFocused] = useState(false);
   return (
-    <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-border bg-card/30">
+    <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-border bg-card">
       <LcbDateFilter value={date} onChange={onDate} />
       <MultiFilter
         label="Units" placeholder="Alle units"
