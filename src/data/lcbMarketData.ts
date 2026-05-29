@@ -195,6 +195,7 @@ function firstName(full: string): string {
 export interface CandidateRow {
   name: string;
   id: string;
+  consultantId?: number;
   category: CandidateCategory;
   status: CandidateStatus;
   deals: number;
@@ -253,6 +254,7 @@ export function getCandidatesForStep(consultantId: number, step: LcbStepKey): Ca
     return {
       name: n,
       id: makeCandidateId(rnd),
+      consultantId,
       category: CATEGORIES[rint(rnd, 0, 2)],
       status: STATUSES[rint(rnd, 0, STATUSES.length - 1)],
       deals: 1 + rint(rnd, 0, 3),
@@ -351,6 +353,14 @@ function getCandidateOpdrachtgever(candidateId: string): { name: string; id: str
   };
 }
 
+function getConsultantOpdrachtgever(consultantId: number): { name: string; id: string } {
+  const rnd = mulberry32(consultantId * 4441 + 29);
+  return {
+    name: pick(rnd, COMPANIES),
+    id: makeOpdrachtgeverId(rnd),
+  };
+}
+
 export function getCandidateNotes(candidateId: string): CandidateNote[] {
   const rnd = seedFromId(candidateId + "notes");
   const n = rint(rnd, 1, 4);
@@ -418,10 +428,10 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
 }
 
 
-export function getCandidateDealLinks(candidateId: string, dealsCount: number): CandidateDealLink[] {
+export function getCandidateDealLinks(candidateId: string, dealsCount: number, consultantId?: number): CandidateDealLink[] {
   const rnd = seedFromId(candidateId + "deals");
   const n = Math.max(1, Math.min(dealsCount + 2, 8));
-  const opdrachtgever = getCandidateOpdrachtgever(candidateId);
+  const opdrachtgever = consultantId ? getConsultantOpdrachtgever(consultantId) : getCandidateOpdrachtgever(candidateId);
   return Array.from({ length: n }, (_, i) => {
     const role = pick(rnd, ROLES);
     return {
