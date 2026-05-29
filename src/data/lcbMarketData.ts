@@ -121,7 +121,7 @@ function buildRow(c: { id: number; name: string; unit: string }): LcbConsultantR
   };
 }
 
-export const lcbMarketRows: LcbConsultantRow[] = myTeamConsultants.map(buildRow);
+export const lcbMarketRows: LcbConsultantRow[] = lcbTeam.map(buildRow);
 
 export const lcbTotals: Record<LcbStepKey, number> = lcbFunnelSteps.reduce((acc, s) => {
   acc[s.key] = lcbMarketRows.reduce((sum, r) => sum + (r[s.key] as number), 0);
