@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { RotateCcw, Search, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,9 +65,10 @@ export function LCBTopBar({
   );
 }
 
-function ChipButton({ label, value, active, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { label: string; value: string; active?: boolean }) {
-  return (
+const ChipButton = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { label: string; value: string; active?: boolean }>(
+  ({ label, value, active, ...props }, ref) => (
     <button
+      ref={ref}
       type="button"
       {...props}
       className={cn(
@@ -80,8 +81,9 @@ function ChipButton({ label, value, active, ...props }: React.ButtonHTMLAttribut
       <span className="text-foreground font-medium">{value}</span>
       <ChevronDown className="h-3 w-3 opacity-60" />
     </button>
-  );
-}
+  ),
+);
+ChipButton.displayName = "ChipButton";
 
 function MultiFilter({ label, placeholder, values, options, onChange }: { label: string; placeholder: string; values: string[]; options: { value: string; label: string }[]; onChange: (v: string[]) => void }) {
   const display = values.length === 0 ? placeholder : `${values.length}`;
