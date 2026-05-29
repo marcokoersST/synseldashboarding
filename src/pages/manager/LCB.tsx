@@ -33,7 +33,7 @@ import {
 import { CallConversionsOverlay } from "@/components/manager/lcb/CallConversionsOverlay";
 import { Button } from "@/components/ui/button";
 
-const UNITS = ["Engineering", "Monteurs", "Operators", "Trainingsunit", "Early Performers"];
+const UNITS = [...LCB_UNITS];
 type TabId = "market" | "development" | "finance" | "signals";
 const TABS: { id: TabId; label: string; subtitle: string }[] = [
   { id: "market", label: "Candidate Market Approach", subtitle: "Acquisitie & funnel" },
