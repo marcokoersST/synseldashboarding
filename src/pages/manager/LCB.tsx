@@ -230,7 +230,7 @@ export default function LCB() {
 
 
 
-      <div className="flex shrink-0 border-b border-border bg-card/30 overflow-x-auto">
+      <div className="flex shrink-0 border-b border-border bg-card overflow-x-auto">
         {TABS.map((t) => {
           const isSignals = t.id === "signals";
           const count = isSignals ? alerts.length : 0;
