@@ -648,8 +648,7 @@ export function buildFinancePerfRow(consultantId: number, consultantName: string
   const placements = rint(rnd, 3, 18);
   const avgMargin = rint(rnd, 1800, 4200);
   const netImpact = activeRev + soonRev - stopperRev;
-  const ops = [...COMPANIES].sort(() => rnd() - 0.5);
-  const totalOps = rint(rnd, 3, 6);
+  const opdrachtgever = getConsultantOpdrachtgever(consultantId);
   return {
     consultantId, consultantName,
     activeCandidates: active, activeMonthlyRevenue: activeRev,
@@ -657,7 +656,7 @@ export function buildFinancePerfRow(consultantId: number, consultantName: string
     expectedStoppers: stoppers, stopperRiskRevenue: stopperRev,
     likelyExtensions: likely, likelyExtensionRevenue: likelyRev,
     placementsYTD: placements, avgMarginPerCandidate: avgMargin,
-    netImpact, topOpdrachtgevers: ops.slice(0, 1), totalOpdrachtgevers: 1,
+    netImpact, topOpdrachtgevers: [opdrachtgever.name], totalOpdrachtgevers: 1,
   };
 }
 

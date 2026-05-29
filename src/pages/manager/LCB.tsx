@@ -147,6 +147,7 @@ export default function LCB() {
     setSelectedDeal(null);
     setSelectedCandidate({
       id: candidateId, name: candidateName,
+      consultantId: stepCtx?.consultantId,
       category: "A", status: "3 | In procedure",
       deals: 1, proposals: 0, emails: 0, calls: 0,
       lastUpdated: "", lastUpdatedDate: "—", lastUpdatedTime: "—",
