@@ -107,8 +107,48 @@ export default function LCB() {
   };
 
   const closeAllOverlays = () => {
-    setStepCtx(null); setSelectedCandidate(null); setSelectedDeal(null);
+    setStepCtx(null); setSelectedCandidate(null); setSelectedDeal(null); setCommPane(null);
   };
+
+  // Resolve candidate (from deal) into a CandidateRow by scanning current step's candidate pool
+  const openCandidateFromDeal = (candidateId: string, candidateName: string) => {
+    // Try existing candidate lists for this consultant first
+    if (stepCtx) {
+      for (const s of lcbFunnelSteps) {
+        if (s.entity !== "candidate") continue;
+        const list = getCandidatesForStep(stepCtx.consultantId, s.key);
+        const hit = list.find((c) => c.id === candidateId);
+        if (hit) { setSelectedDeal(null); setSelectedCandidate(hit); setCommPane(null); return; }
+      }
+    }
+    // Fallback: synthesize a minimal CandidateRow
+    setSelectedDeal(null);
+    setSelectedCandidate({
+      id: candidateId, name: candidateName,
+      category: "A", status: "3 | In procedure",
+      deals: 1, proposals: 0, emails: 0, calls: 0,
+      lastUpdated: "", lastUpdatedDate: "—", lastUpdatedTime: "—",
+    });
+    setCommPane(null);
+  };
+
+  const openDealFromCandidate = (link: CandidateDealLink) => {
+    setSelectedCandidate(null);
+    setSelectedDeal({
+      dealName: link.dealName,
+      dealId: link.dealId,
+      dealStatus: link.dealStatus,
+      candidateName: link.candidateName,
+      candidateId: link.candidateId,
+      opdrachtgeverName: link.opdrachtgeverName,
+      opdrachtgeverId: link.opdrachtgeverId,
+      lastUpdated: link.date,
+      lastUpdatedDate: link.date,
+      lastUpdatedTime: link.time,
+    });
+    setCommPane(null);
+  };
+
 
   const handleSignalClick = (a: DashboardAlert) => {
     const c = myTeamConsultants.find((x) => x.name === a.consultantName);
