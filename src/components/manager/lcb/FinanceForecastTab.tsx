@@ -5,7 +5,7 @@ import { consultantRevenueDetailData, attritionProjectionData, activeSecondments
 import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromRatio } from "@/lib/lcbStatus";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { buildFinancePerfRow, lcbTeam } from "@/data/lcbMarketData";
-import { RevenueForecastChart } from "./RevenueForecastChart";
+import { FinanceTrendChart } from "./FinanceTrendChart";
 
 type Perspective = "margin" | "performance";
 
@@ -140,7 +140,13 @@ export function FinanceForecastTab({
           )}
         </div>
         {perspective === "margin" && (
-          <RevenueForecastChart rows={marginRows} onOpenRevenue={onOpenRevenue} />
+          <FinanceTrendChart
+            rows={marginRows}
+            selectedConsultants={selectedConsultants}
+            onDrilldown={(_bucket, _metric, ids) => {
+              if (ids.length === 1) onOpenRevenue(ids[0]);
+            }}
+          />
         )}
       </div>
     </div>
