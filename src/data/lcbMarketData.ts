@@ -472,6 +472,7 @@ export function getDealActivity(dealId: string): ActivityItem[] {
   const rnd = seedFromId(dealId + "a");
   return Array.from({ length: rint(rnd, 3, 8) }, (_, i) => {
     const kind: ActivityItem["kind"] = rnd() < 0.55 ? "email" : "call";
+    const callId = kind === "call" ? String(rint(rnd, 100000, 999999)) : undefined;
     return {
       id: `${dealId}-a-${i}`,
       kind,
@@ -480,12 +481,120 @@ export function getDealActivity(dealId: string): ActivityItem[] {
       contactStatus: pick(rnd, CONTACT_STATUSES),
       subject: kind === "email" ? pick(rnd, ["Voorstel kandidaat", "Reminder voorstel", "Bevestiging intake", "Update procedure"]) : undefined,
       duration: kind === "call" ? hms(rnd) : undefined,
+      body: kind === "email" ? pick(rnd, EMAIL_BODIES) : undefined,
       date: fullDate(rnd),
       time: hhmm(rnd),
       dealRef: dealId,
+      callId,
+      transcript: kind === "call" ? buildTranscript(rnd) : undefined,
     };
   });
 }
+
+// ─── Mock bodies & transcripts ───────────────────────────────────────
+const EMAIL_BODIES = [
+  "Beste,\n\nBedankt voor het snelle contact. Zoals besproken stuur ik bij deze het CV en de motivatie van de kandidaat. Laat het me weten als er nog aanvullende informatie nodig is voor de volgende stap.\n\nMet vriendelijke groet",
+  "Hi,\n\nIn navolging op ons telefoongesprek hierbij een korte samenvatting van de afspraken: kandidaat is beschikbaar per de eerste van de maand, bruto maandsalaris in lijn met functieprofiel, en gesprek graag uiterlijk komende week.\n\nGroet",
+  "Beste,\n\nKun je een terugkoppeling geven op het laatste voorstel? Kandidaat heeft inmiddels een tweede gesprek elders staan en wil graag weten of jullie verder gaan in de procedure.\n\nDank!",
+  "Hoi,\n\nKleine update: contract is verstuurd, kandidaat heeft bevestigd dat de startdatum haalbaar is. Ik plan een korte check-in voor de eerste werkweek.\n\nGroet",
+];
+
+function buildTranscript(rnd: () => number): string {
+  const lines = [
+    "Consultant: Goedemiddag, spreek ik met de kandidaat?",
+    "Kandidaat: Ja dat klopt, waarmee kan ik je helpen?",
+    "Consultant: Ik bel even kort over de openstaande functie waar we eerder over mailden.",
+    "Kandidaat: Klopt, ik ben zeker geïnteresseerd. Wat is de volgende stap?",
+    "Consultant: We willen graag een eerste kennismaking inplannen, kan je deze week?",
+    "Kandidaat: Donderdag of vrijdag werkt voor mij.",
+    "Consultant: Top, dan stuur ik vandaag nog een uitnodiging. Bedankt voor je tijd!",
+    "Kandidaat: Graag gedaan, tot dan.",
+  ];
+  const n = rint(rnd, 4, 7);
+  return lines.slice(0, n).join("\n");
+}
+
+export function formatCallLinkLabel(callId: string): string {
+  return `link to call [${callId}]`;
+}
+
+// ─── End-stage helper ─────────────────────────────────────────────────
+const END_STAGE_PREFIXES = ["4.", "5 ", "6 ", "Overgenomen", "Detacheringstermijn"];
+const END_STAGE_LITERAL = new Set<string>([
+  "Won", "Lost", "Niet begonnen",
+  "Afgewezen na telefonisch voorstellen", "Afgewezen na voorstelmail",
+  "Afgevallen tijdens detacheringsperiode", "Kandidaat teruggetrokken",
+  "Na sollicitatiegesprek heeft KDD geen interesse",
+  "Na sollicitatiegesprek is KDD afgewezen",
+]);
+export function isEndStage(stage: string): boolean {
+  if (END_STAGE_LITERAL.has(stage)) return true;
+  return END_STAGE_PREFIXES.some((p) => stage.startsWith(p));
+}
+export function isGeplaatstStage(stage: string): boolean {
+  return stage === "Won" || stage.startsWith("4.") || stage.startsWith("5 ") || stage.startsWith("6 ") || stage.startsWith("Overgenomen");
+}
+
+// ─── Evidence (AI step checks) ───────────────────────────────────────
+export interface DealEvidence {
+  hasMatch: boolean;
+  hasOwnerMailProof: boolean;
+  hasOwnerCallProof: boolean;
+  intakeMeeting?: DealMeeting;
+  sollicitatieMeeting?: DealMeeting;
+  vervolgMeeting?: DealMeeting;
+  isGeplaatst: boolean;
+  lastMail?: ActivityItem;
+  lastCall?: ActivityItem;
+  lopendeZaakStale?: boolean;
+}
+export function getDealEvidence(deal: DealRow): DealEvidence {
+  const meetings = getDealMeetings(deal.dealId);
+  const activity = getDealActivity(deal.dealId);
+  const mails = activity.filter((a) => a.kind === "email");
+  const calls = activity.filter((a) => a.kind === "call");
+  const hasOwnerMailProof = mails.some((m) => m.direction === "out");
+  const hasOwnerCallProof = calls.some((m) => m.direction === "out");
+  const intakeMeeting = meetings.find((m) => /intake/i.test(m.title));
+  const sollicitatieMeeting = meetings.find((m) => /sollicitatie/i.test(m.title));
+  const vervolgMeeting = meetings.find((m) => /vervolg/i.test(m.title));
+  const isGeplaatst = isGeplaatstStage(deal.dealStatus);
+  const lopendeZaakStale = deal.dealStatus === "2.3 | Lopende zaak"
+    ? !activity.some((a) => /2026/.test(a.date)) // crude staleness check
+    : undefined;
+  return {
+    hasMatch: !!deal.candidateId && !!deal.opdrachtgeverId,
+    hasOwnerMailProof, hasOwnerCallProof,
+    intakeMeeting, sollicitatieMeeting, vervolgMeeting,
+    isGeplaatst,
+    lastMail: mails[0], lastCall: calls[0],
+    lopendeZaakStale,
+  };
+}
+
+export interface CandidateEvidence {
+  approached: { viaMail: boolean; viaCall: boolean; success: boolean };
+  matched: { matched: boolean; dealCount: number };
+  endStage: { notEndStage: number; total: number };
+  intakeDone: boolean;
+}
+export function getCandidateEvidence(candidateId: string, dealsCount: number): CandidateEvidence {
+  const activity = getCandidateActivity(candidateId);
+  const dealLinks = getCandidateDealLinks(candidateId, dealsCount);
+  const mails = activity.filter((a) => a.kind === "email" && a.direction === "out");
+  const calls = activity.filter((a) => a.kind === "call" && a.direction === "out");
+  const success = activity.some((a) => a.direction === "in" || a.contactStatus === "In dienst");
+  const total = dealLinks.length;
+  const notEnd = dealLinks.filter((d) => !isEndStage(d.dealStatus)).length;
+  const intakeDone = dealLinks.length > 0 && activity.some((a) => a.kind === "call" && /intake/i.test(a.subject ?? ""));
+  return {
+    approached: { viaMail: mails.length > 0, viaCall: calls.length > 0, success },
+    matched: { matched: total > 0, dealCount: total },
+    endStage: { notEndStage: notEnd, total },
+    intakeDone,
+  };
+}
+
 
 // ─── Performance perspective: financial consequences per consultant ────
 export interface LcbFinancePerfRow {
