@@ -58,7 +58,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
   const showExtra = !!extra;
 
   return createPortal(
-    <div className="fixed inset-x-0 bottom-0 top-14 z-[60] flex">
+    <div className="fixed inset-0 top-14 z-[60] flex">
       <button
         type="button"
         aria-label="Sluiten"
@@ -69,7 +69,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
         <div
           className={cn(
             "h-full shrink-0 transition-all duration-200 ease-out",
-            showExtra && right && "-mr-32 opacity-40",
+            showExtra && right && "-mr-32 opacity-40 blur-[2px]",
           )}
         >
           <Pane
