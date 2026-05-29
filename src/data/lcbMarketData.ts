@@ -384,6 +384,7 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
   return Array.from({ length: total }, (_, i) => {
     const kindR = rnd();
     const kind: ActivityItem["kind"] = kindR < 0.5 ? "email" : kindR < 0.85 ? "call" : "note";
+    const callId = kind === "call" ? String(rint(rnd, 100000, 999999)) : undefined;
     return {
       id: `${candidateId}-act-${i}`,
       kind,
@@ -392,13 +393,20 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
       contactStatus: pick(rnd, CONTACT_STATUSES),
       subject: kind === "call" ? pick(rnd, callSubjects) : kind === "email" ? pick(rnd, subjects) : undefined,
       duration: kind === "call" ? hms(rnd) : undefined,
-      body: kind === "note" ? pick(rnd, ["Kort gesprek, follow-up gepland.", "Klant wil tweede gesprek inplannen."]) : undefined,
+      body: kind === "note"
+        ? pick(rnd, ["Kort gesprek, follow-up gepland.", "Klant wil tweede gesprek inplannen."])
+        : kind === "email"
+          ? pick(rnd, EMAIL_BODIES)
+          : undefined,
       date: fullDate(rnd),
       time: hhmm(rnd),
       dealRef: rnd() < 0.6 ? makeDealId(rnd) : undefined,
+      callId,
+      transcript: kind === "call" ? buildTranscript(rnd) : undefined,
     };
   });
 }
+
 
 export function getCandidateDealLinks(candidateId: string, dealsCount: number): CandidateDealLink[] {
   const rnd = seedFromId(candidateId + "deals");
