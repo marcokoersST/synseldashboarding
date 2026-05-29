@@ -37,7 +37,7 @@ function lsKey(dealId: string, step: StepKey) {
 
 export function DealDetailPane({ deal, onOpenCandidate, onOpenComm }: Props) {
   const notes = useMemo(() => getDealNotes(deal.dealId), [deal.dealId]);
-  const tasks = useMemo(() => getDealTasks(deal.dealId), [deal.dealId]);
+  
   const meetings = useMemo(() => getDealMeetings(deal.dealId), [deal.dealId]);
   const activity = useMemo(() => getDealActivity(deal.dealId), [deal.dealId]);
   const evidence = useMemo(() => getDealEvidence(deal), [deal]);
