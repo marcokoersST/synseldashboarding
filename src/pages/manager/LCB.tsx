@@ -9,10 +9,12 @@ import {
   lcbMarketRows, lcbFunnelSteps, lcbTeam, LCB_UNITS,
   getCandidatesForStep, getDealsForStep,
   type LcbStepKey, type CandidateRow, type DealRow,
+  type ActivityItem, type CandidateDealLink,
+  isEndStage,
 } from "@/data/lcbMarketData";
 import { revenueChartDataV2 } from "@/data/managerPerformanceDataV2";
 import { consultantSkillData } from "@/data/managerPerformanceData";
-import { dealStageBadgeClass } from "@/data/lcbDealStages";
+import { dealStageBadgeClass, LCB_DEAL_STAGES, type LcbDealStage } from "@/data/lcbDealStages";
 
 import { LCB_STATUS_COLOR, LCB_STATUS_LABEL, statusFromScore } from "@/lib/lcbStatus";
 import { LCBTopBar } from "@/components/manager/lcb/LCBTopBar";
@@ -24,6 +26,8 @@ import { initialLcbDateState, type LcbDateState } from "@/components/manager/lcb
 import { LcbSplitOverlay } from "@/components/manager/lcb/LcbSplitOverlay";
 import { CandidateDetailPane } from "@/components/manager/lcb/CandidateDetailPane";
 import { DealDetailPane } from "@/components/manager/lcb/DealDetailPane";
+import { CommunicationPane } from "@/components/manager/lcb/CommunicationPane";
+import { MultiSelectFilter, SortableTh, useSort, ResetButton, filterBy } from "@/components/manager/lcb/tableControls";
 import {
   ConsultantOverviewOverlay,
   DevelopmentOverlay, StopperOverlay, ActivePlacementsOverlay,
@@ -32,6 +36,7 @@ import {
 } from "@/components/manager/lcb/Overlays";
 import { CallConversionsOverlay } from "@/components/manager/lcb/CallConversionsOverlay";
 import { Button } from "@/components/ui/button";
+
 
 const UNITS = [...LCB_UNITS];
 type TabId = "market" | "development" | "finance" | "signals";
