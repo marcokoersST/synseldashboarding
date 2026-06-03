@@ -408,7 +408,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Medium</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Medium" what="medium gives the option to choose between app or mail or both" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-1" align="end">
