@@ -12,7 +12,7 @@ import {
   isSameDay,
 } from "date-fns";
 import { nl } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil, CheckCircle2, Eye, MessageSquare, AlertTriangle, X, Check, Phone, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Smartphone, Settings, Plus, Pencil, CheckCircle2, Eye, MessageSquare, AlertTriangle, X, Check, Phone, CalendarDays, Trash2, CalendarIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,8 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TileInfo } from "@/components/funnel-ops/TileInfo";
+import { ChangeScheduler, PendingChangeBadge } from "../components/ChangeScheduler";
+import { Calendar } from "@/components/ui/calendar";
 
 // Deterministic split of `total` across `keys` based on a stable seed
 function distribute(total: number, keys: string[], seed: string): Record<string, number> {
@@ -203,6 +205,39 @@ const PlanningTab = () => {
     Object.fromEntries(BERICHT_OPTS.map((b, i) => [b, VERSIE_OPTS[i % VERSIE_OPTS.length]]))
   );
 
+  // Pending scheduled changes per tile (apply on a future date)
+  type PendingTile = { label: string; date: Date };
+  type TileKey = "verzendtijd" | "verzenddagen" | "medium" | "verdeling" | "functies" | "berichten" | "categorieen" | "maxPerDag";
+  const [pendingTiles, setPendingTiles] = useState<Record<TileKey, PendingTile | null>>({
+    verzendtijd: null,
+    verzenddagen: null,
+    medium: null,
+    verdeling: null,
+    functies: null,
+    berichten: null,
+    categorieen: null,
+    maxPerDag: null,
+  });
+  const setPending = (k: TileKey, p: PendingTile | null) =>
+    setPendingTiles((prev) => ({ ...prev, [k]: p }));
+
+  // Previous values captured when popover/dialog opens, so scheduling can revert
+  const [prevSnap, setPrevSnap] = useState<Record<TileKey, any>>({
+    verzendtijd: verzendtijd,
+    verzenddagen: [...verzenddagen],
+    medium: medium,
+    verdeling: verdeling,
+    functies: [...functies],
+    berichten: [...berichten],
+    categorieen: [...categorieen],
+    maxPerDag: maxPerDag,
+  });
+  const captureSnap = (k: TileKey, value: any) =>
+    setPrevSnap((prev) => ({ ...prev, [k]: Array.isArray(value) ? [...value] : value }));
+
+  const summarizeDagen = (arr: string[]) =>
+    arr.length === VERZENDDAG_OPTS.length ? "Ma t/m Za" : arr.length === 0 ? "Geen" : `${arr.length} dagen`;
+
   const summarize = (sel: string[], all: string[]) =>
     sel.length === 0 ? "Geen" : sel.length === all.length ? "Alle" : `${sel.length} geselecteerd`;
 
@@ -283,6 +318,69 @@ const PlanningTab = () => {
     setEditItemId(null);
   };
 
+  // Delete confirmation for edit dialog
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
+  const deleteItem = (id: string) => {
+    setItems((prev) => prev.filter((it) => it.id !== id));
+    setDeleteConfirm(null);
+    setEditOpen(false);
+    setEditItemId(null);
+  };
+
+  // "Nieuw bericht" dialog
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState<{
+    date: Date | undefined;
+    verzendtijd: string;
+    functies: string[];
+    berichttypes: string[];
+    categorieen: string[];
+    maxPerDag: number;
+  }>({
+    date: undefined,
+    verzendtijd,
+    functies: [FUNCTIE_OPTS[0]],
+    berichttypes: [BERICHT_OPTS[0]],
+    categorieen: [CATEGORIE_OPTS[0]],
+    maxPerDag: 150,
+  });
+  const [addCalOpen, setAddCalOpen] = useState(false);
+
+  const openAdd = () => {
+    setAddForm({
+      date: undefined,
+      verzendtijd,
+      functies: [FUNCTIE_OPTS[0]],
+      berichttypes: [BERICHT_OPTS[0]],
+      categorieen: [CATEGORIE_OPTS[0]],
+      maxPerDag: 150,
+    });
+    setAddOpen(true);
+  };
+
+  const saveAdd = (overrideTime?: string) => {
+    if (!addForm.date) return;
+    const validTime = overrideTime ?? (/^([01]\d|2[0-3]):([0-5]\d)$/.test(addForm.verzendtijd) ? addForm.verzendtijd : verzendtijd);
+    const functie = addForm.functies[0] ?? FUNCTIE_OPTS[0];
+    const berichttype = addForm.berichttypes.join(", ");
+    const categorie = addForm.categorieen.join(", ");
+    const newItem: PlanItem = {
+      id: `new-${Date.now()}`,
+      date: addForm.date,
+      title: `${functie} bericht`,
+      status: "concept",
+      channel: medium === "Mail" ? "mail" : "app",
+      functie,
+      verzendtijd: validTime,
+      berichttype,
+      categorie,
+      customized: true,
+      changes: [],
+    };
+    setItems((prev) => [...prev, newItem]);
+    setAddOpen(false);
+  };
+
   // status afleiden uit datum: verleden = verzonden, vandaag/toekomst = gepland
   const today = useMemo(() => {
     const d = new Date();
@@ -347,41 +445,53 @@ const PlanningTab = () => {
         <div>
           <h3 className="text-sm font-semibold text-foreground mb-3">Standaard Instellingen</h3>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Card className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Verzendtijd</p>
-                <p className="mt-1 text-2xl font-bold text-foreground">{verzendtijd}</p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Verzendtijd</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">{verzendtijd}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TileInfo title="Verzendtijd" what="verzendtijd = sending time, 24 hour clock, which shows a warning when trying to change to outside of regular business hours" />
+                  <button
+                    onClick={() => { captureSnap("verzendtijd", verzendtijd); setTempTime(verzendtijd); setTimeOpen(true); }}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Verzendtijd aanpassen"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <TileInfo title="Verzendtijd" what="verzendtijd = sending time, 24 hour clock, which shows a warning when trying to change to outside of regular business hours" />
-                <button
-                  onClick={() => { setTempTime(verzendtijd); setTimeOpen(true); }}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="Verzendtijd aanpassen"
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-              </div>
+              {pendingTiles.verzendtijd && (
+                <PendingChangeBadge
+                  label={pendingTiles.verzendtijd.label}
+                  date={pendingTiles.verzendtijd.date}
+                  onCancel={() => setPending("verzendtijd", null)}
+                />
+              )}
             </Card>
 
             {/* Verzenddagen */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("verzenddagen", verzenddagen); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Verzenddagen</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">
-                      {verzenddagen.length === VERZENDDAG_OPTS.length
-                        ? "Ma t/m Za"
-                        : verzenddagen.length === 0
-                          ? "Geen"
-                          : `${verzenddagen.length} dagen`}
-                    </p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Verzenddagen</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarizeDagen(verzenddagen)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Verzenddagen" what="verzenddagen = sending days, option to select on which days we want to automatically send messages" />
+                      <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Verzenddagen" what="verzenddagen = sending days, option to select on which days we want to automatically send messages" />
-                    <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  </div>
+                  {pendingTiles.verzenddagen && (
+                    <PendingChangeBadge
+                      label={pendingTiles.verzenddagen.label}
+                      date={pendingTiles.verzenddagen.date}
+                      onCancel={() => setPending("verzenddagen", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2" align="end">
@@ -398,20 +508,36 @@ const PlanningTab = () => {
                   </label>
                 ))}
                 <p className="px-2 pt-1 text-[10px] text-muted-foreground">Op zondag worden geen berichten verstuurd.</p>
+                <ChangeScheduler
+                  onApplyNow={() => { /* already applied live */ }}
+                  onSchedule={(date) => {
+                    setPending("verzenddagen", { label: summarizeDagen(verzenddagen), date });
+                    setVerzenddagen(prevSnap.verzenddagen);
+                  }}
+                />
               </PopoverContent>
             </Popover>
 
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("medium", medium); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Medium</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Medium</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Medium" what="medium gives the option to choose between app or mail or both" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Medium" what="medium gives the option to choose between app or mail or both" />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.medium && (
+                    <PendingChangeBadge
+                      label={pendingTiles.medium.label}
+                      date={pendingTiles.medium.date}
+                      onCancel={() => setPending("medium", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-1" align="end">
@@ -423,21 +549,39 @@ const PlanningTab = () => {
                     </label>
                   ))}
                 </RadioGroup>
+                <div className="px-1">
+                  <ChangeScheduler
+                    onApplyNow={() => { /* live applied */ }}
+                    onSchedule={(date) => {
+                      setPending("medium", { label: medium, date });
+                      setMedium(prevSnap.medium);
+                    }}
+                  />
+                </div>
               </PopoverContent>
             </Popover>
 
             {/* Standaard verdeling */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("verdeling", verdeling); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Standaard verdeling</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{verdeling}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Standaard verdeling</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{verdeling}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Standaard verdeling" what="standaard verdeling = possibility to change the distribution of the messages send." />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Standaard verdeling" what="standaard verdeling = possibility to change the distribution of the messages send." />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.verdeling && (
+                    <PendingChangeBadge
+                      label={pendingTiles.verdeling.label}
+                      date={pendingTiles.verdeling.date}
+                      onCancel={() => setPending("verdeling", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-1" align="end">
@@ -449,21 +593,39 @@ const PlanningTab = () => {
                     </label>
                   ))}
                 </RadioGroup>
+                <div className="px-1">
+                  <ChangeScheduler
+                    onApplyNow={() => { /* live applied */ }}
+                    onSchedule={(date) => {
+                      setPending("verdeling", { label: verdeling, date });
+                      setVerdeling(prevSnap.verdeling);
+                    }}
+                  />
+                </div>
               </PopoverContent>
             </Popover>
 
             {/* Functiegroep */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("functies", functies); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Functiegroep</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(functies, FUNCTIE_OPTS)}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Functiegroep</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(functies, FUNCTIE_OPTS)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Functiegroep" what="option to select which functiegroups automatically get a message, based on functiongroups in candidate profile." />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Functiegroep" what="option to select which functiegroups automatically get a message, based on functiongroups in candidate profile." />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.functies && (
+                    <PendingChangeBadge
+                      label={pendingTiles.functies.label}
+                      date={pendingTiles.functies.date}
+                      onCancel={() => setPending("functies", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-2" align="end">
@@ -479,21 +641,37 @@ const PlanningTab = () => {
                     <span>{opt}</span>
                   </label>
                 ))}
+                <ChangeScheduler
+                  onApplyNow={() => { /* live applied */ }}
+                  onSchedule={(date) => {
+                    setPending("functies", { label: summarize(functies, FUNCTIE_OPTS), date });
+                    setFuncties(prevSnap.functies);
+                  }}
+                />
               </PopoverContent>
             </Popover>
 
             {/* Berichttype */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("berichten", berichten); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Berichttype</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(berichten, BERICHT_OPTS)}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Berichttype</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(berichten, BERICHT_OPTS)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Berichttype" what="option to select which flows to turn on and off." />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Berichttype" what="option to select which flows to turn on and off." />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.berichten && (
+                    <PendingChangeBadge
+                      label={pendingTiles.berichten.label}
+                      date={pendingTiles.berichten.date}
+                      onCancel={() => setPending("berichten", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-2" align="end">
@@ -509,24 +687,40 @@ const PlanningTab = () => {
                     <span>{opt}</span>
                   </label>
                 ))}
+                <ChangeScheduler
+                  onApplyNow={() => { /* live applied */ }}
+                  onSchedule={(date) => {
+                    setPending("berichten", { label: summarize(berichten, BERICHT_OPTS), date });
+                    setBerichten(prevSnap.berichten);
+                  }}
+                />
               </PopoverContent>
             </Popover>
 
             {/* Categorie */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("categorieen", categorieen); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Categorie</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(categorieen, CATEGORIE_OPTS)}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Categorie</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(categorieen, CATEGORIE_OPTS)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Categorie" what="option to select which categories automatically get a message, based on the category from the candidate profile." />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Categorie" what="option to select which categories automatically get a message, based on the category from the candidate profile." />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.categorieen && (
+                    <PendingChangeBadge
+                      label={pendingTiles.categorieen.label}
+                      date={pendingTiles.categorieen.date}
+                      onCancel={() => setPending("categorieen", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="end">
+              <PopoverContent className="w-56 p-2" align="end">
                 <div className="flex items-center justify-between mb-1 px-1">
                   <span className="text-xs font-medium text-muted-foreground">Categorieën</span>
                   <button className="text-xs text-primary hover:underline" onClick={() => setCategorieen(categorieen.length === CATEGORIE_OPTS.length ? [] : [...CATEGORIE_OPTS])}>
@@ -539,21 +733,37 @@ const PlanningTab = () => {
                     <span>{opt}</span>
                   </label>
                 ))}
+                <ChangeScheduler
+                  onApplyNow={() => { /* live applied */ }}
+                  onSchedule={(date) => {
+                    setPending("categorieen", { label: summarize(categorieen, CATEGORIE_OPTS), date });
+                    setCategorieen(prevSnap.categorieen);
+                  }}
+                />
               </PopoverContent>
             </Popover>
 
             {/* Max. berichten per dag */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("maxPerDag", maxPerDag); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Max. berichten per dag</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{maxPerDag}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Max. berichten per dag</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{maxPerDag}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Max. berichten per dag" what="option to change the limit of amount of send messages per day" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Max. berichten per dag" what="option to change the limit of amount of send messages per day" />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.maxPerDag && (
+                    <PendingChangeBadge
+                      label={pendingTiles.maxPerDag.label}
+                      date={pendingTiles.maxPerDag.date}
+                      onCancel={() => setPending("maxPerDag", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-72 p-4" align="end">
@@ -572,6 +782,13 @@ const PlanningTab = () => {
                   <span>0</span>
                   <span>500</span>
                 </div>
+                <ChangeScheduler
+                  onApplyNow={() => { /* live applied */ }}
+                  onSchedule={(date) => {
+                    setPending("maxPerDag", { label: String(maxPerDag), date });
+                    setMaxPerDag(prevSnap.maxPerDag);
+                  }}
+                />
               </PopoverContent>
             </Popover>
           </div>
@@ -613,6 +830,14 @@ const PlanningTab = () => {
                 <span className="h-2 w-2 rounded-full bg-foreground/80 opacity-50" />
                 <span className="text-muted-foreground">Gepland</span>
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={openAdd}
+                className="h-7 gap-1"
+              >
+                <Plus className="h-3.5 w-3.5" /> Nieuw
+              </Button>
               <Button
                 size="sm"
                 variant={editMode ? "default" : "outline"}
@@ -963,22 +1188,35 @@ const PlanningTab = () => {
           <DialogHeader>
             <DialogTitle>Verzendtijd aanpassen</DialogTitle>
           </DialogHeader>
-          <div className="py-2">
-            <Label htmlFor="verzendtijd-input" className="text-xs text-muted-foreground">Tijd (24-uurs)</Label>
-            <Input
-              id="verzendtijd-input"
-              type="text"
-              inputMode="numeric"
-              placeholder="09:00"
-              maxLength={5}
-              value={tempTime}
-              onChange={(e) => setTempTime(e.target.value.replace(/[^0-9:]/g, ""))}
-              className="mt-1"
+          <div className="py-2 space-y-3">
+            <div>
+              <Label htmlFor="verzendtijd-input" className="text-xs text-muted-foreground">Tijd (24-uurs)</Label>
+              <Input
+                id="verzendtijd-input"
+                type="text"
+                inputMode="numeric"
+                placeholder="09:00"
+                maxLength={5}
+                value={tempTime}
+                onChange={(e) => setTempTime(e.target.value.replace(/[^0-9:]/g, ""))}
+                className="mt-1"
+              />
+            </div>
+            <ChangeScheduler
+              onApplyNow={() => {
+                const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00";
+                setTimeOpen(false);
+                setTimeWarning(t);
+              }}
+              onSchedule={(date) => {
+                const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00";
+                setPending("verzendtijd", { label: t, date });
+                setTimeOpen(false);
+              }}
             />
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setTimeOpen(false)}>Annuleren</Button>
-            <Button onClick={() => { const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00"; setTimeOpen(false); setTimeWarning(t); }}>Opslaan</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1058,23 +1296,184 @@ const PlanningTab = () => {
               );
             })}
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
+          <DialogFooter className="sm:justify-between gap-2 flex-row">
             <Button
-              className="bg-emerald-500 hover:bg-emerald-600 text-white"
-              disabled={editForm.functies.length === 0 || editForm.berichttypes.length === 0 || editForm.categorieen.length === 0}
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10 gap-1"
               onClick={() => {
-                const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
-                const hour = parseInt(t.split(":")[0], 10);
-                if (hour < 8 || hour >= 18) {
-                  setEditTimeWarning(t);
-                  setEditOpen(false);
-                } else {
-                  saveEdit(t);
-                }
+                const item = items.find((i) => i.id === editItemId);
+                if (item) setDeleteConfirm({ id: item.id, title: `${item.functie} bericht` });
               }}
             >
-              Opslaan
+              <Trash2 className="h-3.5 w-3.5" /> Verwijderen
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
+              <Button
+                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                disabled={editForm.functies.length === 0 || editForm.berichttypes.length === 0 || editForm.categorieen.length === 0}
+                onClick={() => {
+                  const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
+                  const hour = parseInt(t.split(":")[0], 10);
+                  if (hour < 8 || hour >= 18) {
+                    setEditTimeWarning(t);
+                    setEditOpen(false);
+                  } else {
+                    saveEdit(t);
+                  }
+                }}
+              >
+                Opslaan
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirm dialog */}
+      <Dialog open={!!deleteConfirm} onOpenChange={(o) => { if (!o) setDeleteConfirm(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Bericht verwijderen</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground">
+              Weet je zeker dat je dit bericht <span className="font-semibold">{deleteConfirm?.title}</span> wil verwijderen? Deze actie kan niet ongedaan worden gemaakt.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>Annuleren</Button>
+            <Button
+              variant="destructive"
+              className="gap-1"
+              onClick={() => deleteConfirm && deleteItem(deleteConfirm.id)}
+            >
+              <Trash2 className="h-4 w-4" /> Verwijderen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Nieuw bericht dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nieuw bericht toevoegen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">Datum</Label>
+              <Popover open={addCalOpen} onOpenChange={setAddCalOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "mt-1 w-full justify-start text-left font-normal",
+                      !addForm.date && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {addForm.date ? format(addForm.date, "EEEE d MMMM yyyy", { locale: nl }) : "Kies een datum"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-50" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={addForm.date}
+                    onSelect={(d) => {
+                      setAddForm((f) => ({ ...f, date: d ?? undefined }));
+                      setAddCalOpen(false);
+                    }}
+                    disabled={(d) => d.getDay() === 0}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Verzendtijd (24-uurs)</Label>
+              <Input
+                type="text"
+                inputMode="numeric"
+                placeholder="09:00"
+                maxLength={5}
+                value={addForm.verzendtijd}
+                onChange={(e) => setAddForm((f) => ({ ...f, verzendtijd: e.target.value.replace(/[^0-9:]/g, "") }))}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">Max. berichten per dag</Label>
+                <span className="text-xs font-semibold tabular-nums">{addForm.maxPerDag}</span>
+              </div>
+              <Slider
+                className="mt-2"
+                value={[addForm.maxPerDag]}
+                min={0}
+                max={500}
+                step={5}
+                onValueChange={(v) => setAddForm((f) => ({ ...f, maxPerDag: v[0] ?? 0 }))}
+              />
+              <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                <span>0</span>
+                <span>500</span>
+              </div>
+            </div>
+            {([
+              { key: "functies" as const, label: "Functiegroepen", opts: FUNCTIE_OPTS },
+              { key: "berichttypes" as const, label: "Berichttypes", opts: BERICHT_OPTS },
+              { key: "categorieen" as const, label: "Categorieën", opts: CATEGORIE_OPTS },
+            ]).map(({ key, label, opts }) => {
+              const sel = addForm[key];
+              const isEmpty = sel.length === 0;
+              return (
+                <div key={key}>
+                  <Label className="text-xs text-muted-foreground">{label}</Label>
+                  <div className={cn("mt-1 rounded-md border p-2 space-y-1 max-h-44 overflow-y-auto", isEmpty ? "border-destructive" : "border-border")}>
+                    <div className="flex items-center justify-between pb-1 border-b border-border mb-1">
+                      <span className="text-[10px] text-muted-foreground">{sel.length} van {opts.length} geselecteerd</span>
+                      <button
+                        type="button"
+                        className="text-[10px] text-primary hover:underline"
+                        onClick={() => setAddForm((f) => ({ ...f, [key]: sel.length === opts.length ? [] : [...opts] }))}
+                      >
+                        {sel.length === opts.length ? "Alles uit" : "Alles aan"}
+                      </button>
+                    </div>
+                    {opts.map((o) => (
+                      <label key={o} className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-accent cursor-pointer text-sm">
+                        <Checkbox
+                          checked={sel.includes(o)}
+                          onCheckedChange={() => setAddForm((f) => ({ ...f, [key]: toggle(f[key], o) }))}
+                        />
+                        <span>{o}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {isEmpty && (
+                    <p className="mt-1 text-xs text-destructive font-medium">Selecteer minimaal één optie.</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setAddOpen(false)}>Annuleren</Button>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white gap-1"
+              disabled={
+                !addForm.date ||
+                addForm.functies.length === 0 ||
+                addForm.berichttypes.length === 0 ||
+                addForm.categorieen.length === 0
+              }
+              onClick={() => saveAdd()}
+            >
+              <Plus className="h-4 w-4" /> Toevoegen
             </Button>
           </DialogFooter>
         </DialogContent>
