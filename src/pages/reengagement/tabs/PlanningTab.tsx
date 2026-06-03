@@ -1297,23 +1297,184 @@ const PlanningTab = () => {
               );
             })}
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
+          <DialogFooter className="sm:justify-between gap-2 flex-row">
             <Button
-              className="bg-emerald-500 hover:bg-emerald-600 text-white"
-              disabled={editForm.functies.length === 0 || editForm.berichttypes.length === 0 || editForm.categorieen.length === 0}
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10 gap-1"
               onClick={() => {
-                const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
-                const hour = parseInt(t.split(":")[0], 10);
-                if (hour < 8 || hour >= 18) {
-                  setEditTimeWarning(t);
-                  setEditOpen(false);
-                } else {
-                  saveEdit(t);
-                }
+                const item = items.find((i) => i.id === editItemId);
+                if (item) setDeleteConfirm({ id: item.id, title: `${item.functie} bericht` });
               }}
             >
-              Opslaan
+              <Trash2 className="h-3.5 w-3.5" /> Verwijderen
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => setEditOpen(false)}>Annuleren</Button>
+              <Button
+                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                disabled={editForm.functies.length === 0 || editForm.berichttypes.length === 0 || editForm.categorieen.length === 0}
+                onClick={() => {
+                  const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(editForm.verzendtijd) ? editForm.verzendtijd : "11:00";
+                  const hour = parseInt(t.split(":")[0], 10);
+                  if (hour < 8 || hour >= 18) {
+                    setEditTimeWarning(t);
+                    setEditOpen(false);
+                  } else {
+                    saveEdit(t);
+                  }
+                }}
+              >
+                Opslaan
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirm dialog */}
+      <Dialog open={!!deleteConfirm} onOpenChange={(o) => { if (!o) setDeleteConfirm(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Bericht verwijderen</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground">
+              Weet je zeker dat je dit bericht <span className="font-semibold">{deleteConfirm?.title}</span> wil verwijderen? Deze actie kan niet ongedaan worden gemaakt.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>Annuleren</Button>
+            <Button
+              variant="destructive"
+              className="gap-1"
+              onClick={() => deleteConfirm && deleteItem(deleteConfirm.id)}
+            >
+              <Trash2 className="h-4 w-4" /> Verwijderen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Nieuw bericht dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nieuw bericht toevoegen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">Datum</Label>
+              <Popover open={addCalOpen} onOpenChange={setAddCalOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "mt-1 w-full justify-start text-left font-normal",
+                      !addForm.date && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {addForm.date ? format(addForm.date, "EEEE d MMMM yyyy", { locale: nl }) : "Kies een datum"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-50" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={addForm.date}
+                    onSelect={(d) => {
+                      setAddForm((f) => ({ ...f, date: d ?? undefined }));
+                      setAddCalOpen(false);
+                    }}
+                    disabled={(d) => d.getDay() === 0}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Verzendtijd (24-uurs)</Label>
+              <Input
+                type="text"
+                inputMode="numeric"
+                placeholder="09:00"
+                maxLength={5}
+                value={addForm.verzendtijd}
+                onChange={(e) => setAddForm((f) => ({ ...f, verzendtijd: e.target.value.replace(/[^0-9:]/g, "") }))}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">Max. berichten per dag</Label>
+                <span className="text-xs font-semibold tabular-nums">{addForm.maxPerDag}</span>
+              </div>
+              <Slider
+                className="mt-2"
+                value={[addForm.maxPerDag]}
+                min={0}
+                max={500}
+                step={5}
+                onValueChange={(v) => setAddForm((f) => ({ ...f, maxPerDag: v[0] ?? 0 }))}
+              />
+              <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                <span>0</span>
+                <span>500</span>
+              </div>
+            </div>
+            {([
+              { key: "functies" as const, label: "Functiegroepen", opts: FUNCTIE_OPTS },
+              { key: "berichttypes" as const, label: "Berichttypes", opts: BERICHT_OPTS },
+              { key: "categorieen" as const, label: "Categorieën", opts: CATEGORIE_OPTS },
+            ]).map(({ key, label, opts }) => {
+              const sel = addForm[key];
+              const isEmpty = sel.length === 0;
+              return (
+                <div key={key}>
+                  <Label className="text-xs text-muted-foreground">{label}</Label>
+                  <div className={cn("mt-1 rounded-md border p-2 space-y-1 max-h-44 overflow-y-auto", isEmpty ? "border-destructive" : "border-border")}>
+                    <div className="flex items-center justify-between pb-1 border-b border-border mb-1">
+                      <span className="text-[10px] text-muted-foreground">{sel.length} van {opts.length} geselecteerd</span>
+                      <button
+                        type="button"
+                        className="text-[10px] text-primary hover:underline"
+                        onClick={() => setAddForm((f) => ({ ...f, [key]: sel.length === opts.length ? [] : [...opts] }))}
+                      >
+                        {sel.length === opts.length ? "Alles uit" : "Alles aan"}
+                      </button>
+                    </div>
+                    {opts.map((o) => (
+                      <label key={o} className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-accent cursor-pointer text-sm">
+                        <Checkbox
+                          checked={sel.includes(o)}
+                          onCheckedChange={() => setAddForm((f) => ({ ...f, [key]: toggle(f[key], o) }))}
+                        />
+                        <span>{o}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {isEmpty && (
+                    <p className="mt-1 text-xs text-destructive font-medium">Selecteer minimaal één optie.</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setAddOpen(false)}>Annuleren</Button>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white gap-1"
+              disabled={
+                !addForm.date ||
+                addForm.functies.length === 0 ||
+                addForm.berichttypes.length === 0 ||
+                addForm.categorieen.length === 0
+              }
+              onClick={() => saveAdd()}
+            >
+              <Plus className="h-4 w-4" /> Toevoegen
             </Button>
           </DialogFooter>
         </DialogContent>
