@@ -458,7 +458,14 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
 
       {/* Highlights */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Highlights</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Highlights</CardTitle>
+          <TileInfo
+            title="Highlights"
+            what="Bronnen van de drie highlight-regels hieronder."
+            formula={HIGHLIGHTS_DEV_INFO_FORMULA}
+          />
+        </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between p-2 rounded bg-emerald-500/10">
