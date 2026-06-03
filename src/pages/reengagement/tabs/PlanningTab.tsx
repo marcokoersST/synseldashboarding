@@ -236,6 +236,30 @@ const PlanningTab = () => {
   const captureSnap = (k: TileKey, value: any) =>
     setPrevSnap((prev) => ({ ...prev, [k]: Array.isArray(value) ? [...value] : value }));
 
+  // Track which tiles were explicitly applied (or scheduled) during a popover session.
+  // If the popover closes without apply, we revert the live value to the captured snap.
+  const appliedRef = useRef<Set<TileKey>>(new Set());
+  const setters: Record<TileKey, (v: any) => void> = {
+    verzendtijd: setVerzendtijd,
+    verzenddagen: setVerzenddagen,
+    medium: setMedium,
+    verdeling: setVerdeling,
+    functies: setFuncties,
+    berichten: setBerichten,
+    categorieen: setCategorieen,
+    maxPerDag: setMaxPerDag,
+  };
+  const handleOpenChange = (key: TileKey, currentValue: any) => (open: boolean) => {
+    if (open) {
+      captureSnap(key, currentValue);
+      appliedRef.current.delete(key);
+    } else if (!appliedRef.current.has(key)) {
+      // revert unapplied edits
+      setters[key](Array.isArray(prevSnap[key]) ? [...prevSnap[key]] : prevSnap[key]);
+    }
+  };
+  const markApplied = (key: TileKey) => { appliedRef.current.add(key); };
+
   const summarizeDagen = (arr: string[]) =>
     arr.length === VERZENDDAG_OPTS.length ? "Ma t/m Za" : arr.length === 0 ? "Geen" : `${arr.length} dagen`;
 
