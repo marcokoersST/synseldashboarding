@@ -39,6 +39,12 @@ const HIGHLIGHTS_DEV_INFO_FORMULA = `Niet kunnen spreken (18): show here the mes
 Bezig met studie (8,6%): show here the message flow name of the flow that generated the highest % reactie as calculated in the table above + show the % reactie number
 ZZP/Freelance (-6,4%): show the message flow name which showed the highest drop off rate if we compare the amount of inschrijven from the selected time period to the period before, show the drop off in %`;
 
+const VIEWBAR_DEV_INFO = `periode = option to select the view based on day, week or month
+functiegroep = option to select the view based on the candidate profile functiegroup from rcrm
+berichttype = option to select the view based on the flows/message type
+medium = select mail, whatsapp or both
+categorie = option to select the view based on the category from the candidate profile`;
+
 interface Props {
   dateRange: DateRange;
   compareRange: DateRange | null;
@@ -354,20 +360,29 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
 
 
       {/* Chart view bar */}
-      <ViewBar
-        scope="grafiek"
-        showPeriode
-        periode={periode}
-        setPeriode={setPeriode}
-        functiegroep={chartFunctiegroep}
-        setFunctiegroep={setChartFunctiegroep}
-        berichttype={chartBerichttype}
-        setBerichttype={setChartBerichttype}
-        medium={chartMedium}
-        setMedium={setChartMedium}
-        categorie={chartCategorie}
-        setCategorie={setChartCategorie}
-      />
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <ViewBar
+            scope="grafiek"
+            showPeriode
+            periode={periode}
+            setPeriode={setPeriode}
+            functiegroep={chartFunctiegroep}
+            setFunctiegroep={setChartFunctiegroep}
+            berichttype={chartBerichttype}
+            setBerichttype={setChartBerichttype}
+            medium={chartMedium}
+            setMedium={setChartMedium}
+            categorie={chartCategorie}
+            setCategorie={setChartCategorie}
+          />
+        </div>
+        <TileInfo
+          title="Weergave grafiek"
+          what="Filter opties voor de grafiekweergave."
+          formula={VIEWBAR_DEV_INFO}
+        />
+      </div>
 
       {/* Trend chart */}
       <Card>
