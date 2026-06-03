@@ -249,16 +249,25 @@ const PlanningTab = () => {
     categorieen: setCategorieen,
     maxPerDag: setMaxPerDag,
   };
+  const [openTile, setOpenTile] = useState<TileKey | null>(null);
   const handleOpenChange = (key: TileKey, currentValue: any) => (open: boolean) => {
     if (open) {
       captureSnap(key, currentValue);
       appliedRef.current.delete(key);
-    } else if (!appliedRef.current.has(key)) {
-      // revert unapplied edits
-      setters[key](Array.isArray(prevSnap[key]) ? [...prevSnap[key]] : prevSnap[key]);
+      setOpenTile(key);
+    } else {
+      if (!appliedRef.current.has(key)) {
+        // revert unapplied edits
+        setters[key](Array.isArray(prevSnap[key]) ? [...prevSnap[key]] : prevSnap[key]);
+      }
+      setOpenTile((cur) => (cur === key ? null : cur));
     }
   };
   const markApplied = (key: TileKey) => { appliedRef.current.add(key); };
+  // Value displayed in the tile: while editing show the snapshot (pre-edit) value;
+  // once Toepassen is clicked the popover closes and the live value is shown.
+  const displayValue = <T,>(key: TileKey, live: T): T =>
+    (openTile === key ? (prevSnap[key] as T) : live);
 
   const summarizeDagen = (arr: string[]) =>
     arr.length === VERZENDDAG_OPTS.length ? "Ma t/m Za" : arr.length === 0 ? "Geen" : `${arr.length} dagen`;
@@ -504,7 +513,7 @@ const PlanningTab = () => {
                   <div className="flex items-center justify-between">
                     <div className="min-w-0">
                       <p className="text-xs text-muted-foreground">Verzenddagen</p>
-                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarizeDagen(verzenddagen)}</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarizeDagen(displayValue("verzenddagen", verzenddagen))}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <TileInfo title="Verzenddagen" what="verzenddagen = sending days, option to select on which days we want to automatically send messages" />
@@ -551,7 +560,7 @@ const PlanningTab = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground">Medium</p>
-                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{displayValue("medium", medium)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <TileInfo title="Medium" what="medium gives the option to choose between app or mail or both" />
@@ -596,7 +605,7 @@ const PlanningTab = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground">Standaard verdeling</p>
-                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{verdeling}</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{displayValue("verdeling", verdeling)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <TileInfo title="Standaard verdeling" what="standaard verdeling = possibility to change the distribution of the messages send." />
@@ -641,7 +650,7 @@ const PlanningTab = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground">Functiegroep</p>
-                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(functies, FUNCTIE_OPTS)}</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(displayValue("functies", functies), FUNCTIE_OPTS)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <TileInfo title="Functiegroep" what="option to select which functiegroups automatically get a message, based on functiongroups in candidate profile." />
@@ -688,7 +697,7 @@ const PlanningTab = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground">Berichttype</p>
-                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(berichten, BERICHT_OPTS)}</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(displayValue("berichten", berichten), BERICHT_OPTS)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <TileInfo title="Berichttype" what="option to select which flows to turn on and off." />
@@ -735,7 +744,7 @@ const PlanningTab = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground">Categorie</p>
-                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(categorieen, CATEGORIE_OPTS)}</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(displayValue("categorieen", categorieen), CATEGORIE_OPTS)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <TileInfo title="Categorie" what="option to select which categories automatically get a message, based on the category from the candidate profile." />
@@ -782,7 +791,7 @@ const PlanningTab = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground">Max. berichten per dag</p>
-                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{maxPerDag}</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{displayValue("maxPerDag", maxPerDag)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <TileInfo title="Max. berichten per dag" what="option to change the limit of amount of send messages per day" />
