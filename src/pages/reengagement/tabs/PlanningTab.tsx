@@ -434,7 +434,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Standaard verdeling</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{verdeling}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Standaard verdeling" what="standaard verdeling = possibility to change the distribution of the messages send." />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-1" align="end">
