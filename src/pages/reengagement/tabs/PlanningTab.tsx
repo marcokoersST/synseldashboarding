@@ -965,18 +965,25 @@ const PlanningTab = () => {
                             >
                               <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", meta?.dot)} />
                               <span className="truncate flex-1">{meta?.short ?? functie}</span>
-                              {repr?.customized && (
+                              {(repr?.customized || repr?.manualAdded) && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <span
                                       onClick={(e) => e.stopPropagation()}
-                                      className="rounded-sm bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 py-px text-[9px] font-semibold uppercase tracking-wide cursor-help"
+                                      className={cn(
+                                        "rounded-sm px-1 py-px text-[9px] font-semibold uppercase tracking-wide cursor-help",
+                                        repr.manualAdded
+                                          ? "bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                                          : "bg-amber-500/20 text-amber-700 dark:text-amber-300"
+                                      )}
                                     >
-                                      Aangepast
+                                      {repr.manualAdded ? "Nieuw" : "Gewijzigd"}
                                     </span>
                                   </TooltipTrigger>
                                   <TooltipContent side="top" className="max-w-xs p-2.5">
-                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">Wijzigingen</p>
+                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+                                      {repr.manualAdded ? "Handmatig toegevoegd" : "Wijzigingen"}
+                                    </p>
                                     {repr.changes && repr.changes.length > 0 ? (
                                       <ul className="space-y-1.5 text-xs">
                                         {repr.changes.map((c, i) => (
@@ -991,7 +998,11 @@ const PlanningTab = () => {
                                         ))}
                                       </ul>
                                     ) : (
-                                      <p className="text-xs text-muted-foreground">Handmatig aangepast</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {repr.manualAdded
+                                          ? "Dit bericht is handmatig toegevoegd aan de planning."
+                                          : "Handmatig aangepast"}
+                                      </p>
                                     )}
                                   </TooltipContent>
                                 </Tooltip>
