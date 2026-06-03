@@ -249,16 +249,25 @@ const PlanningTab = () => {
     categorieen: setCategorieen,
     maxPerDag: setMaxPerDag,
   };
+  const [openTile, setOpenTile] = useState<TileKey | null>(null);
   const handleOpenChange = (key: TileKey, currentValue: any) => (open: boolean) => {
     if (open) {
       captureSnap(key, currentValue);
       appliedRef.current.delete(key);
-    } else if (!appliedRef.current.has(key)) {
-      // revert unapplied edits
-      setters[key](Array.isArray(prevSnap[key]) ? [...prevSnap[key]] : prevSnap[key]);
+      setOpenTile(key);
+    } else {
+      if (!appliedRef.current.has(key)) {
+        // revert unapplied edits
+        setters[key](Array.isArray(prevSnap[key]) ? [...prevSnap[key]] : prevSnap[key]);
+      }
+      setOpenTile((cur) => (cur === key ? null : cur));
     }
   };
   const markApplied = (key: TileKey) => { appliedRef.current.add(key); };
+  // Value displayed in the tile: while editing show the snapshot (pre-edit) value;
+  // once Toepassen is clicked the popover closes and the live value is shown.
+  const displayValue = <T,>(key: TileKey, live: T): T =>
+    (openTile === key ? (prevSnap[key] as T) : live);
 
   const summarizeDagen = (arr: string[]) =>
     arr.length === VERZENDDAG_OPTS.length ? "Ma t/m Za" : arr.length === 0 ? "Geen" : `${arr.length} dagen`;
