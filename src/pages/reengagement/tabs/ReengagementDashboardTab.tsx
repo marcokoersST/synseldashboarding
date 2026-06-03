@@ -326,6 +326,15 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
 
   return (
     <div className="space-y-6">
+      {/* Dashboard header with dev info */}
+      <div className="flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-foreground">Dashboard</h2>
+        <TileInfo
+          title="Dashboard"
+          what="dashboard which shows the results of our reengagement system"
+        />
+      </div>
+
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {kpis.map((kpi) => (
