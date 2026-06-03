@@ -222,7 +222,6 @@ const PlanningTab = () => {
     setPendingTiles((prev) => ({ ...prev, [k]: p }));
 
   // Previous values captured when popover/dialog opens, so scheduling can revert
-  const prevRef = (typeof window !== "undefined" ? (window as any) : {}) as any;
   const [prevSnap, setPrevSnap] = useState<Record<TileKey, any>>({
     verzendtijd: verzendtijd,
     verzenddagen: [...verzenddagen],
