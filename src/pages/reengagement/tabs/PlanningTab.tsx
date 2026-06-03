@@ -1168,19 +1168,6 @@ const PlanningTab = () => {
       {/* RIGHT: side panel */}
       <div className="space-y-4">
         <Card className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold">Planning</h4>
-            <TileInfo
-              title="Planning"
-              what={"standaard instellingen, possibility to change the standard sending settings\ncalendar, possiblity to change planned messages, view upcoming message, add new ones and changes settings and dates"}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Beheer hier de standaard verzendinstellingen en bekijk het berichtenoverzicht in de kalender.
-          </p>
-        </Card>
-
-        <Card className="p-4">
           <h4 className="text-sm font-semibold capitalize mb-3">
             {format(cursor, "LLLL yyyy", { locale: nl })} overzicht
           </h4>
