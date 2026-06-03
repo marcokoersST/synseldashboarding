@@ -473,23 +473,26 @@ const PlanningTab = () => {
             </Card>
 
             {/* Verzenddagen */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("verzenddagen", verzenddagen); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Verzenddagen</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">
-                      {verzenddagen.length === VERZENDDAG_OPTS.length
-                        ? "Ma t/m Za"
-                        : verzenddagen.length === 0
-                          ? "Geen"
-                          : `${verzenddagen.length} dagen`}
-                    </p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Verzenddagen</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarizeDagen(verzenddagen)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Verzenddagen" what="verzenddagen = sending days, option to select on which days we want to automatically send messages" />
+                      <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Verzenddagen" what="verzenddagen = sending days, option to select on which days we want to automatically send messages" />
-                    <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  </div>
+                  {pendingTiles.verzenddagen && (
+                    <PendingChangeBadge
+                      label={pendingTiles.verzenddagen.label}
+                      date={pendingTiles.verzenddagen.date}
+                      onCancel={() => setPending("verzenddagen", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2" align="end">
@@ -506,6 +509,13 @@ const PlanningTab = () => {
                   </label>
                 ))}
                 <p className="px-2 pt-1 text-[10px] text-muted-foreground">Op zondag worden geen berichten verstuurd.</p>
+                <ChangeScheduler
+                  onApplyNow={() => { /* already applied live */ }}
+                  onSchedule={(date) => {
+                    setPending("verzenddagen", { label: summarizeDagen(verzenddagen), date });
+                    setVerzenddagen(prevSnap.verzenddagen);
+                  }}
+                />
               </PopoverContent>
             </Popover>
 
