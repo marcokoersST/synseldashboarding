@@ -28,6 +28,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
 
 // Deterministic split of `total` across `keys` based on a stable seed
 function distribute(total: number, keys: string[], seed: string): Record<string, number> {
