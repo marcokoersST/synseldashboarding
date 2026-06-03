@@ -28,6 +28,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
 
 // Deterministic split of `total` across `keys` based on a stable seed
 function distribute(total: number, keys: string[], seed: string): Record<string, number> {
@@ -351,13 +352,16 @@ const PlanningTab = () => {
                 <p className="text-xs text-muted-foreground">Verzendtijd</p>
                 <p className="mt-1 text-2xl font-bold text-foreground">{verzendtijd}</p>
               </div>
-              <button
-                onClick={() => { setTempTime(verzendtijd); setTimeOpen(true); }}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Verzendtijd aanpassen"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <TileInfo title="Verzendtijd" what="verzendtijd = sending time, 24 hour clock, which shows a warning when trying to change to outside of regular business hours" />
+                <button
+                  onClick={() => { setTempTime(verzendtijd); setTimeOpen(true); }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Verzendtijd aanpassen"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+              </div>
             </Card>
 
             {/* Verzenddagen */}
@@ -374,7 +378,10 @@ const PlanningTab = () => {
                           : `${verzenddagen.length} dagen`}
                     </p>
                   </div>
-                  <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Verzenddagen" what="verzenddagen = sending days, option to select on which days we want to automatically send messages" />
+                    <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2" align="end">
@@ -401,7 +408,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Medium</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Medium" what="medium gives the option to choose between app or mail or both" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-1" align="end">
@@ -424,7 +434,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Standaard verdeling</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{verdeling}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Standaard verdeling" what="standaard verdeling = possibility to change the distribution of the messages send." />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-1" align="end">
@@ -447,7 +460,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Functiegroep</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(functies, FUNCTIE_OPTS)}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Functiegroep" what="option to select which functiegroups automatically get a message, based on functiongroups in candidate profile." />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-2" align="end">
@@ -474,7 +490,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Berichttype</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(berichten, BERICHT_OPTS)}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Berichttype" what="option to select which flows to turn on and off." />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-2" align="end">
@@ -501,7 +520,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Categorie</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(categorieen, CATEGORIE_OPTS)}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Categorie" what="option to select which categories automatically get a message, based on the category from the candidate profile." />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-2" align="end">
@@ -528,7 +550,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Max. berichten per dag</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{maxPerDag}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Max. berichten per dag" what="option to change the limit of amount of send messages per day" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-72 p-4" align="end">
