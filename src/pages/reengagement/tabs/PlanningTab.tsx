@@ -205,6 +205,40 @@ const PlanningTab = () => {
     Object.fromEntries(BERICHT_OPTS.map((b, i) => [b, VERSIE_OPTS[i % VERSIE_OPTS.length]]))
   );
 
+  // Pending scheduled changes per tile (apply on a future date)
+  type PendingTile = { label: string; date: Date };
+  type TileKey = "verzendtijd" | "verzenddagen" | "medium" | "verdeling" | "functies" | "berichten" | "categorieen" | "maxPerDag";
+  const [pendingTiles, setPendingTiles] = useState<Record<TileKey, PendingTile | null>>({
+    verzendtijd: null,
+    verzenddagen: null,
+    medium: null,
+    verdeling: null,
+    functies: null,
+    berichten: null,
+    categorieen: null,
+    maxPerDag: null,
+  });
+  const setPending = (k: TileKey, p: PendingTile | null) =>
+    setPendingTiles((prev) => ({ ...prev, [k]: p }));
+
+  // Previous values captured when popover/dialog opens, so scheduling can revert
+  const prevRef = (typeof window !== "undefined" ? (window as any) : {}) as any;
+  const [prevSnap, setPrevSnap] = useState<Record<TileKey, any>>({
+    verzendtijd: verzendtijd,
+    verzenddagen: [...verzenddagen],
+    medium: medium,
+    verdeling: verdeling,
+    functies: [...functies],
+    berichten: [...berichten],
+    categorieen: [...categorieen],
+    maxPerDag: maxPerDag,
+  });
+  const captureSnap = (k: TileKey, value: any) =>
+    setPrevSnap((prev) => ({ ...prev, [k]: Array.isArray(value) ? [...value] : value }));
+
+  const summarizeDagen = (arr: string[]) =>
+    arr.length === VERZENDDAG_OPTS.length ? "Ma t/m Za" : arr.length === 0 ? "Geen" : `${arr.length} dagen`;
+
   const summarize = (sel: string[], all: string[]) =>
     sel.length === 0 ? "Geen" : sel.length === all.length ? "Alle" : `${sel.length} geselecteerd`;
 
