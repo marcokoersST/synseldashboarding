@@ -520,7 +520,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Categorie</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(categorieen, CATEGORIE_OPTS)}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Categorie" what="option to select which categories automatically get a message, based on the category from the candidate profile." />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-2" align="end">
