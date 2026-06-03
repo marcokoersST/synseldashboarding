@@ -474,11 +474,18 @@ const PlanningTab = () => {
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
-      {/* LEFT: KPI row + calendar */}
-      <div className="space-y-4">
-        {/* Standaard Instellingen */}
-        <div>
-          <h3 className="text-sm font-semibold text-foreground mb-3">Standaard Instellingen</h3>
+        {/* LEFT: KPI row + calendar */}
+        <div className="space-y-4">
+          {/* Standaard Instellingen */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <h3 className="text-sm font-semibold text-foreground">Planning</h3>
+              <TileInfo
+                title="Planning"
+                what={`Standaard instellingen: possibility to change the standard sending settings\nCalendar: possibility to change planned messages, view upcoming messages, add new ones and change settings and dates`}
+              />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground mb-3">Standaard Instellingen</h3>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Card className="p-4">
               <div className="flex items-center justify-between">
