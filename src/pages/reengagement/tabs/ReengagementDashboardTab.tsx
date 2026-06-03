@@ -35,9 +35,11 @@ const TABLE_DEV_INFO_FORMULA = `gelezen = count amount of opened/read messages
 verzonden failed = amount of messages we tried to send but failed/bounced
 % failed = amount of failed messages * 100 / total amount of messages we tried to send`;
 
-const HIGHLIGHTS_DEV_INFO_FORMULA = `Niet kunnen spreken (18): show here the message flow name of the flow that generated the most amount of inschrijven + show the amount of inschrijven
-Bezig met studie (8,6%): show here the message flow name of the flow that generated the highest % reactie as calculated in the table above + show the % reactie number
-ZZP/Freelance (-6,4%): show the message flow name which showed the highest drop off rate if we compare the amount of inschrijven from the selected time period to the period before, show the drop off in %`;
+const VIEWBAR_DEV_INFO = `periode = option to select the view based on day, week or month
+functiegroep = option to select the view based on the candidate profile functiegroup from rcrm
+berichttype = option to select the view based on the flows/message type
+medium = select mail, whatsapp or both
+categorie = option to select the view based on the category from the candidate profile`;
 
 interface Props {
   dateRange: DateRange;
