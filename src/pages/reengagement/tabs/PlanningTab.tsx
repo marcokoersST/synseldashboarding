@@ -833,6 +833,14 @@ const PlanningTab = () => {
               </div>
               <Button
                 size="sm"
+                variant="outline"
+                onClick={openAdd}
+                className="h-7 gap-1"
+              >
+                <Plus className="h-3.5 w-3.5" /> Nieuw
+              </Button>
+              <Button
+                size="sm"
                 variant={editMode ? "default" : "outline"}
                 onClick={() => setEditMode((v) => !v)}
                 className={cn(
