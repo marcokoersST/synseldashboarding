@@ -369,13 +369,14 @@ const PlanningTab = () => {
       id: `new-${Date.now()}`,
       date: addForm.date,
       title: `${functie} bericht`,
-      status: "concept",
+      status: effectiveStatus(addForm.date),
       channel: medium === "Mail" ? "mail" : "app",
       functie,
       verzendtijd: validTime,
       berichttype,
       categorie,
-      customized: true,
+      customized: false,
+      manualAdded: true,
       changes: [],
     };
     setItems((prev) => [...prev, newItem]);
