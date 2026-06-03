@@ -519,17 +519,26 @@ const PlanningTab = () => {
               </PopoverContent>
             </Popover>
 
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("medium", medium); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Medium</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Medium</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{medium}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Medium" what="medium gives the option to choose between app or mail or both" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Medium" what="medium gives the option to choose between app or mail or both" />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.medium && (
+                    <PendingChangeBadge
+                      label={pendingTiles.medium.label}
+                      date={pendingTiles.medium.date}
+                      onCancel={() => setPending("medium", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-1" align="end">
@@ -541,21 +550,39 @@ const PlanningTab = () => {
                     </label>
                   ))}
                 </RadioGroup>
+                <div className="px-1">
+                  <ChangeScheduler
+                    onApplyNow={() => { /* live applied */ }}
+                    onSchedule={(date) => {
+                      setPending("medium", { label: medium, date });
+                      setMedium(prevSnap.medium);
+                    }}
+                  />
+                </div>
               </PopoverContent>
             </Popover>
 
             {/* Standaard verdeling */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("verdeling", verdeling); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Standaard verdeling</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{verdeling}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Standaard verdeling</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{verdeling}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Standaard verdeling" what="standaard verdeling = possibility to change the distribution of the messages send." />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Standaard verdeling" what="standaard verdeling = possibility to change the distribution of the messages send." />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.verdeling && (
+                    <PendingChangeBadge
+                      label={pendingTiles.verdeling.label}
+                      date={pendingTiles.verdeling.date}
+                      onCancel={() => setPending("verdeling", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-1" align="end">
@@ -567,21 +594,39 @@ const PlanningTab = () => {
                     </label>
                   ))}
                 </RadioGroup>
+                <div className="px-1">
+                  <ChangeScheduler
+                    onApplyNow={() => { /* live applied */ }}
+                    onSchedule={(date) => {
+                      setPending("verdeling", { label: verdeling, date });
+                      setVerdeling(prevSnap.verdeling);
+                    }}
+                  />
+                </div>
               </PopoverContent>
             </Popover>
 
             {/* Functiegroep */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("functies", functies); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Functiegroep</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(functies, FUNCTIE_OPTS)}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Functiegroep</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(functies, FUNCTIE_OPTS)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Functiegroep" what="option to select which functiegroups automatically get a message, based on functiongroups in candidate profile." />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Functiegroep" what="option to select which functiegroups automatically get a message, based on functiongroups in candidate profile." />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.functies && (
+                    <PendingChangeBadge
+                      label={pendingTiles.functies.label}
+                      date={pendingTiles.functies.date}
+                      onCancel={() => setPending("functies", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-2" align="end">
@@ -597,21 +642,37 @@ const PlanningTab = () => {
                     <span>{opt}</span>
                   </label>
                 ))}
+                <ChangeScheduler
+                  onApplyNow={() => { /* live applied */ }}
+                  onSchedule={(date) => {
+                    setPending("functies", { label: summarize(functies, FUNCTIE_OPTS), date });
+                    setFuncties(prevSnap.functies);
+                  }}
+                />
               </PopoverContent>
             </Popover>
 
             {/* Berichttype */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("berichten", berichten); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Berichttype</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(berichten, BERICHT_OPTS)}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Berichttype</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(berichten, BERICHT_OPTS)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Berichttype" what="option to select which flows to turn on and off." />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Berichttype" what="option to select which flows to turn on and off." />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.berichten && (
+                    <PendingChangeBadge
+                      label={pendingTiles.berichten.label}
+                      date={pendingTiles.berichten.date}
+                      onCancel={() => setPending("berichten", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-2" align="end">
@@ -627,24 +688,40 @@ const PlanningTab = () => {
                     <span>{opt}</span>
                   </label>
                 ))}
+                <ChangeScheduler
+                  onApplyNow={() => { /* live applied */ }}
+                  onSchedule={(date) => {
+                    setPending("berichten", { label: summarize(berichten, BERICHT_OPTS), date });
+                    setBerichten(prevSnap.berichten);
+                  }}
+                />
               </PopoverContent>
             </Popover>
 
             {/* Categorie */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("categorieen", categorieen); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Categorie</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(categorieen, CATEGORIE_OPTS)}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Categorie</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(categorieen, CATEGORIE_OPTS)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Categorie" what="option to select which categories automatically get a message, based on the category from the candidate profile." />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Categorie" what="option to select which categories automatically get a message, based on the category from the candidate profile." />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.categorieen && (
+                    <PendingChangeBadge
+                      label={pendingTiles.categorieen.label}
+                      date={pendingTiles.categorieen.date}
+                      onCancel={() => setPending("categorieen", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="end">
+              <PopoverContent className="w-56 p-2" align="end">
                 <div className="flex items-center justify-between mb-1 px-1">
                   <span className="text-xs font-medium text-muted-foreground">Categorieën</span>
                   <button className="text-xs text-primary hover:underline" onClick={() => setCategorieen(categorieen.length === CATEGORIE_OPTS.length ? [] : [...CATEGORIE_OPTS])}>
@@ -657,21 +734,37 @@ const PlanningTab = () => {
                     <span>{opt}</span>
                   </label>
                 ))}
+                <ChangeScheduler
+                  onApplyNow={() => { /* live applied */ }}
+                  onSchedule={(date) => {
+                    setPending("categorieen", { label: summarize(categorieen, CATEGORIE_OPTS), date });
+                    setCategorieen(prevSnap.categorieen);
+                  }}
+                />
               </PopoverContent>
             </Popover>
 
             {/* Max. berichten per dag */}
-            <Popover>
+            <Popover onOpenChange={(o) => { if (o) captureSnap("maxPerDag", maxPerDag); }}>
               <PopoverTrigger asChild>
-                <Card className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Max. berichten per dag</p>
-                    <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{maxPerDag}</p>
+                <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Max. berichten per dag</p>
+                      <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{maxPerDag}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TileInfo title="Max. berichten per dag" what="option to change the limit of amount of send messages per day" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TileInfo title="Max. berichten per dag" what="option to change the limit of amount of send messages per day" />
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  {pendingTiles.maxPerDag && (
+                    <PendingChangeBadge
+                      label={pendingTiles.maxPerDag.label}
+                      date={pendingTiles.maxPerDag.date}
+                      onCancel={() => setPending("maxPerDag", null)}
+                    />
+                  )}
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-72 p-4" align="end">
@@ -690,6 +783,13 @@ const PlanningTab = () => {
                   <span>0</span>
                   <span>500</span>
                 </div>
+                <ChangeScheduler
+                  onApplyNow={() => { /* live applied */ }}
+                  onSchedule={(date) => {
+                    setPending("maxPerDag", { label: String(maxPerDag), date });
+                    setMaxPerDag(prevSnap.maxPerDag);
+                  }}
+                />
               </PopoverContent>
             </Popover>
           </div>
