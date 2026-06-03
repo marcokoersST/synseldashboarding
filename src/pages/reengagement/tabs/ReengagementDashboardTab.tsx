@@ -393,7 +393,12 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
 
       {/* Full-width berichttype table */}
       <Card>
-        <CardHeader className="pb-3 flex flex-row items-center justify-end">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <TileInfo
+            title="Berichttype tabel"
+            what="Berekeningen achter de kolommen van de berichttype-tabel."
+            formula={TABLE_DEV_INFO_FORMULA}
+          />
           <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
             <Switch checked={showPct} onCheckedChange={setShowPct} />
             Show %
