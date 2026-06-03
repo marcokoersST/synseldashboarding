@@ -18,7 +18,26 @@ import {
 } from "recharts";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import { deltaPercent, MARKETING_COLORS } from "@/data/marketingHubData";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
 import type { DateRange } from "react-day-picker";
+
+const KPI_DEV_INFO: Record<string, string> = {
+  Verzonden: "count amount of send mail and whatsapp messages together",
+  Reacties: "count amount of reactions on mail and whatsapp messages together",
+  Inschrijven:
+    "count unique (one candidate counts as 1 every 7 days) status changes from all statusses except \"acquisitie\" and \"in procedure\" to \"inschrijven\"",
+};
+
+const TABLE_DEV_INFO_FORMULA = `gelezen = count amount of opened/read messages
+% gelezen = gelezen * 100 / verzonden
+% reactie = reactie * 100 / gelezen
+% inschrijven = inschrijven * 100 / reactie
+verzonden failed = amount of messages we tried to send but failed/bounced
+% failed = amount of failed messages * 100 / total amount of messages we tried to send`;
+
+const HIGHLIGHTS_DEV_INFO_FORMULA = `Niet kunnen spreken (18): show here the message flow name of the flow that generated the most amount of inschrijven + show the amount of inschrijven
+Bezig met studie (8,6%): show here the message flow name of the flow that generated the highest % reactie as calculated in the table above + show the % reactie number
+ZZP/Freelance (-6,4%): show the message flow name which showed the highest drop off rate if we compare the amount of inschrijven from the selected time period to the period before, show the drop off in %`;
 
 interface Props {
   dateRange: DateRange;
