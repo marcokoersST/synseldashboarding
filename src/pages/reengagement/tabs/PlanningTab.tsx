@@ -319,6 +319,69 @@ const PlanningTab = () => {
     setEditItemId(null);
   };
 
+  // Delete confirmation for edit dialog
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
+  const deleteItem = (id: string) => {
+    setItems((prev) => prev.filter((it) => it.id !== id));
+    setDeleteConfirm(null);
+    setEditOpen(false);
+    setEditItemId(null);
+  };
+
+  // "Nieuw bericht" dialog
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState<{
+    date: Date | undefined;
+    verzendtijd: string;
+    functies: string[];
+    berichttypes: string[];
+    categorieen: string[];
+    maxPerDag: number;
+  }>({
+    date: undefined,
+    verzendtijd,
+    functies: [FUNCTIE_OPTS[0]],
+    berichttypes: [BERICHT_OPTS[0]],
+    categorieen: [CATEGORIE_OPTS[0]],
+    maxPerDag: 150,
+  });
+  const [addCalOpen, setAddCalOpen] = useState(false);
+
+  const openAdd = () => {
+    setAddForm({
+      date: undefined,
+      verzendtijd,
+      functies: [FUNCTIE_OPTS[0]],
+      berichttypes: [BERICHT_OPTS[0]],
+      categorieen: [CATEGORIE_OPTS[0]],
+      maxPerDag: 150,
+    });
+    setAddOpen(true);
+  };
+
+  const saveAdd = (overrideTime?: string) => {
+    if (!addForm.date) return;
+    const validTime = overrideTime ?? (/^([01]\d|2[0-3]):([0-5]\d)$/.test(addForm.verzendtijd) ? addForm.verzendtijd : verzendtijd);
+    const functie = addForm.functies[0] ?? FUNCTIE_OPTS[0];
+    const berichttype = addForm.berichttypes.join(", ");
+    const categorie = addForm.categorieen.join(", ");
+    const newItem: PlanItem = {
+      id: `new-${Date.now()}`,
+      date: addForm.date,
+      title: `${functie} bericht`,
+      status: "concept",
+      channel: medium === "Mail" ? "mail" : "app",
+      functie,
+      verzendtijd: validTime,
+      berichttype,
+      categorie,
+      customized: true,
+      changes: [],
+    };
+    setItems((prev) => [...prev, newItem]);
+    setAddOpen(false);
+  };
+
   // status afleiden uit datum: verleden = verzonden, vandaag/toekomst = gepland
   const today = useMemo(() => {
     const d = new Date();
