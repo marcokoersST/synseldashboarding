@@ -1189,22 +1189,35 @@ const PlanningTab = () => {
           <DialogHeader>
             <DialogTitle>Verzendtijd aanpassen</DialogTitle>
           </DialogHeader>
-          <div className="py-2">
-            <Label htmlFor="verzendtijd-input" className="text-xs text-muted-foreground">Tijd (24-uurs)</Label>
-            <Input
-              id="verzendtijd-input"
-              type="text"
-              inputMode="numeric"
-              placeholder="09:00"
-              maxLength={5}
-              value={tempTime}
-              onChange={(e) => setTempTime(e.target.value.replace(/[^0-9:]/g, ""))}
-              className="mt-1"
+          <div className="py-2 space-y-3">
+            <div>
+              <Label htmlFor="verzendtijd-input" className="text-xs text-muted-foreground">Tijd (24-uurs)</Label>
+              <Input
+                id="verzendtijd-input"
+                type="text"
+                inputMode="numeric"
+                placeholder="09:00"
+                maxLength={5}
+                value={tempTime}
+                onChange={(e) => setTempTime(e.target.value.replace(/[^0-9:]/g, ""))}
+                className="mt-1"
+              />
+            </div>
+            <ChangeScheduler
+              onApplyNow={() => {
+                const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00";
+                setTimeOpen(false);
+                setTimeWarning(t);
+              }}
+              onSchedule={(date) => {
+                const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00";
+                setPending("verzendtijd", { label: t, date });
+                setTimeOpen(false);
+              }}
             />
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setTimeOpen(false)}>Annuleren</Button>
-            <Button onClick={() => { const t = /^([01]\d|2[0-3]):([0-5]\d)$/.test(tempTime) ? tempTime : "11:00"; setTimeOpen(false); setTimeWarning(t); }}>Opslaan</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
