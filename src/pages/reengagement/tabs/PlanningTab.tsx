@@ -75,6 +75,7 @@ interface PlanItem {
   berichttype?: string;
   categorie?: string;
   customized?: boolean;
+  manualAdded?: boolean;
   changes?: PlanChange[];
 }
 
