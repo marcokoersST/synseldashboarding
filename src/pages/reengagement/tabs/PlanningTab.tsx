@@ -446,21 +446,30 @@ const PlanningTab = () => {
         <div>
           <h3 className="text-sm font-semibold text-foreground mb-3">Standaard Instellingen</h3>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Card className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Verzendtijd</p>
-                <p className="mt-1 text-2xl font-bold text-foreground">{verzendtijd}</p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Verzendtijd</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">{verzendtijd}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TileInfo title="Verzendtijd" what="verzendtijd = sending time, 24 hour clock, which shows a warning when trying to change to outside of regular business hours" />
+                  <button
+                    onClick={() => { captureSnap("verzendtijd", verzendtijd); setTempTime(verzendtijd); setTimeOpen(true); }}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Verzendtijd aanpassen"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <TileInfo title="Verzendtijd" what="verzendtijd = sending time, 24 hour clock, which shows a warning when trying to change to outside of regular business hours" />
-                <button
-                  onClick={() => { setTempTime(verzendtijd); setTimeOpen(true); }}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="Verzendtijd aanpassen"
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-              </div>
+              {pendingTiles.verzendtijd && (
+                <PendingChangeBadge
+                  label={pendingTiles.verzendtijd.label}
+                  date={pendingTiles.verzendtijd.date}
+                  onCancel={() => setPending("verzendtijd", null)}
+                />
+              )}
             </Card>
 
             {/* Verzenddagen */}
