@@ -360,20 +360,29 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
 
 
       {/* Chart view bar */}
-      <ViewBar
-        scope="grafiek"
-        showPeriode
-        periode={periode}
-        setPeriode={setPeriode}
-        functiegroep={chartFunctiegroep}
-        setFunctiegroep={setChartFunctiegroep}
-        berichttype={chartBerichttype}
-        setBerichttype={setChartBerichttype}
-        medium={chartMedium}
-        setMedium={setChartMedium}
-        categorie={chartCategorie}
-        setCategorie={setChartCategorie}
-      />
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <ViewBar
+            scope="grafiek"
+            showPeriode
+            periode={periode}
+            setPeriode={setPeriode}
+            functiegroep={chartFunctiegroep}
+            setFunctiegroep={setChartFunctiegroep}
+            berichttype={chartBerichttype}
+            setBerichttype={setChartBerichttype}
+            medium={chartMedium}
+            setMedium={setChartMedium}
+            categorie={chartCategorie}
+            setCategorie={setChartCategorie}
+          />
+        </div>
+        <TileInfo
+          title="Weergave grafiek"
+          what="Filter opties voor de grafiekweergave."
+          formula={VIEWBAR_DEV_INFO}
+        />
+      </div>
 
       {/* Trend chart */}
       <Card>
