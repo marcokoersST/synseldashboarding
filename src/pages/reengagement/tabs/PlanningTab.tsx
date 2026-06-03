@@ -378,7 +378,10 @@ const PlanningTab = () => {
                           : `${verzenddagen.length} dagen`}
                     </p>
                   </div>
-                  <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Verzenddagen" what="verzenddagen = sending days, option to select on which days we want to automatically send messages" />
+                    <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2" align="end">
