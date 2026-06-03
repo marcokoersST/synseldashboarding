@@ -550,7 +550,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Max. berichten per dag</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{maxPerDag}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Max. berichten per dag" what="option to change the limit of amount of send messages per day" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-72 p-4" align="end">
