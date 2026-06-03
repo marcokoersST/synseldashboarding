@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   addMonths,
   endOfMonth,
@@ -235,6 +235,30 @@ const PlanningTab = () => {
   });
   const captureSnap = (k: TileKey, value: any) =>
     setPrevSnap((prev) => ({ ...prev, [k]: Array.isArray(value) ? [...value] : value }));
+
+  // Track which tiles were explicitly applied (or scheduled) during a popover session.
+  // If the popover closes without apply, we revert the live value to the captured snap.
+  const appliedRef = useRef<Set<TileKey>>(new Set());
+  const setters: Record<TileKey, (v: any) => void> = {
+    verzendtijd: setVerzendtijd,
+    verzenddagen: setVerzenddagen,
+    medium: setMedium,
+    verdeling: setVerdeling,
+    functies: setFuncties,
+    berichten: setBerichten,
+    categorieen: setCategorieen,
+    maxPerDag: setMaxPerDag,
+  };
+  const handleOpenChange = (key: TileKey, currentValue: any) => (open: boolean) => {
+    if (open) {
+      captureSnap(key, currentValue);
+      appliedRef.current.delete(key);
+    } else if (!appliedRef.current.has(key)) {
+      // revert unapplied edits
+      setters[key](Array.isArray(prevSnap[key]) ? [...prevSnap[key]] : prevSnap[key]);
+    }
+  };
+  const markApplied = (key: TileKey) => { appliedRef.current.add(key); };
 
   const summarizeDagen = (arr: string[]) =>
     arr.length === VERZENDDAG_OPTS.length ? "Ma t/m Za" : arr.length === 0 ? "Geen" : `${arr.length} dagen`;
@@ -474,7 +498,7 @@ const PlanningTab = () => {
             </Card>
 
             {/* Verzenddagen */}
-            <Popover onOpenChange={(o) => { if (o) captureSnap("verzenddagen", verzenddagen); }}>
+            <Popover onOpenChange={handleOpenChange("verzenddagen", verzenddagen)}>
               <PopoverTrigger asChild>
                 <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
@@ -511,8 +535,9 @@ const PlanningTab = () => {
                 ))}
                 <p className="px-2 pt-1 text-[10px] text-muted-foreground">Op zondag worden geen berichten verstuurd.</p>
                 <ChangeScheduler
-                  onApplyNow={() => { /* already applied live */ }}
+                  onApplyNow={() => { markApplied("verzenddagen"); }}
                   onSchedule={(date) => {
+                    markApplied("verzenddagen");
                     setPending("verzenddagen", { label: summarizeDagen(verzenddagen), date });
                     setVerzenddagen(prevSnap.verzenddagen);
                   }}
@@ -520,7 +545,7 @@ const PlanningTab = () => {
               </PopoverContent>
             </Popover>
 
-            <Popover onOpenChange={(o) => { if (o) captureSnap("medium", medium); }}>
+            <Popover onOpenChange={handleOpenChange("medium", medium)}>
               <PopoverTrigger asChild>
                 <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
@@ -553,8 +578,9 @@ const PlanningTab = () => {
                 </RadioGroup>
                 <div className="px-1">
                   <ChangeScheduler
-                    onApplyNow={() => { /* live applied */ }}
+                    onApplyNow={() => { markApplied("medium"); }}
                     onSchedule={(date) => {
+                      markApplied("medium");
                       setPending("medium", { label: medium, date });
                       setMedium(prevSnap.medium);
                     }}
@@ -564,7 +590,7 @@ const PlanningTab = () => {
             </Popover>
 
             {/* Standaard verdeling */}
-            <Popover onOpenChange={(o) => { if (o) captureSnap("verdeling", verdeling); }}>
+            <Popover onOpenChange={handleOpenChange("verdeling", verdeling)}>
               <PopoverTrigger asChild>
                 <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
@@ -597,8 +623,9 @@ const PlanningTab = () => {
                 </RadioGroup>
                 <div className="px-1">
                   <ChangeScheduler
-                    onApplyNow={() => { /* live applied */ }}
+                    onApplyNow={() => { markApplied("verdeling"); }}
                     onSchedule={(date) => {
+                      markApplied("verdeling");
                       setPending("verdeling", { label: verdeling, date });
                       setVerdeling(prevSnap.verdeling);
                     }}
@@ -608,7 +635,7 @@ const PlanningTab = () => {
             </Popover>
 
             {/* Functiegroep */}
-            <Popover onOpenChange={(o) => { if (o) captureSnap("functies", functies); }}>
+            <Popover onOpenChange={handleOpenChange("functies", functies)}>
               <PopoverTrigger asChild>
                 <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
@@ -644,8 +671,9 @@ const PlanningTab = () => {
                   </label>
                 ))}
                 <ChangeScheduler
-                  onApplyNow={() => { /* live applied */ }}
+                  onApplyNow={() => { markApplied("functies"); }}
                   onSchedule={(date) => {
+                    markApplied("functies");
                     setPending("functies", { label: summarize(functies, FUNCTIE_OPTS), date });
                     setFuncties(prevSnap.functies);
                   }}
@@ -654,7 +682,7 @@ const PlanningTab = () => {
             </Popover>
 
             {/* Berichttype */}
-            <Popover onOpenChange={(o) => { if (o) captureSnap("berichten", berichten); }}>
+            <Popover onOpenChange={handleOpenChange("berichten", berichten)}>
               <PopoverTrigger asChild>
                 <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
@@ -690,8 +718,9 @@ const PlanningTab = () => {
                   </label>
                 ))}
                 <ChangeScheduler
-                  onApplyNow={() => { /* live applied */ }}
+                  onApplyNow={() => { markApplied("berichten"); }}
                   onSchedule={(date) => {
+                    markApplied("berichten");
                     setPending("berichten", { label: summarize(berichten, BERICHT_OPTS), date });
                     setBerichten(prevSnap.berichten);
                   }}
@@ -700,7 +729,7 @@ const PlanningTab = () => {
             </Popover>
 
             {/* Categorie */}
-            <Popover onOpenChange={(o) => { if (o) captureSnap("categorieen", categorieen); }}>
+            <Popover onOpenChange={handleOpenChange("categorieen", categorieen)}>
               <PopoverTrigger asChild>
                 <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
@@ -736,8 +765,9 @@ const PlanningTab = () => {
                   </label>
                 ))}
                 <ChangeScheduler
-                  onApplyNow={() => { /* live applied */ }}
+                  onApplyNow={() => { markApplied("categorieen"); }}
                   onSchedule={(date) => {
+                    markApplied("categorieen");
                     setPending("categorieen", { label: summarize(categorieen, CATEGORIE_OPTS), date });
                     setCategorieen(prevSnap.categorieen);
                   }}
@@ -746,7 +776,7 @@ const PlanningTab = () => {
             </Popover>
 
             {/* Max. berichten per dag */}
-            <Popover onOpenChange={(o) => { if (o) captureSnap("maxPerDag", maxPerDag); }}>
+            <Popover onOpenChange={handleOpenChange("maxPerDag", maxPerDag)}>
               <PopoverTrigger asChild>
                 <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
@@ -785,8 +815,9 @@ const PlanningTab = () => {
                   <span>500</span>
                 </div>
                 <ChangeScheduler
-                  onApplyNow={() => { /* live applied */ }}
+                  onApplyNow={() => { markApplied("maxPerDag"); }}
                   onSchedule={(date) => {
+                    markApplied("maxPerDag");
                     setPending("maxPerDag", { label: String(maxPerDag), date });
                     setMaxPerDag(prevSnap.maxPerDag);
                   }}
