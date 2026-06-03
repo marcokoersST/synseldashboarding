@@ -498,7 +498,7 @@ const PlanningTab = () => {
             </Card>
 
             {/* Verzenddagen */}
-            <Popover onOpenChange={(o) => { if (o) captureSnap("verzenddagen", verzenddagen); }}>
+            <Popover onOpenChange={handleOpenChange("verzenddagen", verzenddagen)}>
               <PopoverTrigger asChild>
                 <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
@@ -535,8 +535,9 @@ const PlanningTab = () => {
                 ))}
                 <p className="px-2 pt-1 text-[10px] text-muted-foreground">Op zondag worden geen berichten verstuurd.</p>
                 <ChangeScheduler
-                  onApplyNow={() => { /* already applied live */ }}
+                  onApplyNow={() => { markApplied("verzenddagen"); }}
                   onSchedule={(date) => {
+                    markApplied("verzenddagen");
                     setPending("verzenddagen", { label: summarizeDagen(verzenddagen), date });
                     setVerzenddagen(prevSnap.verzenddagen);
                   }}
@@ -544,7 +545,7 @@ const PlanningTab = () => {
               </PopoverContent>
             </Popover>
 
-            <Popover onOpenChange={(o) => { if (o) captureSnap("medium", medium); }}>
+            <Popover onOpenChange={handleOpenChange("medium", medium)}>
               <PopoverTrigger asChild>
                 <Card className="p-4 cursor-pointer hover:bg-accent/30 transition-colors">
                   <div className="flex items-center justify-between">
