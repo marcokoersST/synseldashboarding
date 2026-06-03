@@ -352,13 +352,16 @@ const PlanningTab = () => {
                 <p className="text-xs text-muted-foreground">Verzendtijd</p>
                 <p className="mt-1 text-2xl font-bold text-foreground">{verzendtijd}</p>
               </div>
-              <button
-                onClick={() => { setTempTime(verzendtijd); setTimeOpen(true); }}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Verzendtijd aanpassen"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <TileInfo title="Verzendtijd" what="verzendtijd = sending time, 24 hour clock, which shows a warning when trying to change to outside of regular business hours" />
+                <button
+                  onClick={() => { setTempTime(verzendtijd); setTimeOpen(true); }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Verzendtijd aanpassen"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+              </div>
             </Card>
 
             {/* Verzenddagen */}
