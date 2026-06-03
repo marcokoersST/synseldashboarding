@@ -490,7 +490,10 @@ const PlanningTab = () => {
                     <p className="text-xs text-muted-foreground">Berichttype</p>
                     <p className="mt-1 text-2xl font-bold text-foreground whitespace-nowrap">{summarize(berichten, BERICHT_OPTS)}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <TileInfo title="Berichttype" what="option to select which flows to turn on and off." />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </Card>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-2" align="end">
