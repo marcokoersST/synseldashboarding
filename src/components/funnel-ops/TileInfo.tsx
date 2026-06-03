@@ -42,7 +42,7 @@ export function TileInfo({ title, what, formula, source, notes }: TileInfoProps)
         </div>
         <div className="space-y-1">
           <div className="font-medium text-foreground/80">What this tile shows</div>
-          <p className="leading-relaxed text-muted-foreground">{what}</p>
+          <p className="leading-relaxed text-muted-foreground whitespace-pre-line">{what}</p>
         </div>
         {formula && (
           <div className="space-y-1">

@@ -18,7 +18,26 @@ import {
 } from "recharts";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import { deltaPercent, MARKETING_COLORS } from "@/data/marketingHubData";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
 import type { DateRange } from "react-day-picker";
+
+const KPI_DEV_INFO: Record<string, string> = {
+  Verzonden: "count amount of send mail and whatsapp messages together",
+  Reacties: "count amount of reactions on mail and whatsapp messages together",
+  Inschrijven:
+    "count unique (one candidate counts as 1 every 7 days) status changes from all statusses except \"acquisitie\" and \"in procedure\" to \"inschrijven\"",
+};
+
+const TABLE_DEV_INFO_FORMULA = `gelezen = count amount of opened/read messages
+% gelezen = gelezen * 100 / verzonden
+% reactie = reactie * 100 / gelezen
+% inschrijven = inschrijven * 100 / reactie
+verzonden failed = amount of messages we tried to send but failed/bounced
+% failed = amount of failed messages * 100 / total amount of messages we tried to send`;
+
+const HIGHLIGHTS_DEV_INFO_FORMULA = `Niet kunnen spreken (18): show here the message flow name of the flow that generated the most amount of inschrijven + show the amount of inschrijven
+Bezig met studie (8,6%): show here the message flow name of the flow that generated the highest % reactie as calculated in the table above + show the % reactie number
+ZZP/Freelance (-6,4%): show the message flow name which showed the highest drop off rate if we compare the amount of inschrijven from the selected time period to the period before, show the drop off in %`;
 
 interface Props {
   dateRange: DateRange;
@@ -312,7 +331,10 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
         {kpis.map((kpi) => (
           <Card key={kpi.label}>
             <CardContent className="p-5">
-              <p className="text-xs font-medium text-muted-foreground mb-1">{kpi.label}</p>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="text-xs font-medium text-muted-foreground">{kpi.label}</p>
+                <TileInfo title={kpi.label} what={KPI_DEV_INFO[kpi.label] ?? ""} />
+              </div>
               <p className="text-2xl font-bold text-foreground">{kpi.value.toLocaleString("nl-NL")}</p>
               <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} />
               <ProgressBar current={kpi.value} previous={kpi.previous} />
@@ -371,7 +393,12 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
 
       {/* Full-width berichttype table */}
       <Card>
-        <CardHeader className="pb-3 flex flex-row items-center justify-end">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <TileInfo
+            title="Berichttype tabel"
+            what="Berekeningen achter de kolommen van de berichttype-tabel."
+            formula={TABLE_DEV_INFO_FORMULA}
+          />
           <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
             <Switch checked={showPct} onCheckedChange={setShowPct} />
             Show %
@@ -431,7 +458,14 @@ const ReengagementDashboardTab = ({ dateRange, compareRange }: Props) => {
 
       {/* Highlights */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Highlights</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Highlights</CardTitle>
+          <TileInfo
+            title="Highlights"
+            what="Bronnen van de drie highlight-regels hieronder."
+            formula={HIGHLIGHTS_DEV_INFO_FORMULA}
+          />
+        </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between p-2 rounded bg-emerald-500/10">
