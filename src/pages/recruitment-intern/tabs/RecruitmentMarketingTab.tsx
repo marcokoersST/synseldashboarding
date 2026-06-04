@@ -354,7 +354,6 @@ Cost/Inschrijven = spend / Inschrijven`}
       </Card>
 
       <Card>
-      <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Redenen afgewezen</CardTitle>
           <TileInfo
