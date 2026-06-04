@@ -53,9 +53,8 @@ export function FunnelDropOff({ data, height = 240, color = MARKETING_COLORS[0] 
                 className="transition-opacity duration-200 group-hover:opacity-100"
                 style={{ opacity: 0.55 }}
               />
-              <g className="opacity-60 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                <rect x={midX - 30} y={midY - 12} width={60} height={22} rx={6} fill="hsl(var(--foreground))" fillOpacity={0.75} />
-                <text x={midX} y={midY + 3} textAnchor="middle" fontSize={12} fontWeight={600} fill="hsl(var(--background))">
+              <g className="opacity-80 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <text x={midX} y={midY + 4} textAnchor="middle" fontSize={13} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke" strokeLinejoin="round">
                   {d.dropLabel}
                 </text>
               </g>
