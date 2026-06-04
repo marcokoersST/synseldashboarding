@@ -5,6 +5,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TrendingUp, TrendingDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
+
+const KPI_DEV_INFO: Record<string, string> = {
+  "Inschrijven": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses except "acquisitie" and "in procedure" to "inschrijven"`,
+  "In procedure": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses to "In procedure"`,
+  "Gesprek 1": `count amount of meetings names containing "1"`,
+  "Gesprek 2": `count amount of meetings names containing "2"`,
+  "Aangenomen": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses to "Aangenomen"`,
+};
+
+const HIGHLIGHTS_DEV_INFO = `Best presterende bron conversies = "Bron" with most applies in selected data range
+Best presterende bron gesprekken = "Bron" with most meetings planned so count amount of meetings containing 1 and 2
+Best presterende vacature = count the most common "Bron toelichting"
+Laagste CPA = "Bron" with the lowest cost per apply, so cost / amount of applies`;
 import {
   BarChart,
   Bar,
@@ -176,7 +190,10 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
         {kpis.map((kpi) => (
           <Card key={kpi.label}>
             <CardContent className="p-5">
-              <p className="text-xs font-medium text-muted-foreground mb-1">{kpi.label}</p>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="text-xs font-medium text-muted-foreground">{kpi.label}</p>
+                <TileInfo title={kpi.label} what={KPI_DEV_INFO[kpi.label] ?? ""} />
+              </div>
               <p className="text-2xl font-bold text-foreground">{kpi.value.toLocaleString("nl-NL")}</p>
               <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} />
               <ProgressBar current={kpi.value} previous={kpi.previous} />
@@ -259,7 +276,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
 
       {/* Highlights */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Highlights</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between"><CardTitle className="text-base">Highlights</CardTitle><TileInfo title="Highlights" what={HIGHLIGHTS_DEV_INFO} /></CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between p-2 rounded bg-emerald-500/10">
