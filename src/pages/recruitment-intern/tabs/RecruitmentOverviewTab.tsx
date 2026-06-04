@@ -235,7 +235,10 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Funnel drop-off</CardTitle>
-          <ChartTableToggle view={funnelView} onChange={setFunnelView} />
+          <div className="flex items-center gap-2">
+            <ChartTableToggle view={funnelView} onChange={setFunnelView} />
+            <TileInfo title="Funnel drop-off" what={`Show the drop off percentage between each stage, to create a funnel from conversion to aangenomen. Assessment is the count of people with the status "Assesment verstuurd" other statusses are already explained above`} />
+          </div>
         </CardHeader>
         <CardContent className={funnelView === "table" ? "p-0" : undefined}>
           {funnelView === "chart" ? (
@@ -265,7 +268,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
 
       {/* Aangenomen per week */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Aangenomen per week</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between"><CardTitle className="text-base">Aangenomen per week</CardTitle><TileInfo title="Aangenomen per week" what={`Amount of hires per week. Count of status changes to "Aangenomen" each week.`} /></CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={WEEKLY_HIRES} margin={{ left: 10, right: 30, top: 10, bottom: 5 }}>

@@ -317,8 +317,7 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
             <CardTitle className="text-base">LinkedIn</CardTitle>
             <TileInfo
               title="LinkedIn"
-              what={`Data for the source "RCM: LinkedIn".
-Connectieverzoeken = amount of connection invites send.
+              what={`Connectieverzoeken = amount of connection invites send.
 Verstuurde berichten = amount of send messages, only count one message per connection (is it possible to gather this data via the recruiter seat?).
 Inschrijvingen = Inschrijven amount only for the source "RCM: LinkedIn".`}
             />
