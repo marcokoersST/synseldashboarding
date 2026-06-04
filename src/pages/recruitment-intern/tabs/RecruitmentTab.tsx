@@ -7,6 +7,13 @@ import { TrendingUp, TrendingDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import { WeeklyFunnelDropOff, type WeeklyFunnelDatum, type WeeklyFunnelSeries } from "@/components/recruitment-intern/WeeklyFunnelDropOff";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
+
+const KPI_DEV_INFO: Record<string, string> = {
+  "Inschrijvingen Recruitment": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses except "acquisitie" and "in procedure" to "inschrijven", but only if the "Bron" contains "RCM" or "Recruit Robin" or "Campus"`,
+  "Gesprekken uit Recruitment Bronnen": `count amount of meetings names containing "1" or "2" but only if the "Bron" contains "RCM" or "Recruit Robin" or "Campus"`,
+  "Aangenomen vanuit Recruitment": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses to "Aangenomen" but only if the "Bron" contains "RCM" or "Recruit Robin" or "Campus"`,
+};
 import { ChartTableToggle } from "@/components/recruitment-intern/ChartTableToggle";
 import { MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
@@ -230,7 +237,12 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
         {kpis.map((kpi) => (
           <Card key={kpi.label}>
             <CardContent className="p-5">
-              <p className="text-xs font-medium text-muted-foreground mb-1">{kpi.label}</p>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="text-xs font-medium text-muted-foreground">{kpi.label}</p>
+                {KPI_DEV_INFO[kpi.label] && (
+                  <TileInfo title={kpi.label} what={KPI_DEV_INFO[kpi.label]} />
+                )}
+              </div>
               <p className="text-2xl font-bold text-foreground">{kpi.value.toLocaleString("nl-NL")}</p>
               <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} />
               <ProgressBar current={kpi.value} previous={kpi.previous} />
@@ -242,7 +254,13 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
       {/* Inschrijvingen per bron */}
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Inschrijvingen per bron</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">Inschrijvingen per bron</CardTitle>
+            <TileInfo
+              title="Inschrijvingen per bron"
+              what={`"inschrijven" per week and source, includes the Recruitment sources "RCM: Indeed cv database" and "RCM: LinkedIn" and "RCM: Werkzoeken cv database" and "RCM Retentie Whatsapp" and "Recruit Robin" and "Campus".`}
+            />
+          </div>
           <div className="flex items-center gap-2">
             <ChartTableToggle view={bronView} onChange={setBronView} />
             <Popover>
@@ -295,7 +313,16 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
       {/* LinkedIn weekly funnel */}
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">LinkedIn</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">LinkedIn</CardTitle>
+            <TileInfo
+              title="LinkedIn"
+              what={`Data for the source "RCM: LinkedIn".
+Connectieverzoeken = amount of connection invites send.
+Verstuurde berichten = amount of send messages, only count one message per connection (is it possible to gather this data via the recruiter seat?).
+Inschrijvingen = Inschrijven amount only for the source "RCM: LinkedIn".`}
+            />
+          </div>
           <ChartTableToggle view={linkedinView} onChange={setLinkedinView} />
         </CardHeader>
         <CardContent className={linkedinView === "table" ? "p-0" : undefined}>
@@ -310,7 +337,16 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
       {/* CV databases weekly funnel */}
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">CV databases</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">CV databases</CardTitle>
+            <TileInfo
+              title="CV databases"
+              what={`Data from the sources "RCM: Indeed cv database", "RCM: Werkzoeken cv database", "Recruit Robin".
+Bekeken cv's = amount of opened profiles on the platforms.
+CV downloads = amount of resume downloads.
+Inschrijvingen = Inschrijven amount for only these sources.`}
+            />
+          </div>
           <ChartTableToggle view={cvDbView} onChange={setCvDbView} />
         </CardHeader>
         <CardContent className={cvDbView === "table" ? "p-0" : undefined}>
@@ -324,7 +360,13 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
 
       {/* Redenen afgevallen */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Redenen afgevallen</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Redenen afgevallen</CardTitle>
+          <TileInfo
+            title="Redenen afgevallen"
+            what={`Contains a count list of the amount of candidates put on status "afgewezen" and given a "Reden afgewezen". List options are the options from under "Reden afgewezen" from RCRM.`}
+          />
+        </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
