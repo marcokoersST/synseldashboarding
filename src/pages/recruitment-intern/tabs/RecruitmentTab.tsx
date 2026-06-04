@@ -337,7 +337,16 @@ Inschrijvingen = Inschrijven amount only for the source "RCM: LinkedIn".`}
       {/* CV databases weekly funnel */}
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">CV databases</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">CV databases</CardTitle>
+            <TileInfo
+              title="CV databases"
+              what={`Data from the sources "RCM: Indeed cv database", "RCM: Werkzoeken cv database", "Recruit Robin".
+Bekeken cv's = amount of opened profiles on the platforms.
+CV downloads = amount of resume downloads.
+Inschrijvingen = Inschrijven amount for only these sources.`}
+            />
+          </div>
           <ChartTableToggle view={cvDbView} onChange={setCvDbView} />
         </CardHeader>
         <CardContent className={cvDbView === "table" ? "p-0" : undefined}>
