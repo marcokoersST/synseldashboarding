@@ -5,6 +5,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TrendingUp, TrendingDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
+
+const KPI_DEV_INFO: Record<string, string> = {
+  "Inschrijven": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses except "acquisitie" and "in procedure" to "inschrijven"`,
+  "In procedure": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses to "In procedure"`,
+  "Gesprek 1": `count amount of meetings names containing "1"`,
+  "Gesprek 2": `count amount of meetings names containing "2"`,
+  "Aangenomen": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses to "Aangenomen"`,
+};
+
+const HIGHLIGHTS_DEV_INFO = `Best presterende bron conversies = "Bron" with most applies in selected data range
+Best presterende bron gesprekken = "Bron" with most meetings planned so count amount of meetings containing 1 and 2
+Best presterende vacature = count the most common "Bron toelichting"
+Laagste CPA = "Bron" with the lowest cost per apply, so cost / amount of applies`;
 import {
   BarChart,
   Bar,
