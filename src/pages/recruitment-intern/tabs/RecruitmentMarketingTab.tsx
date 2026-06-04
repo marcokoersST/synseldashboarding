@@ -331,8 +331,12 @@ Cost/Inschrijven = spend / Inschrijven`}
       </Card>
 
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Per Unit</CardTitle>
+          <TileInfo
+            title="Per Unit"
+            what={'showcase the amount of inschrijven and cost per inschrijving per unit ("functie" from rcrm)'}
+          />
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
