@@ -360,7 +360,13 @@ Inschrijvingen = Inschrijven amount for only these sources.`}
 
       {/* Redenen afgevallen */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Redenen afgevallen</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Redenen afgevallen</CardTitle>
+          <TileInfo
+            title="Redenen afgevallen"
+            what={`Contains a count list of the amount of candidates put on status "afgewezen" and given a "Reden afgewezen". List options are the options from under "Reden afgewezen" from RCRM.`}
+          />
+        </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
