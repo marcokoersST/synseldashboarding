@@ -183,6 +183,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
             </div>
           </PopoverContent>
         </Popover>
+        <TileInfo title="Afdelingen" what={`Afdelingen = Functiongroups which stand under "Functie" in RCRM`} />
       </div>
 
       {/* KPI cards — 5 tiles side by side */}
