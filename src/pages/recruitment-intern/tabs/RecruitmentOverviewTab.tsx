@@ -239,6 +239,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
             <ChartTableToggle view={funnelView} onChange={setFunnelView} />
             <TileInfo title="Funnel drop-off" what={`Show the drop off percentage between each stage, to create a funnel from conversion to aangenomen. Assessment is the count of people with the status "Assesment verstuurd" other statusses are already explained above`} />
           </div>
+        </CardHeader>
         <CardContent className={funnelView === "table" ? "p-0" : undefined}>
           {funnelView === "chart" ? (
             <FunnelDropOff data={FUNNEL_DATA} />
