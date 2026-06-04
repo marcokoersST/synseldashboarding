@@ -219,7 +219,16 @@ const RecruitmentMarketingTab = ({ dateRange, compareRange, deltaMode = "percent
 
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Bron</CardTitle>
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-base">Bron</CardTitle>
+            <TileInfo
+              title="Bron"
+              what={`rows are the sources "bron" only include "Indeed CPC", "Google Ad", "Facebook CPC", "Werkzoeken.nl CPC", "LinkedIn CPC", "Jobster" and "TikTok".
+% Bem. = inschrijven * 100 / conversions
+CPA = spend / conversions
+Cost/Inschrijven = spend / Inschrijven`}
+            />
+          </div>
           <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
             <Switch checked={showConversion} onCheckedChange={setShowConversion} />
             Show conversion
