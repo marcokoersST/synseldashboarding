@@ -190,7 +190,10 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
         {kpis.map((kpi) => (
           <Card key={kpi.label}>
             <CardContent className="p-5">
-              <p className="text-xs font-medium text-muted-foreground mb-1">{kpi.label}</p>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="text-xs font-medium text-muted-foreground">{kpi.label}</p>
+                <TileInfo title={kpi.label} what={KPI_DEV_INFO[kpi.label] ?? ""} />
+              </div>
               <p className="text-2xl font-bold text-foreground">{kpi.value.toLocaleString("nl-NL")}</p>
               <DeltaBadge current={kpi.value} previous={kpi.previous} compareLabel={compareLabel} />
               <ProgressBar current={kpi.value} previous={kpi.previous} />
