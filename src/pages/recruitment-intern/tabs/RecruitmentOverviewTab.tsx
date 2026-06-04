@@ -268,7 +268,7 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
 
       {/* Aangenomen per week */}
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Aangenomen per week</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between"><CardTitle className="text-base">Aangenomen per week</CardTitle><TileInfo title="Aangenomen per week" what={`Amount of hires per week. Count of status changes to "Aangenomen" each week.`} /></CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={WEEKLY_HIRES} margin={{ left: 10, right: 30, top: 10, bottom: 5 }}>
