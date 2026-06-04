@@ -190,7 +190,10 @@ const RecruitmentMarketingTab = ({ dateRange, compareRange, deltaMode = "percent
           return (
             <Card key={kpi.label}>
               <CardContent className="p-5">
-                <p className="text-xs font-medium text-muted-foreground mb-1">{kpi.label}</p>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <p className="text-xs font-medium text-muted-foreground">{kpi.label}</p>
+                  <TileInfo title={kpi.label} what={KPI_DEV_INFO[kpi.label] ?? ""} />
+                </div>
                 <p className="text-2xl font-bold">{kpi.format === "currency" ? formatCurrency(Math.round(kpi.value)) : kpi.value.toLocaleString("nl-NL")}</p>
                 {kpi.delta !== null && (
                   <div className={`flex items-center gap-1 mt-1 text-xs ${isPos ? "text-emerald-600" : "text-red-500"}`}>
