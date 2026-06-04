@@ -9,6 +9,13 @@ import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import { formatCurrency, deltaPercent, MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 import EditableSpendCell from "@/components/marketing/EditableSpendCell";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
+
+const KPI_DEV_INFO: Record<string, string> = {
+  "Conversions": "amount of total applies",
+  "Inschrijven": 'count unique (one candidate counts as 1 every 7 days) status changes from all statusses except "acquisitie" and "in procedure" to "inschrijven", but only if the "Bron" does NOT contain "RCM" or "Recruit Robin" or "Campus"',
+  "Cost per Inschrijving": "Cost per inschrijving = totaal ad spend / inschrijven",
+};
 
 interface Props {
   dateRange: DateRange;
@@ -183,7 +190,10 @@ const RecruitmentMarketingTab = ({ dateRange, compareRange, deltaMode = "percent
           return (
             <Card key={kpi.label}>
               <CardContent className="p-5">
-                <p className="text-xs font-medium text-muted-foreground mb-1">{kpi.label}</p>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <p className="text-xs font-medium text-muted-foreground">{kpi.label}</p>
+                  <TileInfo title={kpi.label} what={KPI_DEV_INFO[kpi.label] ?? ""} />
+                </div>
                 <p className="text-2xl font-bold">{kpi.format === "currency" ? formatCurrency(Math.round(kpi.value)) : kpi.value.toLocaleString("nl-NL")}</p>
                 {kpi.delta !== null && (
                   <div className={`flex items-center gap-1 mt-1 text-xs ${isPos ? "text-emerald-600" : "text-red-500"}`}>
@@ -209,7 +219,16 @@ const RecruitmentMarketingTab = ({ dateRange, compareRange, deltaMode = "percent
 
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Bron</CardTitle>
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-base">Bron</CardTitle>
+            <TileInfo
+              title="Bron"
+              what={`rows are the sources "bron" only include "Indeed CPC", "Google Ad", "Facebook CPC", "Werkzoeken.nl CPC", "LinkedIn CPC", "Jobster" and "TikTok".
+% Bem. = inschrijven * 100 / conversions
+CPA = spend / conversions
+Cost/Inschrijven = spend / Inschrijven`}
+            />
+          </div>
           <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
             <Switch checked={showConversion} onCheckedChange={setShowConversion} />
             Show conversion
@@ -312,8 +331,12 @@ const RecruitmentMarketingTab = ({ dateRange, compareRange, deltaMode = "percent
       </Card>
 
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base">Per Unit</CardTitle>
+          <TileInfo
+            title="Per Unit"
+            what={'showcase the amount of inschrijven and cost per inschrijving per unit ("functie" from rcrm)'}
+          />
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -331,7 +354,13 @@ const RecruitmentMarketingTab = ({ dateRange, compareRange, deltaMode = "percent
       </Card>
 
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Redenen afgewezen</CardTitle></CardHeader>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Redenen afgewezen</CardTitle>
+          <TileInfo
+            title="Redenen afgewezen"
+            what={'Contains a count list of the amount of candidate put on status "afgewezen" and given a "Reden afgewezen", list options are the options from under "Reden afgewezen" from rcrm exclude candidate profiles which contain the sources "RCM: Indeed cv database", "RCM: Werkzoeken cv database", "Recruit Robin".'}
+          />
+        </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
