@@ -354,7 +354,14 @@ Cost/Inschrijven = spend / Inschrijven`}
       </Card>
 
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Redenen afgewezen</CardTitle></CardHeader>
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Redenen afgewezen</CardTitle>
+          <TileInfo
+            title="Redenen afgewezen"
+            what={'Contains a count list of the amount of candidate put on status "afgewezen" and given a "Reden afgewezen", list options are the options from under "Reden afgewezen" from rcrm exclude candidate profiles which contain the sources "RCM: Indeed cv database", "RCM: Werkzoeken cv database", "Recruit Robin".'}
+          />
+        </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
