@@ -9,6 +9,13 @@ import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import { formatCurrency, deltaPercent, MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
 import EditableSpendCell from "@/components/marketing/EditableSpendCell";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
+
+const KPI_DEV_INFO: Record<string, string> = {
+  "Conversions": "amount of total applies",
+  "Inschrijven": 'count unique (one candidate counts as 1 every 7 days) status changes from all statusses except "acquisitie" and "in procedure" to "inschrijven", but only if the "Bron" does NOT contain "RCM" or "Recruit Robin" or "Campus"',
+  "Cost per Inschrijving": "Cost per inschrijving = totaal ad spend / inschrijven",
+};
 
 interface Props {
   dateRange: DateRange;
