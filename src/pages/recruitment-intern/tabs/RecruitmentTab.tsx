@@ -7,6 +7,13 @@ import { TrendingUp, TrendingDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCompareDisplayText, getComparisonValue } from "@/lib/marketingCompare";
 import { WeeklyFunnelDropOff, type WeeklyFunnelDatum, type WeeklyFunnelSeries } from "@/components/recruitment-intern/WeeklyFunnelDropOff";
+import { TileInfo } from "@/components/funnel-ops/TileInfo";
+
+const KPI_DEV_INFO: Record<string, string> = {
+  "Inschrijvingen Recruitment": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses except "acquisitie" and "in procedure" to "inschrijven", but only if the "Bron" contains "RCM" or "Recruit Robin" or "Campus"`,
+  "Gesprekken uit Recruitment Bronnen": `count amount of meetings names containing "1" or "2" but only if the "Bron" contains "RCM" or "Recruit Robin" or "Campus"`,
+  "Aangenomen vanuit Recruitment": `count unique (one candidate counts as 1 every 7 days) status changes from all statusses to "Aangenomen" but only if the "Bron" contains "RCM" or "Recruit Robin" or "Campus"`,
+};
 import { ChartTableToggle } from "@/components/recruitment-intern/ChartTableToggle";
 import { MARKETING_COLORS } from "@/data/marketingHubData";
 import type { DateRange } from "react-day-picker";
