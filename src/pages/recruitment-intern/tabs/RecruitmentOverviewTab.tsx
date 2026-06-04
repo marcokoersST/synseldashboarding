@@ -208,7 +208,10 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Inschrijvingen Recruitment</p>
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <p className="text-xs font-medium text-muted-foreground">Inschrijvingen Recruitment</p>
+              <TileInfo title="Inschrijvingen Recruitment" what={`Inschrijven but only if the "Bron" contains "RCM" or "Recruit Robin" or "Campus"`} />
+            </div>
             <p className="text-2xl font-bold">{inschrijvingenRecruitment}</p>
             <DeltaBadge current={inschrijvingenRecruitment} previous={prevRecruitment} compareLabel={compareLabel} />
             <ProgressBar current={inschrijvingenRecruitment} previous={prevRecruitment} />
@@ -216,7 +219,10 @@ const RecruitmentOverviewTab = ({ dateRange, compareRange }: Props) => {
         </Card>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Inschrijvingen Marketing</p>
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <p className="text-xs font-medium text-muted-foreground">Inschrijvingen Marketing</p>
+              <TileInfo title="Inschrijvingen Marketing" what={`Inschrijven but only if the "Bron" does NOT contain "RCM" or "Recruit Robin" or "Campus"`} />
+            </div>
             <p className="text-2xl font-bold">{inschrijvingenMarketing}</p>
             <DeltaBadge current={inschrijvingenMarketing} previous={prevMarketing} compareLabel={compareLabel} />
             <ProgressBar current={inschrijvingenMarketing} previous={prevMarketing} />
