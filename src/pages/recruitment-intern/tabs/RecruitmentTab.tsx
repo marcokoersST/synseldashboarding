@@ -313,7 +313,16 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
       {/* LinkedIn weekly funnel */}
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">LinkedIn</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">LinkedIn</CardTitle>
+            <TileInfo
+              title="LinkedIn"
+              what={`Data for the source "RCM: LinkedIn".
+Connectieverzoeken = amount of connection invites send.
+Verstuurde berichten = amount of send messages, only count one message per connection (is it possible to gather this data via the recruiter seat?).
+Inschrijvingen = Inschrijven amount only for the source "RCM: LinkedIn".`}
+            />
+          </div>
           <ChartTableToggle view={linkedinView} onChange={setLinkedinView} />
         </CardHeader>
         <CardContent className={linkedinView === "table" ? "p-0" : undefined}>
