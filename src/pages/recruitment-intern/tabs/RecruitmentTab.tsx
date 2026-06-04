@@ -254,7 +254,13 @@ const RecruitmentTab = ({ dateRange, compareRange }: Props) => {
       {/* Inschrijvingen per bron */}
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Inschrijvingen per bron</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">Inschrijvingen per bron</CardTitle>
+            <TileInfo
+              title="Inschrijvingen per bron"
+              what={`"inschrijven" per week and source, includes the Recruitment sources "RCM: Indeed cv database" and "RCM: LinkedIn" and "RCM: Werkzoeken cv database" and "RCM Retentie Whatsapp" and "Recruit Robin" and "Campus".`}
+            />
+          </div>
           <div className="flex items-center gap-2">
             <ChartTableToggle view={bronView} onChange={setBronView} />
             <Popover>
