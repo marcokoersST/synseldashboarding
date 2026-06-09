@@ -10,6 +10,7 @@ import JobboardsTab from "./tabs/JobboardsTab";
 import PaidSocialTab from "./tabs/PaidSocialTab";
 import PaidSocialAdLevelTab from "./tabs/PaidSocialAdLevelTab";
 import InschrijvingenTab from "./tabs/InschrijvingenTab";
+import AfgewezenTab from "./tabs/AfgewezenTab";
 import { cn } from "@/lib/utils";
 
 const tabs = [
@@ -19,6 +20,7 @@ const tabs = [
   { id: "paid-social", label: "Paid Social" },
   { id: "paid-social-ad", label: "Paid Social – Ad level" },
   { id: "inschrijvingen", label: "Inschrijvingen" },
+  { id: "afgewezen", label: "Afgewezen" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -55,6 +57,7 @@ const MarketingHub = () => {
       case "paid-social": return <PaidSocialTab {...sharedProps} />;
       case "paid-social-ad": return <PaidSocialAdLevelTab {...sharedProps} />;
       case "inschrijvingen": return <InschrijvingenTab {...sharedProps} />;
+      case "afgewezen": return <AfgewezenTab {...sharedProps} />;
       default: return null;
     }
   };
