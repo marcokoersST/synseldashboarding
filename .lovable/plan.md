@@ -1,38 +1,49 @@
+## Add "Afgewezen" tab to Marketing Hub
 
-## Goal
-Add red "Dev info" popover badges (using existing `TileInfo` component from `src/components/funnel-ops/TileInfo.tsx`) to several elements on `/reengagement` → Dashboard tab (`src/pages/reengagement/tabs/ReengagementDashboardTab.tsx`).
+### New tab
+In `src/pages/marketing/MarketingHub.tsx`, append `{ id: "afgewezen", label: "Afgewezen" }` to the tabs array and route it to a new `AfgewezenTab` component (passing the standard `dateRange / compareRange / deltaMode` props).
 
-## Changes in `ReengagementDashboardTab.tsx`
+### New file: `src/pages/marketing/tabs/AfgewezenTab.tsx`
 
-1. **KPI cards (Verzonden, Reacties, Inschrijven)** — top-right of each card, render `<TileInfo>`:
-   - Verzonden → `what: "count amount of send mail and whatsapp messages together"`
-   - Reacties → `what: "count amount of reactions on mail and whatsapp messages together"`
-   - Inschrijven → `what: "count unique (one candidate counts as 1 every 7 days) status changes from all statusses except 'acquisitie' and 'in procedure' to 'inschrijven'"`
-   - Layout: wrap CardContent header in a flex row so the badge sits top-right while label/value remain left.
+**Top — Reasons bar chart card** (mirrors the screenshot)
+- Card title: "Totaal afgewezen kandidaten"
+- Big number (total = sum of all reasons, e.g. 977)
+- Recharts vertical `BarChart` with the 6 reasons from the screenshot, each its own blue shade:
+  - Niet kunnen spreken (83)
+  - Bezig met studie (5)
+  - ZZP/Freelance (6)
+  - Nu niet werkzoekend (37)
+  - Geen capaciteit (1)
+  - is leeg (845)
+- Value labels above bars, legend on the right with matching color dots.
+- Uses semantic tokens (`hsl(var(--primary))` + shades) — no hard-coded colors.
 
-2. **Berichttype table** — add `<TileInfo>` in the `CardHeader`, left side (currently header only has the Show % switch on the right). Use a multi-line `what` (TileInfo supports plain text via `what`; preserve line breaks with `\n` — verify TileInfo renders `\n` correctly; if not, pass content via `notes` or extend rendering). Lines:
-   ```
-   gelezen = count amount of opened/read messages
-   % gelezen = gelezen * 100 / verzonden
-   % reactie = reactie * 100 / gelezen
-   % inschrijven = inschrijven * 100 / reactie
-   verzonden failed = amount of messages we tried to send but failed/bounced
-   % failed = amount of failed messages * 100 / total amount of messages we tried to send
-   ```
-   Rendering note: TileInfo currently renders `what` inside a `<p>` with `leading-relaxed`. To preserve line breaks, add `whitespace-pre-line` to that `<p>` (small tweak to `TileInfo.tsx`) OR put the list into the `formula` field which uses a `<pre>` block. Plan: use `formula` field since it's already preformatted and monospaced — fits a rule list well. Set `what: "Berekeningen achter de kolommen van de berichttype-tabel."` and put the 6 lines in `formula`.
+**Below — Candidates table** (Extended columns)
+| Naam | Bron | Unit | Functie | Reden afgewezen | Recruiter | Datum | RCRM |
+- Naam: candidate full name
+- RCRM column: blue "R" badge link (existing `RecruitCRMLink` pattern from `src/components/prognose/RecruitCRMLink.tsx`)
+- Sortable headers, ~25 mock rows distributed across the 6 reasons proportionally.
+- Reden afgewezen rendered as a colored `Badge` matching that reason's bar color.
 
-3. **Highlights card** — add `<TileInfo>` to the CardHeader (right side of the title row). Content:
-   - Title: "Highlights"
-   - `what` (multi-line, use `whitespace-pre-line` or put as `formula`):
-     ```
-     Niet kunnen spreken (18): show here the message flow name of the flow that generated the most amount of inschrijven + show the amount of inschrijven
-     Bezig met studie (8,6%): show here the message flow name of the flow that generated the highest % reactie as calculated in the table above + show the % reactie number
-     ZZP/Freelance (-6,4%): show the message flow name which showed the highest drop off rate if we compare the amount of inschrijven from the selected time period to the period before, show the drop off in %
-     ```
-   - Same rendering approach as the table dev info.
+### New file: `src/data/marketingAfgewezenData.ts`
+Static mock dataset:
+```ts
+export const afgewezenReasons = [
+  { reason: "Niet kunnen spreken", count: 83, color: "..." },
+  ...
+];
+export const afgewezenCandidates = [
+  { id, naam, bron, unit, functie, reden, recruiter, datum, rcrmUrl },
+  ...
+];
+```
+Units pulled from the 5 valid units (memory). Bronnen reuse marketing source names already used elsewhere (RCM: Indeed, Recruit Robin, Campus, etc.).
 
-## Small tweak to `TileInfo.tsx`
-Add `whitespace-pre-line` to the `<p>` that renders `what`, so multi-line strings render correctly. No API change.
+### Out of scope
+- No backend, no real filtering beyond what the existing date filter visually shows (mock totals stay static, in line with project data strategy).
+- No edits to other tabs.
 
-## Out of scope
-No data/business-logic changes; visual + popover content only.
+### Files touched
+- edit `src/pages/marketing/MarketingHub.tsx`
+- add `src/pages/marketing/tabs/AfgewezenTab.tsx`
+- add `src/data/marketingAfgewezenData.ts`
