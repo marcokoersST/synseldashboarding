@@ -1,16 +1,7 @@
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  LabelList,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { ArrowUpDown } from "lucide-react";
+
 
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
