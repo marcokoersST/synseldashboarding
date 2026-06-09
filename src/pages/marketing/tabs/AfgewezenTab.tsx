@@ -1,16 +1,7 @@
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  LabelList,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { ArrowUpDown } from "lucide-react";
+
 
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,45 +79,30 @@ const AfgewezenTab = (_props: Props) => {
           <div className="text-4xl font-bold text-foreground">{afgewezenTotal.toLocaleString("nl-NL")}</div>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
-            <div className="flex-1 h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={afgewezenReasons} margin={{ top: 24, right: 16, bottom: 8, left: 8 }}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis
-                    dataKey="reason"
-                    tick={false}
-                    axisLine={{ stroke: "hsl(var(--border))" }}
-                    tickLine={false}
-                  />
-                  <YAxis hide />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                    {afgewezenReasons.map((r) => (
-                      <Cell key={r.reason} fill={r.color} />
-                    ))}
-                    <LabelList
-                      dataKey="count"
-                      position="top"
-                      className="fill-foreground"
-                      style={{ fontSize: 13, fontWeight: 600 }}
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex flex-col gap-2 lg:w-56">
-              {afgewezenReasons.map((r) => (
-                <div key={r.reason} className="flex items-center gap-2 text-sm">
-                  <span
-                    className="inline-block h-3 w-3 rounded-sm shrink-0"
-                    style={{ backgroundColor: r.color }}
-                  />
-                  <span className="text-foreground">{r.reason}</span>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+            {afgewezenReasons.map((r) => {
+              const pct = (r.count / afgewezenTotal) * 100;
+              return (
+                <div
+                  key={r.reason}
+                  className="rounded-lg border bg-card p-4 overflow-hidden relative"
+                  style={{ borderTop: `3px solid ${r.color}` }}
+                >
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+                    {r.reason}
+                  </div>
+                  <div className="mt-2 text-3xl font-bold tabular-nums text-foreground">
+                    {r.count.toLocaleString("nl-NL")}
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground tabular-nums">
+                    {pct.toFixed(1)}% van totaal
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </CardContent>
+
       </Card>
 
       <Card>
