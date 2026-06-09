@@ -9,6 +9,7 @@ export interface AfgewezenCandidate {
   naam: string;
   bron: string;
   unit: string;
+  regio: string; // may be "" → rendered as "Onbekend"
   functie: string;
   reden: string;
   recruiter: string;
@@ -27,6 +28,17 @@ export const afgewezenReasons: AfgewezenReason[] = [
 export const afgewezenTotal = afgewezenReasons.reduce((s, r) => s + r.count, 0);
 
 const units = ["Finance", "Tech", "Engineering", "Sales & Marketing", "HR"];
+const regios = [
+  "Noord-Holland",
+  "Zuid-Holland",
+  "Noord-Brabant",
+  "Utrecht",
+  "Gelderland",
+  "Overijssel",
+  "Limburg",
+  "", // empty → shown as Onbekend
+  "",
+];
 const bronnen = [
   "RCM: Indeed",
   "RCM: LinkedIn",
@@ -35,7 +47,16 @@ const bronnen = [
   "Campus",
   "RCM: Nationale Vacaturebank",
 ];
-const recruiters = ["Sanne de Vries", "Mark Jansen", "Lisa Bakker", "Tom Visser", "Eva Smit", "Daan Mulder"];
+const recruiters = [
+  "Sanne de Vries",
+  "Mark Jansen",
+  "Lisa Bakker",
+  "Tom Visser",
+  "Eva Smit",
+  "Daan Mulder",
+  "Joost Hendriks",
+  "Fleur Peters",
+];
 const functies = [
   "Financial Controller",
   "Frontend Developer",
@@ -52,24 +73,16 @@ const voornamen = ["Jeroen", "Anne", "Pieter", "Sophie", "Bas", "Emma", "Thijs",
 const achternamen = ["Bakker", "de Jong", "Visser", "Smit", "Meijer", "de Boer", "Mulder", "Bos", "Vos", "Peters", "Hendriks", "van Dijk", "Janssen", "Willems", "van den Berg"];
 
 function pick<T>(arr: T[], i: number): T {
-  return arr[i % arr.length];
+  return arr[((i % arr.length) + arr.length) % arr.length];
 }
 
-// Distribute candidates proportionally across reasons (total 25 rows).
-const distribution: { reason: string; n: number }[] = [
-  { reason: "is leeg", n: 10 },
-  { reason: "Niet kunnen spreken", n: 6 },
-  { reason: "Nu niet werkzoekend", n: 4 },
-  { reason: "ZZP/Freelance", n: 2 },
-  { reason: "Bezig met studie", n: 2 },
-  { reason: "Geen capaciteit", n: 1 },
-];
-
+// One row per declined candidate — totals must match afgewezenReasons exactly,
+// so the new breakdown cards sum to the same total as the scorecards at the top.
 export const afgewezenCandidates: AfgewezenCandidate[] = (() => {
   const rows: AfgewezenCandidate[] = [];
   let i = 0;
-  for (const d of distribution) {
-    for (let k = 0; k < d.n; k++) {
+  for (const r of afgewezenReasons) {
+    for (let k = 0; k < r.count; k++) {
       const day = ((i * 3) % 27) + 1;
       const month = (i % 3) + 4; // apr-jun
       rows.push({
@@ -77,9 +90,10 @@ export const afgewezenCandidates: AfgewezenCandidate[] = (() => {
         naam: `${pick(voornamen, i)} ${pick(achternamen, i * 2 + 1)}`,
         bron: pick(bronnen, i + 2),
         unit: pick(units, i + 1),
+        regio: pick(regios, i * 5 + 1),
         functie: pick(functies, i * 3),
-        reden: d.reason,
-        recruiter: pick(recruiters, i),
+        reden: r.reason,
+        recruiter: pick(recruiters, i * 7 + 1),
         datum: `2026-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
       });
       i++;
