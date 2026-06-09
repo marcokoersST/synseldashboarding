@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, X } from "lucide-react";
 
 
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -33,12 +32,111 @@ type SortKey = keyof AfgewezenCandidate;
 
 const reasonColorMap = Object.fromEntries(afgewezenReasons.map((r) => [r.reason, r.color]));
 
+interface BreakdownRow {
+  key: string;
+  label: string;
+  count: number;
+}
+
+function aggregate(
+  rows: AfgewezenCandidate[],
+  getKey: (c: AfgewezenCandidate) => string,
+  getLabel?: (key: string) => string,
+): BreakdownRow[] {
+  const m = new Map<string, number>();
+  for (const r of rows) {
+    const k = getKey(r);
+    m.set(k, (m.get(k) ?? 0) + 1);
+  }
+  return Array.from(m.entries())
+    .map(([key, count]) => ({ key, label: getLabel ? getLabel(key) : key, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+interface BreakdownCardProps {
+  title: string;
+  rows: BreakdownRow[];
+  selected: string | null;
+  onToggle: (key: string) => void;
+  limit?: number;
+}
+
+const BreakdownCard = ({ title, rows, selected, onToggle, limit }: BreakdownCardProps) => {
+  const shown = limit ? rows.slice(0, limit) : rows;
+  const max = shown.reduce((m, r) => Math.max(m, r.count), 0) || 1;
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-1">
+        {shown.map((r) => {
+          const active = selected === r.key;
+          const pct = (r.count / max) * 100;
+          return (
+            <button
+              key={r.key}
+              onClick={() => onToggle(r.key)}
+              className={`relative w-full overflow-hidden rounded-md border text-left transition-colors ${
+                active
+                  ? "border-primary/40 bg-primary/10"
+                  : "border-transparent hover:border-border hover:bg-muted/40"
+              }`}
+            >
+              <div
+                className={`absolute inset-y-0 left-0 ${active ? "bg-primary/25" : "bg-primary/10"}`}
+                style={{ width: `${pct}%` }}
+                aria-hidden
+              />
+              <div className="relative flex items-center justify-between gap-2 px-2 py-1.5">
+                <span className={`truncate text-xs ${active ? "font-semibold text-foreground" : "text-foreground/90"}`}>
+                  {r.label}
+                </span>
+                <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground">
+                  {r.count.toLocaleString("nl-NL")}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+};
+
 const AfgewezenTab = (_props: Props) => {
   const [sortKey, setSortKey] = useState<SortKey>("datum");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [consultantFilter, setConsultantFilter] = useState<string | null>(null);
+  const [regioFilter, setRegioFilter] = useState<string | null>(null);
+  const [functieFilter, setFunctieFilter] = useState<string | null>(null);
+
+  const byConsultant = useMemo(
+    () => aggregate(afgewezenCandidates, (c) => c.recruiter),
+    [],
+  );
+  const byRegio = useMemo(
+    () => aggregate(afgewezenCandidates, (c) => c.regio || "Onbekend"),
+    [],
+  );
+  const byFunctie = useMemo(
+    () => aggregate(afgewezenCandidates, (c) => c.functie),
+    [],
+  );
+
+  const filtered = useMemo(() => {
+    return afgewezenCandidates.filter(
+      (c) =>
+        (!consultantFilter || c.recruiter === consultantFilter) &&
+        (!regioFilter || (c.regio || "Onbekend") === regioFilter) &&
+        (!functieFilter || c.functie === functieFilter),
+    );
+  }, [consultantFilter, regioFilter, functieFilter]);
 
   const sorted = useMemo(() => {
-    const arr = [...afgewezenCandidates];
+    const arr = [...filtered];
     arr.sort((a, b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
@@ -47,7 +145,11 @@ const AfgewezenTab = (_props: Props) => {
       return 0;
     });
     return arr;
-  }, [sortKey, sortDir]);
+  }, [filtered, sortKey, sortDir]);
+
+  // Cap table rows for performance (dataset is 977 rows).
+  const TABLE_LIMIT = 100;
+  const tableRows = sorted.slice(0, TABLE_LIMIT);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -56,6 +158,11 @@ const AfgewezenTab = (_props: Props) => {
       setSortDir("asc");
     }
   };
+
+  const makeToggle = (
+    current: string | null,
+    setter: (v: string | null) => void,
+  ) => (key: string) => setter(current === key ? null : key);
 
   const SortableHead = ({ k, children }: { k: SortKey; children: React.ReactNode }) => (
     <TableHead>
@@ -68,6 +175,14 @@ const AfgewezenTab = (_props: Props) => {
       </button>
     </TableHead>
   );
+
+  const activeFilters: { label: string; value: string; clear: () => void }[] = [];
+  if (consultantFilter)
+    activeFilters.push({ label: "Consultant", value: consultantFilter, clear: () => setConsultantFilter(null) });
+  if (regioFilter)
+    activeFilters.push({ label: "Regio", value: regioFilter, clear: () => setRegioFilter(null) });
+  if (functieFilter)
+    activeFilters.push({ label: "Functie", value: functieFilter, clear: () => setFunctieFilter(null) });
 
   return (
     <div className="space-y-6">
@@ -102,12 +217,63 @@ const AfgewezenTab = (_props: Props) => {
             })}
           </div>
         </CardContent>
-
       </Card>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <BreakdownCard
+          title="Afwijzingen per consultant"
+          rows={byConsultant}
+          selected={consultantFilter}
+          onToggle={makeToggle(consultantFilter, setConsultantFilter)}
+          limit={8}
+        />
+        <BreakdownCard
+          title="Afwijzingen per regio"
+          rows={byRegio}
+          selected={regioFilter}
+          onToggle={makeToggle(regioFilter, setRegioFilter)}
+        />
+        <BreakdownCard
+          title="Meest afgewezen functies"
+          rows={byFunctie}
+          selected={functieFilter}
+          onToggle={makeToggle(functieFilter, setFunctieFilter)}
+          limit={10}
+        />
+      </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Afgewezen kandidaten</CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-base">
+              Afgewezen kandidaten{" "}
+              <span className="text-sm font-normal text-muted-foreground">
+                ({filtered.length.toLocaleString("nl-NL")}
+                {filtered.length > TABLE_LIMIT ? ` — top ${TABLE_LIMIT} getoond` : ""})
+              </span>
+            </CardTitle>
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {activeFilters.map((f) => (
+                  <Badge
+                    key={f.label}
+                    variant="secondary"
+                    className="gap-1 pl-2 pr-1 text-xs"
+                  >
+                    <span className="text-muted-foreground">{f.label}:</span>
+                    <span className="font-medium">{f.value}</span>
+                    <button
+                      onClick={f.clear}
+                      className="ml-0.5 rounded-sm p-0.5 hover:bg-muted-foreground/20"
+                      aria-label={`Verwijder filter ${f.label}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -116,6 +282,7 @@ const AfgewezenTab = (_props: Props) => {
                 <SortableHead k="naam">Naam</SortableHead>
                 <SortableHead k="bron">Bron</SortableHead>
                 <SortableHead k="unit">Unit</SortableHead>
+                <SortableHead k="regio">Regio</SortableHead>
                 <SortableHead k="functie">Functie</SortableHead>
                 <SortableHead k="reden">Reden afgewezen</SortableHead>
                 <SortableHead k="recruiter">Recruiter</SortableHead>
@@ -124,11 +291,12 @@ const AfgewezenTab = (_props: Props) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sorted.map((c) => (
+              {tableRows.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">{c.naam}</TableCell>
                   <TableCell className="text-muted-foreground">{c.bron}</TableCell>
                   <TableCell>{c.unit}</TableCell>
+                  <TableCell className="text-muted-foreground">{c.regio || "Onbekend"}</TableCell>
                   <TableCell className="text-muted-foreground">{c.functie}</TableCell>
                   <TableCell>
                     <Badge
