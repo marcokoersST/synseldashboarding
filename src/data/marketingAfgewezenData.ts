@@ -101,3 +101,15 @@ export const afgewezenCandidates: AfgewezenCandidate[] = (() => {
   }
   return rows;
 })();
+
+// Mock instroom per consultant — chosen so rejection rates vary roughly 10-45%.
+export const instroomPerConsultant: Record<string, number> = {
+  "Sanne de Vries": 280,
+  "Mark Jansen": 320,
+  "Lisa Bakker": 410,
+  "Tom Visser": 540,
+  "Eva Smit": 360,
+  "Daan Mulder": 470,
+  "Joost Hendriks": 300,
+  "Fleur Peters": 620,
+};
