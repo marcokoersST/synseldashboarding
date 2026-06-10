@@ -172,6 +172,87 @@ const AfgewezenTab = (_props: Props) => {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-base">
+              Afgewezen kandidaten{" "}
+              <span className="text-sm font-normal text-muted-foreground">
+                ({filtered.length.toLocaleString("nl-NL")}
+                {filtered.length > TABLE_LIMIT ? ` — top ${TABLE_LIMIT} getoond` : ""})
+              </span>
+            </CardTitle>
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {activeFilters.map((f) => (
+                  <Badge key={f.label} variant="secondary" className="gap-1 pl-2 pr-1 text-xs">
+                    <span className="text-muted-foreground">{f.label}:</span>
+                    <span className="font-medium">{f.value}</span>
+                    <button
+                      onClick={f.clear}
+                      className="ml-0.5 rounded-sm p-0.5 hover:bg-muted-foreground/20"
+                      aria-label={`Verwijder filter ${f.label}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <SortableHead k="naam">Naam</SortableHead>
+                <SortableHead k="bron">Bron</SortableHead>
+                <SortableHead k="unit">Unit</SortableHead>
+                <SortableHead k="regio">Regio</SortableHead>
+                <SortableHead k="functie">Functie</SortableHead>
+                <SortableHead k="reden">Reden afgewezen</SortableHead>
+                <SortableHead k="recruiter">Recruiter</SortableHead>
+                <SortableHead k="datum">Datum</SortableHead>
+                <TableHead className="w-12">RCRM</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tableRows.map((c) => (
+                <TableRow key={c.id}>
+                  <TableCell className="font-medium">{c.naam}</TableCell>
+                  <TableCell className="text-muted-foreground">{c.bron}</TableCell>
+                  <TableCell>{c.unit}</TableCell>
+                  <TableCell className="text-muted-foreground">{c.regio || "Onbekend"}</TableCell>
+                  <TableCell className="text-muted-foreground">{c.functie}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      style={{
+                        borderColor: reasonColorMap[c.reden],
+                        color: reasonColorMap[c.reden],
+                      }}
+                    >
+                      {c.reden}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{c.recruiter}</TableCell>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {new Date(c.datum).toLocaleDateString("nl-NL", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    <RecruitCRMLink />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
@@ -285,87 +366,6 @@ const AfgewezenTab = (_props: Props) => {
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle className="text-base">
-              Afgewezen kandidaten{" "}
-              <span className="text-sm font-normal text-muted-foreground">
-                ({filtered.length.toLocaleString("nl-NL")}
-                {filtered.length > TABLE_LIMIT ? ` — top ${TABLE_LIMIT} getoond` : ""})
-              </span>
-            </CardTitle>
-            {activeFilters.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5">
-                {activeFilters.map((f) => (
-                  <Badge key={f.label} variant="secondary" className="gap-1 pl-2 pr-1 text-xs">
-                    <span className="text-muted-foreground">{f.label}:</span>
-                    <span className="font-medium">{f.value}</span>
-                    <button
-                      onClick={f.clear}
-                      className="ml-0.5 rounded-sm p-0.5 hover:bg-muted-foreground/20"
-                      aria-label={`Verwijder filter ${f.label}`}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <SortableHead k="naam">Naam</SortableHead>
-                <SortableHead k="bron">Bron</SortableHead>
-                <SortableHead k="unit">Unit</SortableHead>
-                <SortableHead k="regio">Regio</SortableHead>
-                <SortableHead k="functie">Functie</SortableHead>
-                <SortableHead k="reden">Reden afgewezen</SortableHead>
-                <SortableHead k="recruiter">Recruiter</SortableHead>
-                <SortableHead k="datum">Datum</SortableHead>
-                <TableHead className="w-12">RCRM</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tableRows.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-medium">{c.naam}</TableCell>
-                  <TableCell className="text-muted-foreground">{c.bron}</TableCell>
-                  <TableCell>{c.unit}</TableCell>
-                  <TableCell className="text-muted-foreground">{c.regio || "Onbekend"}</TableCell>
-                  <TableCell className="text-muted-foreground">{c.functie}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      style={{
-                        borderColor: reasonColorMap[c.reden],
-                        color: reasonColorMap[c.reden],
-                      }}
-                    >
-                      {c.reden}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{c.recruiter}</TableCell>
-                  <TableCell className="text-muted-foreground tabular-nums">
-                    {new Date(c.datum).toLocaleDateString("nl-NL", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    <RecruitCRMLink />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 };
