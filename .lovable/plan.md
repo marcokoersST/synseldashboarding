@@ -1,40 +1,35 @@
-# Afgewezen tab — ratio-gedreven inzichten
-
-Vervang de drie huidige breakdown-cards door twee nieuwe tabellen die afwijzingen altijd in verhouding tot instroom tonen. Scorecards bovenaan en de detailtabel onderaan blijven ongewijzigd.
+## Doel
+Meer variatie in "Redenen van afwijzing per regio" en "is leeg" verwijderen, want dat betekent dat de reden simpelweg niet is ingevuld (geen echte reden).
 
 ## Wijzigingen
 
-### 1. Verwijderen
-- Tegel **Meest afgewezen functies** (incl. `functieFilter`-state en bijbehorende aggregatie).
+### `src/data/marketingAfgewezenData.ts`
+Vervang de huidige `afgewezenReasons` (waarin "is leeg" 845 van de 977 records vult) door een set met uitsluitend daadwerkelijke redenen. Totaal blijft gelijk (977) zodat de scorecards bovenaan ongewijzigd blijven.
 
-### 2. Card: Consultant — instroom vs. afwijzing
-Compacte tabel met kolommen:
-- Consultant
-- Gekregen kandidaten
-- Afgewezen kandidaten
-- Afwijspercentage (badge met kleur: groen <15%, geel 15-30%, rood >30%)
+Nieuwe verdeling (voorbeeld, telt op tot 977):
 
-Standaard gesorteerd op **afwijspercentage desc**. Klik op rij = filter detailtabel op die consultant (zoals nu).
+```text
+Niet kunnen spreken            220
+Nu niet werkzoekend            165
+Salaris niet passend           130
+Reistijd / locatie te ver      120
+Andere baan geaccepteerd       110
+ZZP / Freelance                 70
+Bezig met studie                55
+Onvoldoende ervaring            50
+Taalvaardigheid onvoldoende     32
+Geen capaciteit bij opdrachtgever 25
+```
 
-### 3. Card: Regio — afwijsredenen
-Per regio een blokje met de top-redenen:
-- Regio + totaal afgewezen in regio
-- Lijstje (reden · aantal · % binnen regio), gesorteerd op meest voorkomend
+Effect: 10 verschillende redenen, geen enkele >25% van het totaal, dus de top-3 per regio in de breakdown krijgt automatisch meer variatie.
 
-Klik op een (regio, reden)-rij filtert de detailtabel op beide.
+### `src/pages/marketing/tabs/AfgewezenTab.tsx`
+Geen logica-wijziging nodig. Wel:
+- Verwijder de fallback "Leeg" voor `reden` (kan niet meer voorkomen, maar voor zekerheid: als een `reden` toch leeg is, wordt die rij overgeslagen in de regio-breakdown i.p.v. als "Leeg" getoond).
+- `redenFilter` opties blijven werken via de bestaande `afgewezenReasons` lijst.
 
-### 4. Data
-`src/data/marketingAfgewezenData.ts`:
-- Voeg `instroomPerConsultant: Record<string, number>` toe (mock cijfers, zo gekozen dat afwijspercentages variëren tussen ~10% en ~45% zodat de sortering betekenisvol is en de huidige afwijzingsaantallen er logisch onder passen).
-
-### 5. UI
-- Layout: `grid lg:grid-cols-2` (consultant-tabel links, regio-breakdown rechts).
-- Compact: `text-xs`, kleine padding, geen scrollende secties (consultant top 10, regio top 6 regio's × top 3 redenen).
-- Bestaande styling/tokens (`Card`, `Badge`, semantic colors) hergebruiken.
-
-### 6. Tabel-filter chips
-`activeFilters` aangepast: consultant, regio, reden (i.p.v. functie).
-
-## Bestanden
-- `src/data/marketingAfgewezenData.ts` — instroom-map toevoegen
-- `src/pages/marketing/tabs/AfgewezenTab.tsx` — breakdown-sectie vervangen
+## Niet aanpassen
+- Scorecards bovenaan (totaal blijft 977).
+- Tabel met afgewezen kandidaten.
+- Consultant-breakdown card.
+- Layout / styling.
