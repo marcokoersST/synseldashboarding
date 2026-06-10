@@ -17,12 +17,16 @@ export interface AfgewezenCandidate {
 }
 
 export const afgewezenReasons: AfgewezenReason[] = [
-  { reason: "Niet kunnen spreken", count: 83, color: "hsl(190 75% 55%)" },
-  { reason: "Bezig met studie", count: 5, color: "hsl(210 90% 65%)" },
-  { reason: "ZZP/Freelance", count: 6, color: "hsl(220 85% 45%)" },
-  { reason: "Nu niet werkzoekend", count: 37, color: "hsl(200 70% 40%)" },
-  { reason: "Geen capaciteit", count: 1, color: "hsl(245 70% 50%)" },
-  { reason: "is leeg", count: 845, color: "hsl(185 80% 60%)" },
+  { reason: "Niet kunnen spreken", count: 220, color: "hsl(190 75% 55%)" },
+  { reason: "Nu niet werkzoekend", count: 165, color: "hsl(200 70% 40%)" },
+  { reason: "Salaris niet passend", count: 130, color: "hsl(210 90% 65%)" },
+  { reason: "Reistijd / locatie te ver", count: 120, color: "hsl(220 85% 45%)" },
+  { reason: "Andere baan geaccepteerd", count: 110, color: "hsl(185 80% 60%)" },
+  { reason: "ZZP / Freelance", count: 70, color: "hsl(245 70% 50%)" },
+  { reason: "Bezig met studie", count: 55, color: "hsl(265 70% 60%)" },
+  { reason: "Onvoldoende ervaring", count: 50, color: "hsl(25 85% 55%)" },
+  { reason: "Taalvaardigheid onvoldoende", count: 32, color: "hsl(340 70% 55%)" },
+  { reason: "Geen capaciteit bij opdrachtgever", count: 25, color: "hsl(160 65% 45%)" },
 ];
 
 export const afgewezenTotal = afgewezenReasons.reduce((s, r) => s + r.count, 0);
