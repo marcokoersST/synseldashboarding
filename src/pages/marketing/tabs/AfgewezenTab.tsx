@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { ArrowUpDown, X } from "lucide-react";
 
-
 import type { DeltaMode } from "@/components/marketing/DeltaCell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +18,7 @@ import {
   afgewezenCandidates,
   afgewezenReasons,
   afgewezenTotal,
+  instroomPerConsultant,
   type AfgewezenCandidate,
 } from "@/data/marketingAfgewezenData";
 
@@ -32,78 +32,10 @@ type SortKey = keyof AfgewezenCandidate;
 
 const reasonColorMap = Object.fromEntries(afgewezenReasons.map((r) => [r.reason, r.color]));
 
-interface BreakdownRow {
-  key: string;
-  label: string;
-  count: number;
-}
-
-function aggregate(
-  rows: AfgewezenCandidate[],
-  getKey: (c: AfgewezenCandidate) => string,
-  getLabel?: (key: string) => string,
-): BreakdownRow[] {
-  const m = new Map<string, number>();
-  for (const r of rows) {
-    const k = getKey(r);
-    m.set(k, (m.get(k) ?? 0) + 1);
-  }
-  return Array.from(m.entries())
-    .map(([key, count]) => ({ key, label: getLabel ? getLabel(key) : key, count }))
-    .sort((a, b) => b.count - a.count);
-}
-
-interface BreakdownCardProps {
-  title: string;
-  rows: BreakdownRow[];
-  selected: string | null;
-  onToggle: (key: string) => void;
-  limit?: number;
-}
-
-const BreakdownCard = ({ title, rows, selected, onToggle, limit }: BreakdownCardProps) => {
-  const shown = limit ? rows.slice(0, limit) : rows;
-  const max = shown.reduce((m, r) => Math.max(m, r.count), 0) || 1;
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-1">
-        {shown.map((r) => {
-          const active = selected === r.key;
-          const pct = (r.count / max) * 100;
-          return (
-            <button
-              key={r.key}
-              onClick={() => onToggle(r.key)}
-              className={`relative w-full overflow-hidden rounded-md border text-left transition-colors ${
-                active
-                  ? "border-primary/40 bg-primary/10"
-                  : "border-transparent hover:border-border hover:bg-muted/40"
-              }`}
-            >
-              <div
-                className={`absolute inset-y-0 left-0 ${active ? "bg-primary/25" : "bg-primary/10"}`}
-                style={{ width: `${pct}%` }}
-                aria-hidden
-              />
-              <div className="relative flex items-center justify-between gap-2 px-2 py-1.5">
-                <span className={`truncate text-xs ${active ? "font-semibold text-foreground" : "text-foreground/90"}`}>
-                  {r.label}
-                </span>
-                <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground">
-                  {r.count.toLocaleString("nl-NL")}
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </CardContent>
-    </Card>
-  );
+const rateTone = (pct: number) => {
+  if (pct >= 30) return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
+  if (pct >= 15) return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
+  return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
 };
 
 const AfgewezenTab = (_props: Props) => {
@@ -111,29 +43,56 @@ const AfgewezenTab = (_props: Props) => {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [consultantFilter, setConsultantFilter] = useState<string | null>(null);
   const [regioFilter, setRegioFilter] = useState<string | null>(null);
-  const [functieFilter, setFunctieFilter] = useState<string | null>(null);
+  const [redenFilter, setRedenFilter] = useState<string | null>(null);
 
-  const byConsultant = useMemo(
-    () => aggregate(afgewezenCandidates, (c) => c.recruiter),
-    [],
-  );
-  const byRegio = useMemo(
-    () => aggregate(afgewezenCandidates, (c) => c.regio || "Onbekend"),
-    [],
-  );
-  const byFunctie = useMemo(
-    () => aggregate(afgewezenCandidates, (c) => c.functie),
-    [],
-  );
+  // Consultant — instroom vs afwijzing, sorted by afwijspercentage desc.
+  const consultantRows = useMemo(() => {
+    const afgewezenMap = new Map<string, number>();
+    for (const c of afgewezenCandidates) {
+      afgewezenMap.set(c.recruiter, (afgewezenMap.get(c.recruiter) ?? 0) + 1);
+    }
+    const consultants = new Set<string>([
+      ...Object.keys(instroomPerConsultant),
+      ...afgewezenMap.keys(),
+    ]);
+    return Array.from(consultants)
+      .map((name) => {
+        const afgewezen = afgewezenMap.get(name) ?? 0;
+        const gekregen = instroomPerConsultant[name] ?? afgewezen;
+        const pct = gekregen > 0 ? (afgewezen / gekregen) * 100 : 0;
+        return { name, gekregen, afgewezen, pct };
+      })
+      .sort((a, b) => b.pct - a.pct);
+  }, []);
+
+  // Regio — top redenen per regio.
+  const regioRows = useMemo(() => {
+    const byRegio = new Map<string, Map<string, number>>();
+    for (const c of afgewezenCandidates) {
+      const r = c.regio || "Onbekend";
+      if (!byRegio.has(r)) byRegio.set(r, new Map());
+      const m = byRegio.get(r)!;
+      m.set(c.reden, (m.get(c.reden) ?? 0) + 1);
+    }
+    return Array.from(byRegio.entries())
+      .map(([regio, reasons]) => {
+        const total = Array.from(reasons.values()).reduce((s, n) => s + n, 0);
+        const items = Array.from(reasons.entries())
+          .map(([reden, count]) => ({ reden, count, pct: (count / total) * 100 }))
+          .sort((a, b) => b.count - a.count);
+        return { regio, total, items };
+      })
+      .sort((a, b) => b.total - a.total);
+  }, []);
 
   const filtered = useMemo(() => {
     return afgewezenCandidates.filter(
       (c) =>
         (!consultantFilter || c.recruiter === consultantFilter) &&
         (!regioFilter || (c.regio || "Onbekend") === regioFilter) &&
-        (!functieFilter || c.functie === functieFilter),
+        (!redenFilter || c.reden === redenFilter),
     );
-  }, [consultantFilter, regioFilter, functieFilter]);
+  }, [consultantFilter, regioFilter, redenFilter]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -147,7 +106,6 @@ const AfgewezenTab = (_props: Props) => {
     return arr;
   }, [filtered, sortKey, sortDir]);
 
-  // Cap table rows for performance (dataset is 977 rows).
   const TABLE_LIMIT = 100;
   const tableRows = sorted.slice(0, TABLE_LIMIT);
 
@@ -158,11 +116,6 @@ const AfgewezenTab = (_props: Props) => {
       setSortDir("asc");
     }
   };
-
-  const makeToggle = (
-    current: string | null,
-    setter: (v: string | null) => void,
-  ) => (key: string) => setter(current === key ? null : key);
 
   const SortableHead = ({ k, children }: { k: SortKey; children: React.ReactNode }) => (
     <TableHead>
@@ -181,8 +134,8 @@ const AfgewezenTab = (_props: Props) => {
     activeFilters.push({ label: "Consultant", value: consultantFilter, clear: () => setConsultantFilter(null) });
   if (regioFilter)
     activeFilters.push({ label: "Regio", value: regioFilter, clear: () => setRegioFilter(null) });
-  if (functieFilter)
-    activeFilters.push({ label: "Functie", value: functieFilter, clear: () => setFunctieFilter(null) });
+  if (redenFilter)
+    activeFilters.push({ label: "Reden", value: redenFilter, clear: () => setRedenFilter(null) });
 
   return (
     <div className="space-y-6">
@@ -219,27 +172,118 @@ const AfgewezenTab = (_props: Props) => {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <BreakdownCard
-          title="Afwijzingen per consultant"
-          rows={byConsultant}
-          selected={consultantFilter}
-          onToggle={makeToggle(consultantFilter, setConsultantFilter)}
-          limit={8}
-        />
-        <BreakdownCard
-          title="Afwijzingen per regio"
-          rows={byRegio}
-          selected={regioFilter}
-          onToggle={makeToggle(regioFilter, setRegioFilter)}
-        />
-        <BreakdownCard
-          title="Meest afgewezen functies"
-          rows={byFunctie}
-          selected={functieFilter}
-          onToggle={makeToggle(functieFilter, setFunctieFilter)}
-          limit={10}
-        />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Instroom vs. afwijzing per consultant
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Gesorteerd op hoogste afwijspercentage — klik een rij om de tabel te filteren.
+            </p>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Consultant</TableHead>
+                  <TableHead className="text-xs text-right">Gekregen</TableHead>
+                  <TableHead className="text-xs text-right">Afgewezen</TableHead>
+                  <TableHead className="text-xs text-right">Afwijspercentage</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {consultantRows.map((r) => {
+                  const active = consultantFilter === r.name;
+                  return (
+                    <TableRow
+                      key={r.name}
+                      onClick={() => setConsultantFilter(active ? null : r.name)}
+                      className={`cursor-pointer ${active ? "bg-primary/10" : ""}`}
+                    >
+                      <TableCell className={`text-xs font-medium ${active ? "text-foreground" : ""}`}>
+                        {r.name}
+                      </TableCell>
+                      <TableCell className="text-xs text-right tabular-nums text-muted-foreground">
+                        {r.gekregen.toLocaleString("nl-NL")}
+                      </TableCell>
+                      <TableCell className="text-xs text-right tabular-nums">
+                        {r.afgewezen.toLocaleString("nl-NL")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant="outline" className={`tabular-nums ${rateTone(r.pct)}`}>
+                          {r.pct.toFixed(1)}%
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Redenen van afwijzing per regio
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Top-redenen per regio met aandeel binnen die regio. Klik om te filteren.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {regioRows.map((r) => (
+              <div key={r.regio} className="rounded-md border bg-card/50 p-2">
+                <div className="flex items-baseline justify-between px-1 pb-1">
+                  <button
+                    onClick={() => setRegioFilter(regioFilter === r.regio ? null : r.regio)}
+                    className={`text-xs font-semibold hover:text-primary transition-colors ${
+                      regioFilter === r.regio ? "text-primary" : "text-foreground"
+                    }`}
+                  >
+                    {r.regio}
+                  </button>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">
+                    {r.total.toLocaleString("nl-NL")} afgewezen
+                  </span>
+                </div>
+                <div className="space-y-0.5">
+                  {r.items.slice(0, 3).map((item) => {
+                    const active = redenFilter === item.reden && regioFilter === r.regio;
+                    return (
+                      <button
+                        key={item.reden}
+                        onClick={() => {
+                          setRegioFilter(r.regio);
+                          setRedenFilter(redenFilter === item.reden ? null : item.reden);
+                        }}
+                        className={`relative w-full overflow-hidden rounded text-left transition-colors ${
+                          active ? "bg-primary/15" : "hover:bg-muted/50"
+                        }`}
+                      >
+                        <div
+                          className="absolute inset-y-0 left-0 bg-primary/10"
+                          style={{ width: `${item.pct}%` }}
+                          aria-hidden
+                        />
+                        <div className="relative flex items-center justify-between gap-2 px-2 py-1">
+                          <span className="truncate text-xs text-foreground/90">{item.reden}</span>
+                          <span className="shrink-0 text-xs tabular-nums">
+                            <span className="font-semibold">{item.pct.toFixed(0)}%</span>
+                            <span className="ml-1.5 text-muted-foreground">
+                              ({item.count})
+                            </span>
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
@@ -255,11 +299,7 @@ const AfgewezenTab = (_props: Props) => {
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
                 {activeFilters.map((f) => (
-                  <Badge
-                    key={f.label}
-                    variant="secondary"
-                    className="gap-1 pl-2 pr-1 text-xs"
-                  >
+                  <Badge key={f.label} variant="secondary" className="gap-1 pl-2 pr-1 text-xs">
                     <span className="text-muted-foreground">{f.label}:</span>
                     <span className="font-medium">{f.value}</span>
                     <button
