@@ -68,8 +68,8 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
       <div className="relative h-full flex">
         <div
           className={cn(
-            "h-full shrink-0 transition-all duration-200 ease-out",
-            showExtra && right && "-mr-32 opacity-40 blur-[2px]",
+            "relative h-full shrink-0 transition-all duration-200 ease-out",
+            showExtra && right && "-mr-32 blur-[2px]",
           )}
         >
           <Pane
@@ -84,7 +84,11 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
           >
             {left.content}
           </Pane>
+          {showExtra && right && (
+            <div className="absolute inset-0 bg-background/60 pointer-events-none z-[1]" />
+          )}
         </div>
+
         {right && (
           <div className="relative z-[1]">
             <Pane
