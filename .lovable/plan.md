@@ -1,35 +1,24 @@
-## Doel
-Meer variatie in "Redenen van afwijzing per regio" en "is leeg" verwijderen, want dat betekent dat de reden simpelweg niet is ingevuld (geen echte reden).
+## Bug
 
-## Wijzigingen
+On `/manager-dashboard/LC-B`, when opening a candidate → email/call detail (3-pane state), the dimmed left pane (Candidate Market list) becomes see-through and shows the underlying consultant list page behind it.
 
-### `src/data/marketingAfgewezenData.ts`
-Vervang de huidige `afgewezenReasons` (waarin "is leeg" 845 van de 977 records vult) door een set met uitsluitend daadwerkelijke redenen. Totaal blijft gelijk (977) zodat de scorecards bovenaan ongewijzigd blijven.
+## Cause
 
-Nieuwe verdeling (voorbeeld, telt op tot 977):
+`src/components/manager/lcb/LcbSplitOverlay.tsx` lines 69-87: when `extra` is open, the wrapper around the left `<Pane>` gets `opacity-40 blur-[2px]`. Tailwind's `opacity-40` is applied to the whole subtree including the pane's `bg-background`, so the pane becomes 60% transparent and the page underneath shows through.
 
-```text
-Niet kunnen spreken            220
-Nu niet werkzoekend            165
-Salaris niet passend           130
-Reistijd / locatie te ver      120
-Andere baan geaccepteerd       110
-ZZP / Freelance                 70
-Bezig met studie                55
-Onvoldoende ervaring            50
-Taalvaardigheid onvoldoende     32
-Geen capaciteit bij opdrachtgever 25
-```
+## Fix
 
-Effect: 10 verschillende redenen, geen enkele >25% van het totaal, dus de top-3 per regio in de breakdown krijgt automatisch meer variatie.
+Keep the pane background fully opaque; dim only the visual emphasis.
 
-### `src/pages/marketing/tabs/AfgewezenTab.tsx`
-Geen logica-wijziging nodig. Wel:
-- Verwijder de fallback "Leeg" voor `reden` (kan niet meer voorkomen, maar voor zekerheid: als een `reden` toch leeg is, wordt die rij overgeslagen in de regio-breakdown i.p.v. als "Leeg" getoond).
-- `redenFilter` opties blijven werken via de bestaande `afgewezenReasons` lijst.
+In `src/components/manager/lcb/LcbSplitOverlay.tsx`:
 
-## Niet aanpassen
-- Scorecards bovenaan (totaal blijft 977).
-- Tabel met afgewezen kandidaten.
-- Consultant-breakdown card.
-- Layout / styling.
+1. Remove `opacity-40` from the wrapper className (line 72). Keep the `-mr-32` slide-back and the `blur-[2px]`.
+2. Render a non-interactive dim overlay *inside* the wrapper, over the left `<Pane>`, so the pane itself stays opaque but its content visually recedes:
+   - Wrapper becomes `relative`.
+   - Add `<div className="absolute inset-0 bg-background/60 pointer-events-none z-[1]" />` as a sibling after the `<Pane>` (only when `showExtra && right`).
+
+This preserves the dim/blur intent without making the pane translucent.
+
+## Out of scope
+
+No changes to widths, the right/extra panes, content, or interaction behavior.
