@@ -24,6 +24,8 @@ interface Props {
   rows: Row[];
   selectedConsultants: number[];
   onDrilldown: (bucket: string, metric: string, consultantIds: number[]) => void;
+  lockedId?: number | null;
+  onLockedIdChange?: (id: number | null) => void;
 }
 
 // Average consultant earns ~€20.040 per month. We bound buckets to [0, 45.000].
