@@ -116,7 +116,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
                 type="button"
                 aria-label="Sluit communicatie"
                 onClick={() => onCloseExtra?.()}
-                className="absolute inset-0 bg-background/40 backdrop-blur-sm cursor-pointer z-[2] animate-in fade-in duration-150"
+                className="absolute inset-0 cursor-pointer z-[2] animate-in fade-in duration-150"
               />
             )}
           </div>
