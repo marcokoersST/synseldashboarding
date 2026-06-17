@@ -301,7 +301,7 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
               {/* Modaal (single only) */}
               {isSingle && (
                 <ReferenceLine
-                  y={MODAAL_EUR}
+                  y={modaalFor(granularity)}
                   stroke="hsl(var(--muted-foreground))"
                   strokeDasharray="4 4"
                   strokeWidth={1.2}
