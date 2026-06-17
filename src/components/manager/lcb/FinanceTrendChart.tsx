@@ -101,10 +101,21 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
   const forecastBucketLabel = "Prognose";
 
   const data = useMemo(() => {
-    // Pre-compute each consultant's bucket values
+    const target = bucketTargetAvg(granularity);
+    // Cohort mean of `realised` (used to scale each consultant relative to peers).
+    const cohortRealised = scopeRows.reduce((s, r) => s + r.realised, 0) / Math.max(scopeRows.length, 1);
+    const baselineFor = (r: Row) => {
+      const rel = cohortRealised > 0 ? r.realised / cohortRealised : 1;
+      // Keep relative spread but compress so outliers stay within [0, MAX_BUCKET_EUR].
+      const compressed = 0.55 + Math.min(Math.max(rel, 0.3), 2.2) * 0.45;
+      return target * compressed;
+    };
+    const clamp = (v: number) => Math.max(0, Math.min(MAX_BUCKET_EUR, Math.round(v)));
+
     const perConsultant = new Map<number, number[]>();
     scopeRows.forEach((r) => {
-      const vals = buckets.map((_, idx) => Math.round(r.realised * 1000 * bucketFactor(r.c.id, idx, buckets.length)));
+      const base = baselineFor(r);
+      const vals = buckets.map((_, idx) => clamp(base * bucketFactor(r.c.id, idx, buckets.length)));
       perConsultant.set(r.c.id, vals);
     });
 
@@ -117,17 +128,14 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
       return row;
     });
 
-    // Forecast row: extend each consultant's situatie value to the forecast bucket,
-    // and populate per-consultant prognose key only at the last historical and forecast points.
     const forecastRow: Record<string, number | string> = { bucket: forecastBucketLabel };
     scopeRows.forEach((r) => {
       const vals = perConsultant.get(r.c.id)!;
       const tail = vals.slice(-forecastWindow);
-      const avg = Math.round(tail.reduce((s, v) => s + v, 0) / Math.max(tail.length, 1));
+      const avg = clamp(tail.reduce((s, v) => s + v, 0) / Math.max(tail.length, 1));
       forecastRow[`prog__${r.c.id}`] = avg;
     });
 
-    // Anchor prognose start at last historical point
     const lastHist = histRows[histRows.length - 1];
     if (lastHist) {
       scopeRows.forEach((r) => {
@@ -136,7 +144,7 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
     }
 
     return [...histRows, forecastRow];
-  }, [buckets, scopeRows, forecastWindow]);
+  }, [buckets, scopeRows, forecastWindow, granularity]);
 
   const scopeLabel = scopeRows.length === 0
     ? "Geen consultants"
