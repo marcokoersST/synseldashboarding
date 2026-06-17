@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine,
 } from "recharts";
 import { Check, ChevronDown, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -78,11 +78,30 @@ function modaalFor(g: Granularity): number {
   return Math.round(bucketTargetAvg(g));
 }
 
+const STORAGE_KEY = "lcb.financeTrend.v1";
+type Persisted = { granularity?: Granularity; localConsultants?: number[]; lockedId?: number | null };
+function loadPersisted(): Persisted {
+  try {
+    const raw = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+    return raw ? JSON.parse(raw) as Persisted : {};
+  } catch { return {}; }
+}
+
 export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
-  const [granularity, setGranularity] = useState<Granularity>("periode");
-  const [localConsultants, setLocalConsultants] = useState<number[]>([]);
+  const initial = useMemo(() => loadPersisted(), []);
+  const [granularity, setGranularity] = useState<Granularity>(initial.granularity ?? "periode");
+  const [localConsultants, setLocalConsultants] = useState<number[]>(initial.localConsultants ?? []);
   const [activeId, setActiveId] = useState<number | null>(null);
-  const [lockedId, setLockedId] = useState<number | null>(null);
+  const [lockedId, setLockedId] = useState<number | null>(initial.lockedId ?? null);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ granularity, localConsultants, lockedId }),
+      );
+    } catch { /* ignore */ }
+  }, [granularity, localConsultants, lockedId]);
 
   // Scope rows from global filter first, then local consultant filter.
   const globalScope = useMemo(() => {
@@ -129,17 +148,16 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
       perConsultant.set(r.c.id, vals);
     });
 
-    // Rolling expectation: at bucket idx, prognose = mean of the previous `forecastWindow` situatie values.
-    // For idx 0 we have no history → leave null so the line starts where data exists.
-    const progPerConsultant = new Map<number, (number | null)[]>();
+    // Rolling expectation: at bucket idx, prognose = mean of previous `forecastWindow` situatie values.
+    // At idx 0 we have no history → seed with the situatie value so the dashed line spans every bucket.
+    const progPerConsultant = new Map<number, number[]>();
     scopeRows.forEach((r) => {
       const vals = perConsultant.get(r.c.id)!;
-      const prog: (number | null)[] = vals.map((_, idx) => {
-        if (idx === 0) return null;
+      const prog: number[] = vals.map((v, idx) => {
+        if (idx === 0) return v;
         const start = Math.max(0, idx - forecastWindow);
         const slice = vals.slice(start, idx);
-        if (slice.length === 0) return null;
-        return clamp(slice.reduce((s, v) => s + v, 0) / slice.length);
+        return clamp(slice.reduce((s, x) => s + x, 0) / slice.length);
       });
       progPerConsultant.set(r.c.id, prog);
     });
@@ -331,12 +349,6 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 stroke="hsl(var(--border))"
                 width={64}
-              />
-              <Tooltip
-                content={(props: any) => (
-                  <TrendTooltip {...props} scopeRows={scopeRows} isSingle={isSingle} modaal={modaalFor(granularity)} />
-                )}
-                cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }}
               />
 
               {/* Modaal (single only) */}
