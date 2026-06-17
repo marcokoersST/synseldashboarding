@@ -2,7 +2,7 @@ import { Mail, Phone, ExternalLink, ArrowDownLeft, ArrowUpRight, MessageSquare, 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { type ActivityItem, formatCallLinkLabel } from "@/data/lcbMarketData";
+import { type ActivityItem, type TranscriptLine, formatCallLinkLabel } from "@/data/lcbMarketData";
 import { contactStatusBadgeClass } from "@/data/lcbDealStages";
 
 export interface CommItem extends ActivityItem {}
