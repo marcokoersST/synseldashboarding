@@ -186,7 +186,6 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
   return (
     <div
       className="mt-3 rounded-lg border border-border bg-card p-3"
-      onClick={() => setLockedId(null)}
     >
       <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
         <div>
