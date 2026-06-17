@@ -182,7 +182,7 @@ export function LcbDateFilter({ value, onChange }: Props) {
               weekStartsOn={1}
               className="p-0"
               modifiers={{ today: new Date() }}
-              modifiersClassNames={{ today: "ring-2 ring-blue-500 ring-offset-1 rounded-md" }}
+              modifiersClassNames={{ today: "ring-2 ring-blue-500 ring-offset-2 rounded-md relative z-10" }}
             />
             <div className="mt-2 flex items-center justify-between gap-2 px-1 text-[11px]">
               <div>
