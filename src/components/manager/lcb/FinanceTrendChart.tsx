@@ -54,13 +54,23 @@ function bucketFactor(consultantId: number, bucketIdx: number, totalBuckets: num
 
 function buildBuckets(g: Granularity): string[] {
   if (g === "periode") {
-    return ["P11 25", "P12 25", "P13 25", "P1 26", "P2 26", "P3 26", "P4 26", "P5 26"];
+    // 14 periods of history so the prognose line has substantial overlap with situatie.
+    return [
+      "P5 25", "P6 25", "P7 25", "P8 25", "P9 25", "P10 25",
+      "P11 25", "P12 25", "P13 25",
+      "P1 26", "P2 26", "P3 26", "P4 26", "P5 26",
+    ];
   }
   if (g === "maand") {
-    return ["Jul 25", "Aug 25", "Sep 25", "Okt 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mrt 26", "Apr 26", "Mei 26", "Jun 26"];
+    // 18 months of history
+    return [
+      "Jan 25", "Feb 25", "Mrt 25", "Apr 25", "Mei 25", "Jun 25",
+      "Jul 25", "Aug 25", "Sep 25", "Okt 25", "Nov 25", "Dec 25",
+      "Jan 26", "Feb 26", "Mrt 26", "Apr 26", "Mei 26", "Jun 26",
+    ];
   }
-  // week — rolling 13 weeks
-  return Array.from({ length: 13 }, (_, i) => `W${i + 23}`);
+  // week — rolling 26 weeks
+  return Array.from({ length: 26 }, (_, i) => `W${i + 10}`);
 }
 
 // Modaal scaled per granularity so the reference matches bucket size.
