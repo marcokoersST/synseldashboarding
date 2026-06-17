@@ -147,7 +147,7 @@ function Pane({
       style={{ width, maxWidth: "92vw" }}
       className={cn(
         "h-full flex flex-col bg-background border-l border-border shadow-2xl",
-        "animate-in slide-in-from-right-4 duration-400",
+        "animate-in slide-in-from-right-4 duration-500",
       )}
     >
       <header className="shrink-0 border-b border-border px-4 py-2.5 flex items-start gap-2 bg-card/40">
