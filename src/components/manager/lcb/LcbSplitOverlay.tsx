@@ -63,12 +63,12 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
         type="button"
         aria-label="Sluiten"
         onClick={onClose}
-        className="flex-1 bg-background/40 backdrop-blur-md animate-in fade-in duration-300"
+        className="flex-1 bg-background/40 backdrop-blur-md animate-in fade-in duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
       />
       <div className="relative h-full flex">
         <div
           className={cn(
-            "relative h-full shrink-0 transition-all duration-500 ease-out",
+            "relative h-full shrink-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
             showExtra && right && "-mr-32 blur-[2px]",
           )}
         >
@@ -90,7 +90,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
               aria-label={showExtra ? "Sluit communicatie" : "Sluit detail"}
               onClick={() => (showExtra ? onCloseExtra?.() : onCloseRight?.())}
               className={cn(
-                "absolute inset-0 cursor-pointer z-[1] animate-in fade-in duration-300",
+                "absolute inset-0 cursor-pointer z-[1] animate-in fade-in duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 showExtra && "bg-background/40 backdrop-blur-sm",
               )}
             />
@@ -99,7 +99,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
 
         {right && (
           <div className={cn(
-            "relative z-[1] transition-all duration-500 ease-out",
+            "relative z-[1] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           )}>
             <Pane
               breadcrumbs={right.breadcrumbs}
@@ -147,7 +147,7 @@ function Pane({
       style={{ width, maxWidth: "92vw" }}
       className={cn(
         "h-full flex flex-col bg-background border-l border-border shadow-2xl",
-        "animate-in slide-in-from-right-4 duration-500",
+        "animate-in slide-in-from-right-4 duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
       )}
     >
       <header className="shrink-0 border-b border-border px-4 py-2.5 flex items-start gap-2 bg-card/40">
