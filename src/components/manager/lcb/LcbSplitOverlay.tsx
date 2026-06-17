@@ -100,7 +100,6 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
         {right && (
           <div className={cn(
             "relative z-[1] transition-all duration-200 ease-out",
-            showExtra && "blur-[2px]",
           )}>
             <Pane
               breadcrumbs={right.breadcrumbs}
