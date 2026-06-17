@@ -87,6 +87,37 @@ export default function LCB() {
     [usesTeamData],
   );
 
+  // Mapping consultantId → unit voor de actieve dataset.
+  const consultantUnitMap = useMemo(() => {
+    const m = new Map<number, string>();
+    const src = usesTeamData ? myTeamConsultants : lcbTeam;
+    src.forEach((c: any) => m.set(c.id, c.unit));
+    return m;
+  }, [usesTeamData]);
+
+  // Bij unit-wijziging: auto-vul consultants die in geselecteerde units zitten.
+  const handleSelectedUnits = (units: string[]) => {
+    setSelectedUnits(units);
+    if (units.length === 0) {
+      setSelectedConsultants([]);
+    } else {
+      const src = usesTeamData ? myTeamConsultants : lcbTeam;
+      setSelectedConsultants(src.filter((c: any) => units.includes(c.unit)).map((c: any) => c.id));
+    }
+  };
+
+  // Bij consultant-wijziging: zit ten minste één gekozen consultant buiten huidige units → reset units.
+  const handleSelectedConsultants = (ids: number[]) => {
+    setSelectedConsultants(ids);
+    if (selectedUnits.length > 0 && ids.length > 0) {
+      const outside = ids.some((id) => {
+        const u = consultantUnitMap.get(id);
+        return !u || !selectedUnits.includes(u);
+      });
+      if (outside) setSelectedUnits([]);
+    }
+  };
+
   // Split-overlay state for candidate market drill-down
   const [stepCtx, setStepCtx] = useState<{ consultantId: number; step: LcbStepKey } | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateRow | null>(null);
@@ -222,9 +253,9 @@ export default function LCB() {
       <LCBTopBar
         date={date} onDate={setDate}
         units={unitOptions}
-        selectedUnits={selectedUnits} onSelectedUnits={setSelectedUnits}
+        selectedUnits={selectedUnits} onSelectedUnits={handleSelectedUnits}
         consultants={consultantOptions}
-        selectedConsultants={selectedConsultants} onSelectedConsultants={setSelectedConsultants}
+        selectedConsultants={selectedConsultants} onSelectedConsultants={handleSelectedConsultants}
         search={search} onSearch={setSearch}
         onReset={onResetFilters}
       />

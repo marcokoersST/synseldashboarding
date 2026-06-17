@@ -30,6 +30,8 @@ export function FinanceForecastTab({
   const [perspective, setPerspective] = useState<Perspective>("margin");
   const [hoverRow, setHoverRow] = useState<number | null>(null);
   const [hoverCol, setHoverCol] = useState<string | null>(null);
+  const [lockedId, setLockedId] = useState<number | null>(null);
+  const toggleLock = (id: number) => setLockedId((curr) => (curr === id ? null : id));
 
   const consultants = useMemo(() => {
     let r = lcbTeam;
@@ -126,6 +128,7 @@ export function FinanceForecastTab({
               hoverRow={hoverRow} hoverCol={hoverCol}
               setHoverRow={setHoverRow} setHoverCol={setHoverCol}
               onOpenRevenue={onOpenRevenue}
+              lockedId={lockedId} onToggleLock={toggleLock}
             />
           ) : (
             <PerformanceTable
@@ -143,6 +146,8 @@ export function FinanceForecastTab({
           <FinanceTrendChart
             rows={marginRows}
             selectedConsultants={selectedConsultants}
+            lockedId={lockedId}
+            onLockedIdChange={setLockedId}
             onDrilldown={(_bucket, _metric, ids) => {
               if (ids.length === 1) onOpenRevenue(ids[0]);
             }}
@@ -154,7 +159,7 @@ export function FinanceForecastTab({
 }
 
 // ─────────────────────── Margin table ───────────────────────
-function MarginTable({ rows, totals, hoverRow, hoverCol, setHoverRow, setHoverCol, onOpenRevenue }: any) {
+function MarginTable({ rows, totals, hoverRow, hoverCol, setHoverRow, setHoverCol, onOpenRevenue, lockedId, onToggleLock }: any) {
   const cols = [
     { key: "consultant", label: "Consultant", sticky: true },
     { key: "revenue", label: "Revenue (€k)", right: true },
@@ -174,12 +179,20 @@ function MarginTable({ rows, totals, hoverRow, hoverCol, setHoverRow, setHoverCo
       <tbody>
         {rows.map((r: any) => {
           const isRow = hoverRow === r.c.id;
+          const isLocked = lockedId === r.c.id;
           const cell = (key: string) => isRow || hoverCol === key;
           const enter = (key: string) => () => { setHoverRow(r.c.id); setHoverCol(key); };
           return (
-            <tr key={r.c.id} className={cn("border-t border-border", isRow && "bg-muted/30")} onMouseLeave={() => hoverRow === r.c.id && setHoverRow(null)}>
+            <tr key={r.c.id} className={cn("border-t border-border", isRow && "bg-muted/30", isLocked && "bg-primary/10 ring-1 ring-inset ring-primary/30")} onMouseLeave={() => hoverRow === r.c.id && setHoverRow(null)}>
               <Td sticky highlight={cell("consultant")} intersect={isRow && hoverCol === "consultant"} onEnter={enter("consultant")}>
-                <span className="font-medium whitespace-nowrap">{r.c.name}</span>
+                <button
+                  type="button"
+                  onClick={() => onToggleLock?.(r.c.id)}
+                  className={cn("font-medium whitespace-nowrap text-left hover:text-primary hover:underline", isLocked && "text-primary underline")}
+                  title={isLocked ? "Klik om te ontgrendelen" : "Klik om in de grafiek vast te zetten"}
+                >
+                  {r.c.name}
+                </button>
               </Td>
               <Td align="right" highlight={cell("revenue")} intersect={isRow && hoverCol === "revenue"} onEnter={enter("revenue")}>
                 <button type="button" onClick={() => onOpenRevenue(r.c.id)} className="tabular-nums font-semibold hover:text-primary hover:underline">€{r.realised}k</button>

@@ -24,6 +24,8 @@ interface Props {
   rows: Row[];
   selectedConsultants: number[];
   onDrilldown: (bucket: string, metric: string, consultantIds: number[]) => void;
+  lockedId?: number | null;
+  onLockedIdChange?: (id: number | null) => void;
 }
 
 // Average consultant earns ~€20.040 per month. We bound buckets to [0, 45.000].
@@ -87,12 +89,19 @@ function loadPersisted(): Persisted {
   } catch { return {}; }
 }
 
-export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
+export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedIdProp, onLockedIdChange }: Props) {
   const initial = useMemo(() => loadPersisted(), []);
   const [granularity, setGranularity] = useState<Granularity>(initial.granularity ?? "periode");
   const [localConsultants, setLocalConsultants] = useState<number[]>(initial.localConsultants ?? []);
   const [activeId, setActiveId] = useState<number | null>(null);
-  const [lockedId, setLockedId] = useState<number | null>(initial.lockedId ?? null);
+  const [internalLockedId, setInternalLockedId] = useState<number | null>(initial.lockedId ?? null);
+  const isControlled = lockedIdProp !== undefined;
+  const lockedId = isControlled ? (lockedIdProp ?? null) : internalLockedId;
+  const setLockedId = (next: number | null | ((curr: number | null) => number | null)) => {
+    const value = typeof next === "function" ? (next as (c: number | null) => number | null)(lockedId) : next;
+    if (!isControlled) setInternalLockedId(value);
+    onLockedIdChange?.(value);
+  };
 
   useEffect(() => {
     try {
