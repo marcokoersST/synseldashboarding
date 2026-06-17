@@ -148,17 +148,16 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
       perConsultant.set(r.c.id, vals);
     });
 
-    // Rolling expectation: at bucket idx, prognose = mean of the previous `forecastWindow` situatie values.
-    // For idx 0 we have no history → leave null so the line starts where data exists.
-    const progPerConsultant = new Map<number, (number | null)[]>();
+    // Rolling expectation: at bucket idx, prognose = mean of previous `forecastWindow` situatie values.
+    // At idx 0 we have no history → seed with the situatie value so the dashed line spans every bucket.
+    const progPerConsultant = new Map<number, number[]>();
     scopeRows.forEach((r) => {
       const vals = perConsultant.get(r.c.id)!;
-      const prog: (number | null)[] = vals.map((_, idx) => {
-        if (idx === 0) return null;
+      const prog: number[] = vals.map((v, idx) => {
+        if (idx === 0) return v;
         const start = Math.max(0, idx - forecastWindow);
         const slice = vals.slice(start, idx);
-        if (slice.length === 0) return null;
-        return clamp(slice.reduce((s, v) => s + v, 0) / slice.length);
+        return clamp(slice.reduce((s, x) => s + x, 0) / slice.length);
       });
       progPerConsultant.set(r.c.id, prog);
     });
