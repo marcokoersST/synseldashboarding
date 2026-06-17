@@ -30,6 +30,8 @@ export function FinanceForecastTab({
   const [perspective, setPerspective] = useState<Perspective>("margin");
   const [hoverRow, setHoverRow] = useState<number | null>(null);
   const [hoverCol, setHoverCol] = useState<string | null>(null);
+  const [lockedId, setLockedId] = useState<number | null>(null);
+  const toggleLock = (id: number) => setLockedId((curr) => (curr === id ? null : id));
 
   const consultants = useMemo(() => {
     let r = lcbTeam;
