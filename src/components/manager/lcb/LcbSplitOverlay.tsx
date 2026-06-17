@@ -85,7 +85,12 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
             {left.content}
           </Pane>
           {showExtra && right && (
-            <div className="absolute inset-0 bg-background/60 pointer-events-none z-[1]" />
+            <button
+              type="button"
+              aria-label="Sluit communicatie"
+              onClick={() => onCloseExtra?.()}
+              className="absolute inset-0 bg-background/60 cursor-pointer z-[1]"
+            />
           )}
         </div>
 
