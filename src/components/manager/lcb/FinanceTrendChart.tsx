@@ -78,11 +78,30 @@ function modaalFor(g: Granularity): number {
   return Math.round(bucketTargetAvg(g));
 }
 
+const STORAGE_KEY = "lcb.financeTrend.v1";
+type Persisted = { granularity?: Granularity; localConsultants?: number[]; lockedId?: number | null };
+function loadPersisted(): Persisted {
+  try {
+    const raw = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+    return raw ? JSON.parse(raw) as Persisted : {};
+  } catch { return {}; }
+}
+
 export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
-  const [granularity, setGranularity] = useState<Granularity>("periode");
-  const [localConsultants, setLocalConsultants] = useState<number[]>([]);
+  const initial = useMemo(() => loadPersisted(), []);
+  const [granularity, setGranularity] = useState<Granularity>(initial.granularity ?? "periode");
+  const [localConsultants, setLocalConsultants] = useState<number[]>(initial.localConsultants ?? []);
   const [activeId, setActiveId] = useState<number | null>(null);
-  const [lockedId, setLockedId] = useState<number | null>(null);
+  const [lockedId, setLockedId] = useState<number | null>(initial.lockedId ?? null);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ granularity, localConsultants, lockedId }),
+      );
+    } catch { /* ignore */ }
+  }, [granularity, localConsultants, lockedId]);
 
   // Scope rows from global filter first, then local consultant filter.
   const globalScope = useMemo(() => {
