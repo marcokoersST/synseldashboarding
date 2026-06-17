@@ -323,6 +323,7 @@ export default function LCB() {
                   candidate={selectedCandidate}
                   onOpenDeal={openDealFromCandidate}
                   onOpenComm={(item, contextLabel) => setCommPane({ item, contextLabel })}
+                  onUserInteract={() => setCommPane(null)}
                 /> }
             : selectedDeal
               ? { breadcrumbs: ["Candidate Market", stepConsultant?.name ?? "", stepDef?.label ?? "", selectedDeal.dealName], title: selectedDeal.dealName, subtitle: "Dealdetail",

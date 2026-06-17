@@ -17,9 +17,10 @@ interface Props {
   candidate: CandidateRow;
   onOpenDeal?: (dealLink: CandidateDealLink) => void;
   onOpenComm?: (item: ActivityItem, contextLabel: string) => void;
+  onUserInteract?: () => void;
 }
 
-export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm }: Props) {
+export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm, onUserInteract }: Props) {
   const [tab, setTab] = useState<Tab>("summary");
   const [dealsInitialFilter, setDealsInitialFilter] = useState<"open" | null>(null);
   const activity = useMemo(() => getCandidateActivity(candidate.id), [candidate.id]);
@@ -31,10 +32,17 @@ export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm }: Props
 
   const contextLabel = `Kandidaat · ${candidate.name}`;
 
+  const selectTab = (next: Tab) => {
+    onUserInteract?.();
+    setTab((prev) => (prev === next ? "summary" : next));
+  };
+
   const goDeals = (filter: "open" | null = null) => {
+    onUserInteract?.();
     setDealsInitialFilter(filter);
     setTab("deals");
   };
+
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
@@ -65,10 +73,10 @@ export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm }: Props
 
         {/* Scorecards (clickable) */}
         <div className="grid grid-cols-4 gap-1.5 pt-1">
-          <ScoreCard label="Deals" value={candidate.deals} active={tab === "deals"} onClick={() => setTab(tab === "deals" ? "summary" : "deals")} />
-          <ScoreCard label="Voorstellen" value={candidate.proposals} active={tab === "deals"} onClick={() => setTab(tab === "deals" ? "summary" : "deals")} />
-          <ScoreCard label="Emails" value={candidate.emails} active={tab === "emails"} onClick={() => setTab(tab === "emails" ? "summary" : "emails")} />
-          <ScoreCard label="Calls" value={candidate.calls} active={tab === "calls"} onClick={() => setTab(tab === "calls" ? "summary" : "calls")} />
+          <ScoreCard label="Deals" value={candidate.deals} active={tab === "deals"} onClick={() => selectTab("deals")} />
+          <ScoreCard label="Voorstellen" value={candidate.proposals} active={tab === "deals"} onClick={() => selectTab("deals")} />
+          <ScoreCard label="Emails" value={candidate.emails} active={tab === "emails"} onClick={() => selectTab("emails")} />
+          <ScoreCard label="Calls" value={candidate.calls} active={tab === "calls"} onClick={() => selectTab("calls")} />
         </div>
       </div>
 
