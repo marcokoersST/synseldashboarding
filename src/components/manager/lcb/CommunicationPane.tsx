@@ -48,10 +48,7 @@ export function CommunicationPane({ item, contextLabel }: { item: CommItem; cont
         {isCall ? (
           <>
             <section>
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-muted-foreground">Transcript</h3>
-              <div className="rounded-md border border-border bg-card p-3 text-xs font-mono whitespace-pre-wrap leading-relaxed">
-                {item.transcript ?? "Transcript niet beschikbaar."}
-              </div>
+              <TranscriptCard lines={item.transcript} />
             </section>
             {item.callId && (
               <Button
