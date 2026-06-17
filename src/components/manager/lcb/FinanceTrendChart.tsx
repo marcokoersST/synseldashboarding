@@ -339,7 +339,12 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
           Geen consultants in scope.
         </div>
       ) : (
-        <div className="h-[320px] w-full">
+        <div
+          className="h-[320px] w-full"
+          onClick={() => {
+            if (lockedId !== null) setLockedId(null);
+          }}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 8, right: 16, bottom: 24, left: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -405,7 +410,10 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
                   style={{ cursor: "pointer" }}
                   onMouseEnter={() => setActiveId(r.c.id)}
                   onMouseLeave={() => setActiveId(null)}
-                  onClick={() => handleLineClick(r.c.id)}
+                  onClick={(e: any) => {
+                    e?.stopPropagation?.();
+                    handleLineClick(r.c.id);
+                  }}
                   isAnimationActive={false}
                 />
               ))}
@@ -437,7 +445,7 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
 
       {!isSingle && scopeRows.length > 1 && (
         <p className="text-[10px] text-muted-foreground mt-1.5">
-          Hover op een lijn voor de prognose. Klik om vast te zetten, klik nogmaals om te ontgrendelen.
+          Hover op een lijn voor de prognose. Klik een lijn om vast te zetten, klik in de grafiek om te ontgrendelen.
         </p>
       )}
     </div>
