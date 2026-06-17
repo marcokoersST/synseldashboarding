@@ -73,10 +73,10 @@ export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm, onUserI
 
         {/* Scorecards (clickable) */}
         <div className="grid grid-cols-4 gap-1.5 pt-1">
-          <ScoreCard label="Deals" value={candidate.deals} active={tab === "deals"} onClick={() => setTab(tab === "deals" ? "summary" : "deals")} />
-          <ScoreCard label="Voorstellen" value={candidate.proposals} active={tab === "deals"} onClick={() => setTab(tab === "deals" ? "summary" : "deals")} />
-          <ScoreCard label="Emails" value={candidate.emails} active={tab === "emails"} onClick={() => setTab(tab === "emails" ? "summary" : "emails")} />
-          <ScoreCard label="Calls" value={candidate.calls} active={tab === "calls"} onClick={() => setTab(tab === "calls" ? "summary" : "calls")} />
+          <ScoreCard label="Deals" value={candidate.deals} active={tab === "deals"} onClick={() => selectTab("deals")} />
+          <ScoreCard label="Voorstellen" value={candidate.proposals} active={tab === "deals"} onClick={() => selectTab("deals")} />
+          <ScoreCard label="Emails" value={candidate.emails} active={tab === "emails"} onClick={() => selectTab("emails")} />
+          <ScoreCard label="Calls" value={candidate.calls} active={tab === "calls"} onClick={() => selectTab("calls")} />
         </div>
       </div>
 
