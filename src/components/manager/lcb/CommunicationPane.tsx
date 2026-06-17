@@ -1,4 +1,5 @@
-import { Mail, Phone, ExternalLink, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { Mail, Phone, ExternalLink, ArrowDownLeft, ArrowUpRight, MessageSquare, Copy } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { type ActivityItem, formatCallLinkLabel } from "@/data/lcbMarketData";
