@@ -278,7 +278,7 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-3 mb-2 text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mb-2 text-[11px] text-muted-foreground">
         {isSingle && (
           <>
             <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full bg-muted-foreground/50" style={{ background: "repeating-linear-gradient(90deg, hsl(var(--muted-foreground)) 0 4px, transparent 4px 7px)" }} />} label="Modaal" />
@@ -288,11 +288,33 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
         )}
         {!isSingle && scopeRows.length > 1 && (
           <>
-            <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full bg-foreground/70" />} label="Situatie per consultant" />
+            {scopeRows.map((r, idx) => {
+              const color = lineColor(idx, r.c.id);
+              const isHi = highlightId === r.c.id;
+              return (
+                <button
+                  key={r.c.id}
+                  type="button"
+                  onClick={() => handleLineClick(r.c.id)}
+                  onMouseEnter={() => setActiveId(r.c.id)}
+                  onMouseLeave={() => setActiveId(null)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-1 py-0.5 rounded transition-opacity",
+                    highlightId !== null && !isHi && "opacity-40",
+                  )}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="w-4 h-[2.5px] rounded-full" style={{ backgroundColor: color }} />
+                  <span className={cn(isHi && "text-foreground font-medium")}>{r.c.name}</span>
+                </button>
+              );
+            })}
+            <div className="w-px h-3 bg-border mx-1 self-center" />
             <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full" style={{ background: "repeating-linear-gradient(90deg, hsl(var(--foreground)) 0 5px, transparent 5px 9px)" }} />} label="Prognose (bij hover/klik)" />
           </>
         )}
       </div>
+
 
       {scopeRows.length === 0 ? (
         <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
