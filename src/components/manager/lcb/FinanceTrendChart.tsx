@@ -293,7 +293,7 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
               />
               <Tooltip
                 content={(props: any) => (
-                  <TrendTooltip {...props} scopeRows={scopeRows} isSingle={isSingle} />
+                  <TrendTooltip {...props} scopeRows={scopeRows} isSingle={isSingle} modaal={modaalFor(granularity)} />
                 )}
                 cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }}
               />
