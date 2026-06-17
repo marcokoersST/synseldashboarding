@@ -111,14 +111,6 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
             >
               {right.content}
             </Pane>
-            {showExtra && (
-              <button
-                type="button"
-                aria-label="Sluit communicatie"
-                onClick={() => onCloseExtra?.()}
-                className="absolute inset-0 cursor-pointer z-[2] animate-in fade-in duration-150"
-              />
-            )}
           </div>
         )}
       </div>
