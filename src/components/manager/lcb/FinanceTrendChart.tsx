@@ -369,21 +369,35 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
                       fill: color,
                       strokeWidth: 0,
                       style: { cursor: "pointer" },
-                      onClick: (e: any) => {
+                      onClick: (_data: any, e: any) => {
                         e?.stopPropagation?.();
                         handleLineClick(r.c.id);
                       },
-                    }}
-                    onMouseEnter={() => !isSingle && setActiveId(r.c.id)}
-                    onMouseLeave={() => !isSingle && setActiveId(null)}
-                    onClick={(e: any) => {
-                      e?.stopPropagation?.();
-                      if (!isSingle) handleLineClick(r.c.id);
                     }}
                     isAnimationActive={false}
                   />
                 );
               })}
+
+              {/* Invisible hitbox lines for reliable hover + click anywhere along the line */}
+              {!isSingle && scopeRows.map((r) => (
+                <Line
+                  key={`hit-${r.c.id}`}
+                  type="monotone"
+                  dataKey={`sit__${r.c.id}`}
+                  stroke="transparent"
+                  strokeWidth={18}
+                  dot={false}
+                  activeDot={false}
+                  legendType="none"
+                  style={{ cursor: "pointer" }}
+                  onMouseEnter={() => setActiveId(r.c.id)}
+                  onMouseLeave={() => setActiveId(null)}
+                  onClick={() => handleLineClick(r.c.id)}
+                  isAnimationActive={false}
+                />
+              ))}
+
 
               {/* Prognose lines */}
               {scopeRows.map((r, idx) => {
