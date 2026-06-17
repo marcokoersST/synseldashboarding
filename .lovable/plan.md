@@ -1,21 +1,34 @@
-## Changes to `FinanceTrendChart` on `/manager-dashboard/LC-B`
+## Wat veranderen
 
-### 1. Retain filters when switching tabs
-Currently `granularity` and `localConsultants` (and `lockedId`) live as local `useState` inside `FinanceTrendChart`, so they reset every time the tab unmounts.
+### 1. Klik op consultant-naam in tabel → lock-modus in grafiek
+In `FinanceForecastTab.tsx` (MarginTable) staat de consultant-naam nu als `<span>`. Maken we klikbaar:
+- Nieuwe prop `lockedConsultantId: number | null` + `onToggleLock: (id: number) => void` doorgeven aan `MarginTable`.
+- De naam-cel wordt een `<button>`: klik roept `onToggleLock(r.c.id)` aan (toggle).
+- Wanneer `lockedConsultantId === r.c.id` krijgt de hele `<tr>` een highlight-klasse (`bg-primary/10` + linker accent border) zodat het visueel matcht met de grafiek.
 
-Fix: persist them across mounts using `localStorage` under a stable key (e.g. `lcb.financeTrend.v1`). On mount, hydrate state from storage; on change, write back. `lockedId` will also be persisted so a locked consultant stays locked when returning.
+In `FinanceForecastTab` zelf:
+- `lockedId` state optillen uit de chart (of een gedeelde state hier hosten) en als prop doorgeven aan zowel `MarginTable` als `FinanceTrendChart`.
+- `FinanceTrendChart` krijgt extra props `lockedId` / `onLockedIdChange` zodat het synchroon werkt met de tabel. Bestaande localStorage-persistentie blijft, maar wordt nu doorgereikt door de parent.
 
-### 2. Remove the hover pane (tooltip)
-Remove the `<Tooltip>` element and its `TrendTooltip` content from the chart. Keep the hover-driven highlight + prognose reveal behaviour — only the floating data pane disappears. Also drop the cursor crosshair styling that the tooltip introduced.
+Resultaat: klik op de naam → grafiek-lijn van die consultant lockt (zelfde gedrag als klik op de lijn) én tabelrij is gemarkeerd. Tweede klik op dezelfde naam, of klik in grafiek, ontgrendelt beide.
 
-### 3. Prognose line covers every past period up to now
-Today the rolling expectation is `null` at index 0 because there is no prior history, and (for the periode view) `forecastWindow = 13` means the first few indices have a very small slice. The user wants the prognose line to start at the very first visible bucket.
+### 2. Unit-filter ↔ consultant-filter koppeling (top filter bar)
+Gedrag in `LCB.tsx` (waar `selectedUnits` / `selectedConsultants` leven):
 
-Fix in the `progPerConsultant` build:
-- At `idx === 0`, seed prognose with the same value as the situatie (so the dashed line starts at the first bucket).
-- For `idx >= 1`, keep the rolling mean but use whatever history is available (already the case), so it spans every historical bucket and the future bucket.
+- **Als gebruiker units selecteert** (`onSelectedUnits` callback):
+  - Auto-vul `selectedConsultants` met alle consultants uit de geselecteerde units.
+  - Hierdoor weerspiegelt de consultant-filter direct de unit-keuze.
+- **Als gebruiker daarna consultants uit de chip-lijst toggelt** (`onSelectedConsultants` callback):
+  - Sta toe dat consultants uit niet-geselecteerde units óók aangevinkt worden (geen blokkade).
+  - Zodra de nieuwe `selectedConsultants` set ten minste één consultant bevat die niet bij de huidige `selectedUnits` hoort → reset `selectedUnits` naar `[]` (= "alle units"). De consultant-selectie zelf blijft staan.
+  - Als de set wél volledig binnen de geselecteerde units blijft → `selectedUnits` ongewijzigd laten.
 
-No changes to legend, axes, click-to-lock UX, or future "Prognose" bucket logic.
+Implementatie: wrappers rond `setSelectedUnits` en `setSelectedConsultants` in `LCB.tsx` die deze regels toepassen, gebruikmakend van `lcbTeam` (unit → consultants mapping).
 
-### Files touched
-- `src/components/manager/lcb/FinanceTrendChart.tsx`
+## Bestanden
+
+- `src/pages/manager/LCB.tsx` — wrapper-callbacks voor units/consultants koppeling.
+- `src/components/manager/lcb/FinanceForecastTab.tsx` — `lockedId` state hosten, doorgeven aan tabel + chart; naam-cel klikbaar maken; rij-highlight.
+- `src/components/manager/lcb/FinanceTrendChart.tsx` — `lockedId` / `onLockedIdChange` als gecontroleerde props accepteren (val terug op interne state wanneer niet doorgegeven), zodat de bestaande persistentie en click-to-unlock blijft werken.
+
+Geen wijzigingen aan data, business logic of andere tabs.
