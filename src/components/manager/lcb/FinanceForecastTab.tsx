@@ -128,6 +128,7 @@ export function FinanceForecastTab({
               hoverRow={hoverRow} hoverCol={hoverCol}
               setHoverRow={setHoverRow} setHoverCol={setHoverCol}
               onOpenRevenue={onOpenRevenue}
+              lockedId={lockedId} onToggleLock={toggleLock}
             />
           ) : (
             <PerformanceTable
@@ -145,6 +146,8 @@ export function FinanceForecastTab({
           <FinanceTrendChart
             rows={marginRows}
             selectedConsultants={selectedConsultants}
+            lockedId={lockedId}
+            onLockedIdChange={setLockedId}
             onDrilldown={(_bucket, _metric, ids) => {
               if (ids.length === 1) onOpenRevenue(ids[0]);
             }}
