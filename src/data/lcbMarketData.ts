@@ -412,11 +412,12 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
     const kindR = rnd();
     const kind: ActivityItem["kind"] = kindR < 0.5 ? "email" : kindR < 0.85 ? "call" : "note";
     const callId = kind === "call" ? String(rint(rnd, 100000, 999999)) : undefined;
+    const contact = pick(rnd, CONTACT_PEOPLE);
     return {
       id: `${candidateId}-act-${i}`,
       kind,
       direction: rnd() < 0.6 ? "out" : "in",
-      contact: pick(rnd, CONTACT_PEOPLE),
+      contact,
       contactStatus: pick(rnd, CONTACT_STATUSES),
       subject: kind === "call" ? pick(rnd, callSubjects) : kind === "email" ? pick(rnd, subjects) : undefined,
       duration: kind === "call" ? hms(rnd) : undefined,
