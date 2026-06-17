@@ -429,7 +429,7 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
       time: hhmm(rnd),
       dealRef: rnd() < 0.6 ? makeDealId(rnd) : undefined,
       callId,
-      transcript: kind === "call" ? buildTranscript(rnd) : undefined,
+      transcript: kind === "call" ? buildTranscript(rnd, contact) : undefined,
     };
   });
 }
@@ -513,7 +513,7 @@ export function getDealActivity(dealId: string): ActivityItem[] {
       time: hhmm(rnd),
       dealRef: dealId,
       callId,
-      transcript: kind === "call" ? buildTranscript(rnd) : undefined,
+      transcript: kind === "call" ? buildTranscript(rnd, contact) : undefined,
     };
   });
 }
