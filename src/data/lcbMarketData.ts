@@ -309,6 +309,13 @@ export interface CandidateNote {
   body: string;
 }
 
+export interface TranscriptLine {
+  t: string; // mm:ss
+  speaker: string;
+  role: "Ontvanger" | "Beller";
+  text: string;
+}
+
 export interface ActivityItem {
   id: string;
   kind: "email" | "call" | "note";
@@ -321,8 +328,8 @@ export interface ActivityItem {
   date: string;
   time: string;
   dealRef?: string;
-  callId?: string;     // 6-digit, calls only
-  transcript?: string; // multi-line mock transcript, calls only
+  callId?: string;            // 6-digit, calls only
+  transcript?: TranscriptLine[]; // mock transcript lines, calls only
 }
 
 
