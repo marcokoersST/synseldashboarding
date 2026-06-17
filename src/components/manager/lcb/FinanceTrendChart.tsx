@@ -411,7 +411,7 @@ function TrendTooltip({ active, payload, label, scopeRows, isSingle, modaal = MO
       {isSingle && (
         <div className="flex items-center justify-between gap-3 mt-1 pt-1 border-t border-border">
           <span className="text-muted-foreground">Modaal</span>
-          <span className="tabular-nums text-foreground">{`€${Math.round(MODAAL_EUR / 1000)}k`}</span>
+          <span className="tabular-nums text-foreground">{`€${(modaal / 1000).toFixed(modaal < 10000 ? 1 : 0)}k`}</span>
         </div>
       )}
     </div>
