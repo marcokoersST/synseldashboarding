@@ -69,7 +69,6 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
         <div
           className={cn(
             "relative h-full shrink-0 transition-all duration-200 ease-out",
-            right && !showExtra && "blur-[2px]",
             showExtra && right && "-mr-32 blur-[2px]",
           )}
         >
@@ -90,7 +89,10 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
               type="button"
               aria-label={showExtra ? "Sluit communicatie" : "Sluit detail"}
               onClick={() => (showExtra ? onCloseExtra?.() : onCloseRight?.())}
-              className="absolute inset-0 bg-background/40 backdrop-blur-sm cursor-pointer z-[1] animate-in fade-in duration-150"
+              className={cn(
+                "absolute inset-0 cursor-pointer z-[1] animate-in fade-in duration-150",
+                showExtra && "bg-background/40 backdrop-blur-sm",
+              )}
             />
           )}
         </div>
