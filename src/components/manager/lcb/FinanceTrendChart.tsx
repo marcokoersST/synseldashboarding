@@ -26,14 +26,29 @@ interface Props {
   onDrilldown: (bucket: string, metric: string, consultantIds: number[]) => void;
 }
 
-const MODAAL_EUR = 18000;
+// Average consultant earns ~€20.040 per month. We bound buckets to [0, 45.000].
+const AVG_MONTHLY_EUR = 20040;
+const MAX_BUCKET_EUR = 45000;
+const MODAAL_EUR = AVG_MONTHLY_EUR;
 
-// Deterministic seasonality to give every consultant a plausible curve.
+// Bucket-size scaling so that the average bucket value stays ≈ AVG_MONTHLY_EUR.
+function bucketTargetAvg(g: Granularity): number {
+  if (g === "periode") return AVG_MONTHLY_EUR * (28 / 30.44); // ~4-week period
+  if (g === "maand") return AVG_MONTHLY_EUR;
+  return AVG_MONTHLY_EUR / 4.345; // weekly
+}
+
+// Deterministic 0..1 hash for variation
+function hash01(consultantId: number, bucketIdx: number): number {
+  const v = Math.sin(consultantId * 127.1 + bucketIdx * 311.7) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+// Returns a multiplicative factor (mean ≈ 1) for a consultant/bucket combo.
 function bucketFactor(consultantId: number, bucketIdx: number, totalBuckets: number): number {
-  const phase = (consultantId * 13 + bucketIdx * 31) % 100;
-  const trend = 0.78 + (bucketIdx / Math.max(totalBuckets - 1, 1)) * 0.35;
-  const seasonal = 0.92 + Math.sin((bucketIdx + (consultantId % 5)) * 0.9) * 0.12;
-  const jitter = 0.94 + (phase / 100) * 0.12;
+  const trend = 0.88 + (bucketIdx / Math.max(totalBuckets - 1, 1)) * 0.18; // 0.88 → 1.06
+  const seasonal = 1 + Math.sin((bucketIdx + (consultantId % 7)) * 0.85) * 0.18;
+  const jitter = 0.85 + hash01(consultantId, bucketIdx) * 0.3; // 0.85 → 1.15
   return trend * seasonal * jitter;
 }
 
@@ -46,6 +61,11 @@ function buildBuckets(g: Granularity): string[] {
   }
   // week — rolling 13 weeks
   return Array.from({ length: 13 }, (_, i) => `W${i + 23}`);
+}
+
+// Modaal scaled per granularity so the reference matches bucket size.
+function modaalFor(g: Granularity): number {
+  return Math.round(bucketTargetAvg(g));
 }
 
 export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
@@ -81,10 +101,21 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
   const forecastBucketLabel = "Prognose";
 
   const data = useMemo(() => {
-    // Pre-compute each consultant's bucket values
+    const target = bucketTargetAvg(granularity);
+    // Cohort mean of `realised` (used to scale each consultant relative to peers).
+    const cohortRealised = scopeRows.reduce((s, r) => s + r.realised, 0) / Math.max(scopeRows.length, 1);
+    const baselineFor = (r: Row) => {
+      const rel = cohortRealised > 0 ? r.realised / cohortRealised : 1;
+      // Keep relative spread but compress so outliers stay within [0, MAX_BUCKET_EUR].
+      const compressed = 0.55 + Math.min(Math.max(rel, 0.3), 2.2) * 0.45;
+      return target * compressed;
+    };
+    const clamp = (v: number) => Math.max(0, Math.min(MAX_BUCKET_EUR, Math.round(v)));
+
     const perConsultant = new Map<number, number[]>();
     scopeRows.forEach((r) => {
-      const vals = buckets.map((_, idx) => Math.round(r.realised * 1000 * bucketFactor(r.c.id, idx, buckets.length)));
+      const base = baselineFor(r);
+      const vals = buckets.map((_, idx) => clamp(base * bucketFactor(r.c.id, idx, buckets.length)));
       perConsultant.set(r.c.id, vals);
     });
 
@@ -97,17 +128,14 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
       return row;
     });
 
-    // Forecast row: extend each consultant's situatie value to the forecast bucket,
-    // and populate per-consultant prognose key only at the last historical and forecast points.
     const forecastRow: Record<string, number | string> = { bucket: forecastBucketLabel };
     scopeRows.forEach((r) => {
       const vals = perConsultant.get(r.c.id)!;
       const tail = vals.slice(-forecastWindow);
-      const avg = Math.round(tail.reduce((s, v) => s + v, 0) / Math.max(tail.length, 1));
+      const avg = clamp(tail.reduce((s, v) => s + v, 0) / Math.max(tail.length, 1));
       forecastRow[`prog__${r.c.id}`] = avg;
     });
 
-    // Anchor prognose start at last historical point
     const lastHist = histRows[histRows.length - 1];
     if (lastHist) {
       scopeRows.forEach((r) => {
@@ -116,7 +144,7 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
     }
 
     return [...histRows, forecastRow];
-  }, [buckets, scopeRows, forecastWindow]);
+  }, [buckets, scopeRows, forecastWindow, granularity]);
 
   const scopeLabel = scopeRows.length === 0
     ? "Geen consultants"
@@ -265,7 +293,7 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
               />
               <Tooltip
                 content={(props: any) => (
-                  <TrendTooltip {...props} scopeRows={scopeRows} isSingle={isSingle} />
+                  <TrendTooltip {...props} scopeRows={scopeRows} isSingle={isSingle} modaal={modaalFor(granularity)} />
                 )}
                 cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }}
               />
@@ -273,7 +301,7 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
               {/* Modaal (single only) */}
               {isSingle && (
                 <ReferenceLine
-                  y={MODAAL_EUR}
+                  y={modaalFor(granularity)}
                   stroke="hsl(var(--muted-foreground))"
                   strokeDasharray="4 4"
                   strokeWidth={1.2}
@@ -358,7 +386,7 @@ function LegendItem({ swatch, label }: { swatch: React.ReactNode; label: string 
   );
 }
 
-function TrendTooltip({ active, payload, label, scopeRows, isSingle }: any) {
+function TrendTooltip({ active, payload, label, scopeRows, isSingle, modaal = MODAAL_EUR }: any) {
   if (!active || !payload || !payload.length) return null;
   const fmt = (v: number) => `€${Math.round(v / 1000)}k`;
 
@@ -383,7 +411,7 @@ function TrendTooltip({ active, payload, label, scopeRows, isSingle }: any) {
       {isSingle && (
         <div className="flex items-center justify-between gap-3 mt-1 pt-1 border-t border-border">
           <span className="text-muted-foreground">Modaal</span>
-          <span className="tabular-nums text-foreground">{`€${Math.round(MODAAL_EUR / 1000)}k`}</span>
+          <span className="tabular-nums text-foreground">{`€${(modaal / 1000).toFixed(modaal < 10000 ? 1 : 0)}k`}</span>
         </div>
       )}
     </div>
