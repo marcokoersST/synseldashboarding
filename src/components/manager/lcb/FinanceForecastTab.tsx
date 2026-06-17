@@ -159,7 +159,7 @@ export function FinanceForecastTab({
 }
 
 // ─────────────────────── Margin table ───────────────────────
-function MarginTable({ rows, totals, hoverRow, hoverCol, setHoverRow, setHoverCol, onOpenRevenue }: any) {
+function MarginTable({ rows, totals, hoverRow, hoverCol, setHoverRow, setHoverCol, onOpenRevenue, lockedId, onToggleLock }: any) {
   const cols = [
     { key: "consultant", label: "Consultant", sticky: true },
     { key: "revenue", label: "Revenue (€k)", right: true },
