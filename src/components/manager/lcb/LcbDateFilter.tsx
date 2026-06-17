@@ -131,7 +131,7 @@ export function LcbDateFilter({ value, onChange }: Props) {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[640px] p-0" align="start">
+      <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0 overflow-hidden" align="start" collisionPadding={16}>
         <div className="flex">
           {/* Presets column */}
           <div className="w-32 border-r border-border p-2 space-y-0.5">
