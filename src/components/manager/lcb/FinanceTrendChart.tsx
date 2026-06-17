@@ -54,13 +54,23 @@ function bucketFactor(consultantId: number, bucketIdx: number, totalBuckets: num
 
 function buildBuckets(g: Granularity): string[] {
   if (g === "periode") {
-    return ["P11 25", "P12 25", "P13 25", "P1 26", "P2 26", "P3 26", "P4 26", "P5 26"];
+    // 14 periods of history so the prognose line has substantial overlap with situatie.
+    return [
+      "P5 25", "P6 25", "P7 25", "P8 25", "P9 25", "P10 25",
+      "P11 25", "P12 25", "P13 25",
+      "P1 26", "P2 26", "P3 26", "P4 26", "P5 26",
+    ];
   }
   if (g === "maand") {
-    return ["Jul 25", "Aug 25", "Sep 25", "Okt 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mrt 26", "Apr 26", "Mei 26", "Jun 26"];
+    // 18 months of history
+    return [
+      "Jan 25", "Feb 25", "Mrt 25", "Apr 25", "Mei 25", "Jun 25",
+      "Jul 25", "Aug 25", "Sep 25", "Okt 25", "Nov 25", "Dec 25",
+      "Jan 26", "Feb 26", "Mrt 26", "Apr 26", "Mei 26", "Jun 26",
+    ];
   }
-  // week — rolling 13 weeks
-  return Array.from({ length: 13 }, (_, i) => `W${i + 23}`);
+  // week — rolling 26 weeks
+  return Array.from({ length: 26 }, (_, i) => `W${i + 10}`);
 }
 
 // Modaal scaled per granularity so the reference matches bucket size.
@@ -268,7 +278,7 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-3 mb-2 text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mb-2 text-[11px] text-muted-foreground">
         {isSingle && (
           <>
             <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full bg-muted-foreground/50" style={{ background: "repeating-linear-gradient(90deg, hsl(var(--muted-foreground)) 0 4px, transparent 4px 7px)" }} />} label="Modaal" />
@@ -278,11 +288,33 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
         )}
         {!isSingle && scopeRows.length > 1 && (
           <>
-            <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full bg-foreground/70" />} label="Situatie per consultant" />
+            {scopeRows.map((r, idx) => {
+              const color = lineColor(idx, r.c.id);
+              const isHi = highlightId === r.c.id;
+              return (
+                <button
+                  key={r.c.id}
+                  type="button"
+                  onClick={() => handleLineClick(r.c.id)}
+                  onMouseEnter={() => setActiveId(r.c.id)}
+                  onMouseLeave={() => setActiveId(null)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-1 py-0.5 rounded transition-opacity",
+                    highlightId !== null && !isHi && "opacity-40",
+                  )}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="w-4 h-[2.5px] rounded-full" style={{ backgroundColor: color }} />
+                  <span className={cn(isHi && "text-foreground font-medium")}>{r.c.name}</span>
+                </button>
+              );
+            })}
+            <div className="w-px h-3 bg-border mx-1 self-center" />
             <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full" style={{ background: "repeating-linear-gradient(90deg, hsl(var(--foreground)) 0 5px, transparent 5px 9px)" }} />} label="Prognose (bij hover/klik)" />
           </>
         )}
       </div>
+
 
       {scopeRows.length === 0 ? (
         <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
@@ -337,21 +369,35 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
                       fill: color,
                       strokeWidth: 0,
                       style: { cursor: "pointer" },
-                      onClick: (e: any) => {
+                      onClick: (_data: any, e: any) => {
                         e?.stopPropagation?.();
                         handleLineClick(r.c.id);
                       },
-                    }}
-                    onMouseEnter={() => !isSingle && setActiveId(r.c.id)}
-                    onMouseLeave={() => !isSingle && setActiveId(null)}
-                    onClick={(e: any) => {
-                      e?.stopPropagation?.();
-                      if (!isSingle) handleLineClick(r.c.id);
                     }}
                     isAnimationActive={false}
                   />
                 );
               })}
+
+              {/* Invisible hitbox lines for reliable hover + click anywhere along the line */}
+              {!isSingle && scopeRows.map((r) => (
+                <Line
+                  key={`hit-${r.c.id}`}
+                  type="monotone"
+                  dataKey={`sit__${r.c.id}`}
+                  stroke="transparent"
+                  strokeWidth={18}
+                  dot={false}
+                  activeDot={false}
+                  legendType="none"
+                  style={{ cursor: "pointer" }}
+                  onMouseEnter={() => setActiveId(r.c.id)}
+                  onMouseLeave={() => setActiveId(null)}
+                  onClick={() => handleLineClick(r.c.id)}
+                  isAnimationActive={false}
+                />
+              ))}
+
 
               {/* Prognose lines */}
               {scopeRows.map((r, idx) => {
