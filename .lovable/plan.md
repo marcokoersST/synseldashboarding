@@ -1,24 +1,40 @@
-## Bug
+## Goal
+Restyle the call transcript shown in the LC-B communication pane (`CommunicationPane.tsx`) to match the richer layout in the first screenshot: per-line rows with timestamp gutter, speaker name + role badge (Ontvanger/Beller), color-coded utterance text, and a "Kopiëren" header action.
 
-On `/manager-dashboard/LC-B`, when opening a candidate → email/call detail (3-pane state), the dimmed left pane (Candidate Market list) becomes see-through and shows the underlying consultant list page behind it.
+## Changes
 
-## Cause
+### 1. `src/data/lcbMarketData.ts` — structured transcript
+- Replace `transcript?: string` on `ActivityItem` with `transcript?: TranscriptLine[]` where:
+  ```ts
+  interface TranscriptLine { t: string; speaker: string; role: "Ontvanger" | "Beller"; text: string; }
+  ```
+- Update `buildTranscript(rnd)` to return an array of 6–12 lines with:
+  - Incrementing `t` mm:ss timestamps (random 1–8s gaps)
+  - Alternating roles starting with consultant as "Ontvanger" and candidate/contact as "Beller"
+  - Speaker names derived from the activity's contact (passed in) and a fixed consultant pool name
+  - More varied Dutch utterances (greeting, smalltalk, voorstel, planning, afsluiting)
+- Pass `item.contact` and a chosen consultant name into `buildTranscript` at the two call sites.
 
-`src/components/manager/lcb/LcbSplitOverlay.tsx` lines 69-87: when `extra` is open, the wrapper around the left `<Pane>` gets `opacity-40 blur-[2px]`. Tailwind's `opacity-40` is applied to the whole subtree including the pane's `bg-background`, so the pane becomes 60% transparent and the page underneath shows through.
+### 2. `src/components/manager/lcb/CommunicationPane.tsx` — new visual
+Replace the current `<div className="rounded-md border ... font-mono whitespace-pre-wrap">` block with a card matching the screenshot:
 
-## Fix
+- Header row inside the card:
+  - Left: speech-bubble icon + bold "Transcriptie"
+  - Right: ghost button "Kopiëren" (copy icon) that copies the joined transcript text to clipboard
+- Body: list of rows, each row a 3-column grid `[timestamp | speaker block | utterance]`
+  - Timestamp: `text-[10px] text-muted-foreground tabular-nums` (e.g. `00:00`)
+  - Speaker block: bold name + small role badge
+    - `Ontvanger`: neutral muted badge (`bg-muted text-muted-foreground border-border`)
+    - `Beller`: amber badge (`bg-amber-500/10 text-amber-600 border-amber-500/30`)
+  - Utterance text colored per role:
+    - `Ontvanger`: `text-blue-600 dark:text-blue-400`
+    - `Beller`: `text-amber-600 dark:text-amber-400`
+  - Row separators via `border-b border-border/60`, last row no border
+- Fallback "Transcript niet beschikbaar." preserved when array is empty/missing.
 
-Keep the pane background fully opaque; dim only the visual emphasis.
-
-In `src/components/manager/lcb/LcbSplitOverlay.tsx`:
-
-1. Remove `opacity-40` from the wrapper className (line 72). Keep the `-mr-32` slide-back and the `blur-[2px]`.
-2. Render a non-interactive dim overlay *inside* the wrapper, over the left `<Pane>`, so the pane itself stays opaque but its content visually recedes:
-   - Wrapper becomes `relative`.
-   - Add `<div className="absolute inset-0 bg-background/60 pointer-events-none z-[1]" />` as a sibling after the `<Pane>` (only when `showExtra && right`).
-
-This preserves the dim/blur intent without making the pane translucent.
+No changes to the email branch, the call-header metadata, or the "link to call" button.
 
 ## Out of scope
-
-No changes to widths, the right/extra panes, content, or interaction behavior.
+- Email body styling
+- The Pane chrome / split overlay
+- Real data wiring; this remains mock data

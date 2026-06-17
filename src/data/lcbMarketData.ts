@@ -309,6 +309,13 @@ export interface CandidateNote {
   body: string;
 }
 
+export interface TranscriptLine {
+  t: string; // mm:ss
+  speaker: string;
+  role: "Ontvanger" | "Beller";
+  text: string;
+}
+
 export interface ActivityItem {
   id: string;
   kind: "email" | "call" | "note";
@@ -321,8 +328,8 @@ export interface ActivityItem {
   date: string;
   time: string;
   dealRef?: string;
-  callId?: string;     // 6-digit, calls only
-  transcript?: string; // multi-line mock transcript, calls only
+  callId?: string;            // 6-digit, calls only
+  transcript?: TranscriptLine[]; // mock transcript lines, calls only
 }
 
 
@@ -405,11 +412,12 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
     const kindR = rnd();
     const kind: ActivityItem["kind"] = kindR < 0.5 ? "email" : kindR < 0.85 ? "call" : "note";
     const callId = kind === "call" ? String(rint(rnd, 100000, 999999)) : undefined;
+    const contact = pick(rnd, CONTACT_PEOPLE);
     return {
       id: `${candidateId}-act-${i}`,
       kind,
       direction: rnd() < 0.6 ? "out" : "in",
-      contact: pick(rnd, CONTACT_PEOPLE),
+      contact,
       contactStatus: pick(rnd, CONTACT_STATUSES),
       subject: kind === "call" ? pick(rnd, callSubjects) : kind === "email" ? pick(rnd, subjects) : undefined,
       duration: kind === "call" ? hms(rnd) : undefined,
@@ -422,7 +430,7 @@ export function getCandidateActivity(candidateId: string): ActivityItem[] {
       time: hhmm(rnd),
       dealRef: rnd() < 0.6 ? makeDealId(rnd) : undefined,
       callId,
-      transcript: kind === "call" ? buildTranscript(rnd) : undefined,
+      transcript: kind === "call" ? buildTranscript(rnd, contact) : undefined,
     };
   });
 }
@@ -493,11 +501,12 @@ export function getDealActivity(dealId: string): ActivityItem[] {
   return Array.from({ length: rint(rnd, 3, 8) }, (_, i) => {
     const kind: ActivityItem["kind"] = rnd() < 0.55 ? "email" : "call";
     const callId = kind === "call" ? String(rint(rnd, 100000, 999999)) : undefined;
+    const contact = pick(rnd, CONTACT_PEOPLE);
     return {
       id: `${dealId}-a-${i}`,
       kind,
       direction: rnd() < 0.55 ? "out" : "in",
-      contact: pick(rnd, CONTACT_PEOPLE),
+      contact,
       contactStatus: pick(rnd, CONTACT_STATUSES),
       subject: kind === "email" ? pick(rnd, ["Voorstel kandidaat", "Reminder voorstel", "Bevestiging intake", "Update procedure"]) : undefined,
       duration: kind === "call" ? hms(rnd) : undefined,
@@ -506,7 +515,7 @@ export function getDealActivity(dealId: string): ActivityItem[] {
       time: hhmm(rnd),
       dealRef: dealId,
       callId,
-      transcript: kind === "call" ? buildTranscript(rnd) : undefined,
+      transcript: kind === "call" ? buildTranscript(rnd, contact) : undefined,
     };
   });
 }
@@ -519,19 +528,94 @@ const EMAIL_BODIES = [
   "Hoi,\n\nKleine update: contract is verstuurd, kandidaat heeft bevestigd dat de startdatum haalbaar is. Ik plan een korte check-in voor de eerste werkweek.\n\nGroet",
 ];
 
-function buildTranscript(rnd: () => number): string {
-  const lines = [
-    "Consultant: Goedemiddag, spreek ik met de kandidaat?",
-    "Kandidaat: Ja dat klopt, waarmee kan ik je helpen?",
-    "Consultant: Ik bel even kort over de openstaande functie waar we eerder over mailden.",
-    "Kandidaat: Klopt, ik ben zeker geïnteresseerd. Wat is de volgende stap?",
-    "Consultant: We willen graag een eerste kennismaking inplannen, kan je deze week?",
-    "Kandidaat: Donderdag of vrijdag werkt voor mij.",
-    "Consultant: Top, dan stuur ik vandaag nog een uitnodiging. Bedankt voor je tijd!",
-    "Kandidaat: Graag gedaan, tot dan.",
-  ];
-  const n = rint(rnd, 4, 7);
-  return lines.slice(0, n).join("\n");
+const CONSULTANT_POOL = [
+  "Robin van Bruggen", "Eelkje de Boer", "Edo de Boer", "Joey de Vries",
+  "Marco Schaap", "Senna Ekkers", "Rick Karssen", "Tom Kolkman",
+];
+
+const UTTERANCES_GREETING_RECEIVER = [
+  (other: string, self: string) => `${other}. Hey ${other.split(" ")[0]}, goedemorgen, met ${self} van Synsel Techniek.`,
+  (other: string, self: string) => `Goedemiddag, je spreekt met ${self}.`,
+  (_o: string, self: string) => `Met ${self}, goedemiddag.`,
+];
+const UTTERANCES_GREETING_CALLER = [
+  () => "Hey.",
+  () => "Hoi, goedemorgen.",
+  () => "Ja, hallo.",
+];
+const UTTERANCES_SMALL = [
+  "Ja, zeker. Met jou ook?",
+  "Goeiedag. Alles goed?",
+  "Ja prima, druk weekje weer.",
+  "Ja hoor, met mij ook goed.",
+];
+const UTTERANCES_BODY = [
+  "Even over het voorstel dat we vorige week stuurden — heb je daar al naar kunnen kijken?",
+  "Jullie hadden een voorstel gedaan waar ik op had gereageerd. Ben je daar nog uitgekomen?",
+  "Ik bel even kort over de openstaande functie waar we eerder over mailden.",
+  "Klopt, ik ben zeker geïnteresseerd. Wat is de volgende stap?",
+  "Ja, in juli gaan we over.",
+  "Oké, dat is ook al geregeld. Heb je dat al kort doorgegeven of nog niet?",
+  "Volgens mij had ik dat al kort doorgegeven, maar ik bel net op werk, dus ik bel even voor de zekerheid.",
+  "We willen graag een eerste kennismaking inplannen, kan je deze week?",
+  "Donderdag of vrijdag werkt voor mij.",
+  "Oké, dus per 1 juli wordt die overgenomen zoals we hebben afgesproken met de vier?",
+  "Klopt. Ik geef het hier nog even door als dat nog niet bekend is.",
+];
+const UTTERANCES_SHORT = ["Ja.", "Ja?", "Oké.", "Klopt.", "Duidelijk."];
+const UTTERANCES_CLOSE_RECEIVER = [
+  "Top, dan stuur ik vandaag nog een uitnodiging. Bedankt voor je tijd!",
+  "Helemaal goed, dan hoor ik het wel. Fijne dag verder.",
+  "Oké, super. Bedankt voor het bellen. Tot ziens.",
+];
+const UTTERANCES_CLOSE_CALLER = [
+  "Ah, oké, top. Helemaal goed. Is goed, dankjewel. Tot ziens.",
+  "Goed, dankjewel. Doei.",
+  "Prima, tot dan!",
+];
+
+function fmtSec(s: number): string {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+}
+
+function buildTranscript(rnd: () => number, contact: string): TranscriptLine[] {
+  const consultant = pick(rnd, CONSULTANT_POOL);
+  // Inbound call: contact calls in → contact is Beller, consultant is Ontvanger.
+  // Outbound: consultant is Beller. We pick at random per build for variation.
+  const consultantIsReceiver = rnd() < 0.6;
+  const receiver = consultantIsReceiver ? consultant : contact;
+  const caller = consultantIsReceiver ? contact : consultant;
+
+  const lines: TranscriptLine[] = [];
+  let t = 0;
+  const push = (role: "Ontvanger" | "Beller", text: string) => {
+    lines.push({
+      t: fmtSec(t),
+      speaker: role === "Ontvanger" ? receiver : caller,
+      role,
+      text,
+    });
+    t += rint(rnd, 1, 8);
+  };
+
+  push("Ontvanger", pick(rnd, UTTERANCES_GREETING_RECEIVER)(caller, receiver));
+  push("Beller", pick(rnd, UTTERANCES_GREETING_CALLER)());
+  push("Ontvanger", pick(rnd, UTTERANCES_SMALL));
+  push("Beller", pick(rnd, UTTERANCES_SMALL));
+
+  const bodyTurns = rint(rnd, 4, 8);
+  for (let i = 0; i < bodyTurns; i++) {
+    const role: "Ontvanger" | "Beller" = i % 2 === 0 ? "Ontvanger" : "Beller";
+    const text = rnd() < 0.25 ? pick(rnd, UTTERANCES_SHORT) : pick(rnd, UTTERANCES_BODY);
+    push(role, text);
+  }
+
+  push("Ontvanger", pick(rnd, UTTERANCES_CLOSE_RECEIVER));
+  push("Beller", pick(rnd, UTTERANCES_CLOSE_CALLER));
+
+  return lines;
 }
 
 export function formatCallLinkLabel(callId: string): string {
