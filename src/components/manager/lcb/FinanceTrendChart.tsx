@@ -1,29 +1,14 @@
 import { useMemo, useState } from "react";
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from "recharts";
+import { Check, ChevronDown, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { consultantColors } from "@/data/managerPerformanceData";
 
-type Granularity = "periode" | "maand" | "kwartaal";
-type MetricKey = "revenue" | "forecast" | "potentieel" | "revRisk" | "margin" | "realisedPot";
-
-interface MetricDef {
-  key: MetricKey;
-  label: string;
-  color: string;
-  dash?: string;
-  /** Revenue Risk uses absolute € (not divided by 1k) */
-  rawEuros?: boolean;
-}
-
-const METRICS: MetricDef[] = [
-  { key: "revenue", label: "Revenue", color: "hsl(var(--primary))" },
-  { key: "forecast", label: "Forecast", color: "hsl(217 91% 60%)" },
-  { key: "potentieel", label: "Potentieel", color: "hsl(142 71% 45%)" },
-  { key: "revRisk", label: "Revenue Risk", color: "hsl(38 92% 50%)", dash: "4 3", rawEuros: true },
-  { key: "margin", label: "Margin", color: "hsl(262 83% 58%)" },
-  { key: "realisedPot", label: "Realised Pot.", color: "hsl(var(--muted-foreground))", dash: "2 3" },
-];
+type Granularity = "periode" | "maand" | "week";
 
 interface Row {
   c: { id: number; name: string };
@@ -38,100 +23,197 @@ interface Row {
 interface Props {
   rows: Row[];
   selectedConsultants: number[];
-  onDrilldown: (bucket: string, metric: MetricKey, consultantIds: number[]) => void;
+  onDrilldown: (bucket: string, metric: string, consultantIds: number[]) => void;
 }
 
-// Deterministic bucket seasonality factor — keeps lines smooth but moving.
-function bucketFactor(consultantId: number, bucketIdx: number, totalBuckets: number, metric: MetricKey): number {
-  const phase = (consultantId * 13 + bucketIdx * 31 + metric.length * 7) % 100;
-  // Slight upward trend + seasonal wave
+const MODAAL_EUR = 18000;
+
+// Deterministic seasonality to give every consultant a plausible curve.
+function bucketFactor(consultantId: number, bucketIdx: number, totalBuckets: number): number {
+  const phase = (consultantId * 13 + bucketIdx * 31) % 100;
   const trend = 0.78 + (bucketIdx / Math.max(totalBuckets - 1, 1)) * 0.35;
-  const seasonal = 0.92 + (Math.sin((bucketIdx + (consultantId % 5)) * 0.9) * 0.12);
+  const seasonal = 0.92 + Math.sin((bucketIdx + (consultantId % 5)) * 0.9) * 0.12;
   const jitter = 0.94 + (phase / 100) * 0.12;
   return trend * seasonal * jitter;
 }
 
-function buildBuckets(granularity: Granularity): string[] {
-  if (granularity === "periode") {
-    // Synsel 4-week periods, last 8 ending at P5 26
+function buildBuckets(g: Granularity): string[] {
+  if (g === "periode") {
     return ["P11 25", "P12 25", "P13 25", "P1 26", "P2 26", "P3 26", "P4 26", "P5 26"];
   }
-  if (granularity === "maand") {
+  if (g === "maand") {
     return ["Jul 25", "Aug 25", "Sep 25", "Okt 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mrt 26", "Apr 26", "Mei 26", "Jun 26"];
   }
-  return ["Q3 24", "Q4 24", "Q1 25", "Q2 25", "Q3 25", "Q4 25"];
+  // week — rolling 13 weeks
+  return Array.from({ length: 13 }, (_, i) => `W${i + 23}`);
 }
 
-export function FinanceTrendChart({ rows, selectedConsultants, onDrilldown }: Props) {
+export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
   const [granularity, setGranularity] = useState<Granularity>("periode");
-  const [visible, setVisible] = useState<Record<MetricKey, boolean>>({
-    revenue: true, forecast: true, potentieel: true,
-    revRisk: false, margin: false, realisedPot: false,
-  });
-  const [splitMode, setSplitMode] = useState<boolean>(false);
+  const [localConsultants, setLocalConsultants] = useState<number[]>([]);
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const [lockedId, setLockedId] = useState<number | null>(null);
 
-  // Determine scope: which rows contribute
-  const scopeRows = useMemo(() => {
+  // Scope rows from global filter first, then local consultant filter.
+  const globalScope = useMemo(() => {
     if (selectedConsultants.length === 0) return rows;
     return rows.filter((r) => selectedConsultants.includes(r.c.id));
   }, [rows, selectedConsultants]);
 
-  const showSplitToggle = scopeRows.length >= 2 && scopeRows.length <= 5;
-  const effectiveSplit = splitMode && showSplitToggle;
+  // Reset local consultants that are no longer in scope
+  const validLocal = useMemo(
+    () => localConsultants.filter((id) => globalScope.some((r) => r.c.id === id)),
+    [localConsultants, globalScope],
+  );
+
+  const scopeRows = useMemo(() => {
+    if (validLocal.length === 0) return globalScope;
+    return globalScope.filter((r) => validLocal.includes(r.c.id));
+  }, [globalScope, validLocal]);
 
   const buckets = useMemo(() => buildBuckets(granularity), [granularity]);
+  const isSingle = scopeRows.length === 1;
+  const highlightId = lockedId ?? activeId;
 
-  // Build chart data: one row per bucket. Each row holds either aggregate
-  // metric keys, or per-consultant suffixed keys when split mode is on.
+  // Build per-consultant historical + forecast series.
+  // Forecast = mean of last N historical buckets, appended as one extra bucket.
+  const forecastWindow = granularity === "periode" && buckets.length >= 13 ? 13 : 3;
+  const forecastBucketLabel = "Prognose";
+
   const data = useMemo(() => {
-    return buckets.map((label, idx) => {
+    // Pre-compute each consultant's bucket values
+    const perConsultant = new Map<number, number[]>();
+    scopeRows.forEach((r) => {
+      const vals = buckets.map((_, idx) => Math.round(r.realised * 1000 * bucketFactor(r.c.id, idx, buckets.length)));
+      perConsultant.set(r.c.id, vals);
+    });
+
+    const histRows = buckets.map((label, idx) => {
       const row: Record<string, number | string> = { bucket: label };
-      if (effectiveSplit) {
-        scopeRows.forEach((r) => {
-          METRICS.forEach((m) => {
-            const base = baseValue(r, m.key);
-            const v = base * bucketFactor(r.c.id, idx, buckets.length, m.key);
-            row[`${m.key}__${r.c.id}`] = m.rawEuros ? Math.round(v) : Math.round(v);
-          });
-        });
-      } else {
-        METRICS.forEach((m) => {
-          let sum = 0;
-          scopeRows.forEach((r) => {
-            const base = baseValue(r, m.key);
-            sum += base * bucketFactor(r.c.id, idx, buckets.length, m.key);
-          });
-          row[m.key] = Math.round(sum);
-        });
-      }
+      scopeRows.forEach((r) => {
+        const vals = perConsultant.get(r.c.id)!;
+        row[`sit__${r.c.id}`] = vals[idx];
+      });
       return row;
     });
-  }, [buckets, scopeRows, effectiveSplit]);
 
-  const scopeLabel = selectedConsultants.length === 0
-    ? "Alle consultants"
-    : scopeRows.length === 1
+    // Forecast row: extend each consultant's situatie value to the forecast bucket,
+    // and populate per-consultant prognose key only at the last historical and forecast points.
+    const forecastRow: Record<string, number | string> = { bucket: forecastBucketLabel };
+    scopeRows.forEach((r) => {
+      const vals = perConsultant.get(r.c.id)!;
+      const tail = vals.slice(-forecastWindow);
+      const avg = Math.round(tail.reduce((s, v) => s + v, 0) / Math.max(tail.length, 1));
+      forecastRow[`prog__${r.c.id}`] = avg;
+    });
+
+    // Anchor prognose start at last historical point
+    const lastHist = histRows[histRows.length - 1];
+    if (lastHist) {
+      scopeRows.forEach((r) => {
+        lastHist[`prog__${r.c.id}`] = lastHist[`sit__${r.c.id}`];
+      });
+    }
+
+    return [...histRows, forecastRow];
+  }, [buckets, scopeRows, forecastWindow]);
+
+  const scopeLabel = scopeRows.length === 0
+    ? "Geen consultants"
+    : isSingle
       ? `Consultant: ${scopeRows[0].c.name}`
       : `${scopeRows.length} consultants`;
 
-  const handlePointClick = (bucket: string, metric: MetricKey, consultantIds: number[]) => {
-    onDrilldown(bucket, metric, consultantIds);
+  const allLocalOn = validLocal.length === globalScope.length;
+  const toggleAll = () => setLocalConsultants(allLocalOn ? [] : globalScope.map((r) => r.c.id));
+  const toggleOne = (id: number) =>
+    setLocalConsultants((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
+  const lineColor = (idx: number, id: number) => {
+    if (isSingle) return "hsl(var(--primary))";
+    return consultantColors[idx % consultantColors.length];
+  };
+
+  const opacityFor = (id: number) => {
+    if (highlightId === null) return 1;
+    return highlightId === id ? 1 : 0.2;
+  };
+
+  const handleLineClick = (id: number) => {
+    setLockedId((curr) => (curr === id ? null : id));
   };
 
   return (
-    <div className="mt-3 rounded-lg border border-border bg-card p-3">
+    <div
+      className="mt-3 rounded-lg border border-border bg-card p-3"
+      onClick={() => setLockedId(null)}
+    >
       <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
         <div>
-          <h3 className="text-sm font-semibold text-foreground">Financiële ontwikkeling over tijd</h3>
-          <p className="text-[11px] text-muted-foreground">
-            Bekijk de ontwikkeling van omzet, forecast, potentieel en risico per periode, maand of kwartaal.
-          </p>
+          <h3 className="text-sm font-semibold text-foreground">Financiële ontwikkeling</h3>
+          <p className="text-[11px] text-muted-foreground">Financiële groei per consultant.</p>
           <p className="text-[10px] text-muted-foreground mt-0.5">Scope: {scopeLabel}</p>
         </div>
-        <div className="flex flex-col items-end gap-1.5">
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          {/* Consultant filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 px-2 text-[11px] gap-1">
+                <Users className="h-3 w-3" />
+                {validLocal.length === 0
+                  ? "Alle consultants"
+                  : `${validLocal.length} geselecteerd`}
+                <ChevronDown className="h-3 w-3 opacity-60" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-64 p-2">
+              <div className="flex items-center justify-between mb-1.5 pb-1.5 border-b border-border">
+                <span className="text-[11px] font-medium text-foreground">Consultants</span>
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {allLocalOn ? "Alles uit" : "Alles aan"}
+                </button>
+              </div>
+              <div className="max-h-64 overflow-y-auto space-y-0.5">
+                {globalScope.map((r) => {
+                  const on = validLocal.includes(r.c.id);
+                  return (
+                    <button
+                      key={r.c.id}
+                      type="button"
+                      onClick={() => toggleOne(r.c.id)}
+                      className={cn(
+                        "w-full flex items-center gap-2 rounded px-2 py-1 text-[11px] text-left",
+                        on ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "h-3 w-3 rounded border flex items-center justify-center",
+                          on ? "border-primary bg-primary" : "border-border",
+                        )}
+                      >
+                        {on && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+                      </span>
+                      {r.c.name}
+                    </button>
+                  );
+                })}
+                {globalScope.length === 0 && (
+                  <p className="text-[11px] text-muted-foreground px-2 py-1">Geen consultants in scope.</p>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+
           {/* Granularity */}
           <div className="inline-flex items-center rounded-md border border-border p-0.5 bg-background text-[11px]">
-            {(["periode", "maand", "kwartaal"] as Granularity[]).map((g) => (
+            {(["periode", "maand", "week"] as Granularity[]).map((g) => (
               <button
                 key={g}
                 type="button"
@@ -141,78 +223,40 @@ export function FinanceTrendChart({ rows, selectedConsultants, onDrilldown }: Pr
                   granularity === g ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                {g === "periode" ? "Periode" : g === "maand" ? "Maand" : "Kwartaal"}
+                {g}
               </button>
             ))}
           </div>
-          {/* Split toggle (only 2–5 selected) */}
-          {showSplitToggle && (
-            <div className="inline-flex items-center rounded-md border border-border p-0.5 bg-background text-[10px]">
-              <button
-                type="button"
-                onClick={() => setSplitMode(false)}
-                className={cn(
-                  "px-1.5 py-0.5 rounded transition-colors",
-                  !splitMode ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                Aggregeren
-              </button>
-              <button
-                type="button"
-                onClick={() => setSplitMode(true)}
-                className={cn(
-                  "px-1.5 py-0.5 rounded transition-colors",
-                  splitMode ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                Split
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Metric pills */}
-      <div className="flex flex-wrap gap-1.5 mb-2">
-        {METRICS.map((m) => {
-          const on = visible[m.key];
-          return (
-            <button
-              key={m.key}
-              type="button"
-              onClick={() => setVisible((v) => ({ ...v, [m.key]: !v[m.key] }))}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] transition-colors",
-                on
-                  ? "border-border bg-background text-foreground"
-                  : "border-border/60 bg-muted/30 text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <span
-                className="inline-block h-2 w-2 rounded-full"
-                style={{ backgroundColor: on ? m.color : "hsl(var(--muted-foreground) / 0.4)" }}
-              />
-              {m.label}
-            </button>
-          );
-        })}
+      {/* Legend */}
+      <div className="flex flex-wrap gap-3 mb-2 text-[11px] text-muted-foreground">
+        {isSingle && (
+          <>
+            <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full bg-muted-foreground/50" style={{ background: "repeating-linear-gradient(90deg, hsl(var(--muted-foreground)) 0 4px, transparent 4px 7px)" }} />} label="Modaal" />
+            <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full" style={{ backgroundColor: "hsl(var(--primary))" }} />} label="Situatie" />
+            <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full" style={{ background: "repeating-linear-gradient(90deg, hsl(217 91% 60%) 0 5px, transparent 5px 9px)" }} />} label="Prognose" />
+          </>
+        )}
+        {!isSingle && scopeRows.length > 1 && (
+          <>
+            <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full bg-foreground/70" />} label="Situatie per consultant" />
+            <LegendItem swatch={<div className="w-4 h-[2.5px] rounded-full" style={{ background: "repeating-linear-gradient(90deg, hsl(var(--foreground)) 0 5px, transparent 5px 9px)" }} />} label="Prognose (bij hover/klik)" />
+          </>
+        )}
       </div>
 
-      {data.length === 0 || scopeRows.length === 0 ? (
+      {scopeRows.length === 0 ? (
         <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-          Geen data voor de geselecteerde filters.
+          Geen consultants in scope.
         </div>
       ) : (
         <div className="h-[320px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 8, right: 16, bottom: 24, left: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis
-                dataKey="bucket"
-                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                stroke="hsl(var(--border))"
-              />
+              <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} stroke="hsl(var(--border))" />
               <YAxis
                 tickFormatter={(v) => `€${Math.round(Number(v) / 1000)}k`}
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
@@ -221,115 +265,127 @@ export function FinanceTrendChart({ rows, selectedConsultants, onDrilldown }: Pr
               />
               <Tooltip
                 content={(props: any) => (
-                  <TrendTooltip
-                    {...props}
-                    scopeLabel={scopeLabel}
-                    split={effectiveSplit}
-                    scopeRows={scopeRows}
-                  />
+                  <TrendTooltip {...props} scopeRows={scopeRows} isSingle={isSingle} />
                 )}
                 cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "3 3" }}
               />
-              {effectiveSplit
-                ? scopeRows.flatMap((r) =>
-                    METRICS.filter((m) => visible[m.key]).map((m) => (
-                      <Line
-                        key={`${m.key}__${r.c.id}`}
-                        type="monotone"
-                        dataKey={`${m.key}__${r.c.id}`}
-                        name={`${m.label} · ${r.c.name}`}
-                        stroke={m.color}
-                        strokeWidth={1.6}
-                        strokeDasharray={m.dash}
-                        strokeOpacity={0.75}
-                        dot={{ r: 2.5, fill: m.color, strokeWidth: 0 }}
-                        activeDot={{
-                          r: 5,
-                          fill: m.color,
-                          strokeWidth: 0,
-                          style: { cursor: "pointer" },
-                          onClick: (_e: any, payload: any) => {
-                            const bucket = payload?.payload?.bucket;
-                            if (bucket) handlePointClick(bucket, m.key, [r.c.id]);
-                          },
-                        }}
-                        isAnimationActive={false}
-                      />
-                    )),
-                  )
-                : METRICS.filter((m) => visible[m.key]).map((m) => (
-                    <Line
-                      key={m.key}
-                      type="monotone"
-                      dataKey={m.key}
-                      name={m.label}
-                      stroke={m.color}
-                      strokeWidth={2}
-                      strokeDasharray={m.dash}
-                      dot={{ r: 3, fill: m.color, strokeWidth: 0 }}
-                      activeDot={{
-                        r: 5,
-                        fill: m.color,
-                        strokeWidth: 0,
-                        style: { cursor: "pointer" },
-                        onClick: (_e: any, payload: any) => {
-                          const bucket = payload?.payload?.bucket;
-                          if (bucket) handlePointClick(bucket, m.key, scopeRows.map((r) => r.c.id));
-                        },
-                      }}
-                      isAnimationActive={false}
-                    />
-                  ))}
+
+              {/* Modaal (single only) */}
+              {isSingle && (
+                <ReferenceLine
+                  y={MODAAL_EUR}
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeDasharray="4 4"
+                  strokeWidth={1.2}
+                  label={{ value: "Modaal", position: "insideTopLeft", fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                />
+              )}
+
+              {/* Situatie lines per consultant */}
+              {scopeRows.map((r, idx) => {
+                const color = lineColor(idx, r.c.id);
+                const op = opacityFor(r.c.id);
+                return (
+                  <Line
+                    key={`sit-${r.c.id}`}
+                    type="monotone"
+                    dataKey={`sit__${r.c.id}`}
+                    name={isSingle ? "Situatie" : r.c.name}
+                    stroke={color}
+                    strokeWidth={highlightId === r.c.id ? 2.6 : 2}
+                    strokeOpacity={op}
+                    dot={{ r: 2.5, fill: color, strokeWidth: 0, opacity: op }}
+                    activeDot={{
+                      r: 5,
+                      fill: color,
+                      strokeWidth: 0,
+                      style: { cursor: "pointer" },
+                      onClick: (e: any) => {
+                        e?.stopPropagation?.();
+                        handleLineClick(r.c.id);
+                      },
+                    }}
+                    onMouseEnter={() => !isSingle && setActiveId(r.c.id)}
+                    onMouseLeave={() => !isSingle && setActiveId(null)}
+                    onClick={(e: any) => {
+                      e?.stopPropagation?.();
+                      if (!isSingle) handleLineClick(r.c.id);
+                    }}
+                    isAnimationActive={false}
+                  />
+                );
+              })}
+
+              {/* Prognose lines */}
+              {scopeRows.map((r, idx) => {
+                if (!isSingle && highlightId !== r.c.id) return null;
+                const color = isSingle ? "hsl(217 91% 60%)" : lineColor(idx, r.c.id);
+                return (
+                  <Line
+                    key={`prog-${r.c.id}`}
+                    type="monotone"
+                    dataKey={`prog__${r.c.id}`}
+                    name={isSingle ? "Prognose" : `Prognose · ${r.c.name}`}
+                    stroke={color}
+                    strokeWidth={1.8}
+                    strokeDasharray="5 4"
+                    dot={{ r: 2.5, fill: color, strokeWidth: 0 }}
+                    connectNulls
+                    isAnimationActive={false}
+                  />
+                );
+              })}
             </LineChart>
           </ResponsiveContainer>
         </div>
+      )}
+
+      {!isSingle && scopeRows.length > 1 && (
+        <p className="text-[10px] text-muted-foreground mt-1.5">
+          Hover op een lijn voor de prognose. Klik om vast te zetten, klik nogmaals om te ontgrendelen.
+        </p>
       )}
     </div>
   );
 }
 
-function baseValue(r: Row, key: MetricKey): number {
-  // marginRows holds values in €k for most metrics. revRisk is already in raw €.
-  // Convert €k → € so the chart Y-axis can format consistently in €k.
-  switch (key) {
-    case "revenue": return r.realised * 1000;
-    case "forecast": return r.forecast * 1000;
-    case "potentieel": return r.potential * 1000;
-    case "realisedPot": return r.realisedPotential * 1000;
-    case "margin": return r.margin * 1000;
-    case "revRisk": return r.revRisk; // already in €
-  }
+function LegendItem({ swatch, label }: { swatch: React.ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {swatch}
+      <span>{label}</span>
+    </div>
+  );
 }
 
-function TrendTooltip({ active, payload, label, scopeLabel, split, scopeRows }: any) {
+function TrendTooltip({ active, payload, label, scopeRows, isSingle }: any) {
   if (!active || !payload || !payload.length) return null;
-  const fmt = (v: number, raw?: boolean) =>
-    raw ? `€${Math.round(v).toLocaleString("nl-NL")}` : `€${Math.round(v / 1000)}k`;
+  const fmt = (v: number) => `€${Math.round(v / 1000)}k`;
 
   return (
-    <div className="rounded-md border border-border bg-card shadow-lg px-3 py-2 text-[11px] min-w-[200px]">
-      <div className="font-semibold text-foreground mb-0.5">{label}</div>
-      <div className="text-muted-foreground mb-1">{scopeLabel}</div>
+    <div className="rounded-md border border-border bg-card shadow-lg px-3 py-2 text-[11px] min-w-[180px]">
+      <div className="font-semibold text-foreground mb-1">{label}</div>
       {payload.map((p: any) => {
         const key: string = p.dataKey;
-        const [metricKey, consId] = key.split("__");
-        const metric = METRICS.find((m) => m.key === metricKey);
-        if (!metric) return null;
-        const consultantName = split && consId
-          ? scopeRows.find((r: Row) => String(r.c.id) === consId)?.c.name
-          : null;
+        const [kind, idStr] = key.split("__");
+        const id = Number(idStr);
+        const name = scopeRows.find((r: Row) => r.c.id === id)?.c.name ?? "";
+        const lineLabel = isSingle
+          ? kind === "sit" ? "Situatie" : "Prognose"
+          : kind === "sit" ? name : `Prognose · ${name}`;
         return (
           <div key={key} className="flex items-center justify-between gap-3">
-            <span className="text-muted-foreground">
-              {metric.label}{consultantName ? ` · ${consultantName}` : ""}
-            </span>
-            <span className="tabular-nums text-foreground">{fmt(Number(p.value), metric.rawEuros)}</span>
+            <span className="text-muted-foreground">{lineLabel}</span>
+            <span className="tabular-nums text-foreground">{fmt(Number(p.value))}</span>
           </div>
         );
       })}
-      <div className="text-[10px] text-muted-foreground mt-1.5 pt-1.5 border-t border-border">
-        Klik op een punt voor details
-      </div>
+      {isSingle && (
+        <div className="flex items-center justify-between gap-3 mt-1 pt-1 border-t border-border">
+          <span className="text-muted-foreground">Modaal</span>
+          <span className="tabular-nums text-foreground">{`€${Math.round(MODAAL_EUR / 1000)}k`}</span>
+        </div>
+      )}
     </div>
   );
 }
