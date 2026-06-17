@@ -26,14 +26,29 @@ interface Props {
   onDrilldown: (bucket: string, metric: string, consultantIds: number[]) => void;
 }
 
-const MODAAL_EUR = 18000;
+// Average consultant earns ~€20.040 per month. We bound buckets to [0, 45.000].
+const AVG_MONTHLY_EUR = 20040;
+const MAX_BUCKET_EUR = 45000;
+const MODAAL_EUR = AVG_MONTHLY_EUR;
 
-// Deterministic seasonality to give every consultant a plausible curve.
+// Bucket-size scaling so that the average bucket value stays ≈ AVG_MONTHLY_EUR.
+function bucketTargetAvg(g: Granularity): number {
+  if (g === "periode") return AVG_MONTHLY_EUR * (28 / 30.44); // ~4-week period
+  if (g === "maand") return AVG_MONTHLY_EUR;
+  return AVG_MONTHLY_EUR / 4.345; // weekly
+}
+
+// Deterministic 0..1 hash for variation
+function hash01(consultantId: number, bucketIdx: number): number {
+  const v = Math.sin(consultantId * 127.1 + bucketIdx * 311.7) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+// Returns a multiplicative factor (mean ≈ 1) for a consultant/bucket combo.
 function bucketFactor(consultantId: number, bucketIdx: number, totalBuckets: number): number {
-  const phase = (consultantId * 13 + bucketIdx * 31) % 100;
-  const trend = 0.78 + (bucketIdx / Math.max(totalBuckets - 1, 1)) * 0.35;
-  const seasonal = 0.92 + Math.sin((bucketIdx + (consultantId % 5)) * 0.9) * 0.12;
-  const jitter = 0.94 + (phase / 100) * 0.12;
+  const trend = 0.88 + (bucketIdx / Math.max(totalBuckets - 1, 1)) * 0.18; // 0.88 → 1.06
+  const seasonal = 1 + Math.sin((bucketIdx + (consultantId % 7)) * 0.85) * 0.18;
+  const jitter = 0.85 + hash01(consultantId, bucketIdx) * 0.3; // 0.85 → 1.15
   return trend * seasonal * jitter;
 }
 
@@ -46,6 +61,11 @@ function buildBuckets(g: Granularity): string[] {
   }
   // week — rolling 13 weeks
   return Array.from({ length: 13 }, (_, i) => `W${i + 23}`);
+}
+
+// Modaal scaled per granularity so the reference matches bucket size.
+function modaalFor(g: Granularity): number {
+  return Math.round(bucketTargetAvg(g));
 }
 
 export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
