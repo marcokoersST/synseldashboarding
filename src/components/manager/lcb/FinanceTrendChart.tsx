@@ -119,29 +119,39 @@ export function FinanceTrendChart({ rows, selectedConsultants }: Props) {
       perConsultant.set(r.c.id, vals);
     });
 
+    // Rolling expectation: at bucket idx, prognose = mean of the previous `forecastWindow` situatie values.
+    // For idx 0 we have no history → leave null so the line starts where data exists.
+    const progPerConsultant = new Map<number, (number | null)[]>();
+    scopeRows.forEach((r) => {
+      const vals = perConsultant.get(r.c.id)!;
+      const prog: (number | null)[] = vals.map((_, idx) => {
+        if (idx === 0) return null;
+        const start = Math.max(0, idx - forecastWindow);
+        const slice = vals.slice(start, idx);
+        if (slice.length === 0) return null;
+        return clamp(slice.reduce((s, v) => s + v, 0) / slice.length);
+      });
+      progPerConsultant.set(r.c.id, prog);
+    });
+
     const histRows = buckets.map((label, idx) => {
-      const row: Record<string, number | string> = { bucket: label };
+      const row: Record<string, number | string | null> = { bucket: label };
       scopeRows.forEach((r) => {
-        const vals = perConsultant.get(r.c.id)!;
-        row[`sit__${r.c.id}`] = vals[idx];
+        row[`sit__${r.c.id}`] = perConsultant.get(r.c.id)![idx];
+        row[`prog__${r.c.id}`] = progPerConsultant.get(r.c.id)![idx];
       });
       return row;
     });
 
-    const forecastRow: Record<string, number | string> = { bucket: forecastBucketLabel };
+    // Future bucket: extend prognose one step ahead based on full historical tail.
+    const forecastRow: Record<string, number | string | null> = { bucket: forecastBucketLabel };
     scopeRows.forEach((r) => {
       const vals = perConsultant.get(r.c.id)!;
       const tail = vals.slice(-forecastWindow);
       const avg = clamp(tail.reduce((s, v) => s + v, 0) / Math.max(tail.length, 1));
       forecastRow[`prog__${r.c.id}`] = avg;
+      forecastRow[`sit__${r.c.id}`] = null;
     });
-
-    const lastHist = histRows[histRows.length - 1];
-    if (lastHist) {
-      scopeRows.forEach((r) => {
-        lastHist[`prog__${r.c.id}`] = lastHist[`sit__${r.c.id}`];
-      });
-    }
 
     return [...histRows, forecastRow];
   }, [buckets, scopeRows, forecastWindow, granularity]);
