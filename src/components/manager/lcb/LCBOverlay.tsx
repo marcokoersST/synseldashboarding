@@ -45,12 +45,12 @@ export function LCBOverlay({
         type="button"
         aria-label="Sluiten"
         onClick={onClose}
-        className="flex-1 bg-background/60 backdrop-blur-sm animate-in fade-in duration-150"
+        className="flex-1 bg-background/60 backdrop-blur-sm animate-in fade-in duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
       />
       <aside
         className={cn(
           "h-full flex flex-col bg-background border-l border-border shadow-2xl",
-          "animate-in slide-in-from-right-4 duration-200",
+          "animate-in slide-in-from-right-4 duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           size === "wide" ? "w-[80vw] max-w-[1400px]" : "w-[520px] max-w-[92vw]",
         )}
       >

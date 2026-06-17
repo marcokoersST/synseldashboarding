@@ -55,7 +55,7 @@ export function LCBDetailPanel({ tile, onClose }: Props) {
     <div
       className={cn(
         "fixed inset-0 z-[55] bg-background flex flex-col",
-        "animate-in fade-in slide-in-from-right-4 duration-200",
+        "animate-in fade-in slide-in-from-right-4 duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
       )}
     >
       {/* Header */}
