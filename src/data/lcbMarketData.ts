@@ -501,11 +501,12 @@ export function getDealActivity(dealId: string): ActivityItem[] {
   return Array.from({ length: rint(rnd, 3, 8) }, (_, i) => {
     const kind: ActivityItem["kind"] = rnd() < 0.55 ? "email" : "call";
     const callId = kind === "call" ? String(rint(rnd, 100000, 999999)) : undefined;
+    const contact = pick(rnd, CONTACT_PEOPLE);
     return {
       id: `${dealId}-a-${i}`,
       kind,
       direction: rnd() < 0.55 ? "out" : "in",
-      contact: pick(rnd, CONTACT_PEOPLE),
+      contact,
       contactStatus: pick(rnd, CONTACT_STATUSES),
       subject: kind === "email" ? pick(rnd, ["Voorstel kandidaat", "Reminder voorstel", "Bevestiging intake", "Update procedure"]) : undefined,
       duration: kind === "call" ? hms(rnd) : undefined,
