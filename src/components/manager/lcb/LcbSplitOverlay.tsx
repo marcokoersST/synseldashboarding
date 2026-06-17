@@ -69,6 +69,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
         <div
           className={cn(
             "relative h-full shrink-0 transition-all duration-200 ease-out",
+            right && !showExtra && "blur-[2px]",
             showExtra && right && "-mr-32 blur-[2px]",
           )}
         >
@@ -84,18 +85,21 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
           >
             {left.content}
           </Pane>
-          {showExtra && right && (
+          {right && (
             <button
               type="button"
-              aria-label="Sluit communicatie"
-              onClick={() => onCloseExtra?.()}
-              className="absolute inset-0 bg-background/60 cursor-pointer z-[1]"
+              aria-label={showExtra ? "Sluit communicatie" : "Sluit detail"}
+              onClick={() => (showExtra ? onCloseExtra?.() : onCloseRight?.())}
+              className="absolute inset-0 bg-background/40 backdrop-blur-sm cursor-pointer z-[1] animate-in fade-in duration-150"
             />
           )}
         </div>
 
         {right && (
-          <div className="relative z-[1]">
+          <div className={cn(
+            "relative z-[1] transition-all duration-200 ease-out",
+            showExtra && "blur-[2px]",
+          )}>
             <Pane
               breadcrumbs={right.breadcrumbs}
               title={right.title}
@@ -106,6 +110,14 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
             >
               {right.content}
             </Pane>
+            {showExtra && (
+              <button
+                type="button"
+                aria-label="Sluit communicatie"
+                onClick={() => onCloseExtra?.()}
+                className="absolute inset-0 bg-background/40 backdrop-blur-sm cursor-pointer z-[2] animate-in fade-in duration-150"
+              />
+            )}
           </div>
         )}
       </div>
