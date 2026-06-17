@@ -171,7 +171,7 @@ export function LcbDateFilter({ value, onChange }: Props) {
           </div>
 
           {/* Calendars */}
-          <div className="flex-1 p-2">
+          <div className="flex-1 min-w-0 p-2">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground px-1 pb-1">Periode</div>
             <Calendar
               mode="range"
@@ -181,6 +181,8 @@ export function LcbDateFilter({ value, onChange }: Props) {
               locale={nl}
               weekStartsOn={1}
               className="p-0"
+              modifiers={{ today: new Date() }}
+              modifiersClassNames={{ today: "ring-2 ring-primary ring-offset-1 rounded-md" }}
             />
             <div className="mt-2 flex items-center justify-between gap-2 px-1 text-[11px]">
               <div>
