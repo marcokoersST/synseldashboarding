@@ -386,7 +386,7 @@ function LegendItem({ swatch, label }: { swatch: React.ReactNode; label: string 
   );
 }
 
-function TrendTooltip({ active, payload, label, scopeRows, isSingle }: any) {
+function TrendTooltip({ active, payload, label, scopeRows, isSingle, modaal = MODAAL_EUR }: any) {
   if (!active || !payload || !payload.length) return null;
   const fmt = (v: number) => `€${Math.round(v / 1000)}k`;
 
