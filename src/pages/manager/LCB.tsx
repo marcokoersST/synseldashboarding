@@ -253,9 +253,9 @@ export default function LCB() {
       <LCBTopBar
         date={date} onDate={setDate}
         units={unitOptions}
-        selectedUnits={selectedUnits} onSelectedUnits={setSelectedUnits}
+        selectedUnits={selectedUnits} onSelectedUnits={handleSelectedUnits}
         consultants={consultantOptions}
-        selectedConsultants={selectedConsultants} onSelectedConsultants={setSelectedConsultants}
+        selectedConsultants={selectedConsultants} onSelectedConsultants={handleSelectedConsultants}
         search={search} onSearch={setSearch}
         onReset={onResetFilters}
       />
