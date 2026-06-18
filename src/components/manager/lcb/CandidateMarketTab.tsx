@@ -13,6 +13,18 @@ import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromRatio, type LCBStatus } from
 type SortKey = "consultantName" | "unit" | LcbStepKey | "drop" | "status";
 type SortDir = "asc" | "desc";
 
+const SHORT_STEP_LABEL: Record<LcbStepKey, string> = {
+  toegewezen: "Toegew.",
+  inschrijvingen: "Inschr.",
+  acquisities: "Acquis.",
+  voorstellen: "Voorst.",
+  intakes: "Intakes",
+  uitnodiging: "Uitnod.",
+  gesprekken: "Gespr.",
+  vervolg: "Vervolg",
+  plaatsingen: "Plaats.",
+};
+
 interface Props {
   selectedUnits: string[];
   selectedConsultants: number[];
