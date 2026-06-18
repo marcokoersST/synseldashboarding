@@ -401,26 +401,68 @@ export default function LCB() {
 }
 
 // ─── Inline left-pane lists ───────────────────────────────────────────
+type SortDir = "asc" | "desc";
+type CandSortKey = "name" | "id" | "category" | "status" | "deals" | "proposals" | "emails" | "calls" | "date";
+
 function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[]; selected: CandidateRow | null; onSelect: (c: CandidateRow) => void }) {
   const compact = selected != null;
+  const [sortKey, setSortKey] = useState<CandSortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const toggle = (k: CandSortKey) => {
+    if (sortKey === k) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else { setSortKey(k); setSortDir("asc"); }
+  };
+
+  const sorted = useMemo(() => {
+    if (!sortKey) return rows;
+    const get = (r: CandidateRow): string | number => {
+      switch (sortKey) {
+        case "name": return r.name;
+        case "id": return r.id;
+        case "category": return r.category;
+        case "status": return r.status;
+        case "deals": return r.deals;
+        case "proposals": return r.proposals;
+        case "emails": return r.emails;
+        case "calls": return r.calls;
+        case "date": return `${r.lastUpdatedDate} ${r.lastUpdatedTime}`;
+      }
+    };
+    const mult = sortDir === "asc" ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const va = get(a), vb = get(b);
+      if (typeof va === "number" && typeof vb === "number") return (va - vb) * mult;
+      return String(va).localeCompare(String(vb)) * mult;
+    });
+  }, [rows, sortKey, sortDir]);
+
+  const sp = (k: CandSortKey) => ({ sortDir: sortKey === k ? sortDir : undefined, onClick: () => toggle(k) });
+
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-3">
       <div className="rounded-md border border-border overflow-hidden">
         <table className="w-full text-[11px]">
           <thead className="bg-muted/60 sticky top-0">
             <tr className="text-left">
-              <Th>Naam</Th><Th>ID</Th><Th>Cat.</Th><Th>Status</Th>
+              <Th {...sp("name")}>Naam</Th>
+              <Th {...sp("id")}>ID</Th>
+              <Th {...sp("category")}>Cat.</Th>
+              <Th {...sp("status")}>Status</Th>
               {!compact && (
                 <>
-                  <Th className="text-right">Deals</Th><Th className="text-right">Voorstellen</Th>
-                  <Th className="text-right">Mails</Th><Th className="text-right">Calls</Th>
-                  <Th>Datum</Th><Th>Tijd</Th>
+                  <Th className="text-right" {...sp("deals")}>Deals</Th>
+                  <Th className="text-right" {...sp("proposals")}>Voorstellen</Th>
+                  <Th className="text-right" {...sp("emails")}>Mails</Th>
+                  <Th className="text-right" {...sp("calls")}>Calls</Th>
+                  <Th {...sp("date")}>Datum</Th>
+                  <Th>Tijd</Th>
                 </>
               )}
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => {
+            {sorted.map((r) => {
               const sel = selected?.id === r.id;
               return (
                 <tr
@@ -448,7 +490,7 @@ function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[];
                 </tr>
               );
             })}
-            {rows.length === 0 && <tr><td colSpan={compact ? 4 : 10} className="px-2 py-6 text-center text-muted-foreground">Geen records.</td></tr>}
+            {sorted.length === 0 && <tr><td colSpan={compact ? 4 : 10} className="px-2 py-6 text-center text-muted-foreground">Geen records.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -456,18 +498,47 @@ function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[];
   );
 }
 
+type DealSortKey = "dealName" | "dealStatus" | "candidateName" | "opdrachtgeverName" | "date";
+
 function StepDealList({ rows, selected, onSelect }: { rows: DealRow[]; selected: DealRow | null; onSelect: (d: DealRow) => void }) {
+  const [sortKey, setSortKey] = useState<DealSortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const toggle = (k: DealSortKey) => {
+    if (sortKey === k) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else { setSortKey(k); setSortDir("asc"); }
+  };
+  const sorted = useMemo(() => {
+    if (!sortKey) return rows;
+    const get = (r: DealRow): string => {
+      switch (sortKey) {
+        case "dealName": return r.dealName;
+        case "dealStatus": return r.dealStatus;
+        case "candidateName": return r.candidateName;
+        case "opdrachtgeverName": return r.opdrachtgeverName;
+        case "date": return `${r.lastUpdatedDate} ${r.lastUpdatedTime}`;
+      }
+    };
+    const mult = sortDir === "asc" ? 1 : -1;
+    return [...rows].sort((a, b) => get(a).localeCompare(get(b)) * mult);
+  }, [rows, sortKey, sortDir]);
+  const sp = (k: DealSortKey) => ({ sortDir: sortKey === k ? sortDir : undefined, onClick: () => toggle(k) });
+
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-3">
       <div className="rounded-md border border-border overflow-hidden">
         <table className="w-full text-[11px]">
           <thead className="bg-muted/60 sticky top-0">
             <tr className="text-left">
-              <Th>Deal</Th><Th>Status</Th><Th>Kandidaat</Th><Th>Opdrachtgever</Th><Th>Datum</Th><Th>Tijd</Th>
+              <Th {...sp("dealName")}>Deal</Th>
+              <Th {...sp("dealStatus")}>Status</Th>
+              <Th {...sp("candidateName")}>Kandidaat</Th>
+              <Th {...sp("opdrachtgeverName")}>Opdrachtgever</Th>
+              <Th {...sp("date")}>Datum</Th>
+              <Th>Tijd</Th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => {
+            {sorted.map((r) => {
               const sel = selected?.dealId === r.dealId;
               return (
                 <tr
@@ -492,7 +563,7 @@ function StepDealList({ rows, selected, onSelect }: { rows: DealRow[]; selected:
                 </tr>
               );
             })}
-            {rows.length === 0 && <tr><td colSpan={6} className="px-2 py-6 text-center text-muted-foreground">Geen deals.</td></tr>}
+            {sorted.length === 0 && <tr><td colSpan={6} className="px-2 py-6 text-center text-muted-foreground">Geen deals.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -500,8 +571,27 @@ function StepDealList({ rows, selected, onSelect }: { rows: DealRow[]; selected:
   );
 }
 
-function Th({ children, className }: { children?: React.ReactNode; className?: string }) {
-  return <th className={cn("px-2 py-1.5 font-medium text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap text-left", className)}>{children}</th>;
+function Th({ children, className, onClick, sortDir }: { children?: React.ReactNode; className?: string; onClick?: () => void; sortDir?: SortDir }) {
+  const sortable = !!onClick;
+  return (
+    <th
+      onClick={onClick}
+      className={cn(
+        "px-2 py-1.5 font-medium text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap text-left",
+        sortable && "cursor-pointer select-none hover:text-foreground",
+        className,
+      )}
+    >
+      <span className="inline-flex items-center gap-0.5">
+        {children}
+        {sortable && (
+          <span className={cn("text-[9px]", sortDir ? "text-foreground" : "opacity-30")}>
+            {sortDir === "asc" ? "▲" : sortDir === "desc" ? "▼" : "↕"}
+          </span>
+        )}
+      </span>
+    </th>
+  );
 }
 
 // ─── Signals tab ───────────────────────────────────────────
