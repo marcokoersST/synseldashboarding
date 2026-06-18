@@ -223,7 +223,7 @@ export default function LCB() {
   const stepDeals: DealRow[] = stepCtx && stepEntity === "deal" ? getDealsForStep(stepCtx.consultantId, stepCtx.step) : [];
 
   return (
-    <div className="lcb-skin h-[calc(100vh-3.5rem)] flex flex-col bg-background overflow-hidden">
+    <div className="lcb-skin h-full flex flex-col bg-background overflow-hidden">
       <header className="shrink-0 border-b border-border bg-card">
 
         <div className="flex h-12 items-center gap-3 px-4">
