@@ -6,7 +6,7 @@ import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromRatio } from "@/lib/lcbStatu
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { buildFinancePerfRow, lcbTeam } from "@/data/lcbMarketData";
 import { FinanceTrendChart } from "./FinanceTrendChart";
-import { getFunctiegroepRows, type FunctiegroepRevenueRow, type FunctieRevenueRow } from "@/data/lcbFunctiegroepRevenue";
+import { getFunctiegroepRows, type FunctiegroepRevenueRow } from "@/data/lcbFunctiegroepRevenue";
 
 type Perspective = "margin" | "functiegroep";
 
