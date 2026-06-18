@@ -173,6 +173,7 @@ export function FinanceForecastTab({
             onDrilldown={(_bucket, _metric, ids) => {
               if (ids.length === 1) onOpenRevenue(ids[0]);
             }}
+            labelMode="consultant"
           />
         ) : (
           <FinanceTrendChart
@@ -181,6 +182,7 @@ export function FinanceForecastTab({
             lockedId={lockedId}
             onLockedIdChange={setLockedId}
             onDrilldown={() => {}}
+            labelMode="functiegroep"
           />
         )}
       </div>
