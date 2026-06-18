@@ -227,6 +227,7 @@ const navItems: NavItem[] = [
     path: "/manager-dashboard",
     sectionLabel: "Archived",
     subItems: [
+      { icon: Eye, label: "LC-A", path: "/manager-dashboard/LC-A" },
       { icon: Briefcase, label: "Overzicht manager dashboard oud", path: "/manager-dashboard" },
       { icon: Briefcase, label: "Overzicht Final", path: "/manager-dashboard/overzicht-final" },
       { icon: TrendingUp, label: "Acquisitie Conversie", path: "/manager-dashboard/acquisitie-conversie" },
