@@ -66,8 +66,21 @@ export function FinanceForecastTab({
     return { c, target, realised, forecast, margin, potential, realisedPotential, margePerHour, revRisk, financialCat, status, wns };
   }), [consultants]);
 
-  // ─── Performance perspective rows (financial consequences) ───
+  // ─── Performance perspective rows (financial consequences) — kept for KPI strip totals ───
   const perfRows = useMemo(() => consultants.map((c) => buildFinancePerfRow(c.id, c.name)), [consultants]);
+
+  // ─── Functiegroep perspective rows ───
+  const functiegroepRows = useMemo<FunctiegroepRevenueRow[]>(() => getFunctiegroepRows(), []);
+  const functiegroepChartRows = useMemo(() => functiegroepRows.map((r) => ({
+    c: { id: r.id, name: r.group },
+    realised: r.realised,
+    forecast: r.forecast,
+    potential: r.potential,
+    realisedPotential: r.realisedPotential,
+    margin: r.margin,
+    revRisk: r.revRisk,
+  })), [functiegroepRows]);
+
 
   // ─── Totals ───
   const marginTotals = useMemo(() => marginRows.reduce((a, r) => ({
