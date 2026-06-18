@@ -328,7 +328,10 @@ export default function LCB() {
             onOpenForecast={() => setForecastOpen(true)}
             onOpenSoonToStart={(id) => setSoonOverlay(id)}
             onOpenNetImpact={(id) => setNetImpactOverlay(id)}
+            perspective={financePerspective}
+            onPerspectiveChange={setFinancePerspective}
           />
+
         )}
         {tab === "signals" && (
           <SignalsTab alerts={alerts} onSelect={handleSignalClick} />
