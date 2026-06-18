@@ -1,29 +1,24 @@
-## Goal
-When the Finance & Forecast tab is in the "Omzet per functiegroep" perspective, the shared `LCBTopBar` consultant filter should show **"Functiegroepen"** as the label and **"Alle functiegroepen"** as the placeholder, instead of "Consultants / Alle consultants".
+# Status badge truncation fix
 
-## Why this needs a small refactor
-The `perspective` state currently lives **inside** `FinanceForecastTab`. `LCBTopBar` is a sibling component rendered by `LCB.tsx`, so it has no access to the active perspective. We must lift the state up one level.
+Status pills currently get visually clipped without an ellipsis in tables, and the detail-overview header pill is also truncated even though there is room to show the full text.
 
 ## Changes
 
-### 1. `src/pages/manager/LCB.tsx`
-- Add `financePerspective` state (`"margin" | "functiegroep"`).
-- Pass `perspective={financePerspective}` and `onPerspectiveChange={setFinancePerspective}` to `<FinanceForecastTab />`.
-- Pass dynamic label / placeholder to `<LCBTopBar />`:
-  - When `tab === "finance" && financePerspective === "functiegroep"` → `consultantLabel="Functiegroepen"` `consultantPlaceholder="Alle functiegroepen"`
-  - Otherwise → keep current defaults.
+### 1. Tables — show "…" when status doesn't fit
+Badges use `inline-flex … max-w-[…] truncate`, but `truncate` doesn't render an ellipsis on an inline-flex container, so the text just gets cut. Wrap the label in an inner `<span class="truncate block">` so the ellipsis actually appears.
 
-### 2. `src/components/manager/lcb/FinanceForecastTab.tsx`
-- Replace internal `useState<Perspective>("margin")` with props:
-  - `perspective: Perspective`
-  - `onPerspectiveChange: (p: Perspective) => void`
-- Wire `setPerspective` calls to `onPerspectiveChange`.
+- `src/components/manager/lcb/CandidateDetailPane.tsx` (deals table, line ~261): keep the colored pill + `max-w-[180px]`, but render `{r.dealStatus}` inside an inner `<span className="truncate block min-w-0">`. Add `title={r.dealStatus}` for hover tooltip.
+- Same treatment for any other table badge in this file that uses the same pattern (contact-status pills around lines 319 and 370) — though these are short today, apply the same wrapper for consistency.
+- `src/components/manager/lcb/DealDetailPane.tsx` activities table (line ~368, ~373): already use `truncate` on `<td>` cells, leave as-is.
 
-### 3. `src/components/manager/lcb/LCBTopBar.tsx`
-- Accept two new optional props:
-  - `consultantLabel?: string` (default `"Consultants"`)
-  - `consultantPlaceholder?: string` (default `"Alle consultants"`)
-- Use these values in the consultants `<MultiFilter />`.
+### 2. Detail overview — show full status, let box grow
+In the detail panes the header badge clips even when the panel is wide enough. Allow the pill to wrap to the full text and let the row wrap to a new line if needed.
 
-## Result
-The filter chip in the top bar will dynamically read "Functiegroepen: Alle functiegroepen" when the user switches to the functiegroep perspective inside the Finance tab, and revert to "Consultants: Alle consultants" for all other tabs / perspectives.
+- `src/components/manager/lcb/CandidateDetailPane.tsx` candidate header (line 58–60): remove any width clamp, drop `whitespace-nowrap`/`truncate` from this badge, allow the parent flex-wrap row (already `flex-wrap`) to wrap the pill onto its own line. Add `whitespace-normal break-words` and `leading-tight` so multi-line status reads cleanly.
+- `src/components/manager/lcb/DealDetailPane.tsx` deal header (line 57): remove `max-w-[200px] truncate`, add `whitespace-normal break-words leading-tight`. Keep the colored background class.
+
+No data, sort, or filter logic changes. Purely presentational tweaks to two files.
+
+## Files touched
+- `src/components/manager/lcb/CandidateDetailPane.tsx`
+- `src/components/manager/lcb/DealDetailPane.tsx`

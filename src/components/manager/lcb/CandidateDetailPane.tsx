@@ -55,7 +55,7 @@ export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm, onUserI
               <span>{candidate.id}</span>
               <span>·</span>
               <Badge>{candidate.category}</Badge>
-              <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px]", "bg-muted text-foreground border-border")}>
+              <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] whitespace-normal break-words leading-tight", "bg-muted text-foreground border-border")}>
                 {candidate.status}
               </span>
             </div>
@@ -258,8 +258,8 @@ function DealsTab({
                   <div className="text-[10px] text-muted-foreground">{r.dealId}</div>
                 </td>
                 <td className="px-2 py-1.5">
-                  <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium whitespace-nowrap max-w-[180px] truncate", dealStageBadgeClass(r.dealStatus))}>
-                    {r.dealStatus}
+                  <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium max-w-[180px]", dealStageBadgeClass(r.dealStatus))} title={r.dealStatus}>
+                    <span className="truncate block min-w-0">{r.dealStatus}</span>
                   </span>
                 </td>
                 <td className="px-2 py-1.5">
