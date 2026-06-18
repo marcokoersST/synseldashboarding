@@ -194,11 +194,13 @@ export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedI
     return [...histRows, forecastRow];
   }, [buckets, scopeRows, forecastWindow, granularity]);
 
+  const entitySingle = labelMode === "functiegroep" ? "Functiegroep" : "Consultant";
+  const entityPlural = labelMode === "functiegroep" ? "functiegroepen" : "consultants";
   const scopeLabel = scopeRows.length === 0
-    ? "Geen consultants"
+    ? `Geen ${entityPlural}`
     : isSingle
-      ? `Consultant: ${scopeRows[0].c.name}`
-      : `${scopeRows.length} consultants`;
+      ? `${entitySingle}: ${scopeRows[0].c.name}`
+      : `${scopeRows.length} ${entityPlural}`;
 
   const allLocalOn = validLocal.length === globalScope.length;
   const toggleAll = () => setLocalConsultants(allLocalOn ? [] : globalScope.map((r) => r.c.id));
@@ -228,7 +230,9 @@ export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedI
       <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
         <div>
           <h3 className="text-sm font-semibold text-foreground">Financiële ontwikkeling</h3>
-          <p className="text-[11px] text-muted-foreground">Financiële groei per consultant.</p>
+          <p className="text-[11px] text-muted-foreground">
+            {labelMode === "functiegroep" ? "Financiële groei per functiegroep." : "Financiële groei per consultant."}
+          </p>
           <p className="text-[10px] text-muted-foreground mt-0.5">Scope: {scopeLabel}</p>
         </div>
         <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
@@ -238,14 +242,16 @@ export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedI
               <Button variant="outline" size="sm" className="h-7 px-2 text-[11px] gap-1">
                 <Users className="h-3 w-3" />
                 {validLocal.length === 0
-                  ? "Alle consultants"
+                  ? (labelMode === "functiegroep" ? "Alle functiegroepen" : "Alle consultants")
                   : `${validLocal.length} geselecteerd`}
                 <ChevronDown className="h-3 w-3 opacity-60" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-64 p-2">
               <div className="flex items-center justify-between mb-1.5 pb-1.5 border-b border-border">
-                <span className="text-[11px] font-medium text-foreground">Consultants</span>
+                <span className="text-[11px] font-medium text-foreground">
+                  {labelMode === "functiegroep" ? "Functiegroepen" : "Consultants"}
+                </span>
                 <button
                   type="button"
                   onClick={toggleAll}
@@ -280,7 +286,9 @@ export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedI
                   );
                 })}
                 {globalScope.length === 0 && (
-                  <p className="text-[11px] text-muted-foreground px-2 py-1">Geen consultants in scope.</p>
+                  <p className="text-[11px] text-muted-foreground px-2 py-1">
+                    {labelMode === "functiegroep" ? "Geen functiegroepen in scope." : "Geen consultants in scope."}
+                  </p>
                 )}
               </div>
             </PopoverContent>
@@ -346,7 +354,7 @@ export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedI
 
       {scopeRows.length === 0 ? (
         <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-          Geen consultants in scope.
+          {labelMode === "functiegroep" ? "Geen functiegroepen in scope." : "Geen consultants in scope."}
         </div>
       ) : (
         <div
