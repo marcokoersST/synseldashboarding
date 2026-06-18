@@ -302,20 +302,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   }, [isTransitioning]);
 
   const handleNavClick = (item: NavItem) => {
-    if (item.label === "Manager Dashboard") {
-      if (item.subItems && !isCollapsed) {
-        const isExpanded = effectiveExpandedItems.includes(item.path);
-        if (isExpanded) {
-          setExpandedItems(prev => prev.filter(p => p !== item.path));
-          setManuallyCollapsed(prev => prev.includes(item.path) ? prev : [...prev, item.path]);
-        } else {
-          setExpandedItems(prev => [...prev, item.path]);
-          setManuallyCollapsed(prev => prev.filter(p => p !== item.path));
-        }
-      }
-      setLcChooserOpen(true);
-      return;
-    }
+
     if (item.subItems && item.subItems.length > 0 && !isCollapsed) {
       const isExpanded = effectiveExpandedItems.includes(item.path);
       if (isExpanded) {
