@@ -121,7 +121,7 @@ export function CandidateMarketTab({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="h-full flex flex-col min-h-0">
       <div className="flex items-center justify-between gap-3 mb-2">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Sales funnel per consultant</h2>
@@ -131,7 +131,7 @@ export function CandidateMarketTab({
         </div>
       </div>
 
-      <div className="overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-card relative" style={{ maxHeight: "calc(100vh - 280px)" }}>
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-card relative">
         <table className="w-full text-xs border-collapse table-fixed">
           <colgroup>
             <col style={{ width: 200 }} />
