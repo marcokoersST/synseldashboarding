@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Info, ChevronRight, ChevronDown } from "lucide-react";
 import { consultantRevenueDetailData, attritionProjectionData, activeSecondmentsData } from "@/data/managerRevenueDetailData";
