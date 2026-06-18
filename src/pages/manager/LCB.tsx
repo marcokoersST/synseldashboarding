@@ -259,7 +259,10 @@ export default function LCB() {
         selectedConsultants={selectedConsultants} onSelectedConsultants={handleSelectedConsultants}
         search={search} onSearch={setSearch}
         onReset={onResetFilters}
+        consultantLabel={tab === "finance" && financePerspective === "functiegroep" ? "Functiegroepen" : "Consultants"}
+        consultantPlaceholder={tab === "finance" && financePerspective === "functiegroep" ? "Alle functiegroepen" : "Alle consultants"}
       />
+
 
 
 
