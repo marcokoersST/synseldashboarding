@@ -259,13 +259,14 @@ export function CandidateMarketTab({
 }
 
 function Th({
-  children, align = "left", sticky, sortable, onClick, active, dir, highlight,
+  children, align = "left", sticky, sortable, onClick, active, dir, highlight, title,
 }: {
   children: React.ReactNode; align?: "left" | "right"; sticky?: boolean;
-  sortable?: boolean; onClick?: () => void; active?: boolean; dir?: SortDir; highlight?: boolean;
+  sortable?: boolean; onClick?: () => void; active?: boolean; dir?: SortDir; highlight?: boolean; title?: string;
 }) {
   return (
     <th
+      title={title}
       className={cn(
         "px-1.5 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground align-top",
         align === "right" && "text-right",
