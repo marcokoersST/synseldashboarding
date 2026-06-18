@@ -62,8 +62,9 @@ export default function LCB() {
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
   const [selectedConsultants, setSelectedConsultants] = useState<number[]>([]);
   const [search, setSearch] = useState("");
-
   const [tab, _setTab] = useState<TabId>("market");
+  const [financePerspective, setFinancePerspective] = useState<"margin" | "functiegroep">("margin");
+
   const setTab = (t: TabId) => {
     // Filter datasets differ per tab (lcbTeam vs myTeamConsultants), so clear stale selections.
     _setTab((prev) => {
