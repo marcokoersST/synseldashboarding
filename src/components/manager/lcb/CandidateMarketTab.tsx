@@ -147,11 +147,11 @@ export function CandidateMarketTab({
               <Th sticky sortable onClick={() => toggleSort("consultantName")} active={sortKey === "consultantName"} dir={sortDir} highlight={hoverCol === "consultantName"}>Consultant</Th>
               <Th sortable onClick={() => toggleSort("unit")} active={sortKey === "unit"} dir={sortDir} highlight={hoverCol === "unit"}>Unit</Th>
               {lcbFunnelSteps.map((s) => (
-                <Th key={s.key} align="right" sortable onClick={() => toggleSort(s.key as SortKey)} active={sortKey === s.key} dir={sortDir} highlight={hoverCol === s.key}>
-                  {s.label}
+                <Th key={s.key} align="right" sortable onClick={() => toggleSort(s.key as SortKey)} active={sortKey === s.key} dir={sortDir} highlight={hoverCol === s.key} title={s.label}>
+                  {SHORT_STEP_LABEL[s.key] ?? s.label}
                 </Th>
               ))}
-              <Th sortable onClick={() => toggleSort("drop")} active={sortKey === "drop"} dir={sortDir} highlight={hoverCol === "drop"}>Grootste drop-off</Th>
+              <Th sortable onClick={() => toggleSort("drop")} active={sortKey === "drop"} dir={sortDir} highlight={hoverCol === "drop"} title="Grootste drop-off">Drop-off</Th>
               <Th sortable onClick={() => toggleSort("status")} active={sortKey === "status"} dir={sortDir} highlight={hoverCol === "status"}>Status</Th>
             </tr>
           </thead>
