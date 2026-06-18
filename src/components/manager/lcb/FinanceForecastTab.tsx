@@ -254,96 +254,198 @@ function MarginTable({ rows, totals, hoverRow, hoverCol, setHoverRow, setHoverCo
   );
 }
 
-// ─────────────────────── Performance table (financial consequences) ───────────────────────
-function PerformanceTable({ rows, totals, hoverRow, hoverCol, setHoverRow, setHoverCol, onOpenPlacements, onOpenSoonToStart, onOpenStoppers, onOpenNetImpact }: any) {
-  const cols = [
-    { key: "consultant", label: "Consultant", sticky: true },
-    { key: "active", label: "Actieve kand.", right: true },
-    { key: "activeRev", label: "€/mnd actief", right: true },
-    { key: "soon", label: "Soon-to-start", right: true },
-    { key: "soonRev", label: "€/mnd soon", right: true },
-    { key: "stoppers", label: "Verw. stoppers", right: true },
-    { key: "stopperRev", label: "Omzetrisico", right: true },
-    { key: "likely", label: "Verlenging waarsch.", right: true },
-    { key: "placements", label: "Plaatsingen YTD", right: true },
-    { key: "avgMargin", label: "Ø marge/kand.", right: true },
-    { key: "netImpact", label: "Netto fin. impact", right: true },
-    { key: "ops", label: "Opdrachtgevers" },
+// ─────────────────────── Functiegroep table ───────────────────────
+type FgSortKey = "group" | "revenue" | "margin" | "forecast" | "realised" | "potential" | "realisedPot" | "revRisk" | "margePerHour" | "placements";
+type SortDir = "asc" | "desc";
+
+function FunctiegroepTable({ rows, hoverRow, hoverCol, setHoverRow, setHoverCol, lockedId, onToggleLock }: {
+  rows: FunctiegroepRevenueRow[];
+  hoverRow: number | null; hoverCol: string | null;
+  setHoverRow: (n: number | null) => void; setHoverCol: (s: string | null) => void;
+  lockedId: number | null; onToggleLock: (id: number) => void;
+}) {
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [sortKey, setSortKey] = useState<FgSortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const toggleExpand = (id: number) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+
+  const toggleSort = (k: FgSortKey) => {
+    if (sortKey === k) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else { setSortKey(k); setSortDir("asc"); }
+  };
+
+  const getVal = (r: FunctiegroepRevenueRow, k: FgSortKey): number | string => {
+    switch (k) {
+      case "group": return r.group;
+      case "revenue": return r.revenue;
+      case "margin": return r.margin;
+      case "forecast": return r.forecast;
+      case "realised": return r.revenue - r.target;
+      case "potential": return r.potential;
+      case "realisedPot": return r.realisedPotential;
+      case "revRisk": return r.revRisk;
+      case "margePerHour": return r.margePerHour;
+      case "placements": return r.placements;
+    }
+  };
+
+  const sorted = useMemo(() => {
+    if (!sortKey) return rows;
+    const mult = sortDir === "asc" ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const va = getVal(a, sortKey), vb = getVal(b, sortKey);
+      if (typeof va === "number" && typeof vb === "number") return (va - vb) * mult;
+      return String(va).localeCompare(String(vb)) * mult;
+    });
+  }, [rows, sortKey, sortDir]);
+
+  const totals = useMemo(() => rows.reduce((a, r) => ({
+    revenue: a.revenue + r.revenue,
+    margin: a.margin + r.margin,
+    forecast: a.forecast + r.forecast,
+    potential: a.potential + r.potential,
+    realisedPotential: a.realisedPotential + r.realisedPotential,
+    revRisk: a.revRisk + r.revRisk,
+    placements: a.placements + r.placements,
+    target: a.target + r.target,
+  }), { revenue: 0, margin: 0, forecast: 0, potential: 0, realisedPotential: 0, revRisk: 0, placements: 0, target: 0 }), [rows]);
+
+  const cols: { key: FgSortKey | "status"; label: string; right?: boolean; sticky?: boolean; sortable?: boolean }[] = [
+    { key: "group", label: "Functiegroep", sticky: true, sortable: true },
+    { key: "revenue", label: "Revenue (€k)", right: true, sortable: true },
+    { key: "margin", label: "Margin (€k)", right: true, sortable: true },
+    { key: "forecast", label: "Forecast (€k)", right: true, sortable: true },
+    { key: "realised", label: "Realised", right: true, sortable: true },
+    { key: "potential", label: "Potentieel", right: true, sortable: true },
+    { key: "realisedPot", label: "Realised pot.", right: true, sortable: true },
+    { key: "revRisk", label: "Revenue risk", right: true, sortable: true },
+    { key: "margePerHour", label: "Marge/uur", right: true, sortable: true },
+    { key: "placements", label: "Plaatsingen", right: true, sortable: true },
+    { key: "status", label: "Status" },
   ];
+
+  const arrow = (k: FgSortKey) => sortKey === k ? (sortDir === "asc" ? "▲" : "▼") : "↕";
+
   return (
     <table className="w-full text-xs border-collapse">
-      <THead cols={cols} hoverCol={hoverCol} />
+      <thead className="sticky top-0 z-20 bg-muted/70 backdrop-blur">
+        <tr className="text-left">
+          {cols.map((c) => (
+            <th
+              key={c.key}
+              onClick={() => c.sortable && toggleSort(c.key as FgSortKey)}
+              className={cn(
+                "px-3 py-2 font-medium text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap",
+                c.right && "text-right",
+                c.sticky && "sticky left-0 z-30 bg-muted/70 backdrop-blur border-r border-border",
+                c.sortable && "cursor-pointer select-none hover:text-foreground",
+                hoverCol === c.key && "text-foreground bg-muted/40",
+              )}
+            >
+              <span className="inline-flex items-center gap-1">
+                {c.label}
+                {c.sortable && <span className={cn("text-[9px]", sortKey === c.key ? "text-foreground" : "opacity-30")}>{arrow(c.key as FgSortKey)}</span>}
+              </span>
+            </th>
+          ))}
+        </tr>
+      </thead>
       <tbody>
-        {rows.map((r: any) => {
-          const isRow = hoverRow === r.consultantId;
+        {sorted.map((r) => {
+          const isRow = hoverRow === r.id;
+          const isLocked = lockedId === r.id;
+          const isExp = expanded.has(r.id);
           const cell = (key: string) => isRow || hoverCol === key;
-          const enter = (key: string) => () => { setHoverRow(r.consultantId); setHoverCol(key); };
-          const netClass = r.netImpact >= 0 ? "text-emerald-500" : "text-red-500";
+          const enter = (key: string) => () => { setHoverRow(r.id); setHoverCol(key); };
+          const status = statusFromRatio(r.target ? r.revenue / r.target : 0);
           return (
-            <tr key={r.consultantId} className={cn("border-t border-border", isRow && "bg-muted/30")} onMouseLeave={() => hoverRow === r.consultantId && setHoverRow(null)}>
-              <Td sticky highlight={cell("consultant")} intersect={isRow && hoverCol === "consultant"} onEnter={enter("consultant")}>
-                <span className="font-medium whitespace-nowrap">{r.consultantName}</span>
-              </Td>
-              <Td align="right" highlight={cell("active")} intersect={isRow && hoverCol === "active"} onEnter={enter("active")}>
-                <button type="button" onClick={() => onOpenPlacements(r.consultantId)} className="tabular-nums hover:text-primary hover:underline">{r.activeCandidates}</button>
-              </Td>
-              <Td align="right" highlight={cell("activeRev")} intersect={isRow && hoverCol === "activeRev"} onEnter={enter("activeRev")}>
-                <button type="button" onClick={() => onOpenPlacements(r.consultantId)} className="tabular-nums font-medium text-emerald-600 dark:text-emerald-400 hover:underline">€{r.activeMonthlyRevenue}k</button>
-              </Td>
-              <Td align="right" highlight={cell("soon")} intersect={isRow && hoverCol === "soon"} onEnter={enter("soon")}>
-                <button type="button" onClick={() => onOpenSoonToStart(r.consultantId)} className="tabular-nums hover:text-primary hover:underline">{r.soonToStart}</button>
-              </Td>
-              <Td align="right" highlight={cell("soonRev")} intersect={isRow && hoverCol === "soonRev"} onEnter={enter("soonRev")}>
-                <button type="button" onClick={() => onOpenSoonToStart(r.consultantId)} className="tabular-nums text-blue-600 dark:text-blue-400 hover:underline">€{r.soonToStartRevenue}k</button>
-              </Td>
-              <Td align="right" highlight={cell("stoppers")} intersect={isRow && hoverCol === "stoppers"} onEnter={enter("stoppers")}>
-                <button type="button" onClick={() => onOpenStoppers(r.consultantId)} className={cn("tabular-nums hover:underline", r.expectedStoppers > 0 ? "text-amber-500 font-medium" : "text-muted-foreground")}>{r.expectedStoppers}</button>
-              </Td>
-              <Td align="right" highlight={cell("stopperRev")} intersect={isRow && hoverCol === "stopperRev"} onEnter={enter("stopperRev")}>
-                <button type="button" onClick={() => onOpenStoppers(r.consultantId)} className={cn("tabular-nums hover:underline", r.stopperRiskRevenue > 0 ? "text-red-500 font-medium" : "text-muted-foreground")}>−€{r.stopperRiskRevenue}k</button>
-              </Td>
-              <Td align="right" highlight={cell("likely")} intersect={isRow && hoverCol === "likely"} onEnter={enter("likely")}>
-                <span className="tabular-nums text-[11px]">{r.likelyExtensions} <span className="text-muted-foreground">(€{r.likelyExtensionRevenue}k)</span></span>
-              </Td>
-              <Td align="right" highlight={cell("placements")} intersect={isRow && hoverCol === "placements"} onEnter={enter("placements")}>
-                <span className="tabular-nums">{r.placementsYTD}</span>
-              </Td>
-              <Td align="right" highlight={cell("avgMargin")} intersect={isRow && hoverCol === "avgMargin"} onEnter={enter("avgMargin")}>
-                <span className="tabular-nums">€{r.avgMarginPerCandidate.toLocaleString("nl-NL")}</span>
-              </Td>
-              <Td align="right" highlight={cell("netImpact")} intersect={isRow && hoverCol === "netImpact"} onEnter={enter("netImpact")}>
-                <button type="button" onClick={() => onOpenNetImpact(r.consultantId)} className={cn("tabular-nums font-bold hover:underline", netClass)}>
-                  {r.netImpact >= 0 ? "+" : ""}€{r.netImpact}k
-                </button>
-              </Td>
-              <Td highlight={cell("ops")} intersect={isRow && hoverCol === "ops"} onEnter={enter("ops")}>
-                <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px]">{r.topOpdrachtgevers[0]}</span>
-              </Td>
-            </tr>
+            <React.Fragment key={r.id}>
+              <tr
+                className={cn("border-t border-border", isRow && "bg-muted/30", isLocked && "bg-primary/10 ring-1 ring-inset ring-primary/30")}
+                onMouseLeave={() => hoverRow === r.id && setHoverRow(null)}
+              >
+                <Td sticky highlight={cell("group")} intersect={isRow && hoverCol === "group"} onEnter={enter("group")}>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(r.id)}
+                      className="p-0.5 hover:text-primary"
+                      title={isExp ? "Inklappen" : "Toon functies"}
+                    >
+                      {isExp ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onToggleLock(r.id)}
+                      className={cn("font-medium whitespace-nowrap text-left hover:text-primary hover:underline", isLocked && "text-primary underline")}
+                      title={isLocked ? "Klik om te ontgrendelen" : "Klik om in de grafiek vast te zetten"}
+                    >
+                      {r.group}
+                    </button>
+                  </div>
+                </Td>
+                <Td align="right" highlight={cell("revenue")} intersect={isRow && hoverCol === "revenue"} onEnter={enter("revenue")}><span className="tabular-nums font-semibold">€{r.revenue}k</span></Td>
+                <Td align="right" highlight={cell("margin")} intersect={isRow && hoverCol === "margin"} onEnter={enter("margin")}><span className="tabular-nums">€{r.margin}k</span></Td>
+                <Td align="right" highlight={cell("forecast")} intersect={isRow && hoverCol === "forecast"} onEnter={enter("forecast")}><span className="tabular-nums">€{r.forecast}k</span></Td>
+                <Td align="right" highlight={cell("realised")} intersect={isRow && hoverCol === "realised"} onEnter={enter("realised")}>
+                  <span className={cn("tabular-nums font-medium", r.revenue - r.target >= 0 ? "text-emerald-500" : "text-red-500")}>€{r.revenue}k</span>
+                </Td>
+                <Td align="right" highlight={cell("potential")} intersect={isRow && hoverCol === "potential"} onEnter={enter("potential")}><span className="tabular-nums">€{r.potential}k</span></Td>
+                <Td align="right" highlight={cell("realisedPot")} intersect={isRow && hoverCol === "realisedPot"} onEnter={enter("realisedPot")}><span className="tabular-nums">€{r.realisedPotential}k</span></Td>
+                <Td align="right" highlight={cell("revRisk")} intersect={isRow && hoverCol === "revRisk"} onEnter={enter("revRisk")}>
+                  <span className={cn("tabular-nums", r.revRisk > 0 ? "text-amber-500" : "text-muted-foreground")}>€{r.revRisk}</span>
+                </Td>
+                <Td align="right" highlight={cell("margePerHour")} intersect={isRow && hoverCol === "margePerHour"} onEnter={enter("margePerHour")}><span className="tabular-nums">€{r.margePerHour}</span></Td>
+                <Td align="right" highlight={cell("placements")} intersect={isRow && hoverCol === "placements"} onEnter={enter("placements")}><span className="tabular-nums">{r.placements}</span></Td>
+                <Td highlight={cell("status")} intersect={isRow && hoverCol === "status"} onEnter={enter("status")}>
+                  <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium", LCB_STATUS_BG[status])}>{LCB_STATUS_LABEL[status]}</span>
+                </Td>
+              </tr>
+              {isExp && r.functies.map((f) => (
+                <tr key={`${r.id}-${f.functie}`} className="border-t border-border/50 bg-muted/10">
+                  <td className="sticky left-0 z-10 bg-muted/10 px-3 py-1 border-r border-border pl-10 text-[11px] text-muted-foreground whitespace-nowrap">{f.functie}</td>
+                  <td className="px-3 py-1 text-right tabular-nums">€{f.revenue}k</td>
+                  <td className="px-3 py-1 text-right tabular-nums">€{f.margin}k</td>
+                  <td className="px-3 py-1 text-right tabular-nums">€{f.forecast}k</td>
+                  <td className={cn("px-3 py-1 text-right tabular-nums", f.revenue - f.target >= 0 ? "text-emerald-500" : "text-red-500")}>€{f.revenue}k</td>
+                  <td className="px-3 py-1 text-right tabular-nums">€{f.potential}k</td>
+                  <td className="px-3 py-1 text-right tabular-nums">€{f.realisedPotential}k</td>
+                  <td className={cn("px-3 py-1 text-right tabular-nums", f.revRisk > 0 ? "text-amber-500" : "text-muted-foreground")}>€{f.revRisk}</td>
+                  <td className="px-3 py-1 text-right tabular-nums">€{f.margePerHour}</td>
+                  <td className="px-3 py-1 text-right tabular-nums">{f.placements}</td>
+                  <td />
+                </tr>
+              ))}
+            </React.Fragment>
           );
         })}
       </tbody>
       <tfoot className="sticky bottom-0 z-20 bg-card border-t-2 border-border font-semibold">
         <tr>
           <td className="sticky left-0 z-10 bg-card px-3 py-2 border-r border-border">Totaal</td>
-          <td className="px-3 py-2 text-right tabular-nums">{totals.activeCandidates}</td>
-          <td className="px-3 py-2 text-right tabular-nums text-emerald-600 dark:text-emerald-400">€{totals.activeMonthlyRevenue}k</td>
-          <td className="px-3 py-2 text-right tabular-nums">{totals.soonToStart}</td>
-          <td className="px-3 py-2 text-right tabular-nums text-blue-600 dark:text-blue-400">€{totals.soonToStartRevenue}k</td>
-          <td className="px-3 py-2 text-right tabular-nums">{totals.expectedStoppers}</td>
-          <td className="px-3 py-2 text-right tabular-nums text-red-500">−€{totals.stopperRiskRevenue}k</td>
-          <td className="px-3 py-2 text-right tabular-nums text-[11px]">{totals.likelyExtensions} (€{totals.likelyExtensionRevenue}k)</td>
-          <td className="px-3 py-2 text-right tabular-nums">{totals.placementsYTD}</td>
+          <td className="px-3 py-2 text-right tabular-nums">€{totals.revenue}k</td>
+          <td className="px-3 py-2 text-right tabular-nums">€{totals.margin}k</td>
+          <td className="px-3 py-2 text-right tabular-nums">€{totals.forecast}k</td>
+          <td className="px-3 py-2 text-right tabular-nums">€{totals.revenue}k</td>
+          <td className="px-3 py-2 text-right tabular-nums">€{totals.potential}k</td>
+          <td className="px-3 py-2 text-right tabular-nums">€{totals.realisedPotential}k</td>
+          <td className="px-3 py-2 text-right tabular-nums text-amber-500">€{totals.revRisk}</td>
           <td className="px-3 py-2" />
-          <td className={cn("px-3 py-2 text-right tabular-nums font-bold", totals.netImpact >= 0 ? "text-emerald-500" : "text-red-500")}>
-            {totals.netImpact >= 0 ? "+" : ""}€{totals.netImpact}k
-          </td>
+          <td className="px-3 py-2 text-right tabular-nums">{totals.placements}</td>
           <td />
         </tr>
       </tfoot>
     </table>
   );
 }
+
+
 
 // ─────────────────────── shared bits ───────────────────────
 function THead({ cols, hoverCol }: { cols: { key: string; label: string; sticky?: boolean; right?: boolean }[]; hoverCol: string | null }) {
