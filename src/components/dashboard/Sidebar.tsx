@@ -115,11 +115,7 @@ const navItems: NavItem[] = [
   { 
     icon: Briefcase, 
     label: "Manager Dashboard", 
-    path: "/manager-dashboard/LC-A",
-    subItems: [
-      { icon: Eye, label: "LC-A", path: "/manager-dashboard/LC-A" },
-      { icon: Eye, label: "LC-B", path: "/manager-dashboard/LC-B" },
-    ]
+    path: "/manager-dashboard/LC-B",
   },
   {
     icon: Megaphone,
@@ -231,6 +227,7 @@ const navItems: NavItem[] = [
     path: "/manager-dashboard",
     sectionLabel: "Archived",
     subItems: [
+      { icon: Eye, label: "LC-A", path: "/manager-dashboard/LC-A" },
       { icon: Briefcase, label: "Overzicht manager dashboard oud", path: "/manager-dashboard" },
       { icon: Briefcase, label: "Overzicht Final", path: "/manager-dashboard/overzicht-final" },
       { icon: TrendingUp, label: "Acquisitie Conversie", path: "/manager-dashboard/acquisitie-conversie" },
@@ -305,20 +302,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   }, [isTransitioning]);
 
   const handleNavClick = (item: NavItem) => {
-    if (item.label === "Manager Dashboard") {
-      if (item.subItems && !isCollapsed) {
-        const isExpanded = effectiveExpandedItems.includes(item.path);
-        if (isExpanded) {
-          setExpandedItems(prev => prev.filter(p => p !== item.path));
-          setManuallyCollapsed(prev => prev.includes(item.path) ? prev : [...prev, item.path]);
-        } else {
-          setExpandedItems(prev => [...prev, item.path]);
-          setManuallyCollapsed(prev => prev.filter(p => p !== item.path));
-        }
-      }
-      setLcChooserOpen(true);
-      return;
-    }
+
     if (item.subItems && item.subItems.length > 0 && !isCollapsed) {
       const isExpanded = effectiveExpandedItems.includes(item.path);
       if (isExpanded) {
