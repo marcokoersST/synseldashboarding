@@ -90,7 +90,7 @@ function loadPersisted(): Persisted {
   } catch { return {}; }
 }
 
-export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedIdProp, onLockedIdChange }: Props) {
+export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedIdProp, onLockedIdChange, labelMode = "consultant" }: Props) {
   const initial = useMemo(() => loadPersisted(), []);
   const [granularity, setGranularity] = useState<Granularity>(initial.granularity ?? "periode");
   const [localConsultants, setLocalConsultants] = useState<number[]>(initial.localConsultants ?? []);
