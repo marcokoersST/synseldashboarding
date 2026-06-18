@@ -108,16 +108,18 @@ export function FinanceForecastTab({
       {/* Perspective switcher */}
       <div className="flex items-center justify-between gap-3 mb-2">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">Omzet & forecast per consultant</h2>
+          <h2 className="text-sm font-semibold text-foreground">
+            {perspective === "margin" ? "Omzet & forecast per consultant" : "Omzet & forecast per functiegroep"}
+          </h2>
           <p className="text-[11px] text-muted-foreground">
             {perspective === "margin"
               ? "Marge-perspectief: financiële cijfers centraal. Klik een bedrag voor onderliggende deals."
-              : "Performance-perspectief: actieve kandidaten met hun financiële gevolgen. Klik een aantal voor onderliggende kandidaten."}
+              : "Omzet en marge per functiegroep. Klik een groep om functies te tonen."}
           </p>
         </div>
         <div className="inline-flex items-center rounded-md border border-border p-0.5 bg-card text-[11px]">
           <PerspBtn active={perspective === "margin"} onClick={() => setPerspective("margin")}>Marge</PerspBtn>
-          <PerspBtn active={perspective === "performance"} onClick={() => setPerspective("performance")}>Performance</PerspBtn>
+          <PerspBtn active={perspective === "functiegroep"} onClick={() => setPerspective("functiegroep")}>Omzet per functiegroep</PerspBtn>
         </div>
       </div>
 
@@ -132,18 +134,15 @@ export function FinanceForecastTab({
               lockedId={lockedId} onToggleLock={toggleLock}
             />
           ) : (
-            <PerformanceTable
-              rows={perfRows} totals={perfTotals}
+            <FunctiegroepTable
+              rows={functiegroepRows}
               hoverRow={hoverRow} hoverCol={hoverCol}
               setHoverRow={setHoverRow} setHoverCol={setHoverCol}
-              onOpenPlacements={onOpenPlacements}
-              onOpenSoonToStart={onOpenSoonToStart}
-              onOpenStoppers={onOpenStoppers}
-              onOpenNetImpact={onOpenNetImpact}
+              lockedId={lockedId} onToggleLock={toggleLock}
             />
           )}
         </div>
-        {perspective === "margin" && (
+        {perspective === "margin" ? (
           <FinanceTrendChart
             rows={marginRows}
             selectedConsultants={selectedConsultants}
@@ -152,6 +151,14 @@ export function FinanceForecastTab({
             onDrilldown={(_bucket, _metric, ids) => {
               if (ids.length === 1) onOpenRevenue(ids[0]);
             }}
+          />
+        ) : (
+          <FinanceTrendChart
+            rows={functiegroepChartRows}
+            selectedConsultants={[]}
+            lockedId={lockedId}
+            onLockedIdChange={setLockedId}
+            onDrilldown={() => {}}
           />
         )}
       </div>
