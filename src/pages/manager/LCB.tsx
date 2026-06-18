@@ -62,8 +62,9 @@ export default function LCB() {
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
   const [selectedConsultants, setSelectedConsultants] = useState<number[]>([]);
   const [search, setSearch] = useState("");
-
   const [tab, _setTab] = useState<TabId>("market");
+  const [financePerspective, setFinancePerspective] = useState<"margin" | "functiegroep">("margin");
+
   const setTab = (t: TabId) => {
     // Filter datasets differ per tab (lcbTeam vs myTeamConsultants), so clear stale selections.
     _setTab((prev) => {
@@ -258,7 +259,10 @@ export default function LCB() {
         selectedConsultants={selectedConsultants} onSelectedConsultants={handleSelectedConsultants}
         search={search} onSearch={setSearch}
         onReset={onResetFilters}
+        consultantLabel={tab === "finance" && financePerspective === "functiegroep" ? "Functiegroepen" : "Consultants"}
+        consultantPlaceholder={tab === "finance" && financePerspective === "functiegroep" ? "Alle functiegroepen" : "Alle consultants"}
       />
+
 
 
 
@@ -324,7 +328,10 @@ export default function LCB() {
             onOpenForecast={() => setForecastOpen(true)}
             onOpenSoonToStart={(id) => setSoonOverlay(id)}
             onOpenNetImpact={(id) => setNetImpactOverlay(id)}
+            perspective={financePerspective}
+            onPerspectiveChange={setFinancePerspective}
           />
+
         )}
         {tab === "signals" && (
           <SignalsTab alerts={alerts} onSelect={handleSignalClick} />

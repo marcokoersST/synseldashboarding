@@ -21,18 +21,27 @@ interface Props {
   onOpenForecast: () => void;
   onOpenSoonToStart: (consultantId: number) => void;
   onOpenNetImpact: (consultantId: number) => void;
+  perspective?: Perspective;
+  onPerspectiveChange?: (p: Perspective) => void;
 }
 
 export function FinanceForecastTab({
   selectedUnits, selectedConsultants, search,
   onOpenStoppers, onOpenPlacements, onOpenRevenue,
   onOpenYtd, onOpenForecast, onOpenSoonToStart, onOpenNetImpact,
+  perspective: perspectiveProp, onPerspectiveChange,
 }: Props) {
-  const [perspective, setPerspective] = useState<Perspective>("margin");
+  const [perspectiveLocal, setPerspectiveLocal] = useState<Perspective>("margin");
+  const perspective = perspectiveProp ?? perspectiveLocal;
+  const setPerspective = (p: Perspective) => {
+    if (onPerspectiveChange) onPerspectiveChange(p);
+    else setPerspectiveLocal(p);
+  };
   const [hoverRow, setHoverRow] = useState<number | null>(null);
   const [hoverCol, setHoverCol] = useState<string | null>(null);
   const [lockedId, setLockedId] = useState<number | null>(null);
   const toggleLock = (id: number) => setLockedId((curr) => (curr === id ? null : id));
+
 
   const consultants = useMemo(() => {
     let r = lcbTeam;
