@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Info } from "lucide-react";
+import { Info, ChevronRight, ChevronDown } from "lucide-react";
 import { consultantRevenueDetailData, attritionProjectionData, activeSecondmentsData } from "@/data/managerRevenueDetailData";
 import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromRatio } from "@/lib/lcbStatus";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { buildFinancePerfRow, lcbTeam } from "@/data/lcbMarketData";
 import { FinanceTrendChart } from "./FinanceTrendChart";
+import { getFunctiegroepRows, type FunctiegroepRevenueRow, type FunctieRevenueRow } from "@/data/lcbFunctiegroepRevenue";
 
-type Perspective = "margin" | "performance";
+type Perspective = "margin" | "functiegroep";
 
 interface Props {
   selectedUnits: string[];
