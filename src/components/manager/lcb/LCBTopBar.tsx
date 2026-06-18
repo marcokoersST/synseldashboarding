@@ -19,6 +19,8 @@ interface Props {
   search: string;
   onSearch: (v: string) => void;
   onReset: () => void;
+  consultantLabel?: string;
+  consultantPlaceholder?: string;
 }
 
 export function LCBTopBar({
@@ -26,6 +28,8 @@ export function LCBTopBar({
   units, selectedUnits, onSelectedUnits,
   consultants, selectedConsultants, onSelectedConsultants,
   search, onSearch, onReset,
+  consultantLabel = "Consultants",
+  consultantPlaceholder = "Alle consultants",
 }: Props) {
   const [focused, setFocused] = useState(false);
   return (
@@ -38,11 +42,12 @@ export function LCBTopBar({
         onChange={onSelectedUnits}
       />
       <MultiFilter
-        label="Consultants" placeholder="Alle consultants"
+        label={consultantLabel} placeholder={consultantPlaceholder}
         values={selectedConsultants.map(String)}
         options={consultants.map((c) => ({ value: String(c.id), label: c.name }))}
         onChange={(v) => onSelectedConsultants(v.map(Number))}
       />
+
       <div className="relative">
         <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
         <Input
