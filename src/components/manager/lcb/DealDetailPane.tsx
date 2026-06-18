@@ -54,7 +54,7 @@ export function DealDetailPane({ deal, onOpenCandidate, onOpenComm }: Props) {
             <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span>{deal.dealId}</span>
               <span>·</span>
-              <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium max-w-[200px] truncate", dealStageBadgeClass(deal.dealStatus))}>
+              <span className={cn("inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium whitespace-normal break-words leading-tight", dealStageBadgeClass(deal.dealStatus))}>
                 {deal.dealStatus}
               </span>
             </div>
