@@ -10,6 +10,8 @@ import {
 } from "@/data/lcbMarketData";
 import { dealStageBadgeClass, contactStatusBadgeClass, LCB_DEAL_STAGES, CONTACT_STATUSES } from "@/data/lcbDealStages";
 import { MultiSelectFilter, SortableTh, useSort, ResetButton, filterBy } from "./tableControls";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
 
 type Tab = "summary" | "deals" | "emails" | "calls";
 
