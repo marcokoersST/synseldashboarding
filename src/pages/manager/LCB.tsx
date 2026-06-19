@@ -506,7 +506,29 @@ function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[];
   const sp = (k: CandSortKey) => ({ sortDir: sortKey === k ? sortDir : undefined, onClick: () => toggle(k) });
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-3">
+    <div className="relative flex-1 min-h-0 overflow-y-auto p-3">
+      <DevNote
+        id={8}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want sortable lists of all candidates (or deals) achter een funnel-cel, <strong>so that</strong> I can pick a record and inspect details in the right pane.</>}
+        logic={`Step list pane (left side van LcbSplitOverlay):
+
+  • Bron: getCandidatesForStep(consultantId, step) of
+    getDealsForStep(consultantId, step) afhankelijk van
+    stepDef.entity ('candidate' | 'deal').
+  • Sorteren: klik op kolomheader togglet asc/desc; sleutels
+    name/id/category/status/deals/proposals/emails/calls/date
+    (kandidaten) of dealName/dealStatus/candidateName/
+    opdrachtgeverName/date (deals).
+  • compact-mode (selected != null) verbergt de extra
+    kolommen zodat de lijst smal genoeg blijft naast het
+    detail-pane.
+  • Klik rij → onSelect(record) zet selectedCandidate of
+    selectedDeal in LCB.tsx; het rechter pane mount dan de
+    CandidateDetailPane / DealDetailPane.`}
+      />
+
       <div className="rounded-md border border-border overflow-hidden">
         <table className="w-full text-[11px]">
           <thead className="bg-muted/60 sticky top-0">
