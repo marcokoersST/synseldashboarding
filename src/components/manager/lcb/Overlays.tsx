@@ -590,7 +590,9 @@ export function NetImpactOverlay({ open, consultantId, onClose }: CtxProps) {
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Netto financiële impact"]}
       title={`Netto financiële impact — ${c?.name ?? ""}`}
       subtitle="Optelsom van actieve omzet + soon-to-start − omzetrisico stoppers.">
+      <OverlayDevNote id={19} story={<><strong>As a manager</strong>, I want one combined number that says of een consultant deze maand groeit of krimpt, <strong>so that</strong> I can prioritise interventions.</>} logic={`NetImpactOverlay:\n\n  • Bron: buildFinancePerfRow(consultantId).\n  • Formule: + activeMonthlyRevenue\n            + soonToStartRevenue\n            − stopperRiskRevenue\n            = netImpact (groen ≥0, rood <0).\n  • Voetnoot: likelyExtensions + likelyExtensionRevenue\n    als 'potentieel terugverdienen'.`} />
       {r && (
+
         <div className="space-y-3">
           <div className="rounded-lg border border-border bg-card p-4 space-y-2">
             <ImpactLine label="+ Actieve omzet" value={`€${r.activeMonthlyRevenue}k`} tone="pos" />
