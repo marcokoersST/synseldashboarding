@@ -467,7 +467,9 @@ export function StopperOverlay({ open, consultantId, onClose }: CtxProps) {
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Verwachte stoppers"]}
       title={`Verwachte stoppers — ${c?.name ?? ""}`}
       subtitle={`${items.length} kandidaten met omzetrisico.`}>
+      <OverlayDevNote id={16} story={<><strong>As a manager</strong>, I want to see expected stoppers per consultant with omzetrisico en AI-advies, <strong>so that</strong> I can plan verlengingen of vervangingen on time.</>} logic={`StopperOverlay:\n\n  • Bron: attritionProjectionData.flatMap(...) →\n    kandidaten waar consultantName matcht. period\n    komt mee uit de outer attrition-record.\n  • Kolommen: Periode, Kandidaat, Opdrachtgever\n    (deterministische placeholder), Omzetrisico\n    (revenue, rood), Verlenging waarsch. (i%2),\n    Reden (notes), AI advies (aiAnalysis), CRM-icon.`} />
       <div className="rounded-lg border border-border overflow-auto">
+
         <table className="w-full text-xs">
           <thead className="bg-muted/60"><tr className="text-left">
             <Th>Periode</Th><Th>Kandidaat</Th><Th>Opdrachtgever</Th><Th align="right">Omzetrisico</Th><Th>Verlenging waarsch.</Th><Th>Reden</Th><Th>AI advies</Th><Th>CRM</Th>
