@@ -231,19 +231,19 @@ export default function LCB() {
           id={6}
           floating
           floatingClassName="top-1 right-2"
-          story={<><strong>As a manager</strong>, I want a glanceable status pill en data-refresh-tijd in de pagina-header, <strong>so that</strong> I know in 1 oogopslag of LC-B aandacht nodig heeft en hoe vers de data is.</>}
+          story={<><strong>As a manager</strong>, I want a glanceable status pill and data-refresh timestamp in the page header, <strong>so that</strong> I can tell at one glance whether LC-B needs attention and how fresh the data is.</>}
           logic={`Page header:
 
-  • Status pill = LCB_STATUS_LABEL[statusFromScore(globalScore)]
-    waar globalScore = round((avgSkillScore +
+  • Status pill = LCB_STATUS_LABEL[statusFromScore(globalScore)],
+    where globalScore = round((avgSkillScore +
     operationeelScore + omzetScore) / 3).
   • operationeelScore = totalPlaatsingen / totalIntakes × 100
-    (gecapt op 100).
-  • omzetScore = ytdRealised / ytdTarget × 100 (gecapt op 100).
-  • avgSkillScore = gemiddelde overall() over alle
-    consultantSkillData rijen.
-  • Refresh-label = nieuwste new Date() bij mount,
-    geformatteerd als '14:32 · 19 jun'.`}
+    (capped at 100).
+  • omzetScore = ytdRealised / ytdTarget × 100 (capped at 100).
+  • avgSkillScore = mean of overall() across every row in
+    consultantSkillData.
+  • Refresh label = latest new Date() at mount,
+    formatted as '14:32 · 19 jun'.`}
         />
 
         <div className="relative flex h-12 items-center gap-3 px-4">
@@ -317,13 +317,12 @@ export default function LCB() {
           logic={`Tab strip:
 
   • TABS = market | development | finance | signals.
-  • setTab() reset units en consultants bij tab-wissel,
-    omdat development gebruik maakt van
-    myTeamConsultants terwijl market/finance lcbTeam
-    gebruiken (verschillende id-ruimtes).
-  • Signals tab toont alerts.length als badge; rood
-    indien alerts.filter(severity==='critical').length > 0,
-    anders amber.`}
+  • setTab() resets units and consultants on tab switch,
+    because development uses myTeamConsultants while
+    market / finance use lcbTeam (different id spaces).
+  • Signals tab shows alerts.length as a badge; red
+    when alerts.filter(severity==='critical').length > 0,
+    otherwise amber.`}
         />
         {TABS.map((t) => {
           const isSignals = t.id === "signals";
@@ -511,22 +510,22 @@ function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[];
         id={8}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want sortable lists of all candidates (or deals) achter een funnel-cel, <strong>so that</strong> I can pick a record and inspect details in the right pane.</>}
-        logic={`Step list pane (left side van LcbSplitOverlay):
+        story={<><strong>As a manager</strong>, I want sortable lists of all candidates (or deals) behind a funnel cell, <strong>so that</strong> I can pick a record and inspect details in the right pane.</>}
+        logic={`Step list pane (left side of LcbSplitOverlay):
 
-  • Bron: getCandidatesForStep(consultantId, step) of
-    getDealsForStep(consultantId, step) afhankelijk van
+  • Source: getCandidatesForStep(consultantId, step) or
+    getDealsForStep(consultantId, step), depending on
     stepDef.entity ('candidate' | 'deal').
-  • Sorteren: klik op kolomheader togglet asc/desc; sleutels
-    name/id/category/status/deals/proposals/emails/calls/date
-    (kandidaten) of dealName/dealStatus/candidateName/
-    opdrachtgeverName/date (deals).
-  • compact-mode (selected != null) verbergt de extra
-    kolommen zodat de lijst smal genoeg blijft naast het
-    detail-pane.
-  • Klik rij → onSelect(record) zet selectedCandidate of
-    selectedDeal in LCB.tsx; het rechter pane mount dan de
-    CandidateDetailPane / DealDetailPane.`}
+  • Sorting: clicking a column header toggles asc/desc;
+    keys name/id/category/status/deals/proposals/emails/
+    calls/date (candidates) or dealName/dealStatus/
+    candidateName/opdrachtgeverName/date (deals).
+  • compact-mode (selected != null) hides extra columns
+    so the list stays narrow next to the detail pane.
+  • Click row → onSelect(record) sets selectedCandidate
+    or selectedDeal in LCB.tsx; the right pane then mounts
+    CandidateDetailPane / DealDetailPane. Picking another
+    row in the list swaps the right pane in place.`}
       />
 
       <div className="rounded-md border border-border overflow-hidden">
@@ -617,14 +616,15 @@ function StepDealList({ rows, selected, onSelect }: { rows: DealRow[]; selected:
         id={8}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want a sortable deal-list achter een funnel-cel, <strong>so that</strong> I can pick a deal and inspect its dossier in the right pane.</>}
-        logic={`Step deal-list pane: zie #8 op de kandidatenvariant.
-Bron: getDealsForStep(consultantId, step).
-Sorteerbare kolommen: dealName, dealStatus,
+        story={<><strong>As a manager</strong>, I want a sortable deal list behind a funnel cell, <strong>so that</strong> I can pick a deal and inspect its dossier in the right pane.</>}
+        logic={`Step deal-list pane: see #8 candidate variant.
+Source: getDealsForStep(consultantId, step).
+Sortable columns: dealName, dealStatus,
 candidateName, opdrachtgeverName, date (composed
-van lastUpdatedDate + lastUpdatedTime).
-Klik rij → setSelectedDeal in LCB.tsx; opent
-DealDetailPane in het rechter pane.`}
+from lastUpdatedDate + lastUpdatedTime).
+Click row → setSelectedDeal in LCB.tsx; opens
+DealDetailPane in the right pane. Picking another
+row swaps the right pane in place.`}
       />
 
       <div className="rounded-md border border-border overflow-hidden">
@@ -744,7 +744,7 @@ function SignalsTab({ alerts, onSelect }: { alerts: DashboardAlert[]; onSelect: 
         id={5}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want a grouped list of alerts (kritiek / aandacht / info), <strong>so that</strong> I can jump straight to the consultant or funnelstap that needs action.</>}
+        story={<><strong>As a manager</strong>, I want a grouped list of alerts (critical / attention / info), <strong>so that</strong> I can jump straight to the consultant or funnel step that needs action.</>}
         logic={`Signals tab content:
 
   • Source: generateAlerts() from

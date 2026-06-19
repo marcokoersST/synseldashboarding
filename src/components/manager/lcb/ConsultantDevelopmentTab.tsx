@@ -65,7 +65,7 @@ export function ConsultantDevelopmentTab({ selectedUnits, selectedConsultants, s
         id={3}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want overall, quality en volume scores plus open coaching doelen per consultant, <strong>so that</strong> I can prioritise who to coach next.</>}
+        story={<><strong>As a manager</strong>, I want overall, quality and volume scores plus open coaching goals per consultant, <strong>so that</strong> I can prioritise who to coach next.</>}
         logic={`Consultant Development table:
 
   • Rows: consultantSkillData, filtered by selectedUnits,
@@ -80,13 +80,13 @@ export function ConsultantDevelopmentTab({ selectedUnits, selectedConsultants, s
     procedureInschrijving, systeemHygieneScore).
   • Volume  = avg(responsiveness, networking,
     procedureAcquisities).
-  • Open / Behaald = managerGoalsData filtered op
+  • Open / Achieved = managerGoalsData filtered by
     consultantId, completed flag.
   • Key improvement = worst step ratio in
     consultantFunnelDataV2 (step / prevStep).
-  • Coaching prio: critical → Hoog, attention → Middel,
-    clean → Laag.
-  • Click rij → onOpenConsultant(id) opent
+  • Coaching priority: critical → High, attention → Medium,
+    clean → Low.
+  • Click row → onOpenConsultant(id) opens
     DevelopmentOverlay.`}
       />
       <div className="flex items-start justify-between gap-3 mb-3">

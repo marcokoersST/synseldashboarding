@@ -53,23 +53,23 @@ export function DealDetailPane({ deal, onOpenCandidate, onOpenComm }: Props) {
         id={10}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want a deal dossier with AI step-checks, contact-check, notities, meetings en bron-communicatie, <strong>so that</strong> I can verify the deal is healthy and pick up follow-up actions.</>}
+        story={<><strong>As a manager</strong>, I want a deal dossier with AI step checks, contact check, notes, meetings and source communication, <strong>so that</strong> I can verify the deal is healthy and pick up follow-up actions.</>}
         logic={`DealDetailPane:
 
   • Data: getDealNotes / Meetings / Activity / Evidence
-    + getCandidateNotes voor inschrijving-bewijs.
+    + getCandidateNotes for inschrijving (sign-up) proof.
   • Header: deal stage badge via dealStageBadgeClass,
-    kandidaat klikbaar → onOpenCandidate(id, name).
-  • AiStepChecks: per stap (inschrijving → plaatsing)
-    autoResult based on evidence (match, owner mail/
+    candidate is clickable → onOpenCandidate(id, name).
+  • AiStepChecks: per step (inschrijving → plaatsing)
+    autoResult based on evidence (match, owner mail /
     call proof, intake meeting, sollicitatie meeting,
-    vervolg meeting, geplaatst). Manual overrides
-    opslagbaar in localStorage 'lcb.manualStepProof.*'.
-  • ContactCheck: last mail/call van consultant.
-  • LopendeZaakCheck: alleen voor stage
-    '2.3 | Lopende zaak' — toont stale flag.
-  • Emails/Calls tabellen filteren op contactStatus,
-    klik rij → onOpenComm(item, contextLabel).`}
+    follow-up meeting, geplaatst). Manual overrides are
+    stored in localStorage 'lcb.manualStepProof.*'.
+  • ContactCheck: last mail / call from the consultant.
+  • LopendeZaakCheck: only for stage
+    '2.3 | Lopende zaak' — shows stale flag.
+  • Emails / Calls tables filter by contactStatus;
+    click row → onOpenComm(item, contextLabel).`}
       />
       <div className="shrink-0 px-4 py-3 border-b border-border bg-card/30 space-y-2">
 
