@@ -744,7 +744,7 @@ function SignalsTab({ alerts, onSelect }: { alerts: DashboardAlert[]; onSelect: 
         id={5}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want a grouped list of alerts (kritiek / aandacht / info), <strong>so that</strong> I can jump straight to the consultant or funnelstap that needs action.</>}
+        story={<><strong>As a manager</strong>, I want a grouped list of alerts (critical / attention / info), <strong>so that</strong> I can jump straight to the consultant or funnel step that needs action.</>}
         logic={`Signals tab content:
 
   • Source: generateAlerts() from
