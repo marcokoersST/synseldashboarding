@@ -10,6 +10,8 @@ import {
 } from "@/data/lcbMarketData";
 import { dealStageBadgeClass, contactStatusBadgeClass, CONTACT_STATUSES } from "@/data/lcbDealStages";
 import { MultiSelectFilter, SortableTh, useSort, ResetButton, filterBy } from "./tableControls";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
 
 interface Props {
   deal: DealRow;
