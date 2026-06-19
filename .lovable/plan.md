@@ -1,28 +1,22 @@
-## Plan: Call Dashboarding page
+## Plan: filters, last-call column, full consultant roster
 
-Create a new Concepts dashboard at `/calldashboarding` showing live call activity per consultant, styled in the Lovable design system (not the green/blue legacy look — that screenshot is reference for *content*, not visual style).
+Update `src/pages/concepts/CallDashboarding.tsx` only.
 
-### Columns
-- Agent (consultant name)
-- Status (Free / On Call) — colored badge
-- Total Calls
-- Incoming
-- Outgoing
-- Total Talk Time `[H:M:S]`
+### 1. Use all 56 consultants
+Switch the data source from `consultantCallData` (which is built from `myTeamConsultants` only) to building rows directly from `allConsultants` in `src/data/managerData.ts`. For each consultant, deterministically generate mock call data (seeded by `consultant.id`) for: `inbound`, `outbound`, `totalMinutes`, `lastCallAt`, `status`. Deterministic = stable across renders, no flicker.
 
-### Files
-1. **New** `src/pages/concepts/CallDashboarding.tsx`
-   - Reuse `consultantCallData` from `src/data/managerOperationalData.ts` (already contains inbound, outbound, totalMinutes per consultant).
-   - Derive `status` from a small pseudo-random/seeded flag (1–2 agents "On Call", rest "Free") — mock only.
-   - Header tiles: Total Calls, Total Incoming, Total Outgoing, Total Talk Time (uses `AnimatedNumber` + `formatTime` pattern from `ManagerCallsCard`).
-   - Table styled with semantic tokens (`bg-card`, `border-border`, `text-muted-foreground`, status badge using `bg-success/10 text-success` for Free and `bg-primary/10 text-primary` (pulsing dot) for On Call).
-   - Sortable columns (ArrowUpDown), same pattern as `ManagerCallsCard` detail view.
-   - Unit filter popover (multi-select, "Alles aan/uit") consistent with project conventions.
+### 2. New column: Last Call
+Add column "Last Call" between Status and Total Calls (or at the end — will place at the end after Talk Time for readability). Shows relative time like `2m ago`, `34m ago`, `2h ago`, `Yesterday`. Sortable on the raw timestamp. For agents whose status is "On Call", shows `Now` with the pulsing primary dot.
 
-2. **Edit** `src/App.tsx` — register route `/calldashboarding` → `CallDashboarding` inside `AppLayout`.
+### 3. Selection filters (consultant + unit)
+Add two multi-select Popover filters above the table, matching the project's existing pattern (`Alles aan/uit` batch toggles, `text-xs ghost buttons`, semantic tokens):
+- **Unit** — derived from `Array.from(new Set(rows.map(r => r.unit)))`.
+- **Consultant** — full agent list, searchable inside the popover.
 
-3. **Edit** `src/components/dashboard/Sidebar.tsx` — add "Call Dashboarding" entry under the existing **Concepts** section (next to AI KPI Dashboard, Systeem Hygiene).
+Filtering chain: unit filter narrows the consultant options; both filters narrow the table and recompute the summary tiles. Search input stays as a quick free-text filter on top.
 
-### Notes
-- No backend; pure frontend using existing mock data.
-- Follows project memory rules: "Telefonie" terminology in copy, [H:M:S] duration format, consultant names from existing 56-consultant dataset.
+### Technical notes
+- Use existing shadcn `Popover`, `Checkbox`, `Button`, `ScrollArea`, `Badge` components (already present in `src/components/ui/`).
+- Sort keys extended with `"lastCallAt"`.
+- No new data file — all mock generation lives at the top of the page module, memoized once.
+- No backend changes.
