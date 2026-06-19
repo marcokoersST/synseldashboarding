@@ -127,7 +127,7 @@ export function CandidateMarketTab({
         id={2}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want every consultant's sales funnel naast elkaar met conversion %, drop-off en status, <strong>so that</strong> I can spot exactly where each consultant loses candidates.</>}
+        story={<><strong>As a manager</strong>, I want every consultant's sales funnel side by side with conversion %, drop-off and status, <strong>so that</strong> I can spot exactly where each consultant loses candidates.</>}
         logic={`Candidate Market table:
 
   • Rows: lcbMarketRows, filtered by selectedUnits,
