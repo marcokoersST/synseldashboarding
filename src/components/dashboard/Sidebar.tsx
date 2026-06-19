@@ -144,6 +144,11 @@ const navItems: NavItem[] = [
     path: "/concepts/systeem-hygiene",
   },
   {
+    icon: Phone,
+    label: "Call Dashboarding",
+    path: "/calldashboarding",
+  },
+  {
     icon: ClipboardCheck,
     label: "Dashboards Hendrik",
     path: "/hendrik/overzicht",

@@ -84,6 +84,7 @@ const ManagerOverzichtFinal = lazy(() => import("./pages/manager/OverzichtFinal"
 const ProductiviteitDashboard = lazy(() => import("./pages/marco/ProductiviteitDashboard"));
 const AIKpiDashboard = lazy(() => import("./pages/concepts/AIKpiDashboard"));
 const SysteemHygiene = lazy(() => import("./pages/concepts/SysteemHygiene"));
+const CallDashboarding = lazy(() => import("./pages/concepts/CallDashboarding"));
 
 const queryClient = new QueryClient();
 
@@ -170,6 +171,8 @@ const App = () => (
               <Route path="/marco/productiviteit" element={<ProductiviteitDashboard />} />
               <Route path="/concepts/ai-kpi" element={<AIKpiDashboard />} />
               <Route path="/concepts/systeem-hygiene" element={<SysteemHygiene />} />
+              <Route path="/calldashboarding" element={<CallDashboarding />} />
+              <Route path="/concepts/calldashboarding" element={<CallDashboarding />} />
             </Route>
             {/* Standalone preview routes (no sidebar/topbar) */}
             <Route path="/preview/consultant" element={
