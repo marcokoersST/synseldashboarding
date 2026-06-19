@@ -133,7 +133,31 @@ export function CallConversionsOverlay({ open, consultantId, initialConversion, 
       title="Call Conversions"
       subtitle={`${consultant.name} · ${consultant.unit}`}
     >
+      <DevNote
+        id={23}
+        floating
+        floatingClassName="top-2.5 right-12"
+        story={<><strong>As a manager</strong>, I want to inspect standard en custom call/voorstel conversions for a consultant, build new ratios on the fly, en zien welke records eronder zitten, <strong>so that</strong> I can validate where coaching helps.</>}
+        logic={`CallConversionsOverlay:
+
+  • Velden = BASE_FIELDS (funnel steps) + DERIVED_FIELDS
+    (mail/call splits, voltooid, met intake).
+    resolveField(consultantId, key) leest funnel row uit
+    lcbMarketRows en past deterministische seed toe op
+    afgeleide velden.
+  • Standaard conversies: STANDARD_CONVERSIONS, plus
+    custom (ephemeral 'Apply' of saved in localStorage
+    'lcb.customConversions').
+  • ConversionCard: pct = result/base × 100; delta in
+    pp; statusFromRatio((pct/100) / 0.4) → kleur dot.
+  • PreviewFormula toont teller÷noemer voor de custom
+    builder voordat je 'Apply' of 'Save view' klikt.
+  • ConversionDetail (onderaan) toont onderliggende
+    kandidaten of deals via getCandidatesForStep /
+    getDealsForStep op basis van conv.result-step.`}
+      />
       {/* Top strip */}
+
       <section className="mb-4 rounded-lg border border-border bg-card/40 px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]">
         <Pair label="Consultant" value={consultant.name} />
         <Pair label="Unit" value={consultant.unit} />
