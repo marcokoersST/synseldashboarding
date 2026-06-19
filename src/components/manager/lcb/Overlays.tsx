@@ -18,6 +18,12 @@ import { consultantSkillData, managerGoalsData, type ManagerGoal } from "@/data/
 import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromScore } from "@/lib/lcbStatus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
+const OverlayDevNote = (props: React.ComponentProps<typeof DevNote>) => (
+  <DevNote {...props} floating floatingClassName={props.floatingClassName ?? "top-2.5 right-12"} />
+);
+
 
 function consultant(id: number) {
   return myTeamConsultants.find((c) => c.id === id);
