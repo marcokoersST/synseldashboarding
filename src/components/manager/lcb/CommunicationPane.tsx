@@ -4,8 +4,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { type ActivityItem, type TranscriptLine, formatCallLinkLabel } from "@/data/lcbMarketData";
 import { contactStatusBadgeClass } from "@/data/lcbDealStages";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 export interface CommItem extends ActivityItem {}
+
 
 export function CommunicationPane({ item, contextLabel }: { item: CommItem; contextLabel: string }) {
   const isCall = item.kind === "call";
