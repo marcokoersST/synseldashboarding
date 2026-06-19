@@ -32,7 +32,8 @@ import {
     Sprout,
     Sparkles,
     ShieldCheck,
-    Radar
+    Radar,
+    Phone
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
