@@ -226,9 +226,27 @@ export default function LCB() {
 
   return (
     <div className="lcb-skin h-full flex flex-col bg-background overflow-hidden">
-      <header className="shrink-0 border-b border-border bg-card">
+      <header className="relative shrink-0 border-b border-border bg-card">
+        <DevNote
+          id={6}
+          floating
+          floatingClassName="top-1 right-2"
+          story={<><strong>As a manager</strong>, I want a glanceable status pill en data-refresh-tijd in de pagina-header, <strong>so that</strong> I know in 1 oogopslag of LC-B aandacht nodig heeft en hoe vers de data is.</>}
+          logic={`Page header:
 
-        <div className="flex h-12 items-center gap-3 px-4">
+  • Status pill = LCB_STATUS_LABEL[statusFromScore(globalScore)]
+    waar globalScore = round((avgSkillScore +
+    operationeelScore + omzetScore) / 3).
+  • operationeelScore = totalPlaatsingen / totalIntakes × 100
+    (gecapt op 100).
+  • omzetScore = ytdRealised / ytdTarget × 100 (gecapt op 100).
+  • avgSkillScore = gemiddelde overall() over alle
+    consultantSkillData rijen.
+  • Refresh-label = nieuwste new Date() bij mount,
+    geformatteerd als '14:32 · 19 jun'.`}
+        />
+
+        <div className="relative flex h-12 items-center gap-3 px-4">
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-semibold leading-tight">Manager Dashboard — LC-B</h1>
             <TooltipProvider delayDuration={150}>
@@ -246,26 +264,28 @@ export default function LCB() {
             </TooltipProvider>
           </div>
           <div className="flex-1" />
-          <div className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[10px] text-muted-foreground mr-12">
             <RefreshCw className="h-3 w-3" /> <span>{refreshLabel}</span>
           </div>
         </div>
       </header>
 
-      <LCBTopBar
-        date={date} onDate={setDate}
-        units={unitOptions}
-        selectedUnits={selectedUnits} onSelectedUnits={handleSelectedUnits}
-        consultants={consultantOptions}
-        selectedConsultants={selectedConsultants} onSelectedConsultants={handleSelectedConsultants}
-        search={search} onSearch={setSearch}
-        onReset={onResetFilters}
-        consultantLabel={tab === "finance" && financePerspective === "functiegroep" ? "Functiegroepen" : "Consultants"}
-        consultantPlaceholder={tab === "finance" && financePerspective === "functiegroep" ? "Alle functiegroepen" : "Alle consultants"}
-      />
-      <div className="px-3 pt-2 shrink-0">
+      <div className="relative">
+        <LCBTopBar
+          date={date} onDate={setDate}
+          units={unitOptions}
+          selectedUnits={selectedUnits} onSelectedUnits={handleSelectedUnits}
+          consultants={consultantOptions}
+          selectedConsultants={selectedConsultants} onSelectedConsultants={handleSelectedConsultants}
+          search={search} onSearch={setSearch}
+          onReset={onResetFilters}
+          consultantLabel={tab === "finance" && financePerspective === "functiegroep" ? "Functiegroepen" : "Consultants"}
+          consultantPlaceholder={tab === "finance" && financePerspective === "functiegroep" ? "Alle consultants" : "Alle consultants"}
+        />
         <DevNote
           id={1}
+          floating
+          floatingClassName="top-1.5 right-20"
           story={<><strong>As a manager</strong>, I want to scope LC-B by date, unit, consultant and search, <strong>so that</strong> I can focus on a specific slice of my team and tab.</>}
           logic={`Filter bar wired to LCB page state:
 
@@ -288,10 +308,23 @@ export default function LCB() {
         />
       </div>
 
+      <div className="relative flex shrink-0 border-b border-border bg-card overflow-x-auto">
+        <DevNote
+          id={7}
+          floating
+          floatingClassName="top-1 right-1"
+          story={<><strong>As a manager</strong>, I want one tab strip with badged signals count, <strong>so that</strong> I can switch between Market / Development / Finance / Signals and immediately see how many alerts I have.</>}
+          logic={`Tab strip:
 
-
-
-      <div className="flex shrink-0 border-b border-border bg-card overflow-x-auto">
+  • TABS = market | development | finance | signals.
+  • setTab() reset units en consultants bij tab-wissel,
+    omdat development gebruik maakt van
+    myTeamConsultants terwijl market/finance lcbTeam
+    gebruiken (verschillende id-ruimtes).
+  • Signals tab toont alerts.length als badge; rood
+    indien alerts.filter(severity==='critical').length > 0,
+    anders amber.`}
+        />
         {TABS.map((t) => {
           const isSignals = t.id === "signals";
           const count = isSignals ? alerts.length : 0;
@@ -322,6 +355,7 @@ export default function LCB() {
           );
         })}
       </div>
+
 
       <main className="flex-1 overflow-hidden p-3 min-h-0">
         {tab === "market" && (
