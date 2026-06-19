@@ -557,7 +557,7 @@ export function SoonToStartOverlay({ open, consultantId, onClose }: CtxProps) {
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Soon-to-start"]}
       title={`Soon-to-start — ${c?.name ?? ""}`}
       subtitle={`${items.length} kandidaten · verwachte omzet €${perf?.soonToStartRevenue ?? 0}k`}>
-      <OverlayDevNote id={18} story={<><strong>As a manager</strong>, I want to see soon-to-start kandidaten met verwachte €/mnd, <strong>so that</strong> I can prepare omzet die binnen enkele weken op de teller komt.</>} logic={`SoonToStartOverlay:\n\n  • Bron: buildFinancePerfRow(consultantId, name)\n    → soonToStart count + soonToStartRevenue.\n  • Mock-rijen worden gegenereerd via\n    Array.from({ length: soonToStart }) met\n    deterministische start-datum (5+i*3 apr)\n    en monthly = soonToStartRevenue / soonToStart.`} />
+      <OverlayDevNote id={18} story={<><strong>As a manager</strong>, I want to see soon-to-start candidates with expected €/month, <strong>so that</strong> I can prepare revenue that lands on the counter within a few weeks.</>} logic={`SoonToStartOverlay:\n\n  • Source: buildFinancePerfRow(consultantId, name)\n    → soonToStart count + soonToStartRevenue.\n  • Mock rows are generated via\n    Array.from({ length: soonToStart }) with a\n    deterministic start date (5 + i*3 Apr)\n    and monthly = soonToStartRevenue / soonToStart.`} />
       <div className="rounded-lg border border-border overflow-auto">
 
         <table className="w-full text-xs">
