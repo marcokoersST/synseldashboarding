@@ -20,21 +20,21 @@ export function CommunicationPane({ item, contextLabel }: { item: CommItem; cont
         id={11}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want call transcripts or email bodies in context of a candidate/deal, <strong>so that</strong> I can verify wat er feitelijk besproken is zonder RecruitCRM te openen.</>}
+        story={<><strong>As a manager</strong>, I want call transcripts or email bodies in the context of a candidate / deal, <strong>so that</strong> I can verify what was actually said or written without opening RecruitCRM.</>}
         logic={`CommunicationPane:
 
   • Branches on item.kind:
-      - call: header met richting (in/out), contact,
-        contactStatus, datum/tijd, duur en Call ID.
-        Body: TranscriptCard rendert TranscriptLine[]
-        met speaker, role (Beller/Ontvanger), kleuren.
-        Copy-knop kopieert het hele transcript.
-        Extra knop linkt naar ai.synsel.nl/recordings
+      - call: header shows direction (in/out), contact,
+        contactStatus, date/time, duration and Call ID.
+        Body: TranscriptCard renders TranscriptLine[]
+        with speaker and role (Caller / Recipient),
+        colored. A Copy button copies the full transcript.
+        An extra button links to ai.synsel.nl/recordings
         via formatCallLinkLabel(callId).
-      - email: header zelfde, body toont item.body of
-        fallback 'Geen inhoud beschikbaar.'
-  • contextLabel toont in de breadcrumb welke
-    kandidaat of deal de aanleiding was.`}
+      - email: same header style; body shows item.body or
+        the fallback 'Geen inhoud beschikbaar.'
+  • contextLabel surfaces in the breadcrumb which
+    candidate or deal triggered the pane.`}
       />
       <div className="shrink-0 px-4 py-3 border-b border-border bg-card/30 space-y-1.5">
 
