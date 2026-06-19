@@ -612,7 +612,21 @@ function StepDealList({ rows, selected, onSelect }: { rows: DealRow[]; selected:
   const sp = (k: DealSortKey) => ({ sortDir: sortKey === k ? sortDir : undefined, onClick: () => toggle(k) });
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-3">
+    <div className="relative flex-1 min-h-0 overflow-y-auto p-3">
+      <DevNote
+        id={8}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want a sortable deal-list achter een funnel-cel, <strong>so that</strong> I can pick a deal and inspect its dossier in the right pane.</>}
+        logic={`Step deal-list pane: zie #8 op de kandidatenvariant.
+Bron: getDealsForStep(consultantId, step).
+Sorteerbare kolommen: dealName, dealStatus,
+candidateName, opdrachtgeverName, date (composed
+van lastUpdatedDate + lastUpdatedTime).
+Klik rij → setSelectedDeal in LCB.tsx; opent
+DealDetailPane in het rechter pane.`}
+      />
+
       <div className="rounded-md border border-border overflow-hidden">
         <table className="w-full text-[11px]">
           <thead className="bg-muted/60 sticky top-0">
