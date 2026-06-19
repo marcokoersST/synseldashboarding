@@ -428,7 +428,7 @@ export default function CallDashboarding() {
                       "py-2 px-3 text-right tabular-nums",
                       row.status === "On Call" ? "text-primary font-medium" : "text-muted-foreground"
                     )}>
-                      {formatRelative(row.lastCallAt, row.status)}
+                      {formatTimestamp(row.lastCallAt, row.status)}
                     </td>
                   </tr>
                 ))}
