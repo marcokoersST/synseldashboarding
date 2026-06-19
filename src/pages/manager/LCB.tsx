@@ -616,14 +616,15 @@ function StepDealList({ rows, selected, onSelect }: { rows: DealRow[]; selected:
         id={8}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want a sortable deal-list achter een funnel-cel, <strong>so that</strong> I can pick a deal and inspect its dossier in the right pane.</>}
-        logic={`Step deal-list pane: zie #8 op de kandidatenvariant.
-Bron: getDealsForStep(consultantId, step).
-Sorteerbare kolommen: dealName, dealStatus,
+        story={<><strong>As a manager</strong>, I want a sortable deal list behind a funnel cell, <strong>so that</strong> I can pick a deal and inspect its dossier in the right pane.</>}
+        logic={`Step deal-list pane: see #8 candidate variant.
+Source: getDealsForStep(consultantId, step).
+Sortable columns: dealName, dealStatus,
 candidateName, opdrachtgeverName, date (composed
-van lastUpdatedDate + lastUpdatedTime).
-Klik rij → setSelectedDeal in LCB.tsx; opent
-DealDetailPane in het rechter pane.`}
+from lastUpdatedDate + lastUpdatedTime).
+Click row → setSelectedDeal in LCB.tsx; opens
+DealDetailPane in the right pane. Picking another
+row swaps the right pane in place.`}
       />
 
       <div className="rounded-md border border-border overflow-hidden">
