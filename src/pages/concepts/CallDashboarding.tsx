@@ -9,7 +9,66 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { allConsultants } from "@/data/managerData";
+
+// ─── All 56 consultants from PDF with correct units ───
+const consultantsFromPdf = [
+  { id: 1, name: "Amer Faraman", unit: "Early Performers" },
+  { id: 2, name: "Bart van Vliet", unit: "Monteurs" },
+  { id: 3, name: "Bas de Ruiter", unit: "Operators" },
+  { id: 4, name: "Christiaan van Krieken", unit: "Operators" },
+  { id: 5, name: "Daan Jacobs", unit: "Monteurs" },
+  { id: 6, name: "Dees Beeking", unit: "Trainingsunit" },
+  { id: 7, name: "Delano Nikkels", unit: "Engineering" },
+  { id: 8, name: "Dyon Mäkel", unit: "Early Performers" },
+  { id: 9, name: "Elianne van Lohuizen", unit: "Operators" },
+  { id: 10, name: "Elmar Koopman", unit: "Monteurs" },
+  { id: 11, name: "Emily Huigens", unit: "Trainingsunit" },
+  { id: 12, name: "Eric Hutchison", unit: "Engineering" },
+  { id: 13, name: "Falco Zegveld", unit: "Engineering" },
+  { id: 14, name: "Ian Schaufeli", unit: "Operators" },
+  { id: 15, name: "Jelle van Enck", unit: "Early Performers" },
+  { id: 16, name: "Joey Pol", unit: "Monteurs" },
+  { id: 17, name: "Joey de Vries", unit: "Monteurs" },
+  { id: 18, name: "Jonah Waterborg", unit: "Engineering" },
+  { id: 19, name: "Joost Kloppers", unit: "Monteurs" },
+  { id: 20, name: "Jort Koggel", unit: "Engineering" },
+  { id: 21, name: "Kaylee van den Berg", unit: "Monteurs" },
+  { id: 22, name: "Lars van Suntenmaartensdijk", unit: "Operators" },
+  { id: 23, name: "Mahesh Behari", unit: "Operators" },
+  { id: 24, name: "Marco Schaap", unit: "Monteurs" },
+  { id: 25, name: "Marnix Miltenburg", unit: "Trainingsunit" },
+  { id: 26, name: "Mathijs Oskamp", unit: "Engineering" },
+  { id: 27, name: "Miguel Kraaijeveld", unit: "Engineering" },
+  { id: 28, name: "Niek Roufs", unit: "Monteurs" },
+  { id: 29, name: "Niels Eggens", unit: "Engineering" },
+  { id: 30, name: "Niels Florijn", unit: "Engineering" },
+  { id: 31, name: "Nino Boot", unit: "Monteurs" },
+  { id: 32, name: "Noa Treep", unit: "Trainingsunit" },
+  { id: 33, name: "Paul Geers", unit: "Trainingsunit" },
+  { id: 34, name: "Rick Karssen", unit: "Early Performers" },
+  { id: 35, name: "Robbert Dalhuisen", unit: "Trainingsunit" },
+  { id: 36, name: "Robert van Zielhuis", unit: "Operators" },
+  { id: 37, name: "Robin Jansen", unit: "Monteurs" },
+  { id: 38, name: "Robin van Bruggen", unit: "Monteurs" },
+  { id: 39, name: "Roel Linthorst", unit: "Trainingsunit" },
+  { id: 40, name: "Ruben Zoet", unit: "Operators" },
+  { id: 41, name: "Saleh Akhras", unit: "Trainingsunit" },
+  { id: 42, name: "Sander Beckker", unit: "Engineering" },
+  { id: 43, name: "Senna Ekkers", unit: "Early Performers" },
+  { id: 44, name: "Sijmen Bossenbroek", unit: "Monteurs" },
+  { id: 45, name: "Stijn Koldenhoven", unit: "Engineering" },
+  { id: 46, name: "Ted Bronkhorst", unit: "Early Performers" },
+  { id: 47, name: "Thijs Dirksen", unit: "Engineering" },
+  { id: 48, name: "Thijs Pisa", unit: "Trainingsunit" },
+  { id: 49, name: "Thijs Udink", unit: "Operators" },
+  { id: 50, name: "Thom auf der Masch", unit: "Operators" },
+  { id: 51, name: "Ties Ganzevles", unit: "Trainingsunit" },
+  { id: 52, name: "Tim Kuik", unit: "Trainingsunit" },
+  { id: 53, name: "Toby Bruinier", unit: "Monteurs" },
+  { id: 54, name: "Tom Tulen", unit: "Engineering" },
+  { id: 55, name: "Tomas Jansen", unit: "Engineering" },
+  { id: 56, name: "Xander Blok", unit: "Engineering" },
+];
 
 // ─── Deterministic seeded mock generator ───
 function seeded(seed: number) {
@@ -35,7 +94,7 @@ interface Row {
 
 const NOW = Date.now();
 
-const allRows: Row[] = allConsultants.map((c, i) => {
+const allRows: Row[] = consultantsFromPdf.map((c, i) => {
   const rng = seeded(c.id * 131 + 7);
   const inbound = 5 + Math.floor(rng() * 70);
   const outbound = 30 + Math.floor(rng() * 200);
