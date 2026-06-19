@@ -122,18 +122,13 @@ export function CandidateMarketTab({
   };
 
   return (
-    <div className="h-full flex flex-col min-h-0">
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <div>
-          <h2 className="text-sm font-semibold text-foreground">Sales funnel per consultant</h2>
-          <p className="text-[11px] text-muted-foreground">
-            Klik een cel voor de onderliggende kandidaten of deals. Klik op de naam voor het volledige consultantoverzicht.
-          </p>
-        </div>
-        <DevNote
-          id={2}
-          story={<><strong>As a manager</strong>, I want every consultant's sales funnel naast elkaar met conversion %, drop-off en status, <strong>so that</strong> I can spot exactly where each consultant loses candidates.</>}
-          logic={`Candidate Market table:
+    <div className="relative h-full flex flex-col min-h-0">
+      <DevNote
+        id={2}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want every consultant's sales funnel naast elkaar met conversion %, drop-off en status, <strong>so that</strong> I can spot exactly where each consultant loses candidates.</>}
+        logic={`Candidate Market table:
 
   • Rows: lcbMarketRows, filtered by selectedUnits,
     selectedConsultants and search (consultant name).
@@ -154,8 +149,16 @@ export function CandidateMarketTab({
     for that step. Click the name → consultantoverlay.
   • Footer row = totals + cumulative conversion across
     all visible consultants.`}
-        />
+      />
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">Sales funnel per consultant</h2>
+          <p className="text-[11px] text-muted-foreground">
+            Klik een cel voor de onderliggende kandidaten of deals. Klik op de naam voor het volledige consultantoverzicht.
+          </p>
+        </div>
       </div>
+
 
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-card relative">
         <table className="w-full text-xs border-collapse table-fixed">
