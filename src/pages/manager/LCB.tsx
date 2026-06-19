@@ -675,6 +675,27 @@ function SignalsTab({ alerts, onSelect }: { alerts: DashboardAlert[]; onSelect: 
         <p className="text-[11px] text-muted-foreground">
           Klik een signaal om direct naar de bijbehorende consultant of funnelstap te navigeren.
         </p>
+        <DevNote
+          id={5}
+          story={<><strong>As a manager</strong>, I want a grouped list of alerts (kritiek / aandacht / info), <strong>so that</strong> I can jump straight to the consultant or funnelstap that needs action.</>}
+          logic={`Signals tab content:
+
+  • Source: generateAlerts() from
+    managerOperationalDataV2 — generates DashboardAlert[]
+    with severity (critical / warning / info), title,
+    message, consultantName, metric and value.
+  • Grouped per severity in fixed order
+    critical → warning → info; empty groups hidden.
+  • Tab badge in the top tab strip shows total alert
+    count, colored red when any critical exists.
+  • Click handler handleSignalClick(alert) in LCB.tsx
+    matches alert.metric keywords:
+        plaatsing → market tab + plaatsingen step
+        intake    → market tab + intakes step
+        gesprek / uitnodiging → gesprekken step
+        outreach / kwaliteit  → development overlay
+        else      → consultant overview overlay.`}
+        />
       </div>
       <div className="space-y-4">
         {groups.map((g) => {
