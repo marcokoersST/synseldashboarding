@@ -137,24 +137,24 @@ export function CallConversionsOverlay({ open, consultantId, initialConversion, 
         id={23}
         floating
         floatingClassName="top-2.5 right-12"
-        story={<><strong>As a manager</strong>, I want to inspect standard en custom call/voorstel conversions for a consultant, build new ratios on the fly, en zien welke records eronder zitten, <strong>so that</strong> I can validate where coaching helps.</>}
+        story={<><strong>As a manager</strong>, I want to inspect standard and custom call / voorstel conversions for a consultant, build new ratios on the fly, and see which records sit under them, <strong>so that</strong> I can validate where coaching helps.</>}
         logic={`CallConversionsOverlay:
 
-  • Velden = BASE_FIELDS (funnel steps) + DERIVED_FIELDS
-    (mail/call splits, voltooid, met intake).
-    resolveField(consultantId, key) leest funnel row uit
-    lcbMarketRows en past deterministische seed toe op
-    afgeleide velden.
-  • Standaard conversies: STANDARD_CONVERSIONS, plus
-    custom (ephemeral 'Apply' of saved in localStorage
+  • Fields = BASE_FIELDS (funnel steps) + DERIVED_FIELDS
+    (mail / call splits, completed, with intake).
+    resolveField(consultantId, key) reads the funnel row
+    from lcbMarketRows and applies a deterministic seed
+    to derived fields.
+  • Default conversions: STANDARD_CONVERSIONS, plus
+    custom (ephemeral 'Apply' or saved in localStorage
     'lcb.customConversions').
-  • ConversionCard: pct = result/base × 100; delta in
-    pp; statusFromRatio((pct/100) / 0.4) → kleur dot.
-  • PreviewFormula toont teller÷noemer voor de custom
-    builder voordat je 'Apply' of 'Save view' klikt.
-  • ConversionDetail (onderaan) toont onderliggende
-    kandidaten of deals via getCandidatesForStep /
-    getDealsForStep op basis van conv.result-step.`}
+  • ConversionCard: pct = result / base × 100; delta in
+    pp; statusFromRatio((pct/100) / 0.4) → color dot.
+  • PreviewFormula shows numerator ÷ denominator for
+    the custom builder before you 'Apply' or 'Save view'.
+  • ConversionDetail (at the bottom) shows the underlying
+    candidates or deals via getCandidatesForStep /
+    getDealsForStep based on conv.result step.`}
       />
       {/* Top strip */}
 
