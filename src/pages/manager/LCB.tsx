@@ -280,7 +280,7 @@ export default function LCB() {
           search={search} onSearch={setSearch}
           onReset={onResetFilters}
           consultantLabel={tab === "finance" && financePerspective === "functiegroep" ? "Functiegroepen" : "Consultants"}
-          consultantPlaceholder={tab === "finance" && financePerspective === "functiegroep" ? "Alle consultants" : "Alle consultants"}
+          consultantPlaceholder={tab === "finance" && financePerspective === "functiegroep" ? "Alle functiegroepen" : "Alle consultants"}
         />
         <DevNote
           id={1}
