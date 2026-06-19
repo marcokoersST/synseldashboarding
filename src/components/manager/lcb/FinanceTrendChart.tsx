@@ -233,24 +233,24 @@ export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedI
         id={12}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want to see financial development over time per consultant of functiegroep with a rolling forecast, <strong>so that</strong> I can compare trajectories and lock onto one series.</>}
+        story={<><strong>As a manager</strong>, I want to see financial development over time per consultant or functiegroep (job-family) with a rolling forecast, <strong>so that</strong> I can compare trajectories and lock onto one series.</>}
         logic={`FinanceTrendChart:
 
-  • Granularity: periode (14 P), maand (18 M) of week (26 W);
+  • Granularity: periode (14 P), maand (18 M) or week (26 W);
     persisted in localStorage 'lcb.financeTrend.v1'.
-  • Per consultant baseline = bucketTargetAvg(g) × compressed
+  • Per-consultant baseline = bucketTargetAvg(g) × compressed
     relative ratio; each bucket gets a multiplicative
     bucketFactor(trend × seasonal × jitter), clamped to
     [0, €45k].
-  • Situatie line = historische waardes per bucket; Prognose
-    line = rolling mean of last forecastWindow buckets
-    (13 voor periode, anders 3) inclusief één extra
-    'Prognose' bucket aan het einde.
-  • Modaal = €20.040 / maand, schaalt mee per granulariteit.
-  • Legend klik → setLockedId; hover → activeId; highlightId
-    = lockedId ?? activeId, dimt overige lijnen.
-  • labelMode wisselt 'consultants' ↔ 'functiegroepen' voor
-    labels en filter-popover.`}
+  • Situatie line = historical values per bucket; Prognose
+    line = rolling mean of the last forecastWindow buckets
+    (13 for periode, 3 otherwise) plus one extra
+    'Prognose' bucket appended at the end.
+  • Modaal = €20,040 / month, scales per granularity.
+  • Legend click → setLockedId; hover → activeId; highlightId
+    = lockedId ?? activeId, dims the other lines.
+  • labelMode switches 'consultants' ↔ 'functiegroepen' for
+    labels and the filter popover.`}
       />
 
       <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
