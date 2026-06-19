@@ -160,7 +160,9 @@ export function ConsultantOverviewOverlay({ open, consultantId, onClose, onBack,
       title={`Consultant-overzicht — ${c?.name ?? ""}`}
       subtitle={c?.unit}
     >
+      <OverlayDevNote id={13} story={<><strong>As a manager</strong>, I want a 9-step funnel-overview plus per-step conversions for a single consultant, <strong>so that</strong> I can drill from any step or open the conversion-analysis tool.</>} logic={`ConsultantOverviewOverlay:\n\n  • Funnel grid: lcbFunnelSteps gemapt op de waardes\n    uit lcbMarketRows[consultantId]. Klik → onOpenStep\n    sluit deze overlay en opent StepDetailOverlay.\n  • Tabel 'Conversies per stap': step / prevStep × 100;\n    klik rij vanaf index 1 → onOpenCallConversions.\n  • Knop rechtsboven opent CallConversionsOverlay\n    zonder vooraf-geselecteerde conversie.`} />
       {f && (
+
         <>
           <section className="mb-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider mb-2">Funnel</h3>
