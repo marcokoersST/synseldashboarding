@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { myTeamConsultants } from "@/data/managerData";
 import { lcbMarketRows, getCandidatesForStep, getDealsForStep, lcbFunnelSteps, type LcbStepKey } from "@/data/lcbMarketData";
 import { statusFromRatio } from "@/lib/lcbStatus";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
 
 // ─── Field catalogue ──────────────────────────────────────────────────
 type FieldKey =
