@@ -628,7 +628,9 @@ export function RevenueDetailOverlay({ open, consultantId, onClose }: CtxProps) 
     <LCBOverlay open={open && !!c} onClose={onClose} size="side"
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Omzet"]}
       title={`Omzetdetail — ${c?.name ?? ""}`}>
+      <OverlayDevNote id={20} story={<><strong>As a manager</strong>, I want a breakdown van een consultant's omzet per secondment, <strong>so that</strong> I can see Detavast/W&S/Marge Fac split en performance ratio.</>} logic={`RevenueDetailOverlay:\n\n  • Bron: consultantRevenueDetailData[consultantId].\n  • KPI's: Totaal omzet, # detacheringen, # W&S,\n    Performance%.\n  • Lijst: secondments[]; per regel kandidaat,\n    bedrijf, type (Detavast/W&S/Marge Fac), €/mnd.`} />
       {detail && (
+
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <Kpi label="Totaal omzet" value={`€${detail.totalRevenue}k`} />
