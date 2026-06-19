@@ -504,7 +504,9 @@ export function ActivePlacementsOverlay({ open, consultantId, onClose }: CtxProp
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Actieve plaatsingen"]}
       title={`Actieve plaatsingen — ${c?.name ?? ""}`}
       subtitle={`${items.length} actief · totaal €${total}k / maand`}>
+      <OverlayDevNote id={17} story={<><strong>As a manager</strong>, I want a complete list of de actieve plaatsingen van een consultant met €/maand en marge, <strong>so that</strong> I can see waar de huidige omzet vandaan komt.</>} logic={`ActivePlacementsOverlay:\n\n  • Bron: activeSecondmentsData.filter\n    (consultantName === c.name).\n  • Kolommen: Kandidaat, Opdrachtgever, Start,\n    Eind, €/maand, Marge/uur (deterministisch\n    40+i*3 % 25), Type (Detavast placeholder),\n    Status (active/ending-soon/new) + badges, CRM.\n  • Footer toont totaal €/maand.`} />
       <div className="rounded-lg border border-border overflow-auto">
+
         <table className="w-full text-xs">
           <thead className="bg-muted/60"><tr className="text-left">
             <Th>Kandidaat</Th><Th>Opdrachtgever</Th><Th>Start</Th><Th>Eind</Th><Th align="right">€/maand</Th><Th align="right">Marge/uur</Th><Th>Type</Th><Th>Status</Th><Th>CRM</Th>
