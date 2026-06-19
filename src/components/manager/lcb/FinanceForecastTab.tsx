@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { buildFinancePerfRow, lcbTeam } from "@/data/lcbMarketData";
 import { FinanceTrendChart } from "./FinanceTrendChart";
 import { getFunctiegroepRows, type FunctiegroepRevenueRow } from "@/data/lcbFunctiegroepRevenue";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 type Perspective = "margin" | "functiegroep";
 
@@ -128,7 +129,7 @@ export function FinanceForecastTab({
       </div>
 
       {/* Perspective switcher */}
-      <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="flex items-start justify-between gap-3 mb-2">
         <div>
           <h2 className="text-sm font-semibold text-foreground">
             {perspective === "margin" ? "Omzet & forecast per consultant" : "Omzet & forecast per functiegroep"}
@@ -139,9 +140,36 @@ export function FinanceForecastTab({
               : "Omzet en marge per functiegroep. Klik een groep om functies te tonen."}
           </p>
         </div>
-        <div className="inline-flex items-center rounded-md border border-border p-0.5 bg-card text-[11px]">
-          <PerspBtn active={perspective === "margin"} onClick={() => setPerspective("margin")}>Marge</PerspBtn>
-          <PerspBtn active={perspective === "functiegroep"} onClick={() => setPerspective("functiegroep")}>Omzet per functiegroep</PerspBtn>
+        <div className="flex items-center gap-2">
+          <DevNote
+            id={4}
+            story={<><strong>As a manager</strong>, I want realised vs target, forecast, marge en risk per consultant of functiegroep, <strong>so that</strong> I can steer revenue and spot at-risk accounts.</>}
+            logic={`Finance & Forecast tab:
+
+  • KPI strip: YTD realised, Forecast jaar, Brutomarge,
+    Actieve plaatsingen, Total revenue — totals from
+    marginTotals + perfTotals + activeSecondmentsData.
+  • Perspective switcher toggles between
+      - margin: row per consultant. target/realised/
+        forecast/potential seeded deterministisch uit
+        consultant id; margin = realised × (0.25..0.35);
+        revRisk from attritionProjectionData.
+      - functiegroep: rows from getFunctiegroepRows();
+        consultantsLabel in topbar wijzigt mee.
+  • Tabel: kolommen Revenue, Margin, Forecast, Realised
+    (groen/rood vs target), Potentieel, Realised pot.,
+    Revenue risk, Marge/uur, Categorie, Status.
+  • Klik op revenue-bedrag → onOpenRevenue(consultantId).
+  • FinanceTrendChart wordt onder de tabel gerenderd met
+    labelMode = "consultant" of "functiegroep" zodat
+    legenda en labels meeschakelen.
+  • lockedId synct met de naam-kolom en de chart:
+    klikken op een naam vergrendelt die serie.`}
+          />
+          <div className="inline-flex items-center rounded-md border border-border p-0.5 bg-card text-[11px]">
+            <PerspBtn active={perspective === "margin"} onClick={() => setPerspective("margin")}>Marge</PerspBtn>
+            <PerspBtn active={perspective === "functiegroep"} onClick={() => setPerspective("functiegroep")}>Omzet per functiegroep</PerspBtn>
+          </div>
         </div>
       </div>
 
