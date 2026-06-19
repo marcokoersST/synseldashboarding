@@ -1,24 +1,33 @@
-# Status badge truncation fix
+## Add Dev info to LC-B Manager Dashboard
 
-Status pills currently get visually clipped without an ellipsis in tables, and the detail-overview header pill is also truncated even though there is room to show the full text.
+Add the existing `DevNote` component (red "Dev info" popover button used on TV Sales Funnel) to every major section of `src/pages/manager/LCB.tsx`. Each note contains a "User story" (as a manager / user…) and a "Logic" explanation of how that section works.
 
-## Changes
+### Locations & content
 
-### 1. Tables — show "…" when status doesn't fit
-Badges use `inline-flex … max-w-[…] truncate`, but `truncate` doesn't render an ellipsis on an inline-flex container, so the text just gets cut. Wrap the label in an inner `<span class="truncate block">` so the ellipsis actually appears.
+1. **#1 — Filter bar (LCBTopBar)** — inserted right after the `<LCBTopBar />` block.
+   - Story: As a manager, I want to scope LC-B by date, unit, consultant and search, so I can focus on a specific slice of my team.
+   - Logic: Date defaults to rolling Mon→Today; unit + consultant filters auto-sync via `handleSelectedUnits` / `handleSelectedConsultants`; consultant label flips to "Functiegroepen" when Finance tab uses the functiegroep perspective; Reset clears all.
 
-- `src/components/manager/lcb/CandidateDetailPane.tsx` (deals table, line ~261): keep the colored pill + `max-w-[180px]`, but render `{r.dealStatus}` inside an inner `<span className="truncate block min-w-0">`. Add `title={r.dealStatus}` for hover tooltip.
-- Same treatment for any other table badge in this file that uses the same pattern (contact-status pills around lines 319 and 370) — though these are short today, apply the same wrapper for consistency.
-- `src/components/manager/lcb/DealDetailPane.tsx` activities table (line ~368, ~373): already use `truncate` on `<td>` cells, leave as-is.
+2. **#2 — Candidate Market tab** — inside `CandidateMarketTab`, below the header row.
+   - Story: As a manager, I want to see every consultant's sales funnel side-by-side with conversion %, drop-off and status, so I can spot exactly where each consultant loses candidates.
+   - Logic: Rows from `lcbMarketRows`; per-step conversion = `step / prevStep`; benchmark = team average; cell color = `statusFromRatio`; `biggestDropoff` picks the worst ratio; clicking a cell opens the LcbSplitOverlay with candidates or deals for that step.
 
-### 2. Detail overview — show full status, let box grow
-In the detail panes the header badge clips even when the panel is wide enough. Allow the pill to wrap to the full text and let the row wrap to a new line if needed.
+3. **#3 — Consultant Development tab** — inside `ConsultantDevelopmentTab`, below the header row.
+   - Story: As a manager, I want overall, quality and volume scores plus open coaching goals per consultant, so I can prioritise who to coach next.
+   - Logic: Overall = average of 11 skill metrics from `consultantSkillData`; quality/volume = curated subsets; goals from `managerGoalsData`; key improvement = worst funnel step from `consultantFunnelDataV2`; coaching prio derived from status.
 
-- `src/components/manager/lcb/CandidateDetailPane.tsx` candidate header (line 58–60): remove any width clamp, drop `whitespace-nowrap`/`truncate` from this badge, allow the parent flex-wrap row (already `flex-wrap`) to wrap the pill onto its own line. Add `whitespace-normal break-words` and `leading-tight` so multi-line status reads cleanly.
-- `src/components/manager/lcb/DealDetailPane.tsx` deal header (line 57): remove `max-w-[200px] truncate`, add `whitespace-normal break-words leading-tight`. Keep the colored background class.
+4. **#4 — Finance & Forecast tab** — inside `FinanceForecastTab`, below the perspective switcher.
+   - Story: As a manager, I want realised vs target, forecast, margin and risk per consultant or functiegroep, so I can steer revenue and spot at-risk accounts.
+   - Logic: Margin perspective seeds target/realised/forecast/potential from consultant id; functiegroep rows from `getFunctiegroepRows()`; KPI strip totals `marginTotals` and `perfTotals`; `FinanceTrendChart` is fed either consultant or functiegroep rows depending on `perspective`; `labelMode` swaps terminology.
 
-No data, sort, or filter logic changes. Purely presentational tweaks to two files.
+5. **#5 — Signals tab** — inside `SignalsTab`, below the header row.
+   - Story: As a manager, I want a grouped list of alerts (critical / warning / info), so I can jump straight to the consultant or funnel step that needs action.
+   - Logic: Alerts from `generateAlerts()`; grouped by severity; clicking an alert routes via `handleSignalClick` (keyword match on metric → opens market step overlay or development overlay).
 
-## Files touched
-- `src/components/manager/lcb/CandidateDetailPane.tsx`
-- `src/components/manager/lcb/DealDetailPane.tsx`
+### Files changed
+- `src/pages/manager/LCB.tsx` — import `DevNote`, add #1 (after LCBTopBar) and #5 (inside SignalsTab).
+- `src/components/manager/lcb/CandidateMarketTab.tsx` — import + add #2.
+- `src/components/manager/lcb/ConsultantDevelopmentTab.tsx` — import + add #3.
+- `src/components/manager/lcb/FinanceForecastTab.tsx` — import + add #4.
+
+No data or business logic changes; presentation only. Buttons are red and clearly marked "Delete this button after development."
