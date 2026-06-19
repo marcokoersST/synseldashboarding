@@ -36,6 +36,7 @@ import {
 } from "@/components/manager/lcb/Overlays";
 import { CallConversionsOverlay } from "@/components/manager/lcb/CallConversionsOverlay";
 import { Button } from "@/components/ui/button";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 
 const UNITS = [...LCB_UNITS];
@@ -262,6 +263,30 @@ export default function LCB() {
         consultantLabel={tab === "finance" && financePerspective === "functiegroep" ? "Functiegroepen" : "Consultants"}
         consultantPlaceholder={tab === "finance" && financePerspective === "functiegroep" ? "Alle functiegroepen" : "Alle consultants"}
       />
+      <div className="px-3 pt-2 shrink-0">
+        <DevNote
+          id={1}
+          story={<><strong>As a manager</strong>, I want to scope LC-B by date, unit, consultant and search, <strong>so that</strong> I can focus on a specific slice of my team and tab.</>}
+          logic={`Filter bar wired to LCB page state:
+
+  • Date — rolling window, default Monday → Today
+    (initialLcbDateState). Comparisons use the previous
+    equal-length window.
+  • Units — multi-select. handleSelectedUnits auto-fills
+    consultants that belong to the selected units, using
+    the active dataset (lcbTeam for market/finance,
+    myTeamConsultants for development).
+  • Consultants — multi-select. handleSelectedConsultants
+    clears unit selection if any picked consultant sits
+    outside the current unit scope.
+  • Search — free-text, matches consultant name in the
+    active tab's table.
+  • The Consultants control re-labels to "Functiegroepen"
+    when Finance tab + functiegroep perspective is active.
+  • Reset clears units, consultants, search and date back
+    to initialLcbDateState.`}
+        />
+      </div>
 
 
 
@@ -650,6 +675,27 @@ function SignalsTab({ alerts, onSelect }: { alerts: DashboardAlert[]; onSelect: 
         <p className="text-[11px] text-muted-foreground">
           Klik een signaal om direct naar de bijbehorende consultant of funnelstap te navigeren.
         </p>
+        <DevNote
+          id={5}
+          story={<><strong>As a manager</strong>, I want a grouped list of alerts (kritiek / aandacht / info), <strong>so that</strong> I can jump straight to the consultant or funnelstap that needs action.</>}
+          logic={`Signals tab content:
+
+  • Source: generateAlerts() from
+    managerOperationalDataV2 — generates DashboardAlert[]
+    with severity (critical / warning / info), title,
+    message, consultantName, metric and value.
+  • Grouped per severity in fixed order
+    critical → warning → info; empty groups hidden.
+  • Tab badge in the top tab strip shows total alert
+    count, colored red when any critical exists.
+  • Click handler handleSignalClick(alert) in LCB.tsx
+    matches alert.metric keywords:
+        plaatsing → market tab + plaatsingen step
+        intake    → market tab + intakes step
+        gesprek / uitnodiging → gesprekken step
+        outreach / kwaliteit  → development overlay
+        else      → consultant overview overlay.`}
+        />
       </div>
       <div className="space-y-4">
         {groups.map((g) => {

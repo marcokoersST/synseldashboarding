@@ -9,6 +9,7 @@ import {
   type LcbConsultantRow,
 } from "@/data/lcbMarketData";
 import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromRatio, type LCBStatus } from "@/lib/lcbStatus";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 type SortKey = "consultantName" | "unit" | LcbStepKey | "drop" | "status";
 type SortDir = "asc" | "desc";
@@ -122,13 +123,38 @@ export function CandidateMarketTab({
 
   return (
     <div className="h-full flex flex-col min-h-0">
-      <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="flex items-start justify-between gap-3 mb-2">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Sales funnel per consultant</h2>
           <p className="text-[11px] text-muted-foreground">
             Klik een cel voor de onderliggende kandidaten of deals. Klik op de naam voor het volledige consultantoverzicht.
           </p>
         </div>
+        <DevNote
+          id={2}
+          story={<><strong>As a manager</strong>, I want every consultant's sales funnel naast elkaar met conversion %, drop-off en status, <strong>so that</strong> I can spot exactly where each consultant loses candidates.</>}
+          logic={`Candidate Market table:
+
+  • Rows: lcbMarketRows, filtered by selectedUnits,
+    selectedConsultants and search (consultant name).
+  • Columns: every step in lcbFunnelSteps
+    (toegewezen → inschrijvingen → acquisities →
+     voorstellen → intakes → uitnodiging → gesprekken →
+     vervolg → plaatsingen) with a short header label.
+  • Per-cell conversion = step / prevStep × 100; team
+    benchmark = average of those ratios across visible
+    rows; cell color = statusFromRatio(conv / bench)
+    (clean / attention / critical).
+  • Drop-off column = biggestDropoff(row) — the step
+    with the lowest ratio versus benchmark.
+  • Status column = overallStatus(row), derived from the
+    worst drop-off.
+  • Click a numeric cell → onOpenStep(consultantId, step)
+    opens the LcbSplitOverlay with kandidaten or deals
+    for that step. Click the name → consultantoverlay.
+  • Footer row = totals + cumulative conversion across
+    all visible consultants.`}
+        />
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden rounded-lg border border-border bg-card relative">

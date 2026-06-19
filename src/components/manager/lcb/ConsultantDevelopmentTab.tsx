@@ -5,6 +5,7 @@ import { consultantFunnelDataV2, funnelStepsV2, type FunnelStepKey } from "@/dat
 import { managerGoalsData } from "@/data/managerPerformanceData";
 import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromScore } from "@/lib/lcbStatus";
 import { AnimatedRing } from "@/components/animations/AnimatedRing";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 interface Props {
   selectedUnits: string[];
@@ -60,13 +61,39 @@ export function ConsultantDevelopmentTab({ selectedUnits, selectedConsultants, s
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between gap-3 mb-3">
+      <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Ontwikkeling per consultant</h2>
           <p className="text-[11px] text-muted-foreground">
             Klik een rij voor doelen, coaching en aanbevolen focus. Coaching-tips zijn gekoppeld aan de funnel-prestaties.
           </p>
         </div>
+        <DevNote
+          id={3}
+          story={<><strong>As a manager</strong>, I want overall, quality en volume scores plus open coaching doelen per consultant, <strong>so that</strong> I can prioritise who to coach next.</>}
+          logic={`Consultant Development table:
+
+  • Rows: consultantSkillData, filtered by selectedUnits,
+    selectedConsultants and search.
+  • Overall score = average of 11 metrics
+    (relatieScoreKlant×10, relatieScoreKandidaat×10,
+     pitchingPower, responsiveness, networking,
+     bezwaarverlegging, procedureInschrijving,
+     procedureAcquisities, systeemHygieneScore,
+     npsKlant, npsKandidaat). Status from statusFromScore.
+  • Quality = avg(pitchingPower, bezwaarverlegging,
+    procedureInschrijving, systeemHygieneScore).
+  • Volume  = avg(responsiveness, networking,
+    procedureAcquisities).
+  • Open / Behaald = managerGoalsData filtered op
+    consultantId, completed flag.
+  • Key improvement = worst step ratio in
+    consultantFunnelDataV2 (step / prevStep).
+  • Coaching prio: critical → Hoog, attention → Middel,
+    clean → Laag.
+  • Click rij → onOpenConsultant(id) opent
+    DevelopmentOverlay.`}
+        />
       </div>
       <div className="flex-1 overflow-auto rounded-lg border border-border bg-card">
         <table className="w-full text-xs">
