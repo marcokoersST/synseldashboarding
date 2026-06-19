@@ -239,7 +239,7 @@ export function CandidateDetailOverlay({ open, candidate, consultantId, onClose,
       title={candidate?.name ?? ""}
       subtitle={candidate ? `${candidate.id} · Cat. ${candidate.category} · ${candidate.status}` : undefined}
     >
-      <OverlayDevNote id={14} story={<><strong>As a manager</strong>, I want a compact kandidaat-dossier vanuit Candidate Market drill-down, <strong>so that</strong> I can review snel zonder RecruitCRM te openen.</>} logic={`CandidateDetailOverlay (legacy):\n\n  • Toont KPI's deals/voorstellen/emails/calls van\n    CandidateRow + statische outreach-historie.\n  • In de huidige LC-B flow is dit vervangen door\n    CandidateDetailPane (zie #9); deze overlay blijft\n    voor backwards compat in andere contexten.`} />
+      <OverlayDevNote id={14} story={<><strong>As a manager</strong>, I want a compact candidate dossier from the Candidate Market drill-down, <strong>so that</strong> I can review quickly without opening RecruitCRM.</>} logic={`CandidateDetailOverlay (legacy):\n\n  • Shows KPIs deals / voorstellen / emails / calls from\n    CandidateRow plus static outreach history.\n  • In the current LC-B flow this is replaced by\n    CandidateDetailPane (see #9); this overlay stays for\n    backwards compatibility in other contexts.`} />
       {candidate && (
 
         <div className="space-y-4">
