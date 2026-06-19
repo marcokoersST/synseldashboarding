@@ -4,8 +4,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { type ActivityItem, type TranscriptLine, formatCallLinkLabel } from "@/data/lcbMarketData";
 import { contactStatusBadgeClass } from "@/data/lcbDealStages";
+import { DevNote } from "@/components/groeimodel/DevNote";
 
 export interface CommItem extends ActivityItem {}
+
 
 export function CommunicationPane({ item, contextLabel }: { item: CommItem; contextLabel: string }) {
   const isCall = item.kind === "call";
@@ -13,8 +15,29 @@ export function CommunicationPane({ item, contextLabel }: { item: CommItem; cont
   const dirColor = item.direction === "in" ? "text-blue-500" : "text-emerald-500";
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className="relative flex-1 min-h-0 flex flex-col">
+      <DevNote
+        id={11}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want call transcripts or email bodies in context of a candidate/deal, <strong>so that</strong> I can verify wat er feitelijk besproken is zonder RecruitCRM te openen.</>}
+        logic={`CommunicationPane:
+
+  • Branches on item.kind:
+      - call: header met richting (in/out), contact,
+        contactStatus, datum/tijd, duur en Call ID.
+        Body: TranscriptCard rendert TranscriptLine[]
+        met speaker, role (Beller/Ontvanger), kleuren.
+        Copy-knop kopieert het hele transcript.
+        Extra knop linkt naar ai.synsel.nl/recordings
+        via formatCallLinkLabel(callId).
+      - email: header zelfde, body toont item.body of
+        fallback 'Geen inhoud beschikbaar.'
+  • contextLabel toont in de breadcrumb welke
+    kandidaat of deal de aanleiding was.`}
+      />
       <div className="shrink-0 px-4 py-3 border-b border-border bg-card/30 space-y-1.5">
+
         <div className="flex items-center gap-2 text-[11px]">
           <span className={cn("inline-flex items-center gap-0.5", dirColor)}>
             <Arrow className="h-3 w-3" />

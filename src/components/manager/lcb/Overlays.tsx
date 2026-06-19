@@ -18,6 +18,12 @@ import { consultantSkillData, managerGoalsData, type ManagerGoal } from "@/data/
 import { LCB_STATUS_BG, LCB_STATUS_LABEL, statusFromScore } from "@/lib/lcbStatus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
+const OverlayDevNote = (props: React.ComponentProps<typeof DevNote>) => (
+  <DevNote {...props} floating floatingClassName={props.floatingClassName ?? "top-2.5 right-12"} />
+);
+
 
 function consultant(id: number) {
   return myTeamConsultants.find((c) => c.id === id);
@@ -154,7 +160,9 @@ export function ConsultantOverviewOverlay({ open, consultantId, onClose, onBack,
       title={`Consultant-overzicht — ${c?.name ?? ""}`}
       subtitle={c?.unit}
     >
+      <OverlayDevNote id={13} story={<><strong>As a manager</strong>, I want a 9-step funnel-overview plus per-step conversions for a single consultant, <strong>so that</strong> I can drill from any step or open the conversion-analysis tool.</>} logic={`ConsultantOverviewOverlay:\n\n  • Funnel grid: lcbFunnelSteps gemapt op de waardes\n    uit lcbMarketRows[consultantId]. Klik → onOpenStep\n    sluit deze overlay en opent StepDetailOverlay.\n  • Tabel 'Conversies per stap': step / prevStep × 100;\n    klik rij vanaf index 1 → onOpenCallConversions.\n  • Knop rechtsboven opent CallConversionsOverlay\n    zonder vooraf-geselecteerde conversie.`} />
       {f && (
+
         <>
           <section className="mb-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider mb-2">Funnel</h3>
@@ -231,7 +239,9 @@ export function CandidateDetailOverlay({ open, candidate, consultantId, onClose,
       title={candidate?.name ?? ""}
       subtitle={candidate ? `${candidate.id} · Cat. ${candidate.category} · ${candidate.status}` : undefined}
     >
+      <OverlayDevNote id={14} story={<><strong>As a manager</strong>, I want a compact kandidaat-dossier vanuit Candidate Market drill-down, <strong>so that</strong> I can review snel zonder RecruitCRM te openen.</>} logic={`CandidateDetailOverlay (legacy):\n\n  • Toont KPI's deals/voorstellen/emails/calls van\n    CandidateRow + statische outreach-historie.\n  • In de huidige LC-B flow is dit vervangen door\n    CandidateDetailPane (zie #9); deze overlay blijft\n    voor backwards compat in andere contexten.`} />
       {candidate && (
+
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
             <Kpi label="# deals" value={`${candidate.deals}`} />
@@ -318,7 +328,9 @@ export function DevelopmentOverlay({ open, consultantId, onClose }: DevProps) {
       title={`Ontwikkeling — ${c?.name ?? ""}`}
       subtitle={c?.unit}
     >
+      <OverlayDevNote id={15} story={<><strong>As a manager</strong>, I want a complete development cockpit per consultant (score, market mini, tips, goals als tickets, coaching notities), <strong>so that</strong> I can plan en bijhouden welke coaching nodig is.</>} logic={`DevelopmentOverlay:\n\n  • Score = avg(pitchingPower, responsiveness,\n    networking, bezwaarverlegging); statusFromScore.\n  • Coaching tips heuristisch uit lcbMarketRows:\n      acquisities→intakes < 50%, uitnodiging→\n      gesprekken < 50%, perf='bad', plaatsingen/\n      gesprekken < 10%; fallback positief.\n  • Goals = managerGoalsData filtered op\n    consultantId, mapped naar GoalTicket\n    (status Open/In progress/Done; priority Hoog/\n    Middel/Laag uit isManagerGoal-vlag; due seeded\n    uit id). Add/Update/Delete via goalsReducer.\n  • Coaching-notities zijn statische placeholder rows.`} />
       {c && (
+
         <div className="space-y-5">
           <div className="flex items-center gap-2">
             <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium", LCB_STATUS_BG[status])}>{LCB_STATUS_LABEL[status]}</span>
@@ -455,7 +467,9 @@ export function StopperOverlay({ open, consultantId, onClose }: CtxProps) {
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Verwachte stoppers"]}
       title={`Verwachte stoppers — ${c?.name ?? ""}`}
       subtitle={`${items.length} kandidaten met omzetrisico.`}>
+      <OverlayDevNote id={16} story={<><strong>As a manager</strong>, I want to see expected stoppers per consultant with omzetrisico en AI-advies, <strong>so that</strong> I can plan verlengingen of vervangingen on time.</>} logic={`StopperOverlay:\n\n  • Bron: attritionProjectionData.flatMap(...) →\n    kandidaten waar consultantName matcht. period\n    komt mee uit de outer attrition-record.\n  • Kolommen: Periode, Kandidaat, Opdrachtgever\n    (deterministische placeholder), Omzetrisico\n    (revenue, rood), Verlenging waarsch. (i%2),\n    Reden (notes), AI advies (aiAnalysis), CRM-icon.`} />
       <div className="rounded-lg border border-border overflow-auto">
+
         <table className="w-full text-xs">
           <thead className="bg-muted/60"><tr className="text-left">
             <Th>Periode</Th><Th>Kandidaat</Th><Th>Opdrachtgever</Th><Th align="right">Omzetrisico</Th><Th>Verlenging waarsch.</Th><Th>Reden</Th><Th>AI advies</Th><Th>CRM</Th>
@@ -490,7 +504,9 @@ export function ActivePlacementsOverlay({ open, consultantId, onClose }: CtxProp
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Actieve plaatsingen"]}
       title={`Actieve plaatsingen — ${c?.name ?? ""}`}
       subtitle={`${items.length} actief · totaal €${total}k / maand`}>
+      <OverlayDevNote id={17} story={<><strong>As a manager</strong>, I want a complete list of de actieve plaatsingen van een consultant met €/maand en marge, <strong>so that</strong> I can see waar de huidige omzet vandaan komt.</>} logic={`ActivePlacementsOverlay:\n\n  • Bron: activeSecondmentsData.filter\n    (consultantName === c.name).\n  • Kolommen: Kandidaat, Opdrachtgever, Start,\n    Eind, €/maand, Marge/uur (deterministisch\n    40+i*3 % 25), Type (Detavast placeholder),\n    Status (active/ending-soon/new) + badges, CRM.\n  • Footer toont totaal €/maand.`} />
       <div className="rounded-lg border border-border overflow-auto">
+
         <table className="w-full text-xs">
           <thead className="bg-muted/60"><tr className="text-left">
             <Th>Kandidaat</Th><Th>Opdrachtgever</Th><Th>Start</Th><Th>Eind</Th><Th align="right">€/maand</Th><Th align="right">Marge/uur</Th><Th>Type</Th><Th>Status</Th><Th>CRM</Th>
@@ -541,7 +557,9 @@ export function SoonToStartOverlay({ open, consultantId, onClose }: CtxProps) {
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Soon-to-start"]}
       title={`Soon-to-start — ${c?.name ?? ""}`}
       subtitle={`${items.length} kandidaten · verwachte omzet €${perf?.soonToStartRevenue ?? 0}k`}>
+      <OverlayDevNote id={18} story={<><strong>As a manager</strong>, I want to see soon-to-start kandidaten met verwachte €/mnd, <strong>so that</strong> I can prepare omzet die binnen enkele weken op de teller komt.</>} logic={`SoonToStartOverlay:\n\n  • Bron: buildFinancePerfRow(consultantId, name)\n    → soonToStart count + soonToStartRevenue.\n  • Mock-rijen worden gegenereerd via\n    Array.from({ length: soonToStart }) met\n    deterministische start-datum (5+i*3 apr)\n    en monthly = soonToStartRevenue / soonToStart.`} />
       <div className="rounded-lg border border-border overflow-auto">
+
         <table className="w-full text-xs">
           <thead className="bg-muted/60"><tr className="text-left">
             <Th>Kandidaat</Th><Th>Opdrachtgever</Th><Th>Startdatum</Th><Th align="right">Verwachte €/mnd</Th><Th>CRM</Th>
@@ -572,7 +590,9 @@ export function NetImpactOverlay({ open, consultantId, onClose }: CtxProps) {
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Netto financiële impact"]}
       title={`Netto financiële impact — ${c?.name ?? ""}`}
       subtitle="Optelsom van actieve omzet + soon-to-start − omzetrisico stoppers.">
+      <OverlayDevNote id={19} story={<><strong>As a manager</strong>, I want one combined number that says of een consultant deze maand groeit of krimpt, <strong>so that</strong> I can prioritise interventions.</>} logic={`NetImpactOverlay:\n\n  • Bron: buildFinancePerfRow(consultantId).\n  • Formule: + activeMonthlyRevenue\n            + soonToStartRevenue\n            − stopperRiskRevenue\n            = netImpact (groen ≥0, rood <0).\n  • Voetnoot: likelyExtensions + likelyExtensionRevenue\n    als 'potentieel terugverdienen'.`} />
       {r && (
+
         <div className="space-y-3">
           <div className="rounded-lg border border-border bg-card p-4 space-y-2">
             <ImpactLine label="+ Actieve omzet" value={`€${r.activeMonthlyRevenue}k`} tone="pos" />
@@ -608,7 +628,9 @@ export function RevenueDetailOverlay({ open, consultantId, onClose }: CtxProps) 
     <LCBOverlay open={open && !!c} onClose={onClose} size="side"
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Omzet"]}
       title={`Omzetdetail — ${c?.name ?? ""}`}>
+      <OverlayDevNote id={20} story={<><strong>As a manager</strong>, I want a breakdown van een consultant's omzet per secondment, <strong>so that</strong> I can see Detavast/W&S/Marge Fac split en performance ratio.</>} logic={`RevenueDetailOverlay:\n\n  • Bron: consultantRevenueDetailData[consultantId].\n  • KPI's: Totaal omzet, # detacheringen, # W&S,\n    Performance%.\n  • Lijst: secondments[]; per regel kandidaat,\n    bedrijf, type (Detavast/W&S/Marge Fac), €/mnd.`} />
       {detail && (
+
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <Kpi label="Totaal omzet" value={`€${detail.totalRevenue}k`} />
@@ -647,7 +669,9 @@ export function YtdRealisedOverlay({ open, onClose }: GlobalProps) {
       breadcrumbs={["Finance & Forecast", "YTD realised"]}
       title="YTD realised — onderliggende deals"
       subtitle="Welke deals zorgen voor de realised revenue.">
+      <OverlayDevNote id={21} story={<><strong>As a manager</strong>, I want a global YTD realised deal-overview, <strong>so that</strong> I can audit which deals carry de jaaromzet.</>} logic={`YtdRealisedOverlay (global):\n\n  • Bron: consultantRevenueDetailData.flatMap →\n    eerste 2 secondments per consultant.\n  • Mock Potentieel = monthlyRevenue × 6,\n    Realised   = monthlyRevenue × 4 (groen).`} />
       <div className="rounded-lg border border-border overflow-auto">
+
         <table className="w-full text-xs">
           <thead className="bg-muted/60"><tr className="text-left">
             <Th>Deal</Th><Th>Kandidaat</Th><Th>Opdrachtgever</Th><Th>Consultant</Th><Th align="right">Potentieel</Th><Th align="right">Realised</Th><Th>CRM</Th>
@@ -678,7 +702,9 @@ export function ForecastYearOverlay({ open, onClose }: GlobalProps) {
       breadcrumbs={["Finance & Forecast", "Forecast jaar"]}
       title="Forecast jaar — onderliggende deals"
       subtitle="Verwachte omzet, opgesplitst naar actieve en soon-to-start plaatsingen.">
+      <OverlayDevNote id={22} story={<><strong>As a manager</strong>, I want a global forecast deal-overview met type Actief vs Soon-to-start, <strong>so that</strong> I can plan against full-year omzet potential.</>} logic={`ForecastYearOverlay (global):\n\n  • Bron: consultantRevenueDetailData.flatMap →\n    eerste 2 secondments per consultant.\n  • Mock Potentieel = monthlyRevenue × 12.\n  • Type = (di + i) % 2 === 0 ? 'Actief' :\n    'Soon-to-start' (kleur badge).`} />
       <div className="rounded-lg border border-border overflow-auto">
+
         <table className="w-full text-xs">
           <thead className="bg-muted/60"><tr className="text-left">
             <Th>Deal</Th><Th>Kandidaat</Th><Th>Opdrachtgever</Th><Th>Consultant</Th><Th align="right">Potentieel</Th><Th>Type</Th><Th>CRM</Th>

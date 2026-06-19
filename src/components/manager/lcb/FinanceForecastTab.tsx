@@ -118,7 +118,34 @@ export function FinanceForecastTab({
   const totalActive = activeSecondmentsData.filter((s) => consultants.some((c) => c.name === s.consultantName)).length;
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="relative h-full flex flex-col">
+      <DevNote
+        id={4}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want realised vs target, forecast, marge en risk per consultant of functiegroep, <strong>so that</strong> I can steer revenue and spot at-risk accounts.</>}
+        logic={`Finance & Forecast tab:
+
+  • KPI strip: YTD realised, Forecast jaar, Brutomarge,
+    Actieve plaatsingen, Total revenue — totals from
+    marginTotals + perfTotals + activeSecondmentsData.
+  • Perspective switcher toggles between
+      - margin: row per consultant. target/realised/
+        forecast/potential seeded deterministisch uit
+        consultant id; margin = realised × (0.25..0.35);
+        revRisk from attritionProjectionData.
+      - functiegroep: rows from getFunctiegroepRows();
+        consultantsLabel in topbar wijzigt mee.
+  • Tabel: kolommen Revenue, Margin, Forecast, Realised
+    (groen/rood vs target), Potentieel, Realised pot.,
+    Revenue risk, Marge/uur, Categorie, Status.
+  • Klik op revenue-bedrag → onOpenRevenue(consultantId).
+  • FinanceTrendChart wordt onder de tabel gerenderd met
+    labelMode = "consultant" of "functiegroep" zodat
+    legenda en labels meeschakelen.
+  • lockedId synct met de naam-kolom en de chart:
+    klikken op een naam vergrendelt die serie.`}
+      />
       {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-2">
         <Kpi label="YTD realised" value={`€${marginTotals.realised}k`} sub={`${realisedPct}% v target (€${marginTotals.target}k)`} tone={realisedPct >= 90 ? "clean" : "attention"} onClick={onOpenYtd} />
@@ -141,37 +168,13 @@ export function FinanceForecastTab({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <DevNote
-            id={4}
-            story={<><strong>As a manager</strong>, I want realised vs target, forecast, marge en risk per consultant of functiegroep, <strong>so that</strong> I can steer revenue and spot at-risk accounts.</>}
-            logic={`Finance & Forecast tab:
-
-  • KPI strip: YTD realised, Forecast jaar, Brutomarge,
-    Actieve plaatsingen, Total revenue — totals from
-    marginTotals + perfTotals + activeSecondmentsData.
-  • Perspective switcher toggles between
-      - margin: row per consultant. target/realised/
-        forecast/potential seeded deterministisch uit
-        consultant id; margin = realised × (0.25..0.35);
-        revRisk from attritionProjectionData.
-      - functiegroep: rows from getFunctiegroepRows();
-        consultantsLabel in topbar wijzigt mee.
-  • Tabel: kolommen Revenue, Margin, Forecast, Realised
-    (groen/rood vs target), Potentieel, Realised pot.,
-    Revenue risk, Marge/uur, Categorie, Status.
-  • Klik op revenue-bedrag → onOpenRevenue(consultantId).
-  • FinanceTrendChart wordt onder de tabel gerenderd met
-    labelMode = "consultant" of "functiegroep" zodat
-    legenda en labels meeschakelen.
-  • lockedId synct met de naam-kolom en de chart:
-    klikken op een naam vergrendelt die serie.`}
-          />
           <div className="inline-flex items-center rounded-md border border-border p-0.5 bg-card text-[11px]">
             <PerspBtn active={perspective === "margin"} onClick={() => setPerspective("margin")}>Marge</PerspBtn>
             <PerspBtn active={perspective === "functiegroep"} onClick={() => setPerspective("functiegroep")}>Omzet per functiegroep</PerspBtn>
           </div>
         </div>
       </div>
+
 
       <div className="flex-1 overflow-auto">
         <div className="rounded-lg border border-border bg-card">

@@ -14,6 +14,7 @@ interface Props {
   subtitle?: string;
   size?: "side" | "wide";
   children: ReactNode;
+  devNote?: ReactNode;
 }
 
 export function LCBOverlay({
@@ -25,6 +26,7 @@ export function LCBOverlay({
   subtitle,
   size = "side",
   children,
+  devNote,
 }: Props) {
   useForceSidebarCollapse(open);
 
@@ -40,7 +42,7 @@ export function LCBOverlay({
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-x-0 bottom-0 top-14 z-[60] flex">
+    <div data-lcb-portal className="lcb-skin fixed inset-x-0 bottom-0 top-14 z-[60] flex">
       <button
         type="button"
         aria-label="Sluiten"
@@ -49,9 +51,9 @@ export function LCBOverlay({
       />
       <aside
         className={cn(
-          "h-full flex flex-col bg-background border-l border-border shadow-2xl",
+          "relative h-full flex flex-col bg-background border-l border-border shadow-2xl",
           "animate-in slide-in-from-right-4 duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          size === "wide" ? "w-[80vw] max-w-[1400px]" : "w-[520px] max-w-[92vw]",
+          size === "wide" ? "w-[72vw] max-w-[1260px]" : "w-[468px] max-w-[92vw]",
         )}
       >
         <header className="shrink-0 border-b border-border px-5 py-3 flex items-start gap-2">
@@ -71,9 +73,11 @@ export function LCBOverlay({
             <X className="h-4 w-4" />
           </Button>
         </header>
+        {devNote}
         <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
       </aside>
     </div>,
     document.body,
   );
 }
+

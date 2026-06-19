@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { consultantColors } from "@/data/managerPerformanceData";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
 
 type Granularity = "periode" | "maand" | "week";
 
@@ -225,8 +227,32 @@ export function FinanceTrendChart({ rows, selectedConsultants, lockedId: lockedI
 
   return (
     <div
-      className="mt-3 rounded-lg border border-border bg-card p-3"
+      className="relative mt-3 rounded-lg border border-border bg-card p-3"
     >
+      <DevNote
+        id={12}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want to see financial development over time per consultant of functiegroep with a rolling forecast, <strong>so that</strong> I can compare trajectories and lock onto one series.</>}
+        logic={`FinanceTrendChart:
+
+  • Granularity: periode (14 P), maand (18 M) of week (26 W);
+    persisted in localStorage 'lcb.financeTrend.v1'.
+  • Per consultant baseline = bucketTargetAvg(g) × compressed
+    relative ratio; each bucket gets a multiplicative
+    bucketFactor(trend × seasonal × jitter), clamped to
+    [0, €45k].
+  • Situatie line = historische waardes per bucket; Prognose
+    line = rolling mean of last forecastWindow buckets
+    (13 voor periode, anders 3) inclusief één extra
+    'Prognose' bucket aan het einde.
+  • Modaal = €20.040 / maand, schaalt mee per granulariteit.
+  • Legend klik → setLockedId; hover → activeId; highlightId
+    = lockedId ?? activeId, dimt overige lijnen.
+  • labelMode wisselt 'consultants' ↔ 'functiegroepen' voor
+    labels en filter-popover.`}
+      />
+
       <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
         <div>
           <h3 className="text-sm font-semibold text-foreground">Financiële ontwikkeling</h3>

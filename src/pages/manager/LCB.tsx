@@ -226,9 +226,27 @@ export default function LCB() {
 
   return (
     <div className="lcb-skin h-full flex flex-col bg-background overflow-hidden">
-      <header className="shrink-0 border-b border-border bg-card">
+      <header className="relative shrink-0 border-b border-border bg-card">
+        <DevNote
+          id={6}
+          floating
+          floatingClassName="top-1 right-2"
+          story={<><strong>As a manager</strong>, I want a glanceable status pill en data-refresh-tijd in de pagina-header, <strong>so that</strong> I know in 1 oogopslag of LC-B aandacht nodig heeft en hoe vers de data is.</>}
+          logic={`Page header:
 
-        <div className="flex h-12 items-center gap-3 px-4">
+  • Status pill = LCB_STATUS_LABEL[statusFromScore(globalScore)]
+    waar globalScore = round((avgSkillScore +
+    operationeelScore + omzetScore) / 3).
+  • operationeelScore = totalPlaatsingen / totalIntakes × 100
+    (gecapt op 100).
+  • omzetScore = ytdRealised / ytdTarget × 100 (gecapt op 100).
+  • avgSkillScore = gemiddelde overall() over alle
+    consultantSkillData rijen.
+  • Refresh-label = nieuwste new Date() bij mount,
+    geformatteerd als '14:32 · 19 jun'.`}
+        />
+
+        <div className="relative flex h-12 items-center gap-3 px-4">
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-semibold leading-tight">Manager Dashboard — LC-B</h1>
             <TooltipProvider delayDuration={150}>
@@ -246,26 +264,28 @@ export default function LCB() {
             </TooltipProvider>
           </div>
           <div className="flex-1" />
-          <div className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[10px] text-muted-foreground mr-12">
             <RefreshCw className="h-3 w-3" /> <span>{refreshLabel}</span>
           </div>
         </div>
       </header>
 
-      <LCBTopBar
-        date={date} onDate={setDate}
-        units={unitOptions}
-        selectedUnits={selectedUnits} onSelectedUnits={handleSelectedUnits}
-        consultants={consultantOptions}
-        selectedConsultants={selectedConsultants} onSelectedConsultants={handleSelectedConsultants}
-        search={search} onSearch={setSearch}
-        onReset={onResetFilters}
-        consultantLabel={tab === "finance" && financePerspective === "functiegroep" ? "Functiegroepen" : "Consultants"}
-        consultantPlaceholder={tab === "finance" && financePerspective === "functiegroep" ? "Alle functiegroepen" : "Alle consultants"}
-      />
-      <div className="px-3 pt-2 shrink-0">
+      <div className="relative">
+        <LCBTopBar
+          date={date} onDate={setDate}
+          units={unitOptions}
+          selectedUnits={selectedUnits} onSelectedUnits={handleSelectedUnits}
+          consultants={consultantOptions}
+          selectedConsultants={selectedConsultants} onSelectedConsultants={handleSelectedConsultants}
+          search={search} onSearch={setSearch}
+          onReset={onResetFilters}
+          consultantLabel={tab === "finance" && financePerspective === "functiegroep" ? "Functiegroepen" : "Consultants"}
+          consultantPlaceholder={tab === "finance" && financePerspective === "functiegroep" ? "Alle functiegroepen" : "Alle consultants"}
+        />
         <DevNote
           id={1}
+          floating
+          floatingClassName="top-1.5 right-20"
           story={<><strong>As a manager</strong>, I want to scope LC-B by date, unit, consultant and search, <strong>so that</strong> I can focus on a specific slice of my team and tab.</>}
           logic={`Filter bar wired to LCB page state:
 
@@ -288,10 +308,23 @@ export default function LCB() {
         />
       </div>
 
+      <div className="relative flex shrink-0 border-b border-border bg-card overflow-x-auto">
+        <DevNote
+          id={7}
+          floating
+          floatingClassName="top-1 right-1"
+          story={<><strong>As a manager</strong>, I want one tab strip with badged signals count, <strong>so that</strong> I can switch between Market / Development / Finance / Signals and immediately see how many alerts I have.</>}
+          logic={`Tab strip:
 
-
-
-      <div className="flex shrink-0 border-b border-border bg-card overflow-x-auto">
+  • TABS = market | development | finance | signals.
+  • setTab() reset units en consultants bij tab-wissel,
+    omdat development gebruik maakt van
+    myTeamConsultants terwijl market/finance lcbTeam
+    gebruiken (verschillende id-ruimtes).
+  • Signals tab toont alerts.length als badge; rood
+    indien alerts.filter(severity==='critical').length > 0,
+    anders amber.`}
+        />
         {TABS.map((t) => {
           const isSignals = t.id === "signals";
           const count = isSignals ? alerts.length : 0;
@@ -322,6 +355,7 @@ export default function LCB() {
           );
         })}
       </div>
+
 
       <main className="flex-1 overflow-hidden p-3 min-h-0">
         {tab === "market" && (
@@ -472,7 +506,29 @@ function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[];
   const sp = (k: CandSortKey) => ({ sortDir: sortKey === k ? sortDir : undefined, onClick: () => toggle(k) });
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-3">
+    <div className="relative flex-1 min-h-0 overflow-y-auto p-3">
+      <DevNote
+        id={8}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want sortable lists of all candidates (or deals) achter een funnel-cel, <strong>so that</strong> I can pick a record and inspect details in the right pane.</>}
+        logic={`Step list pane (left side van LcbSplitOverlay):
+
+  • Bron: getCandidatesForStep(consultantId, step) of
+    getDealsForStep(consultantId, step) afhankelijk van
+    stepDef.entity ('candidate' | 'deal').
+  • Sorteren: klik op kolomheader togglet asc/desc; sleutels
+    name/id/category/status/deals/proposals/emails/calls/date
+    (kandidaten) of dealName/dealStatus/candidateName/
+    opdrachtgeverName/date (deals).
+  • compact-mode (selected != null) verbergt de extra
+    kolommen zodat de lijst smal genoeg blijft naast het
+    detail-pane.
+  • Klik rij → onSelect(record) zet selectedCandidate of
+    selectedDeal in LCB.tsx; het rechter pane mount dan de
+    CandidateDetailPane / DealDetailPane.`}
+      />
+
       <div className="rounded-md border border-border overflow-hidden">
         <table className="w-full text-[11px]">
           <thead className="bg-muted/60 sticky top-0">
@@ -556,7 +612,21 @@ function StepDealList({ rows, selected, onSelect }: { rows: DealRow[]; selected:
   const sp = (k: DealSortKey) => ({ sortDir: sortKey === k ? sortDir : undefined, onClick: () => toggle(k) });
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-3">
+    <div className="relative flex-1 min-h-0 overflow-y-auto p-3">
+      <DevNote
+        id={8}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want a sortable deal-list achter een funnel-cel, <strong>so that</strong> I can pick a deal and inspect its dossier in the right pane.</>}
+        logic={`Step deal-list pane: zie #8 op de kandidatenvariant.
+Bron: getDealsForStep(consultantId, step).
+Sorteerbare kolommen: dealName, dealStatus,
+candidateName, opdrachtgeverName, date (composed
+van lastUpdatedDate + lastUpdatedTime).
+Klik rij → setSelectedDeal in LCB.tsx; opent
+DealDetailPane in het rechter pane.`}
+      />
+
       <div className="rounded-md border border-border overflow-hidden">
         <table className="w-full text-[11px]">
           <thead className="bg-muted/60 sticky top-0">
@@ -669,16 +739,13 @@ function SignalsTab({ alerts, onSelect }: { alerts: DashboardAlert[]; onSelect: 
   }
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="mb-3">
-        <h2 className="text-sm font-semibold text-foreground">Signalen</h2>
-        <p className="text-[11px] text-muted-foreground">
-          Klik een signaal om direct naar de bijbehorende consultant of funnelstap te navigeren.
-        </p>
-        <DevNote
-          id={5}
-          story={<><strong>As a manager</strong>, I want a grouped list of alerts (kritiek / aandacht / info), <strong>so that</strong> I can jump straight to the consultant or funnelstap that needs action.</>}
-          logic={`Signals tab content:
+    <div className="relative h-full overflow-y-auto">
+      <DevNote
+        id={5}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want a grouped list of alerts (kritiek / aandacht / info), <strong>so that</strong> I can jump straight to the consultant or funnelstap that needs action.</>}
+        logic={`Signals tab content:
 
   • Source: generateAlerts() from
     managerOperationalDataV2 — generates DashboardAlert[]
@@ -695,8 +762,14 @@ function SignalsTab({ alerts, onSelect }: { alerts: DashboardAlert[]; onSelect: 
         gesprek / uitnodiging → gesprekken step
         outreach / kwaliteit  → development overlay
         else      → consultant overview overlay.`}
-        />
+      />
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold text-foreground">Signalen</h2>
+        <p className="text-[11px] text-muted-foreground">
+          Klik een signaal om direct naar de bijbehorende consultant of funnelstap te navigeren.
+        </p>
       </div>
+
       <div className="space-y-4">
         {groups.map((g) => {
           const meta = SEVERITY_META[g.severity];

@@ -12,6 +12,7 @@ interface LeftPane {
   width?: number | string; // px or CSS width string
   content: ReactNode;
   onBack?: () => void;
+  devNote?: ReactNode;
 }
 interface RightPane {
   breadcrumbs: string[];
@@ -19,6 +20,7 @@ interface RightPane {
   subtitle?: string;
   width?: number | string;
   content: ReactNode;
+  devNote?: ReactNode;
 }
 interface ExtraPane {
   breadcrumbs: string[];
@@ -26,6 +28,7 @@ interface ExtraPane {
   subtitle?: string;
   width?: number | string;
   content: ReactNode;
+  devNote?: ReactNode;
 }
 
 interface Props {
@@ -58,7 +61,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
   const showExtra = !!extra;
 
   return createPortal(
-    <div className="fixed inset-0 top-14 z-[60] flex">
+    <div data-lcb-portal className="lcb-skin fixed inset-0 top-14 z-[60] flex">
       <button
         type="button"
         aria-label="Sluiten"
@@ -76,11 +79,12 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
             breadcrumbs={left.breadcrumbs}
             title={left.title}
             subtitle={left.subtitle}
-            width={left.width ?? (right ? "clamp(360px, 30vw, 520px)" : "clamp(720px, 70vw, 1100px)")}
+            width={left.width ?? (right ? "clamp(324px, 27vw, 468px)" : "clamp(648px, 63vw, 990px)")}
             onBack={left.onBack}
             onClose={onClose}
             slideFrom="right"
             bordered
+            devNote={left.devNote}
           >
             {left.content}
           </Pane>
@@ -105,9 +109,10 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
               breadcrumbs={right.breadcrumbs}
               title={right.title}
               subtitle={right.subtitle}
-              width={right.width ?? "clamp(720px, 62vw, 1100px)"}
+              width={right.width ?? "clamp(648px, 56vw, 990px)"}
               onClose={onCloseRight ?? onClose}
               slideFrom="right"
+              devNote={right.devNote}
             >
               {right.content}
             </Pane>
@@ -120,10 +125,11 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
           breadcrumbs={extra.breadcrumbs}
           title={extra.title}
           subtitle={extra.subtitle}
-          width={extra.width ?? "clamp(420px, 32vw, 560px)"}
+          width={extra.width ?? "clamp(378px, 29vw, 504px)"}
           onClose={onCloseExtra ?? onClose}
           slideFrom="right"
           bordered
+          devNote={extra.devNote}
         >
           {extra.content}
         </Pane>
@@ -136,17 +142,17 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
 
 
 function Pane({
-  breadcrumbs, title, subtitle, width, children, onClose, onBack, slideFrom, bordered,
+  breadcrumbs, title, subtitle, width, children, onClose, onBack, slideFrom, bordered, devNote,
 }: {
   breadcrumbs: string[]; title: string; subtitle?: string; width: number | string;
   children: ReactNode; onClose: () => void; onBack?: () => void;
-  slideFrom: "right"; bordered?: boolean;
+  slideFrom: "right"; bordered?: boolean; devNote?: ReactNode;
 }) {
   return (
     <aside
       style={{ width, maxWidth: "92vw" }}
       className={cn(
-        "h-full flex flex-col bg-background border-l border-border shadow-2xl",
+        "relative h-full flex flex-col bg-background border-l border-border shadow-2xl",
         "animate-in slide-in-from-right-4 duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
       )}
     >
@@ -167,6 +173,7 @@ function Pane({
           <X className="h-4 w-4" />
         </Button>
       </header>
+      {devNote}
       <div className="flex-1 min-h-0 overflow-hidden flex flex-col">{children}</div>
     </aside>
   );

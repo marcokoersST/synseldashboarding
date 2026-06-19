@@ -10,6 +10,8 @@ import {
 } from "@/data/lcbMarketData";
 import { dealStageBadgeClass, contactStatusBadgeClass, CONTACT_STATUSES } from "@/data/lcbDealStages";
 import { MultiSelectFilter, SortableTh, useSort, ResetButton, filterBy } from "./tableControls";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
 
 interface Props {
   deal: DealRow;
@@ -46,8 +48,31 @@ export function DealDetailPane({ deal, onOpenCandidate, onOpenComm }: Props) {
   const calls = activity.filter((a) => a.kind === "call");
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className="relative flex-1 min-h-0 flex flex-col">
+      <DevNote
+        id={10}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want a deal dossier with AI step-checks, contact-check, notities, meetings en bron-communicatie, <strong>so that</strong> I can verify the deal is healthy and pick up follow-up actions.</>}
+        logic={`DealDetailPane:
+
+  • Data: getDealNotes / Meetings / Activity / Evidence
+    + getCandidateNotes voor inschrijving-bewijs.
+  • Header: deal stage badge via dealStageBadgeClass,
+    kandidaat klikbaar → onOpenCandidate(id, name).
+  • AiStepChecks: per stap (inschrijving → plaatsing)
+    autoResult based on evidence (match, owner mail/
+    call proof, intake meeting, sollicitatie meeting,
+    vervolg meeting, geplaatst). Manual overrides
+    opslagbaar in localStorage 'lcb.manualStepProof.*'.
+  • ContactCheck: last mail/call van consultant.
+  • LopendeZaakCheck: alleen voor stage
+    '2.3 | Lopende zaak' — toont stale flag.
+  • Emails/Calls tabellen filteren op contactStatus,
+    klik rij → onOpenComm(item, contextLabel).`}
+      />
       <div className="shrink-0 px-4 py-3 border-b border-border bg-card/30 space-y-2">
+
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm font-semibold leading-tight truncate">{deal.dealName}</div>

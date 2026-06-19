@@ -60,18 +60,13 @@ export function ConsultantDevelopmentTab({ selectedUnits, selectedConsultants, s
   }, [selectedUnits, selectedConsultants, search]);
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div>
-          <h2 className="text-sm font-semibold text-foreground">Ontwikkeling per consultant</h2>
-          <p className="text-[11px] text-muted-foreground">
-            Klik een rij voor doelen, coaching en aanbevolen focus. Coaching-tips zijn gekoppeld aan de funnel-prestaties.
-          </p>
-        </div>
-        <DevNote
-          id={3}
-          story={<><strong>As a manager</strong>, I want overall, quality en volume scores plus open coaching doelen per consultant, <strong>so that</strong> I can prioritise who to coach next.</>}
-          logic={`Consultant Development table:
+    <div className="relative h-full flex flex-col">
+      <DevNote
+        id={3}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want overall, quality en volume scores plus open coaching doelen per consultant, <strong>so that</strong> I can prioritise who to coach next.</>}
+        logic={`Consultant Development table:
 
   • Rows: consultantSkillData, filtered by selectedUnits,
     selectedConsultants and search.
@@ -93,8 +88,16 @@ export function ConsultantDevelopmentTab({ selectedUnits, selectedConsultants, s
     clean → Laag.
   • Click rij → onOpenConsultant(id) opent
     DevelopmentOverlay.`}
-        />
+      />
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">Ontwikkeling per consultant</h2>
+          <p className="text-[11px] text-muted-foreground">
+            Klik een rij voor doelen, coaching en aanbevolen focus. Coaching-tips zijn gekoppeld aan de funnel-prestaties.
+          </p>
+        </div>
       </div>
+
       <div className="flex-1 overflow-auto rounded-lg border border-border bg-card">
         <table className="w-full text-xs">
           <thead className="sticky top-0 z-20 bg-muted/60 backdrop-blur">

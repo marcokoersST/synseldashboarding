@@ -10,6 +10,8 @@ import {
 } from "@/data/lcbMarketData";
 import { dealStageBadgeClass, contactStatusBadgeClass, LCB_DEAL_STAGES, CONTACT_STATUSES } from "@/data/lcbDealStages";
 import { MultiSelectFilter, SortableTh, useSort, ResetButton, filterBy } from "./tableControls";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
 
 type Tab = "summary" | "deals" | "emails" | "calls";
 
@@ -45,9 +47,35 @@ export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm, onUserI
 
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className="relative flex-1 min-h-0 flex flex-col">
+      <DevNote
+        id={9}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want a candidate dossier with deals, AI-checks, last activity and notities, <strong>so that</strong> I can judge follow-up status without opening RecruitCRM.</>}
+        logic={`CandidateDetailPane:
+
+  • Data: getCandidateActivity / Notes / DealLinks /
+    Evidence (id) uit lcbMarketData.
+  • Header: scorekaarten Deals/Voorstellen/Emails/Calls
+    selecteren de bijhorende tab.
+  • Summary tab: AiCandidateChecks (benadering, match,
+    open deals, intake gedaan) — sommige rijen klikbaar
+    → goDeals('open' | null). Plus laatste activiteit
+    en notities-feed.
+  • DealsTab: filter op stage en 'alleen open' via
+    isEndStage; sorteren op datum default desc; klik
+    rij → onOpenDeal (CandidateDealLink) waarmee
+    DealDetailPane opent.
+  • EmailsTab / CallsTab: filter op contactStatus;
+    klik rij → onOpenComm(activityItem, contextLabel)
+    opent CommunicationPane.
+  • onUserInteract resets de communicatiepane wanneer de
+    gebruiker terug binnen de kandidaat klikt.`}
+      />
       {/* Sticky candidate header */}
       <div className="shrink-0 px-4 py-3 border-b border-border bg-card/30 space-y-2">
+
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm font-semibold leading-tight truncate">{candidate.name}</div>
