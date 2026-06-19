@@ -317,13 +317,12 @@ export default function LCB() {
           logic={`Tab strip:
 
   • TABS = market | development | finance | signals.
-  • setTab() reset units en consultants bij tab-wissel,
-    omdat development gebruik maakt van
-    myTeamConsultants terwijl market/finance lcbTeam
-    gebruiken (verschillende id-ruimtes).
-  • Signals tab toont alerts.length als badge; rood
-    indien alerts.filter(severity==='critical').length > 0,
-    anders amber.`}
+  • setTab() resets units and consultants on tab switch,
+    because development uses myTeamConsultants while
+    market / finance use lcbTeam (different id spaces).
+  • Signals tab shows alerts.length as a badge; red
+    when alerts.filter(severity==='critical').length > 0,
+    otherwise amber.`}
         />
         {TABS.map((t) => {
           const isSignals = t.id === "signals";
