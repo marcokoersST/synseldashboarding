@@ -702,7 +702,9 @@ export function ForecastYearOverlay({ open, onClose }: GlobalProps) {
       breadcrumbs={["Finance & Forecast", "Forecast jaar"]}
       title="Forecast jaar — onderliggende deals"
       subtitle="Verwachte omzet, opgesplitst naar actieve en soon-to-start plaatsingen.">
+      <OverlayDevNote id={22} story={<><strong>As a manager</strong>, I want a global forecast deal-overview met type Actief vs Soon-to-start, <strong>so that</strong> I can plan against full-year omzet potential.</>} logic={`ForecastYearOverlay (global):\n\n  • Bron: consultantRevenueDetailData.flatMap →\n    eerste 2 secondments per consultant.\n  • Mock Potentieel = monthlyRevenue × 12.\n  • Type = (di + i) % 2 === 0 ? 'Actief' :\n    'Soon-to-start' (kleur badge).`} />
       <div className="rounded-lg border border-border overflow-auto">
+
         <table className="w-full text-xs">
           <thead className="bg-muted/60"><tr className="text-left">
             <Th>Deal</Th><Th>Kandidaat</Th><Th>Opdrachtgever</Th><Th>Consultant</Th><Th align="right">Potentieel</Th><Th>Type</Th><Th>CRM</Th>
