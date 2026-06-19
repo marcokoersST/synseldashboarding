@@ -510,22 +510,22 @@ function StepCandidateList({ rows, selected, onSelect }: { rows: CandidateRow[];
         id={8}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want sortable lists of all candidates (or deals) achter een funnel-cel, <strong>so that</strong> I can pick a record and inspect details in the right pane.</>}
-        logic={`Step list pane (left side van LcbSplitOverlay):
+        story={<><strong>As a manager</strong>, I want sortable lists of all candidates (or deals) behind a funnel cell, <strong>so that</strong> I can pick a record and inspect details in the right pane.</>}
+        logic={`Step list pane (left side of LcbSplitOverlay):
 
-  • Bron: getCandidatesForStep(consultantId, step) of
-    getDealsForStep(consultantId, step) afhankelijk van
+  • Source: getCandidatesForStep(consultantId, step) or
+    getDealsForStep(consultantId, step), depending on
     stepDef.entity ('candidate' | 'deal').
-  • Sorteren: klik op kolomheader togglet asc/desc; sleutels
-    name/id/category/status/deals/proposals/emails/calls/date
-    (kandidaten) of dealName/dealStatus/candidateName/
-    opdrachtgeverName/date (deals).
-  • compact-mode (selected != null) verbergt de extra
-    kolommen zodat de lijst smal genoeg blijft naast het
-    detail-pane.
-  • Klik rij → onSelect(record) zet selectedCandidate of
-    selectedDeal in LCB.tsx; het rechter pane mount dan de
-    CandidateDetailPane / DealDetailPane.`}
+  • Sorting: clicking a column header toggles asc/desc;
+    keys name/id/category/status/deals/proposals/emails/
+    calls/date (candidates) or dealName/dealStatus/
+    candidateName/opdrachtgeverName/date (deals).
+  • compact-mode (selected != null) hides extra columns
+    so the list stays narrow next to the detail pane.
+  • Click row → onSelect(record) sets selectedCandidate
+    or selectedDeal in LCB.tsx; the right pane then mounts
+    CandidateDetailPane / DealDetailPane. Picking another
+    row in the list swaps the right pane in place.`}
       />
 
       <div className="rounded-md border border-border overflow-hidden">
