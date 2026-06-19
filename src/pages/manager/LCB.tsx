@@ -703,16 +703,13 @@ function SignalsTab({ alerts, onSelect }: { alerts: DashboardAlert[]; onSelect: 
   }
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="mb-3">
-        <h2 className="text-sm font-semibold text-foreground">Signalen</h2>
-        <p className="text-[11px] text-muted-foreground">
-          Klik een signaal om direct naar de bijbehorende consultant of funnelstap te navigeren.
-        </p>
-        <DevNote
-          id={5}
-          story={<><strong>As a manager</strong>, I want a grouped list of alerts (kritiek / aandacht / info), <strong>so that</strong> I can jump straight to the consultant or funnelstap that needs action.</>}
-          logic={`Signals tab content:
+    <div className="relative h-full overflow-y-auto">
+      <DevNote
+        id={5}
+        floating
+        floatingClassName="top-1 right-1"
+        story={<><strong>As a manager</strong>, I want a grouped list of alerts (kritiek / aandacht / info), <strong>so that</strong> I can jump straight to the consultant or funnelstap that needs action.</>}
+        logic={`Signals tab content:
 
   • Source: generateAlerts() from
     managerOperationalDataV2 — generates DashboardAlert[]
@@ -729,8 +726,14 @@ function SignalsTab({ alerts, onSelect }: { alerts: DashboardAlert[]; onSelect: 
         gesprek / uitnodiging → gesprekken step
         outreach / kwaliteit  → development overlay
         else      → consultant overview overlay.`}
-        />
+      />
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold text-foreground">Signalen</h2>
+        <p className="text-[11px] text-muted-foreground">
+          Klik een signaal om direct naar de bijbehorende consultant of funnelstap te navigeren.
+        </p>
       </div>
+
       <div className="space-y-4">
         {groups.map((g) => {
           const meta = SEVERITY_META[g.severity];
