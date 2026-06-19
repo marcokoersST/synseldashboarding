@@ -52,26 +52,26 @@ export function CandidateDetailPane({ candidate, onOpenDeal, onOpenComm, onUserI
         id={9}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want a candidate dossier with deals, AI-checks, last activity and notities, <strong>so that</strong> I can judge follow-up status without opening RecruitCRM.</>}
+        story={<><strong>As a manager</strong>, I want a candidate dossier with deals, AI checks, last activity and notes, <strong>so that</strong> I can judge follow-up status without opening RecruitCRM.</>}
         logic={`CandidateDetailPane:
 
   • Data: getCandidateActivity / Notes / DealLinks /
-    Evidence (id) uit lcbMarketData.
-  • Header: scorekaarten Deals/Voorstellen/Emails/Calls
-    selecteren de bijhorende tab.
+    Evidence (id) from lcbMarketData.
+  • Header: score tiles Deals / Voorstellen / Emails /
+    Calls select the matching tab.
   • Summary tab: AiCandidateChecks (benadering, match,
-    open deals, intake gedaan) — sommige rijen klikbaar
-    → goDeals('open' | null). Plus laatste activiteit
-    en notities-feed.
-  • DealsTab: filter op stage en 'alleen open' via
-    isEndStage; sorteren op datum default desc; klik
-    rij → onOpenDeal (CandidateDealLink) waarmee
-    DealDetailPane opent.
-  • EmailsTab / CallsTab: filter op contactStatus;
-    klik rij → onOpenComm(activityItem, contextLabel)
-    opent CommunicationPane.
-  • onUserInteract resets de communicatiepane wanneer de
-    gebruiker terug binnen de kandidaat klikt.`}
+    open deals, intake done) — some rows are clickable
+    → goDeals('open' | null). Plus latest activity and
+    notes feed.
+  • DealsTab: filter by stage and 'open only' via
+    isEndStage; sorted by date desc by default; click
+    row → onOpenDeal (CandidateDealLink) which opens
+    DealDetailPane.
+  • EmailsTab / CallsTab: filter by contactStatus;
+    click row → onOpenComm(activityItem, contextLabel)
+    opens CommunicationPane.
+  • onUserInteract resets the communication pane when
+    the user clicks back inside the candidate.`}
       />
       {/* Sticky candidate header */}
       <div className="shrink-0 px-4 py-3 border-b border-border bg-card/30 space-y-2">
