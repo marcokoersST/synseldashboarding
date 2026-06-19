@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { consultantColors } from "@/data/managerPerformanceData";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
 
 type Granularity = "periode" | "maand" | "week";
 
