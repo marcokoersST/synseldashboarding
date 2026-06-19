@@ -1,26 +1,26 @@
-## Dim empty space behind LC-B overlays
+## Make main LC-B dashboard visible behind overlay panels
 
-**Problem** — When LC-B detail overlays are open (e.g. Candidate Market › Jort Koggel › Inschrijvingen), the area to the left of the pane(s) renders as near-solid white. The current backdrop in `LcbSplitOverlay.tsx` uses `bg-background/40 backdrop-blur-md`, which over a white page barely tints anything — the UI feels empty.
+### Problem
+The LC-B split-pane overlay (`LcbSplitOverlay.tsx`) currently covers the entire page with a dark or blurred scrim (`bg-foreground/40 backdrop-blur-md`). This hides the main dashboard content and makes the background look visually empty, cheap, and flat.
 
-**Fix** — Increase the backdrop opacity so the page behind the panes reads as a clearly dimmed scrim, matching the visual weight users expect from a modal overlay.
+### Goal
+Show the actual LC-B dashboard page behind the overlay panels, so the panels appear to float over the real content rather than replacing it with a flat color.
 
-### Change
+### Changes
+**File: `src/components/manager/lcb/LcbSplitOverlay.tsx`**
 
-`src/components/manager/lcb/LcbSplitOverlay.tsx` (the outer flex-1 dismiss button):
+1. **Main background click-catcher (line ~69)** — Remove the colored background and blur entirely. Change the `flex-1` button from `bg-foreground/40 backdrop-blur-md` to no background color (just invisible click-catcher). The underlying dashboard page will remain fully visible.
 
-- `bg-background/40 backdrop-blur-md` → `bg-foreground/40 backdrop-blur-md`
-  - Uses `foreground` (near-black in light mode) at 40% so the empty area becomes a soft dark scrim regardless of theme, instead of a white-on-white tint.
+2. **Left-pane dim overlay (line ~96)** — When the extra (3rd) pane is open, the left pane currently gets `bg-foreground/30 backdrop-blur-sm`. Remove the blur and reduce the tint to `bg-foreground/10` (or remove entirely), so the left pane stays readable against the visible background.
 
-Optional secondary tweak (same file): the dim-overlay placed on top of the left pane when the extra (3rd) pane opens currently uses `bg-background/40`. Bump to `bg-foreground/30` for consistency so dimming reads as dimming in both light and dark themes.
+3. **Panel shadow/hierarchy** — The `Pane` components already use `bg-background` and `shadow-2xl`. No changes needed; the solid panels with strong shadows will naturally float above the visible dashboard.
 
-### Scope
-
-- One file: `src/components/manager/lcb/LcbSplitOverlay.tsx`.
-- No layout, sizing, or content changes — only the two scrim color tokens.
-- Covers every LC-B overlay (Candidate Market lists, Deal detail, Communication pane) since they all route through this component.
+### Result
+- Every LC-B overlay (Candidate Market, Finance, Consultant Development, etc.) will show the main dashboard page behind the sliding panels.
+- Clicking outside the panels still closes the overlay (click-catcher remains functional).
+- No blur or flat color obscures the background content.
 
 ### Verification
-
-- Open Candidate Market → Jort Koggel → Inschrijvingen: the area left of the pane should now be visibly dimmed, not white.
-- Open a 3-pane flow (deal → email): the dimmed left pane should still read as dimmed and remain click-to-close-extra.
-- Check dark mode briefly to confirm the scrim still reads correctly.
+- Open `Candidate Market › [Consultant] › Inschrijvingen` — the dashboard table should remain visible behind the panel.
+- Open a 3-pane flow (candidate → communication) — the left pane should stay visible against the dashboard background without blur.
+- Close all panels by clicking the visible background area.
