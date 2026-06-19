@@ -231,19 +231,19 @@ export default function LCB() {
           id={6}
           floating
           floatingClassName="top-1 right-2"
-          story={<><strong>As a manager</strong>, I want a glanceable status pill en data-refresh-tijd in de pagina-header, <strong>so that</strong> I know in 1 oogopslag of LC-B aandacht nodig heeft en hoe vers de data is.</>}
+          story={<><strong>As a manager</strong>, I want a glanceable status pill and data-refresh timestamp in the page header, <strong>so that</strong> I can tell at one glance whether LC-B needs attention and how fresh the data is.</>}
           logic={`Page header:
 
-  • Status pill = LCB_STATUS_LABEL[statusFromScore(globalScore)]
-    waar globalScore = round((avgSkillScore +
+  • Status pill = LCB_STATUS_LABEL[statusFromScore(globalScore)],
+    where globalScore = round((avgSkillScore +
     operationeelScore + omzetScore) / 3).
   • operationeelScore = totalPlaatsingen / totalIntakes × 100
-    (gecapt op 100).
-  • omzetScore = ytdRealised / ytdTarget × 100 (gecapt op 100).
-  • avgSkillScore = gemiddelde overall() over alle
-    consultantSkillData rijen.
-  • Refresh-label = nieuwste new Date() bij mount,
-    geformatteerd als '14:32 · 19 jun'.`}
+    (capped at 100).
+  • omzetScore = ytdRealised / ytdTarget × 100 (capped at 100).
+  • avgSkillScore = mean of overall() across every row in
+    consultantSkillData.
+  • Refresh label = latest new Date() at mount,
+    formatted as '14:32 · 19 jun'.`}
         />
 
         <div className="relative flex h-12 items-center gap-3 px-4">
