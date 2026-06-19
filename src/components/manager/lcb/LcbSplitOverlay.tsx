@@ -66,7 +66,7 @@ export function LcbSplitOverlay({ open, onClose, left, right, extra, onCloseRigh
         type="button"
         aria-label="Sluiten"
         onClick={onClose}
-        className="flex-1 bg-background/40 backdrop-blur-md animate-in fade-in duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        className="flex-1 bg-foreground/40 backdrop-blur-md animate-in fade-in duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
       />
       <div className="relative h-full flex">
         <div
