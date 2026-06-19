@@ -128,16 +128,13 @@ function formatHMS(totalMinutes: number, extraSeconds = 0) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function formatRelative(ts: number, status: "Free" | "On Call") {
-  if (status === "On Call") return "Now";
-  const diff = NOW - ts;
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return days === 1 ? "Yesterday" : `${days}d ago`;
+function formatTimestamp(ts: number, status: "Free" | "On Call") {
+  if (status === "On Call") return "In gesprek";
+  const d = new Date(ts);
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
+  const s = String(d.getSeconds()).padStart(2, "0");
+  return `${h}:${m}:${s}`;
 }
 
 type SortKey = "consultantName" | "status" | "total" | "inbound" | "outbound" | "totalMinutes" | "lastCallAt";
@@ -431,7 +428,7 @@ export default function CallDashboarding() {
                       "py-2 px-3 text-right tabular-nums",
                       row.status === "On Call" ? "text-primary font-medium" : "text-muted-foreground"
                     )}>
-                      {formatRelative(row.lastCallAt, row.status)}
+                      {formatTimestamp(row.lastCallAt, row.status)}
                     </td>
                   </tr>
                 ))}
