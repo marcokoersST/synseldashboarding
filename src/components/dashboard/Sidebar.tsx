@@ -32,7 +32,8 @@ import {
     Sprout,
     Sparkles,
     ShieldCheck,
-    Radar
+    Radar,
+    Phone
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -142,6 +143,11 @@ const navItems: NavItem[] = [
     icon: ShieldCheck,
     label: "Systeem Hygiene",
     path: "/concepts/systeem-hygiene",
+  },
+  {
+    icon: Phone,
+    label: "Call Dashboarding",
+    path: "/calldashboarding",
   },
   {
     icon: ClipboardCheck,
