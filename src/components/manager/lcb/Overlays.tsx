@@ -669,7 +669,7 @@ export function YtdRealisedOverlay({ open, onClose }: GlobalProps) {
       breadcrumbs={["Finance & Forecast", "YTD realised"]}
       title="YTD realised — onderliggende deals"
       subtitle="Welke deals zorgen voor de realised revenue.">
-      <OverlayDevNote id={21} story={<><strong>As a manager</strong>, I want a global YTD realised deal-overview, <strong>so that</strong> I can audit which deals carry de jaaromzet.</>} logic={`YtdRealisedOverlay (global):\n\n  • Bron: consultantRevenueDetailData.flatMap →\n    eerste 2 secondments per consultant.\n  • Mock Potentieel = monthlyRevenue × 6,\n    Realised   = monthlyRevenue × 4 (groen).`} />
+      <OverlayDevNote id={21} story={<><strong>As a manager</strong>, I want a global YTD realised deal overview, <strong>so that</strong> I can audit which deals carry the annual revenue.</>} logic={`YtdRealisedOverlay (global):\n\n  • Source: consultantRevenueDetailData.flatMap →\n    first 2 secondments per consultant.\n  • Mock Potential = monthlyRevenue × 6,\n    Realised  = monthlyRevenue × 4 (green).`} />
       <div className="rounded-lg border border-border overflow-auto">
 
         <table className="w-full text-xs">
