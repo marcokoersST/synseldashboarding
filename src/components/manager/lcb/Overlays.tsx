@@ -328,7 +328,9 @@ export function DevelopmentOverlay({ open, consultantId, onClose }: DevProps) {
       title={`Ontwikkeling — ${c?.name ?? ""}`}
       subtitle={c?.unit}
     >
+      <OverlayDevNote id={15} story={<><strong>As a manager</strong>, I want a complete development cockpit per consultant (score, market mini, tips, goals als tickets, coaching notities), <strong>so that</strong> I can plan en bijhouden welke coaching nodig is.</>} logic={`DevelopmentOverlay:\n\n  • Score = avg(pitchingPower, responsiveness,\n    networking, bezwaarverlegging); statusFromScore.\n  • Coaching tips heuristisch uit lcbMarketRows:\n      acquisities→intakes < 50%, uitnodiging→\n      gesprekken < 50%, perf='bad', plaatsingen/\n      gesprekken < 10%; fallback positief.\n  • Goals = managerGoalsData filtered op\n    consultantId, mapped naar GoalTicket\n    (status Open/In progress/Done; priority Hoog/\n    Middel/Laag uit isManagerGoal-vlag; due seeded\n    uit id). Add/Update/Delete via goalsReducer.\n  • Coaching-notities zijn statische placeholder rows.`} />
       {c && (
+
         <div className="space-y-5">
           <div className="flex items-center gap-2">
             <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium", LCB_STATUS_BG[status])}>{LCB_STATUS_LABEL[status]}</span>
