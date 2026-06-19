@@ -504,7 +504,7 @@ export function ActivePlacementsOverlay({ open, consultantId, onClose }: CtxProp
       breadcrumbs={["Finance & Forecast", c?.name ?? "", "Actieve plaatsingen"]}
       title={`Actieve plaatsingen — ${c?.name ?? ""}`}
       subtitle={`${items.length} actief · totaal €${total}k / maand`}>
-      <OverlayDevNote id={17} story={<><strong>As a manager</strong>, I want a complete list of de actieve plaatsingen van een consultant met €/maand en marge, <strong>so that</strong> I can see waar de huidige omzet vandaan komt.</>} logic={`ActivePlacementsOverlay:\n\n  • Bron: activeSecondmentsData.filter\n    (consultantName === c.name).\n  • Kolommen: Kandidaat, Opdrachtgever, Start,\n    Eind, €/maand, Marge/uur (deterministisch\n    40+i*3 % 25), Type (Detavast placeholder),\n    Status (active/ending-soon/new) + badges, CRM.\n  • Footer toont totaal €/maand.`} />
+      <OverlayDevNote id={17} story={<><strong>As a manager</strong>, I want a complete list of a consultant's active placements with €/month and margin, <strong>so that</strong> I can see where the current revenue comes from.</>} logic={`ActivePlacementsOverlay:\n\n  • Source: activeSecondmentsData.filter\n    (consultantName === c.name).\n  • Columns: Candidate, Client, Start, End,\n    €/month, Margin/hour (deterministic\n    40 + i*3 % 25), Type (Detavast placeholder),\n    Status (active / ending-soon / new) + badges, CRM.\n  • Footer shows the €/month total.`} />
       <div className="rounded-lg border border-border overflow-auto">
 
         <table className="w-full text-xs">
