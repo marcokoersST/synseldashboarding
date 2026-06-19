@@ -123,28 +123,28 @@ export function FinanceForecastTab({
         id={4}
         floating
         floatingClassName="top-1 right-1"
-        story={<><strong>As a manager</strong>, I want realised vs target, forecast, marge en risk per consultant of functiegroep, <strong>so that</strong> I can steer revenue and spot at-risk accounts.</>}
+        story={<><strong>As a manager</strong>, I want realised vs target, forecast, margin and risk per consultant or functiegroep (job-family), <strong>so that</strong> I can steer revenue and spot at-risk accounts.</>}
         logic={`Finance & Forecast tab:
 
-  • KPI strip: YTD realised, Forecast jaar, Brutomarge,
-    Actieve plaatsingen, Total revenue — totals from
+  • KPI strip: YTD realised, Forecast year, Gross margin,
+    Active placements, Total revenue — totals from
     marginTotals + perfTotals + activeSecondmentsData.
   • Perspective switcher toggles between
-      - margin: row per consultant. target/realised/
-        forecast/potential seeded deterministisch uit
-        consultant id; margin = realised × (0.25..0.35);
-        revRisk from attritionProjectionData.
+      - margin: row per consultant. target / realised /
+        forecast / potential seeded deterministically from
+        the consultant id; margin = realised × (0.25..0.35);
+        revRisk taken from attritionProjectionData.
       - functiegroep: rows from getFunctiegroepRows();
-        consultantsLabel in topbar wijzigt mee.
-  • Tabel: kolommen Revenue, Margin, Forecast, Realised
-    (groen/rood vs target), Potentieel, Realised pot.,
-    Revenue risk, Marge/uur, Categorie, Status.
-  • Klik op revenue-bedrag → onOpenRevenue(consultantId).
-  • FinanceTrendChart wordt onder de tabel gerenderd met
-    labelMode = "consultant" of "functiegroep" zodat
-    legenda en labels meeschakelen.
-  • lockedId synct met de naam-kolom en de chart:
-    klikken op een naam vergrendelt die serie.`}
+        consultantsLabel in the top bar swaps accordingly.
+  • Table columns: Revenue, Margin, Forecast, Realised
+    (green/red vs target), Potential, Realised potential,
+    Revenue risk, Margin/hour, Category, Status.
+  • Click a revenue amount → onOpenRevenue(consultantId).
+  • FinanceTrendChart is rendered below the table with
+    labelMode = "consultant" or "functiegroep" so legend
+    and labels follow the chosen perspective.
+  • lockedId stays in sync between the name column and
+    the chart: clicking a name locks that series.`}
       />
       {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-2">
