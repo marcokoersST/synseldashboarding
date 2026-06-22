@@ -9,6 +9,7 @@ import { CohortChart } from "@/components/groeimodel/CohortChart";
 import { ConsultantTimelineRow } from "@/components/groeimodel/ConsultantTimelineRow";
 import { BreakEvenHistogram } from "@/components/groeimodel/BreakEvenHistogram";
 import { ActivityRevenueChart } from "@/components/groeimodel/ActivityRevenueChart";
+import { PlaatsingenProjectionChart } from "@/components/groeimodel/PlaatsingenProjectionChart";
 import {
   lifecyclesWithBreakEven,
   getStartupCostByUnit,
@@ -346,6 +347,30 @@ export default function Groeimodel() {
           </div>
         </div>
       </div>
+
+      {/* Plaatsingen historie (3 periodes) + Detachering projectie (4 periodes) */}
+      <AnimatedCard delay={0}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              Plaatsingen laatste 3 periodes &amp; projectie gedetacheerden komende 4 periodes
+            </CardTitle>
+            <CardDescription>
+              Per week gestackte balken (W&amp;S, Detachering, Marge Facturatie) met één doorlopende
+              totaal-lijn die per periode van kleur wisselt. Vanaf "Nu" volgt een projectie van het
+              aantal actieve gedetacheerden (rechter as).
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PlaatsingenProjectionChart
+              filterUnits={filterUnits}
+              statusFilter={statusFilter}
+              filterYears={filterYears}
+              filterPeriodRange={filterPeriodRange}
+            />
+          </CardContent>
+        </Card>
+      </AnimatedCard>
 
       {/* Activity & Revenue per Period — full width (top) */}
       <AnimatedCard delay={0}>
