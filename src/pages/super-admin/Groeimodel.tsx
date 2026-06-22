@@ -39,6 +39,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 type StatusFilter = "all" | "active" | "terminated";
 
+const PLAATSINGEN_LOGIC = `12 historical weeks = 3 periods × 4 weeks (P11, P12, P13).
+Stacked bars per week: W&S, Detachering, Marge Facturatie.
+One continuous total line rendered as 3 colored segments (purple / teal / amber).
+Boundary weeks carry an overlap point so the line is visually unbroken.
+From the current week ("Nu"), a dashed line on the right Y-axis projects active detachees for the next 16 weeks.
+Detachee count = only placements where type === "Detachering" and start date falls within that week.`;
+
 export default function Groeimodel() {
   const [filterUnits, setFilterUnits] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
