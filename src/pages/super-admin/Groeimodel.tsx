@@ -352,14 +352,26 @@ export default function Groeimodel() {
       <AnimatedCard delay={0}>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">
-              Plaatsingen laatste 3 periodes &amp; projectie gedetacheerden komende 4 periodes
-            </CardTitle>
-            <CardDescription>
-              Per week gestackte balken (W&amp;S, Detachering, Marge Facturatie) met één doorlopende
-              totaal-lijn die per periode van kleur wisselt. Vanaf "Nu" volgt een projectie van het
-              aantal actieve gedetacheerden (rechter as).
-            </CardDescription>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="text-base">
+                  Plaatsingen laatste 3 periodes &amp; projectie gedetacheerden komende 4 periodes
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Wekelijkse plaatsingen per type met doorlopende totaallijn per periode. Vanaf "Nu": projectie actieve gedetacheerden.
+                </CardDescription>
+              </div>
+              <DevNote
+                id="plaatsingen-projection"
+                story="Show weekly placement history (stacked by type) with a continuous total line that changes color each period, plus a forward projection of active detachees from the current week onward."
+                logic={`12 historical weeks = 3 periods × 4 weeks (P11, P12, P13).
+Stacked bars per week: W&S, Detachering, Marge Facturatie.
+One continuous total line rendered as 3 colored segments (purple / teal / amber).
+Boundary weeks carry an overlap point so the line is visually unbroken.
+From the current week ("Nu"), a dashed line on the right Y-axis projects active detachees for the next 16 weeks.
+Detachee count = only placements where type === "Detachering" and start date falls within that week."}
+              />
+            </div>
           </CardHeader>
           <CardContent>
             <PlaatsingenProjectionChart
