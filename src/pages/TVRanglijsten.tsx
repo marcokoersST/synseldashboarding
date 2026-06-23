@@ -232,8 +232,9 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         </span>
         {/* Primary value */}
         <span className={cn(
-          "tabular-nums font-bold text-right text-foreground flex items-center justify-end gap-0.5",
+          "tabular-nums font-bold text-right flex items-center justify-end gap-0.5",
           "text-[clamp(9px,0.9vw,14px)]",
+          primaryScope === "uitgaand" ? "text-emerald-600" : primaryScope === "totaal" ? "text-blue-900" : "text-foreground",
           entry.value === 0 && "text-orange-600"
         )}>
           {primaryScope && <ScopeIcon scope={primaryScope} size={11} />}
