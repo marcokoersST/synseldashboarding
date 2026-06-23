@@ -188,7 +188,6 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
   // Use CSS grid for top-3 to guarantee slot containment
   if (isTop3) {
     return (
-    return (
       <div
         className={cn(
           "grid items-center rounded-sm px-1 border-b border-border/20 break-inside-avoid",
