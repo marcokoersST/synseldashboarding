@@ -978,7 +978,7 @@ function RanglijstenContent() {
                       {col.title === "Belstatistieken" && (
                         <ScopeIcon scope={callsScope} size={18} className="self-center" />
                       )}
-                      <p className="text-[clamp(20px,2.5vw,30px)] font-bold text-foreground tabular-nums leading-tight">
+                      <p className={cn("text-[clamp(20px,2.5vw,30px)] font-bold tabular-nums leading-tight", col.title === "Belstatistieken" ? (callsScope === "uitgaand" ? "text-emerald-600" : "text-blue-900") : "text-foreground")}>
                         {col.total.toLocaleString("nl-NL")}
                       </p>
                       {isDualValue && primaryLabel && (
