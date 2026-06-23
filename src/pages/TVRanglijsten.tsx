@@ -387,6 +387,7 @@ function RanglijstenContent() {
   const [consultantSearch, setConsultantSearch] = useState("");
   const [hideInactive, setHideInactive] = useState(true);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
+  const [swapNietBegonnen, setSwapNietBegonnen] = useState(false);
   const isCompact = useTVCompact();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
