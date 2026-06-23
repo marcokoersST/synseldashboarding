@@ -1,95 +1,62 @@
+# Plan: Belstatistieken — per-metric scope toggle
 
-## Doel
+Add two independent toggles in the "Kolommen" popover that switch each Belstatistieken-metric between **Uitgaand** and **Totaal (inkomend + uitgaand)**:
 
-Bovenaan de Synsel Groeimodel pagina (`/super-admin/groeimodel`) een nieuwe tegel toevoegen die in één gecombineerde grafiek toont:
+1. Aantal telefoontjes: Uitgaand ↔ Totaal (in + uit)
+2. Gespreksduur: Uitgaand ↔ Totaal (in + uit)
 
-1. **Historische plaatsingen** per week voor de laatste 3 periodes (12 weken, 4 weken per periode).
-2. Per week gestackt de **3 plaatsingstypen**: W&S, Detachering, Marge Facturatie.
-3. **Projectie van het aantal actieve gedetacheerden** voor de komende 4 periodes (16 weken), vanaf de huidige week.
+Both are independently selectable and only take effect when the swap "Belstatistieken i.p.v. Niet begonnen" is active.
 
-## Layout
+## UX in the "Kolommen" popover
 
-Nieuwe tegel direct onder de header en boven de bestaande "Actieve consultants & Omzet per periode" tegel.
+Under the existing swap-checkbox, a nested sub-section appears (only when `swapNietBegonnen` is true) — slightly indented, with subtle separator. Each metric becomes a compact segmented toggle (shadcn `ToggleGroup`, `size=sm`, `type=single`), so the user can clearly see which scope is active:
 
 ```text
-[ Header + Filters ]
-[ NIEUW: Plaatsingen & Detachering Projectie ]   ← full width
-[ Actieve consultants & Omzet per periode ]
-[ KPI cards ]
-...
+[x] Toon belstatistieken i.p.v. "Niet begonnen"
+    ├─ Telefoontjes:   [ Uitgaand | Totaal ]
+    └─ Gespreksduur:   [ Uitgaand | Totaal ]
 ```
 
-## Grafiek-ontwerp
+- Segmented toggles read as one visual unit per row, consistent with the existing popover-styling (text-xs, subtle borders, rounded).
+- When the parent swap is off, the sub-section is collapsed (not rendered) so the popover stays compact.
+- Header tooltip + column header text update dynamically:
+  - "Belstatistieken (Uitgaand)" when both Uitgaand
+  - "Belstatistieken (Totaal)" when both Totaal
+  - "Belstatistieken (Gemengd)" when mixed; tooltip explains which metric is which scope.
+- The compact swap-icon next to the sort icon (in both desktop + TV table headers) keeps working as today (toggles the whole feature on/off).
 
-Eén Recharts `ComposedChart`, full width, ±320px hoog. X-as: 28 wekens labels (P{n} W{1-4}). Een verticale referentielijn markeert "Nu" (overgang historie → projectie).
+## Data layer (`src/data/ranglijstenData.ts`)
 
-### Historisch deel (weken 1–12, links van "Nu")
-
-- **Stacked bars per week** met 3 segmenten in onderscheidende kleuren:
-  - W&S — `hsl(var(--chart-1))`
-  - Detachering — `hsl(var(--chart-2))`
-  - Marge Facturatie — `hsl(var(--chart-3))`
-- **Eén doorlopende lijn** bovenop de bars: totaal plaatsingen per week. De lijn blijft visueel één doorlopend pad, maar **wisselt van kleur per periode** (3 segmenten van 4 weken). Geïmplementeerd door 3 overlappende `<Line>` series, elk met data alleen voor zijn eigen periode + 1 connector-punt naar de volgende, zodat de segmenten elkaar exact raken. Periode-kleuren: bv. period -3 lila, period -2 teal, period -1 amber. Een kleine legenda toont de 3 periode-kleuren.
-
-### Projectie deel (weken 13–28, rechts van "Nu")
-
-- **Geen bars** (plaatsingen worden niet geprojecteerd).
-- **Eén lijn** (dashed) die het aantal **actieve gedetacheerden** per week toont voor de komende 4 periodes. Dit is een aparte serie/Y-as (rechts) want het is een stand, geen flux.
-- Berekening (mock): start vanaf het huidige aantal gedetacheerden; per week + nieuwe detachering-plaatsingen (uit een projectie-aanname per periode) − contracteinden (uit lifecycle data). Voor V1 een vooraf berekende mock-reeks.
-
-## Data
-
-Nieuw bestand `src/data/plaatsingenProjectionData.ts` met:
+Extend `getBelstatistiekenColumn` to accept an options object:
 
 ```ts
-export type PlaatsingType = "W&S" | "Detachering" | "MargeFac";
-
-export interface WeekPlaatsingen {
-  weekLabel: string;       // "P11 W1"
-  periodIndex: number;     // -3 | -2 | -1 (historisch) of 1..4 (projectie)
-  weekInPeriod: number;    // 1..4
-  ws: number;
-  detachering: number;
-  margeFac: number;
-  total: number;           // ws + detachering + margeFac
-}
-
-export interface WeekDetacheerdenProjectie {
-  weekLabel: string;
-  periodIndex: number;
-  weekInPeriod: number;
-  actieveGedetacheerden: number;
-}
-
-export const historischePlaatsingenPerWeek: WeekPlaatsingen[];   // 12 weken
-export const detacheerdenProjectiePerWeek: WeekDetacheerdenProjectie[]; // 16 weken
-export const huidigeWeekLabel: string;  // markeert "Nu"
+getBelstatistiekenColumn(year, mode, num, {
+  callsScope: "uitgaand" | "totaal",
+  durationScope: "uitgaand" | "totaal",
+})
 ```
 
-Numbers worden afgestemd op bestaande mock totals in `groeimodelData` / `companyProjections` zodat het verhaal consistent blijft (≈14–24 plaatsingen/week op company-niveau).
+Deterministic generation per consultant:
+- Outgoing calls (current) = `calls` (unchanged).
+- Incoming calls = `Math.round(calls * (0.35 + seededRandom(s+77, i) * 0.35))` — ratio 35–70 % of outgoing, so totals are always > uitgaand and stable across renders.
+- Outgoing minutes (current) = `minutes` (unchanged).
+- Incoming minutes ≈ `Math.round(incomingCalls * (60 + seededRandom(s+91, i) * 120) / 60)` — shorter avg (1–3 min).
+- `value` = outgoing-or-total calls based on `callsScope`.
+- `valueDone` = outgoing-or-total minutes based on `durationScope`.
+- Sort still by `value` desc; ranks recomputed.
+- Totals / previousTotals recomputed from the chosen scope.
 
-## Component
+## State (`src/pages/TVRanglijsten.tsx`)
 
-Nieuw bestand `src/components/groeimodel/PlaatsingenProjectionChart.tsx`:
+- Add `callsScope` and `durationScope` state (default `"uitgaand"`).
+- Pass them into `getBelstatistiekenColumn(...)` in the existing memo (extend dep array).
+- Update `COLUMN_CONFIG["Belstatistieken"].headerTitle` resolution to a small helper that returns Uitgaand / Totaal / Gemengd label.
+- Update `SORT_OPTIONS["Belstatistieken"]` labels to match active scope (e.g. "Op aantal telefoontjes (totaal)").
+- Update the popover label `"Belstatistieken (uitgaand)"` on line 625 to use the dynamic label.
 
-- Props: `filterUnits`, `statusFilter`, `filterYears`, `filterPeriodRange` (zelfde signatuur als `ActivityRevenueChart`, voor toekomstige filter-koppeling — voor V1 niet alle filters actief).
-- Render: `Card` met titel "Plaatsingen (laatste 3 periodes) & Projectie gedetacheerden (komende 4 periodes)", subtitel uitleg, en de chart.
-- Chart: `ResponsiveContainer` → `ComposedChart` met:
-  - `XAxis` op weekLabel
-  - `YAxis` links (plaatsingen 0–max)
-  - `YAxis` rechts (gedetacheerden) — alleen relevant rechts van "Nu"
-  - `Bar` × 3 (stacked, `stackId="plaatsingen"`)
-  - `Line` × 3 voor periode-gekleurde totaal-lijn (historisch)
-  - `Line` × 1 dashed voor gedetacheerden projectie
-  - `ReferenceLine x={huidigeWeekLabel}` met label "Nu"
-  - Custom `Tooltip` die per week de 3 typen + totaal toont, of in projectie het aantal gedetacheerden.
-- Legenda onderaan: stack-types + 3 periode-kleuren + projectielijn.
+## Files touched
 
-## Wijzigingen Groeimodel.tsx
+- `src/data/ranglijstenData.ts` — extend `getBelstatistiekenColumn` signature + add incoming-call/minute synthesis.
+- `src/pages/TVRanglijsten.tsx` — add 2 state vars, dynamic header/label helper, sub-section UI in the Kolommen popover using shadcn `ToggleGroup`.
 
-Onder regel 348 (na de header-div) en voor de bestaande `Activity & Revenue per Period`-tegel een nieuwe `<AnimatedCard>` met `<PlaatsingenProjectionChart .../>` invoegen. Bestaande delay-volgorde van onderliggende cards ongewijzigd laten.
-
-## Out of scope (V1)
-
-- Live koppeling met filters (units/jaar/periode) — chart toont company-niveau totals.
-- Echte berekening van actieve gedetacheerden uit `lifecyclesWithBreakEven`; voor V1 mock-reeks. Kan in V2 worden afgeleid uit startDate/endDate van lifecycles met `type === "Detachering"` indien dat veld bestaat (anders eerst data uitbreiden).
+No changes to sort logic, swap-icon, or other columns.

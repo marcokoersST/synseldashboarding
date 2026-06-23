@@ -2,7 +2,8 @@ import { useState, useCallback, useMemo, useRef, useLayoutEffect, useEffect, typ
 import { Switch } from "@/components/ui/switch";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
 import { getRanglijstenData, ranglijstenFilters, allColumnTitles, getCurrentWeekNumber, getCurrentPeriodNumber, allConsultantsList, getBelstatistiekenColumn, formatBeltijd } from "@/data/ranglijstenData";
-import type { RankingColumn } from "@/data/ranglijstenData";
+import type { RankingColumn, BelScope } from "@/data/ranglijstenData";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -370,6 +371,15 @@ function RanglijstenContent() {
   const [hideInactive, setHideInactive] = useState(true);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const [swapNietBegonnen, setSwapNietBegonnen] = useState(false);
+  const [callsScope, setCallsScope] = useState<BelScope>("uitgaand");
+  const [durationScope, setDurationScope] = useState<BelScope>("uitgaand");
+
+  const belScopeLabel = useMemo(() => {
+    if (callsScope === "uitgaand" && durationScope === "uitgaand") return "Uitgaand";
+    if (callsScope === "totaal" && durationScope === "totaal") return "Totaal";
+    return "Gemengd";
+  }, [callsScope, durationScope]);
+  const belHeaderTitle = `Belstatistieken (${belScopeLabel})`;
   const isCompact = useTVCompact();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -419,11 +429,11 @@ function RanglijstenContent() {
   const rawColumns = useMemo(() => {
     const cols = getRanglijstenData(parseInt(jaar, 10), effectiveViewMode, currentNum);
     if (swapNietBegonnen) {
-      const bel = getBelstatistiekenColumn(parseInt(jaar, 10), effectiveViewMode, currentNum);
+      const bel = getBelstatistiekenColumn(parseInt(jaar, 10), effectiveViewMode, currentNum, { callsScope, durationScope });
       return cols.map(c => c.title === "Niet begonnen" ? bel : c);
     }
     return cols;
-  }, [jaar, effectiveViewMode, currentNum, swapNietBegonnen]);
+  }, [jaar, effectiveViewMode, currentNum, swapNietBegonnen, callsScope, durationScope]);
 
   const sortEntries = useCallback((entries: typeof rawColumns[0]["entries"], colTitle: string) => {
     const mode = sortModes[colTitle];
@@ -613,7 +623,7 @@ function RanglijstenContent() {
                   Kolommen ({selectedColumns.length})
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64">
+              <PopoverContent className="w-72">
                 <p className="text-sm font-medium mb-3">Zichtbare kolommen</p>
                 <div className="space-y-2">
                   {allColumnTitles.map((title) => (
@@ -622,7 +632,7 @@ function RanglijstenContent() {
                         checked={selectedColumns.includes(title)}
                         onCheckedChange={() => toggleColumn(title)}
                       />
-                      {title === "Niet begonnen" && swapNietBegonnen ? "Belstatistieken (uitgaand)" : title}
+                      {title === "Niet begonnen" && swapNietBegonnen ? belHeaderTitle : title}
                     </label>
                   ))}
                 </div>
@@ -637,6 +647,63 @@ function RanglijstenContent() {
                       Toon belstatistieken i.p.v. "Niet begonnen"
                     </span>
                   </label>
+
+                  {swapNietBegonnen && (
+                    <div className="mt-3 ml-5 pl-3 border-l border-border/40 space-y-2.5">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Belstatistieken bereik
+                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted-foreground shrink-0">Telefoontjes</span>
+                        <ToggleGroup
+                          type="single"
+                          size="sm"
+                          value={callsScope}
+                          onValueChange={(v) => v && setCallsScope(v as BelScope)}
+                          className="gap-0 rounded-md border border-border bg-muted/30 p-0.5"
+                        >
+                          <ToggleGroupItem
+                            value="uitgaand"
+                            className="h-6 px-2 text-[10px] rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground"
+                          >
+                            Uitgaand
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="totaal"
+                            className="h-6 px-2 text-[10px] rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground"
+                          >
+                            Totaal
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted-foreground shrink-0">Gespreksduur</span>
+                        <ToggleGroup
+                          type="single"
+                          size="sm"
+                          value={durationScope}
+                          onValueChange={(v) => v && setDurationScope(v as BelScope)}
+                          className="gap-0 rounded-md border border-border bg-muted/30 p-0.5"
+                        >
+                          <ToggleGroupItem
+                            value="uitgaand"
+                            className="h-6 px-2 text-[10px] rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground"
+                          >
+                            Uitgaand
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="totaal"
+                            className="h-6 px-2 text-[10px] rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground"
+                          >
+                            Totaal
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/80 leading-snug">
+                        "Totaal" telt inkomend + uitgaand op. Per metric onafhankelijk instelbaar.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </PopoverContent>
             </Popover>
@@ -842,7 +909,7 @@ function RanglijstenContent() {
                 const top3 = isPlain ? [] : col.entries.slice(0, 3);
                 const rest = isPlain ? col.entries : col.entries.slice(3);
 
-                const headerTitle = config?.headerTitle ?? col.title;
+                const headerTitle = col.title === "Belstatistieken" ? belHeaderTitle : (config?.headerTitle ?? col.title);
                 const primaryLabel = config?.primaryLabel;
                 const doneLabel = config?.doneLabel;
                 const isInverse = config?.isInverse ?? false;
@@ -996,7 +1063,7 @@ function RanglijstenContent() {
             const top3 = isPlain ? [] : col.entries.slice(0, 3);
             const rest = isPlain ? col.entries : col.entries.slice(3);
 
-            const headerTitle = config?.headerTitle ?? col.title;
+            const headerTitle = col.title === "Belstatistieken" ? belHeaderTitle : (config?.headerTitle ?? col.title);
             const primaryLabel = config?.primaryLabel;
             const doneLabel = config?.doneLabel;
             const isInverse = config?.isInverse ?? false;
