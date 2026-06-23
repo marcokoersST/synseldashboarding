@@ -229,7 +229,6 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         ) : <span />}
       </div>
     );
-    );
   }
 
   // Non-top-3: keep flex layout (simpler, smaller rows)
