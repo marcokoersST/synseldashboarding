@@ -400,6 +400,7 @@ function RanglijstenContent() {
     "Intakes": "value",
     "Plaatsingen": "value",
     "Niet begonnen": "value",
+    "Belstatistieken": "value",
   });
 
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode" | "custom">("week");
