@@ -852,7 +852,7 @@ function RanglijstenContent() {
                 const top3 = isPlain ? [] : col.entries.slice(0, 3);
                 const rest = isPlain ? col.entries : col.entries.slice(3);
 
-                const headerTitle = config?.headerTitle ?? col.title;
+                const headerTitle = col.title === "Belstatistieken" ? belHeaderTitle : (config?.headerTitle ?? col.title);
                 const primaryLabel = config?.primaryLabel;
                 const doneLabel = config?.doneLabel;
                 const isInverse = config?.isInverse ?? false;
