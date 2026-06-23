@@ -358,6 +358,56 @@ export function getRanglijstenData(year: number, mode: "week" | "periode", num: 
   return generateColumns(baseValues, seed, prevSeed);
 }
 
+/**
+ * Belstatistieken (Uitgaand) column.
+ * value = aantal uitgaande telefoontjes
+ * valueDone = totaal uitgaande beltijd in minuten (gerenderd als Hh Mm)
+ */
+export function getBelstatistiekenColumn(year: number, mode: "week" | "periode", num: number): RankingColumn {
+  const modeNum = mode === "week" ? 0 : 1;
+  const seed = seedHash(year, modeNum, num) + 4242;
+  const prevSeed = seedHash(year, modeNum, Math.max(1, num - 1)) + 4242;
+
+  const scale = mode === "week" ? 1 : 4;
+  const build = (s: number) => {
+    const entries = consultants.map((c, i) => {
+      const calls = Math.round((30 + seededRandom(s, i) * 170) * scale);
+      const avgSecPerCall = 90 + seededRandom(s + 31, i) * 210; // 1.5–5 min avg
+      const minutes = Math.round((calls * avgSecPerCall) / 60);
+      return {
+        rank: 0,
+        name: c.fullName,
+        firstName: c.firstName,
+        lastName: c.lastName,
+        unit: c.unit,
+        value: calls,
+        valueDone: minutes,
+        isHot: hotNames.has(c.fullName),
+        isRocket: seededRandom(s + 555, i) < 0.1,
+      } as RankingEntry;
+    });
+    entries.sort((a, b) => b.value - a.value);
+    entries.forEach((e, i) => { e.rank = i + 1; });
+    return entries;
+  };
+
+  const entries = build(seed);
+  const prevEntries = build(prevSeed);
+  const total = entries.reduce((s, e) => s + e.value, 0);
+  const previousTotal = prevEntries.reduce((s, e) => s + e.value, 0);
+  const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
+  const previousTotalDone = prevEntries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
+
+  return { title: "Belstatistieken", total, previousTotal, totalDone, previousTotalDone, entries };
+}
+
+export function formatBeltijd(totalMinutes: number): string {
+  const h = Math.floor(totalMinutes / 60);
+  const m = Math.round(totalMinutes % 60);
+  if (h === 0) return `${m}m`;
+  return `${h}u ${m}m`;
+}
+
 // Legacy exports for backward compat
 export const ranglijstenWeekColumns = getRanglijstenData(2026, "week", 9);
 export const ranglijstenPeriodeColumns = getRanglijstenData(2026, "periode", 2);
