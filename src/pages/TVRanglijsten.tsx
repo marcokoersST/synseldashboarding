@@ -125,11 +125,11 @@ interface EntryRowProps {
 /** Scope indicator: green outgoing icon for "uitgaand", blue phone-call icon for "totaal". */
 function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaal"; size?: number; className?: string }) {
   if (scope === "uitgaand") {
-    return <PhoneOutgoing className={cn("text-emerald-500 shrink-0", className)} style={{ width: size, height: size }} aria-label="Uitgaand" />;
+    return <PhoneOutgoing className={cn("text-emerald-900 shrink-0", className)} style={{ width: size, height: size }} aria-label="Uitgaand" />;
   }
   return (
     <span className={cn("inline-flex shrink-0", className)} title="Totaal: inkomend + uitgaand">
-      <PhoneCall className="text-sky-500" style={{ width: size, height: size }} aria-label="Totaal (inkomend + uitgaand)" />
+      <PhoneCall className="text-blue-900" style={{ width: size, height: size }} aria-label="Totaal (inkomend + uitgaand)" />
     </span>
   );
 }
