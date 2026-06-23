@@ -631,7 +631,7 @@ function RanglijstenContent() {
                   Kolommen ({selectedColumns.length})
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56">
+              <PopoverContent className="w-64">
                 <p className="text-sm font-medium mb-3">Zichtbare kolommen</p>
                 <div className="space-y-2">
                   {allColumnTitles.map((title) => (
@@ -640,9 +640,21 @@ function RanglijstenContent() {
                         checked={selectedColumns.includes(title)}
                         onCheckedChange={() => toggleColumn(title)}
                       />
-                      {title}
+                      {title === "Niet begonnen" && swapNietBegonnen ? "Belstatistieken (uitgaand)" : title}
                     </label>
                   ))}
+                </div>
+                <div className="mt-3 pt-3 border-t border-border/40">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <Checkbox
+                      checked={swapNietBegonnen}
+                      onCheckedChange={(v) => setSwapNietBegonnen(!!v)}
+                    />
+                    <span className="flex items-center gap-1">
+                      <ArrowLeftRight className="w-3 h-3" />
+                      Toon belstatistieken i.p.v. "Niet begonnen"
+                    </span>
+                  </label>
                 </div>
               </PopoverContent>
             </Popover>
