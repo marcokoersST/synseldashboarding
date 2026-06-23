@@ -1060,6 +1060,8 @@ function RanglijstenContent() {
                           isRatioOnly={colIsRatioOnly}
                           ratioLabel={colRatioLabel}
                           isTimeSecondary={colIsTimeSecondary}
+                          primaryScope={col.title === "Belstatistieken" ? callsScope : undefined}
+                          secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined}
                         />
                       ))}
                     </AutoColumnsWrapper>
