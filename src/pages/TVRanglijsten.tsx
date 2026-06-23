@@ -125,7 +125,7 @@ interface EntryRowProps {
 /** Scope indicator: green outgoing icon for "uitgaand", blue phone-call icon for "totaal". */
 function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaal"; size?: number; className?: string }) {
   if (scope === "uitgaand") {
-    return <PhoneOutgoing className={cn("text-emerald-400 shrink-0", className)} style={{ width: size, height: size }} aria-label="Uitgaand" />;
+    return <PhoneOutgoing className={cn("text-emerald-600 shrink-0", className)} style={{ width: size, height: size }} aria-label="Uitgaand" />;
   }
   return (
     <span className={cn("inline-flex shrink-0", className)} title="Totaal: inkomend + uitgaand">
@@ -145,7 +145,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
   if (entry.valueDone != null && !isRatioOnly) {
     if (isTimeSecondary) {
       secondaryContent = (
-        <span className="tabular-nums flex items-center gap-0.5 text-emerald-600">
+        <span className={cn("tabular-nums flex items-center gap-0.5", secondaryScope === "uitgaand" ? "text-emerald-600" : secondaryScope === "totaal" ? "text-blue-900" : "text-emerald-600")}>
           {secondaryScope ? <ScopeIcon scope={secondaryScope} size={12} /> : <Phone className="w-3 h-3 shrink-0" />}
           <span className={cn(isTop3 ? "text-[clamp(9px,0.9vw,14px)] font-bold" : "text-[10px] font-semibold")}>
             {formatBeltijd(entry.valueDone)}
@@ -232,8 +232,9 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         </span>
         {/* Primary value */}
         <span className={cn(
-          "tabular-nums font-bold text-right text-foreground flex items-center justify-end gap-0.5",
+          "tabular-nums font-bold text-right flex items-center justify-end gap-0.5",
           "text-[clamp(9px,0.9vw,14px)]",
+          primaryScope === "uitgaand" ? "text-emerald-600" : primaryScope === "totaal" ? "text-blue-900" : "text-foreground",
           entry.value === 0 && "text-orange-600"
         )}>
           {primaryScope && <ScopeIcon scope={primaryScope} size={11} />}
@@ -276,7 +277,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span className={cn(
         "tabular-nums shrink-0 ml-auto text-[10px] font-semibold flex items-center gap-0.5",
-        entry.value !== 0 && "text-foreground"
+        primaryScope === "uitgaand" ? "text-emerald-600" : primaryScope === "totaal" ? "text-blue-900" : entry.value !== 0 ? "text-foreground" : ""
       )}>
         {primaryScope && <ScopeIcon scope={primaryScope} size={10} />}
         {entry.value.toLocaleString("nl-NL")}
@@ -977,7 +978,7 @@ function RanglijstenContent() {
                       {col.title === "Belstatistieken" && (
                         <ScopeIcon scope={callsScope} size={18} className="self-center" />
                       )}
-                      <p className="text-[clamp(20px,2.5vw,30px)] font-bold text-foreground tabular-nums leading-tight">
+                      <p className={cn("text-[clamp(20px,2.5vw,30px)] font-bold tabular-nums leading-tight", col.title === "Belstatistieken" ? (callsScope === "uitgaand" ? "text-emerald-600" : "text-blue-900") : "text-foreground")}>
                         {col.total.toLocaleString("nl-NL")}
                       </p>
                       {isDualValue && primaryLabel && (
@@ -991,8 +992,8 @@ function RanglijstenContent() {
                           {col.title === "Belstatistieken"
                             ? <ScopeIcon scope={durationScope} size={14} />
                             : <Phone className="w-3.5 h-3.5 text-emerald-500" />}
-                          <span className="text-[clamp(12px,1.5vw,18px)] font-bold text-emerald-600 tabular-nums">{formatBeltijd(col.totalDone)}</span>
-                          <span className="text-xs text-emerald-600">{doneLabel}</span>
+                          <span className={cn("text-[clamp(12px,1.5vw,18px)] font-bold tabular-nums", col.title === "Belstatistieken" ? (durationScope === "uitgaand" ? "text-emerald-600" : "text-blue-900") : "text-emerald-600")}>{formatBeltijd(col.totalDone)}</span>
+                          <span className={cn("text-xs", col.title === "Belstatistieken" ? (durationScope === "uitgaand" ? "text-emerald-600" : "text-blue-900") : "text-emerald-600")}>{doneLabel}</span>
                         </div>
                       )}
                       {col.totalDone != null && doneLabel && !colIsRatioOnly && !colIsTimeSecondary && (
@@ -1138,7 +1139,7 @@ function RanglijstenContent() {
                   {col.title === "Belstatistieken" && (
                     <ScopeIcon scope={callsScope} size={16} className="self-center" />
                   )}
-                  <p className="text-[clamp(18px,2.2vw,28px)] font-bold text-foreground tabular-nums leading-tight">
+                  <p className={cn("text-[clamp(18px,2.2vw,28px)] font-bold tabular-nums leading-tight", col.title === "Belstatistieken" ? (callsScope === "uitgaand" ? "text-emerald-600" : "text-blue-900") : "text-foreground")}>
                     {col.total.toLocaleString("nl-NL")}
                   </p>
                   {isDualValue && primaryLabel && (
@@ -1152,8 +1153,8 @@ function RanglijstenContent() {
                       {col.title === "Belstatistieken"
                         ? <ScopeIcon scope={durationScope} size={12} />
                         : <Phone className="w-3 h-3 text-emerald-500" />}
-                      <span className="text-[clamp(11px,1.3vw,16px)] font-bold text-emerald-600 tabular-nums">{formatBeltijd(col.totalDone)}</span>
-                      <span className="text-xs text-emerald-600">{doneLabel}</span>
+                      <span className={cn("text-[clamp(11px,1.3vw,16px)] font-bold tabular-nums", col.title === "Belstatistieken" ? (durationScope === "uitgaand" ? "text-emerald-600" : "text-blue-900") : "text-emerald-600")}>{formatBeltijd(col.totalDone)}</span>
+                      <span className={cn("text-xs", col.title === "Belstatistieken" ? (durationScope === "uitgaand" ? "text-emerald-600" : "text-blue-900") : "text-emerald-600")}>{doneLabel}</span>
                     </div>
                   )}
                   {col.totalDone != null && doneLabel && !colIsRatioOnly && !colIsTimeSecondary && (
