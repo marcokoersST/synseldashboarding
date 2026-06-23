@@ -118,9 +118,25 @@ interface EntryRowProps {
   isRatioOnly?: boolean;
   ratioLabel?: string;
   isTimeSecondary?: boolean;
+  primaryScope?: "uitgaand" | "totaal";
+  secondaryScope?: "uitgaand" | "totaal";
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary }: EntryRowProps) {
+/** Scope indicator: green outgoing icon for "uitgaand", green+blue combo for "totaal" (in+uit). */
+function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaal"; size?: number; className?: string }) {
+  if (scope === "uitgaand") {
+    return <PhoneOutgoing className={cn("text-emerald-500 shrink-0", className)} style={{ width: size, height: size }} aria-label="Uitgaand" />;
+  }
+  // mixed: stack outgoing (green) over incoming (blue) for compact combi indicator
+  return (
+    <span className={cn("inline-flex items-center shrink-0", className)} aria-label="Totaal (inkomend + uitgaand)" title="Totaal: inkomend + uitgaand">
+      <PhoneOutgoing className="text-emerald-500" style={{ width: size, height: size }} />
+      <PhoneIncoming className="text-sky-500 -ml-[3px]" style={{ width: size, height: size }} />
+    </span>
+  );
+}
+
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary, primaryScope, secondaryScope }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? shortName(entry.firstName, entry.lastName);
   
