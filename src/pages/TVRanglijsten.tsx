@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone } from "lucide-react";
+import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone, PhoneOutgoing, PhoneIncoming } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -118,9 +118,25 @@ interface EntryRowProps {
   isRatioOnly?: boolean;
   ratioLabel?: string;
   isTimeSecondary?: boolean;
+  primaryScope?: "uitgaand" | "totaal";
+  secondaryScope?: "uitgaand" | "totaal";
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary }: EntryRowProps) {
+/** Scope indicator: green outgoing icon for "uitgaand", green+blue combo for "totaal" (in+uit). */
+function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaal"; size?: number; className?: string }) {
+  if (scope === "uitgaand") {
+    return <PhoneOutgoing className={cn("text-emerald-500 shrink-0", className)} style={{ width: size, height: size }} aria-label="Uitgaand" />;
+  }
+  // mixed: stack outgoing (green) over incoming (blue) for compact combi indicator
+  return (
+    <span className={cn("inline-flex items-center shrink-0", className)} aria-label="Totaal (inkomend + uitgaand)" title="Totaal: inkomend + uitgaand">
+      <PhoneOutgoing className="text-emerald-500" style={{ width: size, height: size }} />
+      <PhoneIncoming className="text-sky-500 -ml-[3px]" style={{ width: size, height: size }} />
+    </span>
+  );
+}
+
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary, primaryScope, secondaryScope }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? shortName(entry.firstName, entry.lastName);
   
@@ -132,7 +148,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
     if (isTimeSecondary) {
       secondaryContent = (
         <span className="tabular-nums flex items-center gap-0.5 text-emerald-600">
-          <Phone className="w-3 h-3 shrink-0" />
+          {secondaryScope ? <ScopeIcon scope={secondaryScope} size={12} /> : <Phone className="w-3 h-3 shrink-0" />}
           <span className={cn(isTop3 ? "text-[clamp(9px,0.9vw,14px)] font-bold" : "text-[10px] font-semibold")}>
             {formatBeltijd(entry.valueDone)}
           </span>
@@ -218,11 +234,12 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         </span>
         {/* Primary value */}
         <span className={cn(
-          "tabular-nums font-bold text-right text-foreground",
+          "tabular-nums font-bold text-right text-foreground flex items-center justify-end gap-0.5",
           "text-[clamp(9px,0.9vw,14px)]",
           entry.value === 0 && "text-orange-600"
         )}>
-          {entry.value}
+          {primaryScope && <ScopeIcon scope={primaryScope} size={11} />}
+          {entry.value.toLocaleString("nl-NL")}
         </span>
         {/* Secondary value block */}
         {hasSecondary ? (
@@ -260,10 +277,11 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         {shownName}
       </span>
       <span className={cn(
-        "tabular-nums shrink-0 ml-auto text-[10px] font-semibold",
+        "tabular-nums shrink-0 ml-auto text-[10px] font-semibold flex items-center gap-0.5",
         entry.value !== 0 && "text-foreground"
       )}>
-        {entry.value}
+        {primaryScope && <ScopeIcon scope={primaryScope} size={10} />}
+        {entry.value.toLocaleString("nl-NL")}
       </span>
       {secondaryContent}
     </div>
@@ -958,6 +976,9 @@ function RanglijstenContent() {
                     </div>
                     {/* Main metric — fixed height */}
                     <div className="flex items-baseline gap-1.5 min-h-[2rem]">
+                      {col.title === "Belstatistieken" && (
+                        <ScopeIcon scope={callsScope} size={18} className="self-center" />
+                      )}
                       <p className="text-[clamp(20px,2.5vw,30px)] font-bold text-foreground tabular-nums leading-tight">
                         {col.total.toLocaleString("nl-NL")}
                       </p>
@@ -969,7 +990,9 @@ function RanglijstenContent() {
                     <div className="min-h-[1.5rem]">
                       {col.totalDone != null && doneLabel && !colIsRatioOnly && colIsTimeSecondary && (
                         <div className="flex items-center gap-1 mt-0.5">
-                          <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                          {col.title === "Belstatistieken"
+                            ? <ScopeIcon scope={durationScope} size={14} />
+                            : <Phone className="w-3.5 h-3.5 text-emerald-500" />}
                           <span className="text-[clamp(12px,1.5vw,18px)] font-bold text-emerald-600 tabular-nums">{formatBeltijd(col.totalDone)}</span>
                           <span className="text-xs text-emerald-600">{doneLabel}</span>
                         </div>
@@ -1018,7 +1041,7 @@ function RanglijstenContent() {
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
                         {top3.map((entry) => (
-                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} />
+                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
                         ))}
                       </div>
                     )}
@@ -1037,6 +1060,8 @@ function RanglijstenContent() {
                           isRatioOnly={colIsRatioOnly}
                           ratioLabel={colRatioLabel}
                           isTimeSecondary={colIsTimeSecondary}
+                          primaryScope={col.title === "Belstatistieken" ? callsScope : undefined}
+                          secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined}
                         />
                       ))}
                     </AutoColumnsWrapper>
@@ -1112,6 +1137,9 @@ function RanglijstenContent() {
                 </div>
                 {/* Main metric — fixed height */}
                 <div className="flex items-baseline gap-1.5 min-h-[1.75rem]">
+                  {col.title === "Belstatistieken" && (
+                    <ScopeIcon scope={callsScope} size={16} className="self-center" />
+                  )}
                   <p className="text-[clamp(18px,2.2vw,28px)] font-bold text-foreground tabular-nums leading-tight">
                     {col.total.toLocaleString("nl-NL")}
                   </p>
@@ -1123,7 +1151,9 @@ function RanglijstenContent() {
                 <div className="min-h-[1.25rem]">
                   {col.totalDone != null && doneLabel && !colIsRatioOnly && colIsTimeSecondary && (
                     <div className="flex items-center gap-1 mt-0.5">
-                      <Phone className="w-3 h-3 text-emerald-500" />
+                      {col.title === "Belstatistieken"
+                        ? <ScopeIcon scope={durationScope} size={12} />
+                        : <Phone className="w-3 h-3 text-emerald-500" />}
                       <span className="text-[clamp(11px,1.3vw,16px)] font-bold text-emerald-600 tabular-nums">{formatBeltijd(col.totalDone)}</span>
                       <span className="text-xs text-emerald-600">{doneLabel}</span>
                     </div>
@@ -1172,7 +1202,7 @@ function RanglijstenContent() {
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
                     {top3.map((entry) => (
-                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} />
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
                     ))}
                   </div>
                 )}
@@ -1191,6 +1221,8 @@ function RanglijstenContent() {
                       isRatioOnly={colIsRatioOnly}
                       ratioLabel={colRatioLabel}
                       isTimeSecondary={colIsTimeSecondary}
+                      primaryScope={col.title === "Belstatistieken" ? callsScope : undefined}
+                      secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined}
                     />
                   ))}
                 </AutoColumnsWrapper>
