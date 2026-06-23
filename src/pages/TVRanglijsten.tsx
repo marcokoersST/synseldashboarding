@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, Rocket, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone } from "lucide-react";
+import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -106,7 +106,7 @@ const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
 };
 
 interface EntryRowProps {
-  entry: { rank: number; name: string; firstName: string; lastName: string; value: number; valueDone?: number; isHot?: boolean; isRocket?: boolean };
+  entry: { rank: number; name: string; firstName: string; lastName: string; value: number; valueDone?: number };
   displayName?: string;
   compact?: boolean;
   isNegative?: boolean;
@@ -123,7 +123,6 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? shortName(entry.firstName, entry.lastName);
   
-  const hasIcons = !isPlain && showStatusIcons && (entry.isHot || entry.isRocket) && entry.value > 0;
   const hasSecondary = (entry.valueDone != null && !isRatioOnly) || (isRatioOnly && entry.valueDone != null);
 
   // Build secondary content
