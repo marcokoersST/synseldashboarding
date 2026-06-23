@@ -1033,6 +1033,8 @@ function RanglijstenContent() {
             const isInverse = config?.isInverse ?? false;
             const colIsRatioOnly = config?.isRatioOnly ?? false;
             const colRatioLabel = config?.ratioLabel;
+            const colIsTimeSecondary = config?.isTimeSecondary ?? false;
+            const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card flex flex-col min-h-0 overflow-hidden">
@@ -1061,6 +1063,15 @@ function RanglijstenContent() {
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
+                  )}
+                  {canSwap && (
+                    <button
+                      className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors"
+                      onClick={() => setSwapNietBegonnen(v => !v)}
+                      title={swapNietBegonnen ? "Toon 'Niet begonnen'" : "Toon belstatistieken (uitgaand)"}
+                    >
+                      <ArrowLeftRight className="w-3 h-3 text-muted-foreground" />
+                    </button>
                   )}
                 </div>
                 {/* Main metric — fixed height */}
