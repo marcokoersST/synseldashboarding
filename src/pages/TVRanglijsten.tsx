@@ -1135,6 +1135,9 @@ function RanglijstenContent() {
                 </div>
                 {/* Main metric — fixed height */}
                 <div className="flex items-baseline gap-1.5 min-h-[1.75rem]">
+                  {col.title === "Belstatistieken" && (
+                    <ScopeIcon scope={callsScope} size={16} className="self-center" />
+                  )}
                   <p className="text-[clamp(18px,2.2vw,28px)] font-bold text-foreground tabular-nums leading-tight">
                     {col.total.toLocaleString("nl-NL")}
                   </p>
@@ -1146,7 +1149,9 @@ function RanglijstenContent() {
                 <div className="min-h-[1.25rem]">
                   {col.totalDone != null && doneLabel && !colIsRatioOnly && colIsTimeSecondary && (
                     <div className="flex items-center gap-1 mt-0.5">
-                      <Phone className="w-3 h-3 text-emerald-500" />
+                      {col.title === "Belstatistieken"
+                        ? <ScopeIcon scope={durationScope} size={12} />
+                        : <Phone className="w-3 h-3 text-emerald-500" />}
                       <span className="text-[clamp(11px,1.3vw,16px)] font-bold text-emerald-600 tabular-nums">{formatBeltijd(col.totalDone)}</span>
                       <span className="text-xs text-emerald-600">{doneLabel}</span>
                     </div>
