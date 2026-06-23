@@ -234,11 +234,12 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         </span>
         {/* Primary value */}
         <span className={cn(
-          "tabular-nums font-bold text-right text-foreground",
+          "tabular-nums font-bold text-right text-foreground flex items-center justify-end gap-0.5",
           "text-[clamp(9px,0.9vw,14px)]",
           entry.value === 0 && "text-orange-600"
         )}>
-          {entry.value}
+          {primaryScope && <ScopeIcon scope={primaryScope} size={11} />}
+          {entry.value.toLocaleString("nl-NL")}
         </span>
         {/* Secondary value block */}
         {hasSecondary ? (
