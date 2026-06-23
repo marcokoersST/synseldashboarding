@@ -145,7 +145,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
   if (entry.valueDone != null && !isRatioOnly) {
     if (isTimeSecondary) {
       secondaryContent = (
-        <span className="tabular-nums flex items-center gap-0.5 text-emerald-600">
+        <span className={cn("tabular-nums flex items-center gap-0.5", secondaryScope === "uitgaand" ? "text-emerald-600" : secondaryScope === "totaal" ? "text-blue-900" : "text-emerald-600")}>
           {secondaryScope ? <ScopeIcon scope={secondaryScope} size={12} /> : <Phone className="w-3 h-3 shrink-0" />}
           <span className={cn(isTop3 ? "text-[clamp(9px,0.9vw,14px)] font-bold" : "text-[10px] font-semibold")}>
             {formatBeltijd(entry.valueDone)}
