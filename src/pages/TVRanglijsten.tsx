@@ -129,7 +129,7 @@ function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaa
   }
   return (
     <span className={cn("inline-flex shrink-0", className)} title="Totaal: inkomend + uitgaand">
-      <PhoneCall className="text-sky-500" style={{ width: size, height: size }} aria-label="Totaal (inkomend + uitgaand)" />
+      <PhoneCall className="text-blue-900" style={{ width: size, height: size }} aria-label="Totaal (inkomend + uitgaand)" />
     </span>
   );
 }
