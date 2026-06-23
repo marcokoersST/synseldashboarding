@@ -277,7 +277,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       </span>
       <span className={cn(
         "tabular-nums shrink-0 ml-auto text-[10px] font-semibold flex items-center gap-0.5",
-        entry.value !== 0 && "text-foreground"
+        primaryScope === "uitgaand" ? "text-emerald-600" : primaryScope === "totaal" ? "text-blue-900" : entry.value !== 0 ? "text-foreground" : ""
       )}>
         {primaryScope && <ScopeIcon scope={primaryScope} size={10} />}
         {entry.value.toLocaleString("nl-NL")}
