@@ -433,7 +433,7 @@ function RanglijstenContent() {
       return cols.map(c => c.title === "Niet begonnen" ? bel : c);
     }
     return cols;
-  }, [jaar, effectiveViewMode, currentNum, swapNietBegonnen]);
+  }, [jaar, effectiveViewMode, currentNum, swapNietBegonnen, callsScope, durationScope]);
 
   const sortEntries = useCallback((entries: typeof rawColumns[0]["entries"], colTitle: string) => {
     const mode = sortModes[colTitle];
