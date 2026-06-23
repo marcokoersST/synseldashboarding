@@ -188,16 +188,16 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
   // Use CSS grid for top-3 to guarantee slot containment
   if (isTop3) {
     return (
+    return (
       <div
         className={cn(
           "grid items-center rounded-sm px-1 border-b border-border/20 break-inside-avoid",
           compact ? "py-1" : "py-1.5",
           getRankStyle(entry.rank, isNegative),
-          entry.isHot && entry.value > 0 && "bg-orange-50/60",
           entry.value === 0 && "text-orange-600"
         )}
         style={{
-          gridTemplateColumns: `1rem 1fr ${hasIcons ? 'auto' : '0px'} auto ${hasSecondary ? 'auto' : '0px'}`,
+          gridTemplateColumns: `1rem 1fr auto ${hasSecondary ? 'auto' : '0px'}`,
           gap: '4px',
         }}
       >
@@ -210,20 +210,12 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
           className={cn(
             "min-w-0 whitespace-nowrap overflow-hidden font-semibold text-foreground",
             "text-[clamp(7px,0.7vw,12px)]",
-            entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
             entry.value === 0 && "text-orange-600"
           )}
           style={{ textOverflow: 'clip' }}
         >
           {shownName}
         </span>
-        {/* Status icons */}
-        {hasIcons ? (
-          <span className="shrink-0 flex items-center gap-0.5">
-            {entry.isHot && <Flame className="w-3 h-3 text-orange-500 tv-fire shrink-0" />}
-            {entry.isRocket && <Rocket className="w-3 h-3 text-blue-500 tv-rocket shrink-0" />}
-          </span>
-        ) : <span />}
         {/* Primary value */}
         <span className={cn(
           "tabular-nums font-bold text-right text-foreground",
@@ -238,6 +230,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         ) : <span />}
       </div>
     );
+    );
   }
 
   // Non-top-3: keep flex layout (simpler, smaller rows)
@@ -248,7 +241,6 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         "py-0.5",
         compact || isPlain ? "text-xs" : "text-sm",
         !isPlain && getRankStyle(entry.rank, isNegative),
-        !isPlain && entry.isHot && entry.value > 0 && "bg-orange-50/60",
         entry.value === 0 && "text-orange-600"
       )}
     >
@@ -262,19 +254,12 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
       <span
         className={cn(
           "min-w-0 flex-1 whitespace-nowrap overflow-hidden text-foreground text-[9px]",
-          !isPlain && entry.isHot && entry.value > 0 && "text-orange-700 font-medium",
           entry.value === 0 && "text-orange-600"
         )}
         style={{ textOverflow: 'clip' }}
       >
         {shownName}
       </span>
-      {hasIcons && (
-        <span className="shrink-0 flex items-center gap-0.5">
-          {entry.isHot && <Flame className="w-3 h-3 text-orange-500 tv-fire shrink-0" />}
-          {entry.isRocket && <Rocket className="w-3 h-3 text-blue-500 tv-rocket shrink-0" />}
-        </span>
-      )}
       <span className={cn(
         "tabular-nums shrink-0 ml-auto text-[10px] font-semibold",
         entry.value !== 0 && "text-foreground"
@@ -819,19 +804,6 @@ function RanglijstenContent() {
         )}
       </div>
 
-      {/* Legend */}
-      <div className={cn("flex flex-wrap items-start gap-2 mb-3", isCompact ? "text-xs" : "text-sm")}>
-        <div className="flex items-center gap-2 rounded-lg bg-muted/50 border border-border/40 px-3 py-1.5">
-          <Flame className="w-4 h-4 text-orange-500 shrink-0" />
-          <span className="font-bold text-orange-700">On Fire</span>
-          <span className="text-muted-foreground">— Min. +30% groei t.o.v. vorige periode (rolling)</span>
-        </div>
-        <div className="flex items-center gap-2 rounded-lg bg-muted/50 border border-border/40 px-3 py-1.5">
-          <Rocket className="w-4 h-4 text-blue-500 shrink-0" />
-          <span className="font-bold text-blue-600">Raket</span>
-          <span className="text-muted-foreground">— Min. 3 posities ingehaald in laatste 5 dagen</span>
-        </div>
-      </div>
 
       {/* Ranking Columns */}
       {!isCompact && (
