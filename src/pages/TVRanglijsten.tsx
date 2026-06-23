@@ -435,8 +435,13 @@ function RanglijstenContent() {
     : parseInt(selectedPeriode.replace("P", ""), 10);
 
   const rawColumns = useMemo(() => {
-    return getRanglijstenData(parseInt(jaar, 10), effectiveViewMode, currentNum);
-  }, [jaar, effectiveViewMode, currentNum]);
+    const cols = getRanglijstenData(parseInt(jaar, 10), effectiveViewMode, currentNum);
+    if (swapNietBegonnen) {
+      const bel = getBelstatistiekenColumn(parseInt(jaar, 10), effectiveViewMode, currentNum);
+      return cols.map(c => c.title === "Niet begonnen" ? bel : c);
+    }
+    return cols;
+  }, [jaar, effectiveViewMode, currentNum, swapNietBegonnen]);
 
   const sortEntries = useCallback((entries: typeof rawColumns[0]["entries"], colTitle: string) => {
     const mode = sortModes[colTitle];
