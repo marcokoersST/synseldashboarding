@@ -127,7 +127,11 @@ function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaa
   if (scope === "uitgaand") {
     return <PhoneOutgoing className={cn("text-emerald-500 shrink-0", className)} style={{ width: size, height: size }} aria-label="Uitgaand" />;
   }
-  return <PhoneCall className={cn("text-sky-500 shrink-0", className)} style={{ width: size, height: size }} aria-label="Totaal (inkomend + uitgaand)" title="Totaal: inkomend + uitgaand" />;
+  return (
+    <span className={cn("inline-flex shrink-0", className)} title="Totaal: inkomend + uitgaand">
+      <PhoneCall className="text-sky-500" style={{ width: size, height: size }} aria-label="Totaal (inkomend + uitgaand)" />
+    </span>
+  );
 }
 
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary, primaryScope, secondaryScope }: EntryRowProps) {
