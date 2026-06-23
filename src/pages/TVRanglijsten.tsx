@@ -122,18 +122,12 @@ interface EntryRowProps {
   secondaryScope?: "uitgaand" | "totaal";
 }
 
-/** Scope indicator: green outgoing icon for "uitgaand", green+blue combo for "totaal" (in+uit). */
+/** Scope indicator: green outgoing icon for "uitgaand", blue phone-call icon for "totaal". */
 function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaal"; size?: number; className?: string }) {
   if (scope === "uitgaand") {
     return <PhoneOutgoing className={cn("text-emerald-500 shrink-0", className)} style={{ width: size, height: size }} aria-label="Uitgaand" />;
   }
-  // mixed: stack outgoing (green) over incoming (blue) for compact combi indicator
-  return (
-    <span className={cn("inline-flex items-center shrink-0", className)} aria-label="Totaal (inkomend + uitgaand)" title="Totaal: inkomend + uitgaand">
-      <PhoneOutgoing className="text-emerald-500" style={{ width: size, height: size }} />
-      <PhoneIncoming className="text-sky-500 -ml-[3px]" style={{ width: size, height: size }} />
-    </span>
-  );
+  return <PhoneCall className={cn("text-sky-500 shrink-0", className)} style={{ width: size, height: size }} aria-label="Totaal (inkomend + uitgaand)" title="Totaal: inkomend + uitgaand" />;
 }
 
 function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary, primaryScope, secondaryScope }: EntryRowProps) {
