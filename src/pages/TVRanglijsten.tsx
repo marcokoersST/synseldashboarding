@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useLayoutEffect, useEffect, type ReactNode } from "react";
 import { Switch } from "@/components/ui/switch";
 import { TVDashboardLayout, useTVCompact } from "@/components/tv/TVDashboardLayout";
-import { getRanglijstenData, ranglijstenFilters, allColumnTitles, getCurrentWeekNumber, getCurrentPeriodNumber, allConsultantsList } from "@/data/ranglijstenData";
+import { getRanglijstenData, ranglijstenFilters, allColumnTitles, getCurrentWeekNumber, getCurrentPeriodNumber, allConsultantsList, getBelstatistiekenColumn, formatBeltijd } from "@/data/ranglijstenData";
 import type { RankingColumn } from "@/data/ranglijstenData";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, Rocket, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon } from "lucide-react";
+import { Trophy, Medal, Flame, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, Rocket, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -86,12 +86,13 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
 }
 
 // Column configuration for dual-value display
-const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string }> = {
+const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string; isTimeSecondary?: boolean }> = {
   "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false },
   "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false },
   "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true },
   "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq." },
   "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
+  "Belstatistieken": { headerTitle: "Belstatistieken (Uitgaand)", primaryLabel: "telefoontjes", doneLabel: "beltijd", isInverse: false, isTimeSecondary: true },
 };
 
 const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
@@ -101,6 +102,7 @@ const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
   "Intakes": { value: "Op intakes", done: "Op % van acq." },
   "Plaatsingen": { value: "Op plaatsingen", done: "Op detachering" },
   "Niet begonnen": { value: "Op niet begonnen" },
+  "Belstatistieken": { value: "Op aantal telefoontjes", done: "Op beltijd" },
 };
 
 interface EntryRowProps {
@@ -114,9 +116,10 @@ interface EntryRowProps {
   isInverseRatio?: boolean;
   isRatioOnly?: boolean;
   ratioLabel?: string;
+  isTimeSecondary?: boolean;
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? shortName(entry.firstName, entry.lastName);
   
@@ -126,6 +129,16 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
   // Build secondary content
   let secondaryContent: ReactNode = null;
   if (entry.valueDone != null && !isRatioOnly) {
+    if (isTimeSecondary) {
+      secondaryContent = (
+        <span className="tabular-nums flex items-center gap-0.5 text-emerald-600">
+          <Phone className="w-3 h-3 shrink-0" />
+          <span className={cn(isTop3 ? "text-[clamp(9px,0.9vw,14px)] font-bold" : "text-[10px] font-semibold")}>
+            {formatBeltijd(entry.valueDone)}
+          </span>
+        </span>
+      );
+    } else {
     secondaryContent = (
       <span className="tabular-nums flex items-center gap-0.5 text-emerald-600">
         <Check className="w-3 h-3 shrink-0" />
@@ -157,6 +170,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         )}
       </span>
     );
+    }
   }
   if (isRatioOnly && entry.valueDone != null) {
     const pct = entry.valueDone > 0 ? Math.round((entry.value / entry.valueDone) * 100) : 0;
@@ -373,6 +387,7 @@ function RanglijstenContent() {
   const [consultantSearch, setConsultantSearch] = useState("");
   const [hideInactive, setHideInactive] = useState(true);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
+  const [swapNietBegonnen, setSwapNietBegonnen] = useState(false);
   const isCompact = useTVCompact();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -385,6 +400,7 @@ function RanglijstenContent() {
     "Intakes": "value",
     "Plaatsingen": "value",
     "Niet begonnen": "value",
+    "Belstatistieken": "value",
   });
 
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode" | "custom">("week");
@@ -419,8 +435,13 @@ function RanglijstenContent() {
     : parseInt(selectedPeriode.replace("P", ""), 10);
 
   const rawColumns = useMemo(() => {
-    return getRanglijstenData(parseInt(jaar, 10), effectiveViewMode, currentNum);
-  }, [jaar, effectiveViewMode, currentNum]);
+    const cols = getRanglijstenData(parseInt(jaar, 10), effectiveViewMode, currentNum);
+    if (swapNietBegonnen) {
+      const bel = getBelstatistiekenColumn(parseInt(jaar, 10), effectiveViewMode, currentNum);
+      return cols.map(c => c.title === "Niet begonnen" ? bel : c);
+    }
+    return cols;
+  }, [jaar, effectiveViewMode, currentNum, swapNietBegonnen]);
 
   const sortEntries = useCallback((entries: typeof rawColumns[0]["entries"], colTitle: string) => {
     const mode = sortModes[colTitle];
@@ -469,7 +490,10 @@ function RanglijstenContent() {
   const columns = useMemo(() => {
     const unitFiltered = applyUnitFilter(rawColumns, selectedUnits);
     const consultantFiltered = applyConsultantFilter(unitFiltered, selectedConsultants);
-    const filtered = consultantFiltered.filter((col) => selectedColumns.includes(col.title));
+    const filtered = consultantFiltered.filter((col) => {
+      if (col.title === "Belstatistieken") return selectedColumns.includes("Niet begonnen");
+      return selectedColumns.includes(col.title);
+    });
     return filtered.map(col => {
       if (sortModes[col.title]) {
         return { ...col, entries: sortEntries(col.entries, col.title) };
@@ -607,7 +631,7 @@ function RanglijstenContent() {
                   Kolommen ({selectedColumns.length})
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56">
+              <PopoverContent className="w-64">
                 <p className="text-sm font-medium mb-3">Zichtbare kolommen</p>
                 <div className="space-y-2">
                   {allColumnTitles.map((title) => (
@@ -616,9 +640,21 @@ function RanglijstenContent() {
                         checked={selectedColumns.includes(title)}
                         onCheckedChange={() => toggleColumn(title)}
                       />
-                      {title}
+                      {title === "Niet begonnen" && swapNietBegonnen ? "Belstatistieken (uitgaand)" : title}
                     </label>
                   ))}
+                </div>
+                <div className="mt-3 pt-3 border-t border-border/40">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <Checkbox
+                      checked={swapNietBegonnen}
+                      onCheckedChange={(v) => setSwapNietBegonnen(!!v)}
+                    />
+                    <span className="flex items-center gap-1">
+                      <ArrowLeftRight className="w-3 h-3" />
+                      Toon belstatistieken i.p.v. "Niet begonnen"
+                    </span>
+                  </label>
                 </div>
               </PopoverContent>
             </Popover>
@@ -843,6 +879,8 @@ function RanglijstenContent() {
                 const isInverse = config?.isInverse ?? false;
                 const colIsRatioOnly = config?.isRatioOnly ?? false;
                 const colRatioLabel = config?.ratioLabel;
+                const colIsTimeSecondary = config?.isTimeSecondary ?? false;
+                const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
                 return (
                   <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
@@ -872,6 +910,15 @@ function RanglijstenContent() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
+                      {canSwap && (
+                        <button
+                          className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors"
+                          onClick={() => setSwapNietBegonnen(v => !v)}
+                          title={swapNietBegonnen ? "Toon 'Niet begonnen'" : "Toon belstatistieken (uitgaand)"}
+                        >
+                          <ArrowLeftRight className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                      )}
                     </div>
                     {/* Main metric — fixed height */}
                     <div className="flex items-baseline gap-1.5 min-h-[2rem]">
@@ -884,7 +931,14 @@ function RanglijstenContent() {
                     </div>
                     {/* Secondary metric — fixed height so columns align */}
                     <div className="min-h-[1.5rem]">
-                      {col.totalDone != null && doneLabel && !colIsRatioOnly && (
+                      {col.totalDone != null && doneLabel && !colIsRatioOnly && colIsTimeSecondary && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                          <span className="text-[clamp(12px,1.5vw,18px)] font-bold text-emerald-600 tabular-nums">{formatBeltijd(col.totalDone)}</span>
+                          <span className="text-xs text-emerald-600">{doneLabel}</span>
+                        </div>
+                      )}
+                      {col.totalDone != null && doneLabel && !colIsRatioOnly && !colIsTimeSecondary && (
                         <div className="flex items-center gap-1 mt-0.5">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                           <span className="text-[clamp(12px,1.5vw,18px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
@@ -928,7 +982,7 @@ function RanglijstenContent() {
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
                         {top3.map((entry) => (
-                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} />
+                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} />
                         ))}
                       </div>
                     )}
@@ -946,6 +1000,7 @@ function RanglijstenContent() {
                           isInverseRatio={isInverse}
                           isRatioOnly={colIsRatioOnly}
                           ratioLabel={colRatioLabel}
+                          isTimeSecondary={colIsTimeSecondary}
                         />
                       ))}
                     </AutoColumnsWrapper>
@@ -978,6 +1033,8 @@ function RanglijstenContent() {
             const isInverse = config?.isInverse ?? false;
             const colIsRatioOnly = config?.isRatioOnly ?? false;
             const colRatioLabel = config?.ratioLabel;
+            const colIsTimeSecondary = config?.isTimeSecondary ?? false;
+            const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card flex flex-col min-h-0 overflow-hidden">
@@ -1007,6 +1064,15 @@ function RanglijstenContent() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
+                  {canSwap && (
+                    <button
+                      className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors"
+                      onClick={() => setSwapNietBegonnen(v => !v)}
+                      title={swapNietBegonnen ? "Toon 'Niet begonnen'" : "Toon belstatistieken (uitgaand)"}
+                    >
+                      <ArrowLeftRight className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                  )}
                 </div>
                 {/* Main metric — fixed height */}
                 <div className="flex items-baseline gap-1.5 min-h-[1.75rem]">
@@ -1019,7 +1085,14 @@ function RanglijstenContent() {
                 </div>
                 {/* Secondary metric — fixed height for alignment */}
                 <div className="min-h-[1.25rem]">
-                  {col.totalDone != null && doneLabel && !colIsRatioOnly && (
+                  {col.totalDone != null && doneLabel && !colIsRatioOnly && colIsTimeSecondary && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Phone className="w-3 h-3 text-emerald-500" />
+                      <span className="text-[clamp(11px,1.3vw,16px)] font-bold text-emerald-600 tabular-nums">{formatBeltijd(col.totalDone)}</span>
+                      <span className="text-xs text-emerald-600">{doneLabel}</span>
+                    </div>
+                  )}
+                  {col.totalDone != null && doneLabel && !colIsRatioOnly && !colIsTimeSecondary && (
                     <div className="flex items-center gap-1 mt-0.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                       <span className="text-[clamp(11px,1.3vw,16px)] font-bold text-emerald-600 tabular-nums">{col.totalDone.toLocaleString("nl-NL")}</span>
@@ -1063,7 +1136,7 @@ function RanglijstenContent() {
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
                     {top3.map((entry) => (
-                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} />
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} />
                     ))}
                   </div>
                 )}
@@ -1081,6 +1154,7 @@ function RanglijstenContent() {
                       isInverseRatio={isInverse}
                       isRatioOnly={colIsRatioOnly}
                       ratioLabel={colRatioLabel}
+                      isTimeSecondary={colIsTimeSecondary}
                     />
                   ))}
                 </AutoColumnsWrapper>
