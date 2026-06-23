@@ -490,7 +490,10 @@ function RanglijstenContent() {
   const columns = useMemo(() => {
     const unitFiltered = applyUnitFilter(rawColumns, selectedUnits);
     const consultantFiltered = applyConsultantFilter(unitFiltered, selectedConsultants);
-    const filtered = consultantFiltered.filter((col) => selectedColumns.includes(col.title));
+    const filtered = consultantFiltered.filter((col) => {
+      if (col.title === "Belstatistieken") return selectedColumns.includes("Niet begonnen");
+      return selectedColumns.includes(col.title);
+    });
     return filtered.map(col => {
       if (sortModes[col.title]) {
         return { ...col, entries: sortEntries(col.entries, col.title) };
