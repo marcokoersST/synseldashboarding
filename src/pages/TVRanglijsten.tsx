@@ -371,6 +371,15 @@ function RanglijstenContent() {
   const [hideInactive, setHideInactive] = useState(true);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
   const [swapNietBegonnen, setSwapNietBegonnen] = useState(false);
+  const [callsScope, setCallsScope] = useState<BelScope>("uitgaand");
+  const [durationScope, setDurationScope] = useState<BelScope>("uitgaand");
+
+  const belScopeLabel = useMemo(() => {
+    if (callsScope === "uitgaand" && durationScope === "uitgaand") return "Uitgaand";
+    if (callsScope === "totaal" && durationScope === "totaal") return "Totaal";
+    return "Gemengd";
+  }, [callsScope, durationScope]);
+  const belHeaderTitle = `Belstatistieken (${belScopeLabel})`;
   const isCompact = useTVCompact();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
