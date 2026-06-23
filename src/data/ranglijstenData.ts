@@ -359,11 +359,24 @@ export function getRanglijstenData(year: number, mode: "week" | "periode", num: 
 }
 
 /**
- * Belstatistieken (Uitgaand) column.
- * value = aantal uitgaande telefoontjes
- * valueDone = totaal uitgaande beltijd in minuten (gerenderd als Hh Mm)
+ * Belstatistieken column.
+ * value = aantal telefoontjes (uitgaand of totaal in+uit)
+ * valueDone = totaal beltijd in minuten (uitgaand of totaal in+uit)
  */
-export function getBelstatistiekenColumn(year: number, mode: "week" | "periode", num: number): RankingColumn {
+export type BelScope = "uitgaand" | "totaal";
+export interface BelstatistiekenOptions {
+  callsScope?: BelScope;
+  durationScope?: BelScope;
+}
+
+export function getBelstatistiekenColumn(
+  year: number,
+  mode: "week" | "periode",
+  num: number,
+  options: BelstatistiekenOptions = {},
+): RankingColumn {
+  const callsScope = options.callsScope ?? "uitgaand";
+  const durationScope = options.durationScope ?? "uitgaand";
   const modeNum = mode === "week" ? 0 : 1;
   const seed = seedHash(year, modeNum, num) + 4242;
   const prevSeed = seedHash(year, modeNum, Math.max(1, num - 1)) + 4242;
@@ -371,9 +384,18 @@ export function getBelstatistiekenColumn(year: number, mode: "week" | "periode",
   const scale = mode === "week" ? 1 : 4;
   const build = (s: number) => {
     const entries = consultants.map((c, i) => {
-      const calls = Math.round((30 + seededRandom(s, i) * 170) * scale);
-      const avgSecPerCall = 90 + seededRandom(s + 31, i) * 210; // 1.5–5 min avg
-      const minutes = Math.round((calls * avgSecPerCall) / 60);
+      const outgoingCalls = Math.round((30 + seededRandom(s, i) * 170) * scale);
+      const avgSecPerOutCall = 90 + seededRandom(s + 31, i) * 210; // 1.5–5 min avg
+      const outgoingMinutes = Math.round((outgoingCalls * avgSecPerOutCall) / 60);
+
+      // Synthesize incoming (inkomend) — 35–70% of outgoing, shorter avg
+      const incomingCalls = Math.round(outgoingCalls * (0.35 + seededRandom(s + 77, i) * 0.35));
+      const avgSecPerInCall = 60 + seededRandom(s + 91, i) * 120; // 1–3 min avg
+      const incomingMinutes = Math.round((incomingCalls * avgSecPerInCall) / 60);
+
+      const calls = callsScope === "totaal" ? outgoingCalls + incomingCalls : outgoingCalls;
+      const minutes = durationScope === "totaal" ? outgoingMinutes + incomingMinutes : outgoingMinutes;
+
       return {
         rank: 0,
         name: c.fullName,
