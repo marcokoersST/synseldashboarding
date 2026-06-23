@@ -86,12 +86,13 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
 }
 
 // Column configuration for dual-value display
-const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string }> = {
+const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string; isTimeSecondary?: boolean }> = {
   "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false },
   "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false },
   "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true },
   "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq." },
   "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
+  "Belstatistieken": { headerTitle: "Belstatistieken (Uitgaand)", primaryLabel: "telefoontjes", doneLabel: "beltijd", isInverse: false, isTimeSecondary: true },
 };
 
 const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
@@ -101,6 +102,7 @@ const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
   "Intakes": { value: "Op intakes", done: "Op % van acq." },
   "Plaatsingen": { value: "Op plaatsingen", done: "Op detachering" },
   "Niet begonnen": { value: "Op niet begonnen" },
+  "Belstatistieken": { value: "Op aantal telefoontjes", done: "Op beltijd" },
 };
 
 interface EntryRowProps {
