@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone, PhoneOutgoing, PhoneIncoming } from "lucide-react";
+import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone, PhoneOutgoing, PhoneIncoming, PhoneCall } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
