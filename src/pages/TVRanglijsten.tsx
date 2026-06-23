@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone, PhoneOutgoing, PhoneIncoming } from "lucide-react";
+import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone, PhoneOutgoing, PhoneIncoming, PhoneCall } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -122,16 +122,14 @@ interface EntryRowProps {
   secondaryScope?: "uitgaand" | "totaal";
 }
 
-/** Scope indicator: green outgoing icon for "uitgaand", green+blue combo for "totaal" (in+uit). */
+/** Scope indicator: green outgoing icon for "uitgaand", blue phone-call icon for "totaal". */
 function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaal"; size?: number; className?: string }) {
   if (scope === "uitgaand") {
     return <PhoneOutgoing className={cn("text-emerald-500 shrink-0", className)} style={{ width: size, height: size }} aria-label="Uitgaand" />;
   }
-  // mixed: stack outgoing (green) over incoming (blue) for compact combi indicator
   return (
-    <span className={cn("inline-flex items-center shrink-0", className)} aria-label="Totaal (inkomend + uitgaand)" title="Totaal: inkomend + uitgaand">
-      <PhoneOutgoing className="text-emerald-500" style={{ width: size, height: size }} />
-      <PhoneIncoming className="text-sky-500 -ml-[3px]" style={{ width: size, height: size }} />
+    <span className={cn("inline-flex shrink-0", className)} title="Totaal: inkomend + uitgaand">
+      <PhoneCall className="text-sky-500" style={{ width: size, height: size }} aria-label="Totaal (inkomend + uitgaand)" />
     </span>
   );
 }
