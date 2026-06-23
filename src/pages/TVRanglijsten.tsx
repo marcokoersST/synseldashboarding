@@ -623,7 +623,7 @@ function RanglijstenContent() {
                   Kolommen ({selectedColumns.length})
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64">
+              <PopoverContent className="w-72">
                 <p className="text-sm font-medium mb-3">Zichtbare kolommen</p>
                 <div className="space-y-2">
                   {allColumnTitles.map((title) => (
@@ -632,7 +632,7 @@ function RanglijstenContent() {
                         checked={selectedColumns.includes(title)}
                         onCheckedChange={() => toggleColumn(title)}
                       />
-                      {title === "Niet begonnen" && swapNietBegonnen ? "Belstatistieken (uitgaand)" : title}
+                      {title === "Niet begonnen" && swapNietBegonnen ? belHeaderTitle : title}
                     </label>
                   ))}
                 </div>
@@ -647,6 +647,63 @@ function RanglijstenContent() {
                       Toon belstatistieken i.p.v. "Niet begonnen"
                     </span>
                   </label>
+
+                  {swapNietBegonnen && (
+                    <div className="mt-3 ml-5 pl-3 border-l border-border/40 space-y-2.5">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Belstatistieken bereik
+                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted-foreground shrink-0">Telefoontjes</span>
+                        <ToggleGroup
+                          type="single"
+                          size="sm"
+                          value={callsScope}
+                          onValueChange={(v) => v && setCallsScope(v as BelScope)}
+                          className="gap-0 rounded-md border border-border bg-muted/30 p-0.5"
+                        >
+                          <ToggleGroupItem
+                            value="uitgaand"
+                            className="h-6 px-2 text-[10px] rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground"
+                          >
+                            Uitgaand
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="totaal"
+                            className="h-6 px-2 text-[10px] rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground"
+                          >
+                            Totaal
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted-foreground shrink-0">Gespreksduur</span>
+                        <ToggleGroup
+                          type="single"
+                          size="sm"
+                          value={durationScope}
+                          onValueChange={(v) => v && setDurationScope(v as BelScope)}
+                          className="gap-0 rounded-md border border-border bg-muted/30 p-0.5"
+                        >
+                          <ToggleGroupItem
+                            value="uitgaand"
+                            className="h-6 px-2 text-[10px] rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground"
+                          >
+                            Uitgaand
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="totaal"
+                            className="h-6 px-2 text-[10px] rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground"
+                          >
+                            Totaal
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/80 leading-snug">
+                        "Totaal" telt inkomend + uitgaand op. Per metric onafhankelijk instelbaar.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </PopoverContent>
             </Popover>
