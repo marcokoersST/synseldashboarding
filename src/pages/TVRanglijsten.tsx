@@ -1202,7 +1202,7 @@ function RanglijstenContent() {
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
                     {top3.map((entry) => (
-                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} />
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
                     ))}
                   </div>
                 )}
