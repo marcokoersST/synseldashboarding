@@ -429,7 +429,7 @@ function RanglijstenContent() {
   const rawColumns = useMemo(() => {
     const cols = getRanglijstenData(parseInt(jaar, 10), effectiveViewMode, currentNum);
     if (swapNietBegonnen) {
-      const bel = getBelstatistiekenColumn(parseInt(jaar, 10), effectiveViewMode, currentNum);
+      const bel = getBelstatistiekenColumn(parseInt(jaar, 10), effectiveViewMode, currentNum, { callsScope, durationScope });
       return cols.map(c => c.title === "Niet begonnen" ? bel : c);
     }
     return cols;
