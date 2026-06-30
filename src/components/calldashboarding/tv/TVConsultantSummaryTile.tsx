@@ -9,6 +9,7 @@ import {
 interface Props {
   calls: CallRecord[];
   isLive?: boolean;
+  visibleIds?: Set<number>;
 }
 
 type Status = "Beschikbaar" | "Bezet" | "Niet aanwezig" | "Niet storen";
