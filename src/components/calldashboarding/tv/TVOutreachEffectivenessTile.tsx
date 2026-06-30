@@ -50,9 +50,14 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
 
   return (
     <div className="rounded-xl bg-card border border-border h-full flex flex-col overflow-hidden">
-      <div className="px-3 py-2 border-b border-border">
-        <h3 className="text-sm font-semibold text-foreground">Effectiviteit outreach</h3>
-        <p className="text-[0.7em] text-muted-foreground">Bekende vs nieuwe nummers + connect-rate</p>
+      <div className="px-3 py-2 border-b border-border flex items-center justify-between gap-4">
+        <p className="text-xs text-foreground/80 leading-snug">
+          % = aandeel van alle gesprekken in de geselecteerde periode. ↑/↓ = verschil t.o.v. vorige even lange periode (in procentpunten).
+        </p>
+        <div className="text-right shrink-0">
+          <h3 className="text-sm font-semibold text-foreground">Effectiviteit outreach</h3>
+          <p className="text-[0.7em] text-muted-foreground">Bekende vs nieuwe nummers + connect-rate</p>
+        </div>
       </div>
 
       <div className="p-3 space-y-4 flex-1 overflow-auto">
@@ -76,9 +81,6 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               );
             })}
           </div>
-          <p className="mt-1 text-[0.65em] text-muted-foreground leading-snug">
-            % = aandeel van alle gesprekken in de geselecteerde periode. ↑/↓ = verschil t.o.v. vorige even lange periode (in procentpunten).
-          </p>
           <div className="grid grid-cols-2 gap-2 mt-2">
             {matches.map((m) => {
               const v = agg.byMatch[m];
