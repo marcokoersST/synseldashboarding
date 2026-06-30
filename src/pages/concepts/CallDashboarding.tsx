@@ -263,23 +263,24 @@ function CallDashboardingBody() {
             <TVConsultantSummaryTile calls={calls} isLive={!!period.live} visibleIds={visibleIds} />
           </div>
           <div className="col-span-1 grid grid-rows-6 gap-2 h-full min-h-0">
-            {/* Totalen 1/6, Effectiviteit 3/6, Belactiviteit 2/6 */}
-            <div className="row-span-1 min-h-0 rounded-xl bg-card border border-border flex flex-col overflow-hidden">
-              <div className="px-3 py-1.5 border-b border-border flex items-baseline justify-between">
+            {/* Totalen 2/6, Effectiviteit 2/6, Belactiviteit 2/6 */}
+            <div className="row-span-2 min-h-0 rounded-xl bg-card border border-border flex flex-col overflow-hidden">
+              <div className="px-3 py-2 border-b border-border flex items-baseline justify-between">
                 <h3 className="text-sm font-semibold text-foreground">Totalen</h3>
                 <span className="text-[0.7em] text-muted-foreground">{period.label}</span>
               </div>
               <div className="flex-1 min-h-0 grid grid-cols-4 divide-x divide-border">
-                <div className="px-3 py-1.5 flex flex-col items-center justify-center text-center gap-0.5 min-w-0 overflow-hidden">
+                <div className="px-3 flex flex-col items-center justify-center text-center gap-1 min-w-0 overflow-hidden">
                   <HeroCounter
                     label="Totaal"
                     value={totals.total}
                     previousValue={prevTotals.total}
-                    icon={<Phone className="h-3.5 w-3.5 text-primary" />}
+                    icon={<Phone className="h-4 w-4 text-primary" />}
                     hideShare
+                    size="lg"
                   />
                 </div>
-                <div className="px-3 py-1.5 flex flex-col items-center justify-center text-center gap-0.5 min-w-0 overflow-hidden">
+                <div className="px-3 flex flex-col items-center justify-center text-center gap-1 min-w-0 overflow-hidden">
                   <HeroCounter
                     label="Inkomend"
                     value={totals.inbound}
@@ -287,10 +288,11 @@ function CallDashboardingBody() {
                     previousValue={prevTotals.inbound}
                     previousTotal={prevTotals.total}
                     tone="in"
-                    icon={<PhoneIncoming className="h-3.5 w-3.5 text-teal" />}
+                    icon={<PhoneIncoming className="h-4 w-4 text-teal" />}
+                    size="lg"
                   />
                 </div>
-                <div className="px-3 py-1.5 flex flex-col items-center justify-center text-center gap-0.5 min-w-0 overflow-hidden">
+                <div className="px-3 flex flex-col items-center justify-center text-center gap-1 min-w-0 overflow-hidden">
                   <HeroCounter
                     label="Uitgaand"
                     value={totals.outbound}
@@ -298,24 +300,24 @@ function CallDashboardingBody() {
                     previousValue={prevTotals.outbound}
                     previousTotal={prevTotals.total}
                     tone="out"
-                    icon={<PhoneOutgoing className="h-3.5 w-3.5 text-primary" />}
+                    icon={<PhoneOutgoing className="h-4 w-4 text-primary" />}
+                    size="lg"
                   />
                 </div>
-                <div className="px-3 py-1.5 flex flex-col items-center justify-center text-center gap-0.5 min-w-0 overflow-hidden">
+                <div className="px-3 flex flex-col items-center justify-center text-center gap-1 min-w-0 overflow-hidden">
                   <HeroCounter
                     label="Gesprekstijd"
                     value={totals.durationSec}
                     format="duration"
                     previousValue={prevTotals.durationSec}
-                    icon={<Clock className="h-3.5 w-3.5 text-success" />}
+                    icon={<Clock className="h-4 w-4 text-success" />}
                     hideShare
+                    size="lg"
                   />
                 </div>
               </div>
-
-
             </div>
-            <div className="row-span-3 min-h-0">
+            <div className="row-span-2 min-h-0">
               <TVOutreachEffectivenessTile calls={calls} prevCalls={prevCalls} />
             </div>
             <div className="row-span-2 min-h-0">

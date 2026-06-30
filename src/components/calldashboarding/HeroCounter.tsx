@@ -58,7 +58,7 @@ export function HeroCounter({
   // already; the formula stays the same (value/total).
 
   const valueSize =
-    size === "lg" ? "text-4xl" : size === "sm" ? "text-xl" : "text-2xl";
+    size === "lg" ? "text-3xl" : size === "sm" ? "text-xl" : "text-2xl";
 
   // Delta: absolute change in value if no share, otherwise share pp change.
   let deltaNode: React.ReactNode = null;

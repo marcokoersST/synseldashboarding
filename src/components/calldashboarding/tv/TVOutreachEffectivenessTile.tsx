@@ -109,7 +109,7 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
 
       <div className="p-4 flex flex-col gap-3 flex-1 min-h-0">
         {/* PRIMARY — Match mix */}
-        <div className="flex flex-col flex-[7] min-h-0">
+        <div className="flex flex-col flex-[4] min-h-0">
           <div className="flex items-center justify-between text-sm text-muted-foreground mb-1.5">
             <span>Mix gebelde nummers</span>
             <span className="tabular-nums">
@@ -130,7 +130,7 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               );
             })}
           </div>
-          <div className="mt-2 flex-1 min-h-0 grid grid-cols-4 divide-x divide-border">
+          <div className="mt-1 flex-1 min-h-0 grid grid-cols-4 divide-x divide-border">
             {matches.map((m) => {
               const v = agg.byMatch[m];
               const pv = prev.byMatch[m];
@@ -140,14 +140,14 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               return (
                 <div
                   key={m}
-                  className="px-4 py-2 min-w-0 flex flex-col justify-center gap-1.5"
+                  className="px-4 py-1 min-w-0 flex flex-col justify-center gap-1"
                 >
                   <div className="flex items-center gap-2 text-sm text-muted-foreground truncate">
                     <span className={`inline-block h-2.5 w-2.5 rounded ${MATCH_COLOR[m]}`} />
                     <span className="truncate">{MATCH_LABEL[m]}</span>
                   </div>
                   <div className="flex items-baseline gap-2 min-w-0">
-                    <span className="text-4xl xl:text-5xl font-bold tabular-nums leading-none text-foreground">
+                    <span className="text-3xl font-bold tabular-nums leading-none text-foreground">
                       {new Intl.NumberFormat("nl-NL").format(v)}
                     </span>
                     <span className="text-base text-muted-foreground tabular-nums">
@@ -162,7 +162,7 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
         </div>
 
         {/* SECONDARY — Connect rate footer */}
-        <div className="flex-[3] min-h-0 rounded-lg border border-border/60 grid grid-cols-4 divide-x divide-border bg-muted/20">
+        <div className="flex-[5] min-h-0 rounded-lg border border-border/60 grid grid-cols-4 divide-x divide-border bg-muted/20">
           {outcomes.map((c) => (
             <div key={c.label} className="px-3 py-2 min-w-0 flex flex-col justify-center gap-0.5">
               <div
