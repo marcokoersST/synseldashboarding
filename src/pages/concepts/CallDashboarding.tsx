@@ -250,6 +250,9 @@ function CallDashboardingBody() {
             <h2 className="text-lg font-bold text-foreground leading-none">Call Dashboarding</h2>
             <p className="text-[0.7em] text-muted-foreground mt-0.5">{period.label}</p>
           </div>
+          <p className="text-[11px] text-muted-foreground leading-snug max-w-[360px] text-right">
+            % = aandeel van alle gesprekken in de geselecteerde periode. ↑/↓ = verschil t.o.v. vorige even lange periode (in procentpunten).
+          </p>
           <PeriodFilter value={period} onChange={setPeriod} />
         </div>
         <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
