@@ -351,19 +351,37 @@ function CallDashboardingBody() {
         </div>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">Call Dashboarding</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold text-foreground">Call Dashboarding</h1>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Uitleg metrics"
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="start" className="max-w-xs text-xs leading-relaxed">
+                    <p className="mb-1">
+                      <span className="font-semibold">%</span> = aandeel van alle gesprekken in de geselecteerde periode.
+                    </p>
+                    <p>
+                      <span className="font-semibold">↑ / ↓</span> = verschil t.o.v. vorige even lange periode (in procentpunten).
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <p className="text-sm text-muted-foreground">
               Inkomende en uitgaande gesprekken per consultant.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <p className="text-xs text-muted-foreground leading-snug max-w-[380px] text-right">
-              % = aandeel van alle gesprekken in de geselecteerde periode. ↑/↓ = verschil t.o.v. vorige even lange periode (in procentpunten).
-            </p>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[11px]">{period.label}</Badge>
-              <PeriodFilter value={period} onChange={setPeriod} />
-            </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[11px]">{period.label}</Badge>
+            <PeriodFilter value={period} onChange={setPeriod} />
           </div>
         </div>
       </header>
