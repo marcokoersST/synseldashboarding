@@ -40,7 +40,7 @@ export function TVHourlyCallsTile({ calls }: Props) {
           <h3 className="text-sm font-semibold text-foreground">Belactiviteit per half uur</h3>
           <p className="text-[0.7em] text-muted-foreground">07:30 – 19:00 · stapelbalk = inkomend + uitgaand · lijn = oppakratio</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-start gap-4">
           <HeroCounter
             label="Piekuur"
             value={peakBucket?.total ?? 0}
