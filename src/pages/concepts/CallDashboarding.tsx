@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import {
   Phone, PhoneIncoming, PhoneOutgoing, Clock, ArrowUpDown,
-  Search, Filter, Users, Check,
+  Search, Filter, Users, Check, Info,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
