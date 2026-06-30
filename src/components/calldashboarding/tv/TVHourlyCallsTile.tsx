@@ -31,6 +31,13 @@ export function TVHourlyCallsTile({ calls }: Props) {
     return data[idx];
   }, [data]);
 
+  const pickupPercentile = useMemo(() => {
+    if (!bestPickup) return 0;
+    const rates = data.map((b) => b.pickupRate);
+    const lower = rates.filter((r) => r < bestPickup.pickupRate).length;
+    return rates.length ? Math.round((lower / rates.length) * 100) : 0;
+  }, [data, bestPickup]);
+
   const totalCalls = data.reduce((s, b) => s + b.total, 0);
 
   return (

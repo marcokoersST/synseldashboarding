@@ -1,26 +1,21 @@
-Make the "Effectiviteit outreach" tile fill its full vertical space by stretching its two content blocks and reorganizing the match grid.
+## Plan: Percentile for "Beste oppakratio" in TV tile
 
-## File
-`src/components/calldashboarding/tv/TVOutreachEffectivenessTile.tsx`
+### Goal
+Change the "Beste oppakratio" value in the TV-mode **Belactiviteit per half uur** tile so it displays a **percentile rank** instead of the raw pickup-rate percentage.
 
-## Changes
+### Current behaviour
+`TVHourlyCallsTile.tsx` shows `Math.round(bestPickup.pickupRate * 100)` — i.e. if the best half-hour bucket has a 85 % pickup rate, it shows **85**.
 
-**1. Vertical stretching**
-- Change the body wrapper from `space-y-3 overflow-auto` to `flex flex-col gap-3` and remove the scroll, so both blocks share the available height instead of stacking at the top.
-- Wrap each of the two sections (mix block + connect-rate strip) in `flex-1 flex flex-col`, with their inner bordered grids using `flex-1` so the rows themselves grow.
+### Desired behaviour
+Show the **percentile** of that bucket’s pickup rate compared to all other half-hour buckets (e.g. if the best bucket outperforms 90 % of all other buckets, show **90**).
 
-**2. Match-mix grid: 2×2 → 1×4**
-- Replace the `grid-cols-2 gap-2` of 4 stacked cards with a single bordered container split into 4 equal columns with `divide-x divide-border` (same pattern as the connect-rate strip).
-- Inside each column: colored dot + label on top, big number + share % in the middle (vertically centered with `flex-1 flex flex-col justify-center`), DeltaPP at the bottom.
-- This aligns visually with the 4-column connect-rate strip directly below it and removes the wasted gutter between rows.
+### Implementation
+1. In `TVHourlyCallsTile.tsx` compute a `pickupPercentile` value:
+   - Collect `pickupRate` of every non-empty bucket.
+   - Count how many rates are **strictly lower** than `bestPickup.pickupRate`.
+   - `percentile = (lowerCount / totalBuckets) * 100`, rounded.
+2. Pass that value into the existing `HeroCounter`.
+3. Optionally adjust the label from `"Beste oppakratio"` to `"Beste oppakratio (percentiel)"` or keep it unchanged — whichever the user prefers.
 
-**3. Connect-rate strip**
-- Same `flex-1` treatment so it expands to fill the remaining height.
-- Add `flex flex-col justify-center` inside each column so values sit centered in the taller cell.
-- Keep "Verbonden gesprekken" highlighted (success color, larger number).
-
-**4. Stack bar**
-- Increase the mix bar height from `h-3` to `h-4` for visual weight now that the section is taller.
-
-## Result
-No empty band beneath the cards. Two equal-height 4-column strips (matches + outcomes) align column-for-column and fill the tile.
+### Scope
+Single file: `src/components/calldashboarding/tv/TVHourlyCallsTile.tsx` (~10-line logic change).
