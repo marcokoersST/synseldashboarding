@@ -57,14 +57,14 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
         </p>
       </div>
 
-      <div className="p-3 space-y-3 flex-1 overflow-auto">
-        {/* Match mix bar */}
-        <div>
+      <div className="p-3 flex flex-col gap-3 flex-1 min-h-0">
+        {/* Match mix block */}
+        <div className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center justify-between text-[0.7em] text-muted-foreground mb-1">
             <span>Mix gebelde nummers</span>
             <span className="tabular-nums">{agg.total} gesprekken</span>
           </div>
-          <div className="flex h-3 rounded overflow-hidden bg-muted">
+          <div className="flex h-4 rounded overflow-hidden bg-muted">
             {matches.map((m) => {
               const v = agg.byMatch[m];
               const pct = agg.total ? (v / agg.total) * 100 : 0;
@@ -78,7 +78,7 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               );
             })}
           </div>
-          <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className="mt-2 flex-1 min-h-0 rounded-lg border border-border/60 grid grid-cols-4 divide-x divide-border overflow-hidden">
             {matches.map((m) => {
               const v = agg.byMatch[m];
               const pv = prev.byMatch[m];
@@ -86,8 +86,8 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               const prevShare = prev.total ? (pv / prev.total) * 100 : 0;
               const pp = share - prevShare;
               return (
-                <div key={m} className="rounded-lg border border-border/60 p-2 min-w-0">
-                  <div className="flex items-center gap-1.5 text-[0.7em] text-muted-foreground mb-0.5 truncate">
+                <div key={m} className="px-3 py-2 min-w-0 flex flex-col justify-center">
+                  <div className="flex items-center gap-1.5 text-[0.7em] text-muted-foreground mb-1 truncate">
                     <span className={`inline-block h-2 w-2 rounded ${MATCH_COLOR[m]}`} />
                     <span className="truncate">{MATCH_LABEL[m]}</span>
                   </div>
@@ -114,7 +114,6 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
           const cols: Array<{
             label: string;
             value: number;
-            prev: number;
             pp: number;
             share: number;
             highlight?: boolean;
@@ -123,7 +122,6 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
             {
               label: "Verbonden gesprekken",
               value: agg.connected,
-              prev: prev.connected,
               pp: connectedPP,
               share: connectedShare,
               highlight: true,
@@ -131,7 +129,6 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
             {
               label: "Voicemail",
               value: agg.byOutcome.voicemail,
-              prev: prev.byOutcome.voicemail,
               pp:
                 (agg.total ? (agg.byOutcome.voicemail / agg.total) * 100 : 0) -
                 (prev.total ? (prev.byOutcome.voicemail / prev.total) * 100 : 0),
@@ -141,7 +138,6 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
             {
               label: "Geen gehoor",
               value: agg.byOutcome.no_answer,
-              prev: prev.byOutcome.no_answer,
               pp:
                 (agg.total ? (agg.byOutcome.no_answer / agg.total) * 100 : 0) -
                 (prev.total ? (prev.byOutcome.no_answer / prev.total) * 100 : 0),
@@ -151,7 +147,6 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
             {
               label: "Opgehangen",
               value: agg.byOutcome.hangup,
-              prev: prev.byOutcome.hangup,
               pp:
                 (agg.total ? (agg.byOutcome.hangup / agg.total) * 100 : 0) -
                 (prev.total ? (prev.byOutcome.hangup / prev.total) * 100 : 0),
@@ -160,9 +155,9 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
             },
           ];
           return (
-            <div className="rounded-lg border border-border/60 grid grid-cols-4 divide-x divide-border overflow-hidden">
+            <div className="flex-1 min-h-0 rounded-lg border border-border/60 grid grid-cols-4 divide-x divide-border overflow-hidden">
               {cols.map((c) => (
-                <div key={c.label} className="px-3 py-2 min-w-0">
+                <div key={c.label} className="px-3 py-2 min-w-0 flex flex-col justify-center">
                   <div
                     className={cn(
                       "text-xs truncate mb-1",
