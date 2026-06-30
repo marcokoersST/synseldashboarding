@@ -264,7 +264,7 @@ function CallDashboardingBody() {
                 <span className="text-[0.7em] text-muted-foreground">{period.label}</span>
               </div>
               <div className="flex-1 min-h-0 grid grid-cols-4 divide-x divide-border">
-                <div className="px-3 py-1.5 flex flex-col justify-center min-w-0 overflow-hidden">
+                <div className="px-3 py-1.5 flex flex-col justify-start gap-0.5 min-w-0 overflow-hidden">
                   <HeroCounter
                     label="Totaal"
                     value={totals.total}
@@ -273,7 +273,7 @@ function CallDashboardingBody() {
                     hideShare
                   />
                 </div>
-                <div className="px-3 py-1.5 flex flex-col justify-center min-w-0 overflow-hidden">
+                <div className="px-3 py-1.5 flex flex-col justify-start gap-0.5 min-w-0 overflow-hidden">
                   <HeroCounter
                     label="Inkomend"
                     value={totals.inbound}
@@ -284,7 +284,7 @@ function CallDashboardingBody() {
                     icon={<PhoneIncoming className="h-3.5 w-3.5 text-teal" />}
                   />
                 </div>
-                <div className="px-3 py-1.5 flex flex-col justify-center min-w-0 overflow-hidden">
+                <div className="px-3 py-1.5 flex flex-col justify-start gap-0.5 min-w-0 overflow-hidden">
                   <HeroCounter
                     label="Uitgaand"
                     value={totals.outbound}
@@ -295,7 +295,7 @@ function CallDashboardingBody() {
                     icon={<PhoneOutgoing className="h-3.5 w-3.5 text-primary" />}
                   />
                 </div>
-                <div className="px-3 py-1.5 flex flex-col justify-center min-w-0 overflow-hidden">
+                <div className="px-3 py-1.5 flex flex-col justify-start gap-0.5 min-w-0 overflow-hidden">
                   <HeroCounter
                     label="Gesprekstijd"
                     value={totals.durationSec}
@@ -306,6 +306,7 @@ function CallDashboardingBody() {
                   />
                 </div>
               </div>
+
             </div>
             <div className="row-span-3 min-h-0">
               <TVOutreachEffectivenessTile calls={calls} prevCalls={prevCalls} />
