@@ -51,24 +51,34 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               );
             })}
           </div>
-          <div className="grid grid-cols-2 gap-2 mt-3">
-            {matches.map((m) => (
-              <div key={m} className="rounded-lg border border-border/60 p-2">
-                <div className="flex items-center gap-1.5 text-[0.7em] text-muted-foreground mb-0.5">
-                  <span className={`inline-block h-2 w-2 rounded ${MATCH_COLOR[m]}`} />
-                  {MATCH_LABEL[m]}
+          <p className="mt-1 text-[0.65em] text-muted-foreground leading-snug">
+            % = aandeel van alle gesprekken in de geselecteerde periode. ↑/↓ = verschil t.o.v. vorige even lange periode (in procentpunten).
+          </p>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {matches.map((m) => {
+              const v = agg.byMatch[m];
+              const pv = prev.byMatch[m];
+              const share = agg.total ? (v / agg.total) * 100 : 0;
+              const prevShare = prev.total ? (pv / prev.total) * 100 : 0;
+              const pp = share - prevShare;
+              return (
+                <div key={m} className="rounded-lg border border-border/60 p-2 min-w-0">
+                  <div className="flex items-center gap-1.5 text-[0.7em] text-muted-foreground mb-0.5 truncate">
+                    <span className={`inline-block h-2 w-2 rounded ${MATCH_COLOR[m]}`} />
+                    <span className="truncate">{MATCH_LABEL[m]}</span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="text-xl font-bold tabular-nums leading-tight text-foreground">
+                      {new Intl.NumberFormat("nl-NL").format(v)}
+                    </span>
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {share.toFixed(share < 10 ? 1 : 0)}%
+                    </span>
+                  </div>
+                  <DeltaPP pp={pp} />
                 </div>
-                <HeroCounter
-                  label=""
-                  value={agg.byMatch[m]}
-                  total={agg.total}
-                  previousValue={prev.byMatch[m]}
-                  previousTotal={prev.total}
-                  size="sm"
-                  className="space-y-0"
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -104,13 +114,12 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
                       {share.toFixed(0)}%
                     </span>
                   </div>
-                  <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
-                    {pp >= 0 ? "+" : ""}{pp.toFixed(1)} pp
-                  </div>
+                  <DeltaPP pp={pp} inverse />
                 </div>
               );
             })}
           </div>
+
 
         </div>
 
