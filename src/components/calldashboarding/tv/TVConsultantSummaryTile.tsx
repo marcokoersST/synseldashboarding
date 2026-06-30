@@ -31,12 +31,14 @@ const STATUS_PILL: Record<Status, string> = {
   "Niet storen": "bg-destructive/15 text-destructive border-destructive/30",
 };
 
-export function TVConsultantSummaryTile({ calls, isLive = false }: Props) {
+export function TVConsultantSummaryTile({ calls, isLive = false, visibleIds }: Props) {
   const rows = useMemo(() => {
     const map = aggregatePerConsultant(calls);
-    // Include all consultants when live, so absent ones still show.
-    const list = (isLive ? CONSULTANTS : Array.from(map.keys()).map((id) => consultantById(id)!))
-      .filter(Boolean)
+    const baseConsultants = isLive
+      ? CONSULTANTS
+      : Array.from(map.keys()).map((id) => consultantById(id)!).filter(Boolean);
+    const list = baseConsultants
+      .filter((c) => !visibleIds || visibleIds.has(c.id))
       .map((c) => {
         const a = map.get(c.id);
         return {
@@ -60,7 +62,7 @@ export function TVConsultantSummaryTile({ calls, isLive = false }: Props) {
       { total: 0, durationSec: 0 },
     );
     return { list, totals };
-  }, [calls, isLive]);
+  }, [calls, isLive, visibleIds]);
 
   const numCell = (val: number, share: number, masked: boolean, isDuration = false) => (
     <div className="text-right">
