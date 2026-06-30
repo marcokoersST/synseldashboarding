@@ -115,9 +115,9 @@ export function HeroCounter({
       <div className={cn("font-bold tabular-nums leading-tight", valueSize, toneClass[tone])}>
         {formatAbs(value, format)}
       </div>
-      {!hideShare && (share !== null || deltaNode) && (
+      {(deltaNode || (!hideShare && share !== null)) ? (
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-          {share !== null && (
+          {!hideShare && share !== null && (
             <span className="tabular-nums font-medium text-foreground/80">
               {(share * 100).toFixed(share < 0.1 ? 1 : 0)}%
               <span className="ml-1 text-muted-foreground font-normal">{shareLabel}</span>
@@ -125,7 +125,10 @@ export function HeroCounter({
           )}
           {deltaNode}
         </div>
+      ) : (
+        <div className="text-[11px] invisible" aria-hidden>.</div>
       )}
+
     </div>
   );
 }
