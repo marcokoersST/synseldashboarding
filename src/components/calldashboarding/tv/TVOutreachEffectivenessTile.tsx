@@ -50,14 +50,14 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
 
   return (
     <div className="rounded-xl bg-card border border-border h-full flex flex-col overflow-hidden">
-      <div className="px-3 py-2 border-b border-border flex items-center justify-between gap-4">
-        <div className="text-right shrink-0">
-          <h3 className="text-sm font-semibold text-foreground">Effectiviteit outreach</h3>
-          <p className="text-[0.7em] text-muted-foreground">Bekende vs nieuwe nummers + connect-rate</p>
-        </div>
+      <div className="px-3 py-2 border-b border-border flex items-baseline justify-between gap-4">
+        <h3 className="text-sm font-semibold text-foreground">Effectiviteit outreach</h3>
+        <p className="text-[0.7em] text-muted-foreground truncate">
+          Bekende vs nieuwe nummers + connect-rate
+        </p>
       </div>
 
-      <div className="p-3 space-y-4 flex-1 overflow-auto">
+      <div className="p-3 space-y-3 flex-1 overflow-auto">
         {/* Match mix bar */}
         <div>
           <div className="flex items-center justify-between text-[0.7em] text-muted-foreground mb-1">
@@ -106,47 +106,91 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
           </div>
         </div>
 
-        {/* Connect rate */}
-        <div className="rounded-lg border border-border/60 p-2 min-w-0 overflow-hidden">
-          <HeroCounter
-            label="Verbonden gesprekken"
-            value={agg.connected}
-            total={agg.total}
-            previousValue={prev.connected}
-            previousTotal={prev.total}
-            tone="positive"
-            size="md"
-            shareLabel="opgepakt"
-          />
-          <div className="grid grid-cols-3 gap-2 mt-3 min-w-0">
-            {([
-              ["Voicemail", agg.byOutcome.voicemail, prev.byOutcome.voicemail],
-              ["Geen gehoor", agg.byOutcome.no_answer, prev.byOutcome.no_answer],
-              ["Opgehangen", agg.byOutcome.hangup, prev.byOutcome.hangup],
-            ] as const).map(([label, v, pv]) => {
-              const share = agg.total ? (v / agg.total) * 100 : 0;
-              const prevShare = prev.total ? (pv / prev.total) * 100 : 0;
-              const pp = share - prevShare;
-              return (
-                <div key={label} className="min-w-0 rounded-md border border-border/60 p-2">
-                  <div className="text-xs text-muted-foreground truncate">{label}</div>
+        {/* Connect rate — dense 4-column strip */}
+        {(() => {
+          const connectedShare = agg.total ? (agg.connected / agg.total) * 100 : 0;
+          const prevConnectedShare = prev.total ? (prev.connected / prev.total) * 100 : 0;
+          const connectedPP = connectedShare - prevConnectedShare;
+          const cols: Array<{
+            label: string;
+            value: number;
+            prev: number;
+            pp: number;
+            share: number;
+            highlight?: boolean;
+            inverse?: boolean;
+          }> = [
+            {
+              label: "Verbonden gesprekken",
+              value: agg.connected,
+              prev: prev.connected,
+              pp: connectedPP,
+              share: connectedShare,
+              highlight: true,
+            },
+            {
+              label: "Voicemail",
+              value: agg.byOutcome.voicemail,
+              prev: prev.byOutcome.voicemail,
+              pp:
+                (agg.total ? (agg.byOutcome.voicemail / agg.total) * 100 : 0) -
+                (prev.total ? (prev.byOutcome.voicemail / prev.total) * 100 : 0),
+              share: agg.total ? (agg.byOutcome.voicemail / agg.total) * 100 : 0,
+              inverse: true,
+            },
+            {
+              label: "Geen gehoor",
+              value: agg.byOutcome.no_answer,
+              prev: prev.byOutcome.no_answer,
+              pp:
+                (agg.total ? (agg.byOutcome.no_answer / agg.total) * 100 : 0) -
+                (prev.total ? (prev.byOutcome.no_answer / prev.total) * 100 : 0),
+              share: agg.total ? (agg.byOutcome.no_answer / agg.total) * 100 : 0,
+              inverse: true,
+            },
+            {
+              label: "Opgehangen",
+              value: agg.byOutcome.hangup,
+              prev: prev.byOutcome.hangup,
+              pp:
+                (agg.total ? (agg.byOutcome.hangup / agg.total) * 100 : 0) -
+                (prev.total ? (prev.byOutcome.hangup / prev.total) * 100 : 0),
+              share: agg.total ? (agg.byOutcome.hangup / agg.total) * 100 : 0,
+              inverse: true,
+            },
+          ];
+          return (
+            <div className="rounded-lg border border-border/60 grid grid-cols-4 divide-x divide-border overflow-hidden">
+              {cols.map((c) => (
+                <div key={c.label} className="px-3 py-2 min-w-0">
+                  <div
+                    className={cn(
+                      "text-xs truncate mb-1",
+                      c.highlight ? "text-success font-medium" : "text-muted-foreground",
+                    )}
+                  >
+                    {c.label}
+                  </div>
                   <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="text-xl font-bold tabular-nums leading-tight text-foreground">
-                      {new Intl.NumberFormat("nl-NL").format(v)}
+                    <span
+                      className={cn(
+                        "font-bold tabular-nums leading-tight",
+                        c.highlight ? "text-2xl text-success" : "text-xl text-foreground",
+                      )}
+                    >
+                      {new Intl.NumberFormat("nl-NL").format(c.value)}
                     </span>
                     <span className="text-xs text-muted-foreground tabular-nums">
-                      {share.toFixed(0)}%
+                      {c.share.toFixed(c.share < 10 ? 1 : 0)}%
+                      {c.highlight && " opgepakt"}
                     </span>
                   </div>
-                  <DeltaPP pp={pp} inverse />
+                  <DeltaPP pp={c.pp} inverse={c.inverse} />
                 </div>
-              );
-            })}
-          </div>
-
-
-        </div>
-
+              ))}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
