@@ -67,18 +67,18 @@ export function PeriodFilter({ value, onChange }: Props) {
           <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
             Aangepast
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex flex-col gap-1.5">
             <Input
               type="date"
               value={customFrom}
               onChange={(e) => setCustomFrom(e.target.value)}
-              className="h-7 text-xs"
+              className="h-7 text-xs w-full"
             />
             <Input
               type="date"
               value={customTo}
               onChange={(e) => setCustomTo(e.target.value)}
-              className="h-7 text-xs"
+              className="h-7 text-xs w-full"
             />
           </div>
           <Button size="sm" className="h-7 w-full text-xs" onClick={applyCustom}>
