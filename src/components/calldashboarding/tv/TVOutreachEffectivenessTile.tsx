@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import { CallRecord, aggregateOutreach, MATCH_LABEL } from "@/data/callDashboardingData";
-import { HeroCounter } from "../HeroCounter";
 import { cn } from "@/lib/utils";
 
 
@@ -17,7 +16,7 @@ const MATCH_COLOR: Record<string, string> = {
   new: "bg-muted-foreground/60",
 };
 
-function DeltaPP({ pp, inverse = false }: { pp: number; inverse?: boolean }) {
+function DeltaPP({ pp, inverse = false, size = "md" }: { pp: number; inverse?: boolean; size?: "sm" | "md" }) {
   const up = pp > 0.05;
   const down = pp < -0.05;
   const good = inverse ? down : up;
@@ -27,13 +26,14 @@ function DeltaPP({ pp, inverse = false }: { pp: number; inverse?: boolean }) {
   return (
     <div
       className={cn(
-        "mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-medium tabular-nums",
+        "inline-flex items-center gap-1 font-medium tabular-nums",
+        size === "md" ? "text-sm" : "text-[11px]",
         good && "text-success",
         bad && "text-destructive",
         !good && !bad && "text-muted-foreground",
       )}
     >
-      <Icon className="h-3 w-3" />
+      <Icon className={size === "md" ? "h-4 w-4" : "h-3 w-3"} />
       {sign}
       {Math.abs(pp).toFixed(1)} pp
       <span className="ml-1 text-muted-foreground font-normal">vs vorige</span>
@@ -48,23 +48,75 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
 
   const matches: Array<keyof typeof MATCH_LABEL> = ["candidate", "organisation", "contact_person", "new"];
 
+  const connectedShare = agg.total ? (agg.connected / agg.total) * 100 : 0;
+  const prevConnectedShare = prev.total ? (prev.connected / prev.total) * 100 : 0;
+  const connectedPP = connectedShare - prevConnectedShare;
+
+  const outcomes: Array<{
+    label: string;
+    value: number;
+    share: number;
+    pp: number;
+    highlight?: boolean;
+    inverse?: boolean;
+    suffix?: string;
+  }> = [
+    {
+      label: "Verbonden",
+      value: agg.connected,
+      share: connectedShare,
+      pp: connectedPP,
+      highlight: true,
+      suffix: "opgepakt",
+    },
+    {
+      label: "Voicemail",
+      value: agg.byOutcome.voicemail,
+      share: agg.total ? (agg.byOutcome.voicemail / agg.total) * 100 : 0,
+      pp:
+        (agg.total ? (agg.byOutcome.voicemail / agg.total) * 100 : 0) -
+        (prev.total ? (prev.byOutcome.voicemail / prev.total) * 100 : 0),
+      inverse: true,
+    },
+    {
+      label: "Geen gehoor",
+      value: agg.byOutcome.no_answer,
+      share: agg.total ? (agg.byOutcome.no_answer / agg.total) * 100 : 0,
+      pp:
+        (agg.total ? (agg.byOutcome.no_answer / agg.total) * 100 : 0) -
+        (prev.total ? (prev.byOutcome.no_answer / prev.total) * 100 : 0),
+      inverse: true,
+    },
+    {
+      label: "Opgehangen",
+      value: agg.byOutcome.hangup,
+      share: agg.total ? (agg.byOutcome.hangup / agg.total) * 100 : 0,
+      pp:
+        (agg.total ? (agg.byOutcome.hangup / agg.total) * 100 : 0) -
+        (prev.total ? (prev.byOutcome.hangup / prev.total) * 100 : 0),
+      inverse: true,
+    },
+  ];
+
   return (
     <div className="rounded-xl bg-card border border-border h-full flex flex-col overflow-hidden">
-      <div className="px-3 py-2 border-b border-border flex items-baseline justify-between gap-4">
+      <div className="px-4 py-2 border-b border-border flex items-baseline justify-between gap-4">
         <h3 className="text-sm font-semibold text-foreground">Effectiviteit outreach</h3>
         <p className="text-[0.7em] text-muted-foreground truncate">
-          Bekende vs nieuwe nummers + connect-rate
+          Bekende vs nieuwe nummers · connect-rate
         </p>
       </div>
 
-      <div className="p-3 flex flex-col gap-3 flex-1 min-h-0">
-        {/* Match mix block */}
-        <div className="flex flex-col flex-1 min-h-0">
-          <div className="flex items-center justify-between text-[0.7em] text-muted-foreground mb-1">
+      <div className="p-4 flex flex-col gap-3 flex-1 min-h-0">
+        {/* PRIMARY — Match mix */}
+        <div className="flex flex-col flex-[7] min-h-0">
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-1.5">
             <span>Mix gebelde nummers</span>
-            <span className="tabular-nums">{agg.total} gesprekken</span>
+            <span className="tabular-nums">
+              {new Intl.NumberFormat("nl-NL").format(agg.total)} gesprekken
+            </span>
           </div>
-          <div className="flex h-4 rounded overflow-hidden bg-muted">
+          <div className="flex h-2 rounded overflow-hidden bg-muted">
             {matches.map((m) => {
               const v = agg.byMatch[m];
               const pct = agg.total ? (v / agg.total) * 100 : 0;
@@ -78,7 +130,7 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               );
             })}
           </div>
-          <div className="mt-2 flex-1 min-h-0 rounded-lg border border-border/60 grid grid-cols-4 divide-x divide-border overflow-hidden">
+          <div className="mt-2 flex-1 min-h-0 grid grid-cols-4 divide-x divide-border">
             {matches.map((m) => {
               const v = agg.byMatch[m];
               const pv = prev.byMatch[m];
@@ -86,16 +138,19 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               const prevShare = prev.total ? (pv / prev.total) * 100 : 0;
               const pp = share - prevShare;
               return (
-                <div key={m} className="px-3 py-2 min-w-0 flex flex-col justify-center">
-                  <div className="flex items-center gap-1.5 text-[0.7em] text-muted-foreground mb-1 truncate">
-                    <span className={`inline-block h-2 w-2 rounded ${MATCH_COLOR[m]}`} />
+                <div
+                  key={m}
+                  className="px-4 py-2 min-w-0 flex flex-col justify-center gap-1.5"
+                >
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground truncate">
+                    <span className={`inline-block h-2.5 w-2.5 rounded ${MATCH_COLOR[m]}`} />
                     <span className="truncate">{MATCH_LABEL[m]}</span>
                   </div>
-                  <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="text-xl font-bold tabular-nums leading-tight text-foreground">
+                  <div className="flex items-baseline gap-2 min-w-0">
+                    <span className="text-4xl xl:text-5xl font-bold tabular-nums leading-none text-foreground">
                       {new Intl.NumberFormat("nl-NL").format(v)}
                     </span>
-                    <span className="text-xs text-muted-foreground tabular-nums">
+                    <span className="text-base text-muted-foreground tabular-nums">
                       {share.toFixed(share < 10 ? 1 : 0)}%
                     </span>
                   </div>
@@ -106,86 +161,35 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
           </div>
         </div>
 
-        {/* Connect rate — dense 4-column strip */}
-        {(() => {
-          const connectedShare = agg.total ? (agg.connected / agg.total) * 100 : 0;
-          const prevConnectedShare = prev.total ? (prev.connected / prev.total) * 100 : 0;
-          const connectedPP = connectedShare - prevConnectedShare;
-          const cols: Array<{
-            label: string;
-            value: number;
-            pp: number;
-            share: number;
-            highlight?: boolean;
-            inverse?: boolean;
-          }> = [
-            {
-              label: "Verbonden gesprekken",
-              value: agg.connected,
-              pp: connectedPP,
-              share: connectedShare,
-              highlight: true,
-            },
-            {
-              label: "Voicemail",
-              value: agg.byOutcome.voicemail,
-              pp:
-                (agg.total ? (agg.byOutcome.voicemail / agg.total) * 100 : 0) -
-                (prev.total ? (prev.byOutcome.voicemail / prev.total) * 100 : 0),
-              share: agg.total ? (agg.byOutcome.voicemail / agg.total) * 100 : 0,
-              inverse: true,
-            },
-            {
-              label: "Geen gehoor",
-              value: agg.byOutcome.no_answer,
-              pp:
-                (agg.total ? (agg.byOutcome.no_answer / agg.total) * 100 : 0) -
-                (prev.total ? (prev.byOutcome.no_answer / prev.total) * 100 : 0),
-              share: agg.total ? (agg.byOutcome.no_answer / agg.total) * 100 : 0,
-              inverse: true,
-            },
-            {
-              label: "Opgehangen",
-              value: agg.byOutcome.hangup,
-              pp:
-                (agg.total ? (agg.byOutcome.hangup / agg.total) * 100 : 0) -
-                (prev.total ? (prev.byOutcome.hangup / prev.total) * 100 : 0),
-              share: agg.total ? (agg.byOutcome.hangup / agg.total) * 100 : 0,
-              inverse: true,
-            },
-          ];
-          return (
-            <div className="flex-1 min-h-0 rounded-lg border border-border/60 grid grid-cols-4 divide-x divide-border overflow-hidden">
-              {cols.map((c) => (
-                <div key={c.label} className="px-3 py-2 min-w-0 flex flex-col justify-center">
-                  <div
-                    className={cn(
-                      "text-xs truncate mb-1",
-                      c.highlight ? "text-success font-medium" : "text-muted-foreground",
-                    )}
-                  >
-                    {c.label}
-                  </div>
-                  <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span
-                      className={cn(
-                        "font-bold tabular-nums leading-tight",
-                        c.highlight ? "text-2xl text-success" : "text-xl text-foreground",
-                      )}
-                    >
-                      {new Intl.NumberFormat("nl-NL").format(c.value)}
-                    </span>
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      {c.share.toFixed(c.share < 10 ? 1 : 0)}%
-                      {c.highlight && " opgepakt"}
-                    </span>
-                  </div>
-                  <DeltaPP pp={c.pp} inverse={c.inverse} />
-                </div>
-              ))}
+        {/* SECONDARY — Connect rate footer */}
+        <div className="flex-[3] min-h-0 rounded-lg border border-border/60 grid grid-cols-4 divide-x divide-border bg-muted/20">
+          {outcomes.map((c) => (
+            <div key={c.label} className="px-3 py-2 min-w-0 flex flex-col justify-center gap-0.5">
+              <div
+                className={cn(
+                  "text-xs truncate",
+                  c.highlight ? "text-success font-medium" : "text-muted-foreground",
+                )}
+              >
+                {c.label}
+              </div>
+              <div className="flex items-baseline gap-1.5 min-w-0">
+                <span
+                  className={cn(
+                    "text-lg font-semibold tabular-nums leading-tight",
+                    c.highlight ? "text-success" : "text-foreground",
+                  )}
+                >
+                  {new Intl.NumberFormat("nl-NL").format(c.value)}
+                </span>
+                <span className="text-xs text-muted-foreground tabular-nums truncate">
+                  {c.share.toFixed(c.share < 10 ? 1 : 0)}%{c.suffix ? ` ${c.suffix}` : ""}
+                </span>
+              </div>
+              <DeltaPP pp={c.pp} inverse={c.inverse} size="sm" />
             </div>
-          );
-        })()}
+          ))}
+        </div>
       </div>
     </div>
   );
