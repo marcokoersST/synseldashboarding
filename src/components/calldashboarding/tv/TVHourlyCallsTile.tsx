@@ -48,13 +48,17 @@ export function TVHourlyCallsTile({ calls }: Props) {
             size="sm"
             shareLabel={`bij ${peakBucket?.label ?? "—"}`}
           />
-          <HeroCounter
-            label="Beste oppakratio"
-            value={Math.round((bestPickup?.pickupRate ?? 0) * 100)}
-            size="sm"
-            hideShare
-            tone="positive"
-          />
+          <div>
+            <HeroCounter
+              label="Beste oppakratio"
+              value={Math.round((bestPickup?.pickupRate ?? 0) * 100)}
+              size="sm"
+              hideShare
+              tone="positive"
+            />
+            <div className="text-[11px] invisible" aria-hidden>.</div>
+          </div>
+
         </div>
       </div>
       <div className="flex-1 p-2 min-h-0">
