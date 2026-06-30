@@ -70,7 +70,7 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
         </div>
 
         {/* Connect rate */}
-        <div className="rounded-lg border border-border/60 p-3 bg-muted/10">
+        <div className="rounded-lg border border-border/60 p-2 min-w-0 overflow-hidden">
           <HeroCounter
             label="Verbonden gesprekken"
             value={agg.connected}
@@ -78,10 +78,10 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
             previousValue={prev.connected}
             previousTotal={prev.total}
             tone="positive"
-            size="lg"
+            size="md"
             shareLabel="opgepakt"
           />
-          <div className="grid grid-cols-3 gap-2 mt-3">
+          <div className="grid grid-cols-3 gap-2 mt-3 min-w-0">
             <HeroCounter
               label="Voicemail"
               value={agg.byOutcome.voicemail}
@@ -111,6 +111,7 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
             />
           </div>
         </div>
+
       </div>
     </div>
   );

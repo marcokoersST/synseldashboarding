@@ -248,7 +248,7 @@ function CallDashboardingBody() {
         </div>
         <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
           <div className="col-span-2 min-h-0">
-            <TVConsultantSummaryTile calls={calls} />
+            <TVConsultantSummaryTile calls={calls} isLive={period.key === "today"} />
           </div>
           <div className="col-span-1 grid grid-rows-3 gap-2 h-full min-h-0">
             <div className="min-h-0 rounded-xl bg-card border border-border flex flex-col overflow-hidden">
@@ -256,18 +256,50 @@ function CallDashboardingBody() {
                 <h3 className="text-sm font-semibold text-foreground">Totalen</h3>
                 <span className="text-[0.7em] text-muted-foreground">{period.label}</span>
               </div>
-              <div className="p-3 grid grid-cols-2 gap-3 flex-1 min-h-0 items-center">
-                <div className="rounded-lg border border-border/60 p-2">
-                  <HeroCounter label="Totaal gesprekken" value={totals.total} previousValue={prevTotals.total} hideShare size="lg" />
+              <div className="flex-1 min-h-0 flex flex-col divide-y divide-border">
+                <div className="px-4 py-3 flex-1 flex flex-col justify-center min-w-0">
+                  <HeroCounter
+                    label="Totaal gesprekken"
+                    value={totals.total}
+                    previousValue={prevTotals.total}
+                    icon={<Phone className="h-4 w-4 text-primary" />}
+                    hideShare
+                    size="lg"
+                  />
                 </div>
-                <div className="rounded-lg border border-border/60 p-2">
-                  <HeroCounter label="Inkomend" value={totals.inbound} total={totals.total} previousValue={prevTotals.inbound} previousTotal={prevTotals.total} tone="in" size="lg" />
-                </div>
-                <div className="rounded-lg border border-border/60 p-2">
-                  <HeroCounter label="Uitgaand" value={totals.outbound} total={totals.total} previousValue={prevTotals.outbound} previousTotal={prevTotals.total} tone="out" size="lg" />
-                </div>
-                <div className="rounded-lg border border-border/60 p-2">
-                  <HeroCounter label="Gesprekstijd" value={totals.durationSec} format="duration" previousValue={prevTotals.durationSec} hideShare size="lg" />
+                <div className="grid grid-cols-3 divide-x divide-border flex-1 min-h-0">
+                  <div className="px-3 py-2 flex flex-col justify-center min-w-0 overflow-hidden">
+                    <HeroCounter
+                      label="Inkomend"
+                      value={totals.inbound}
+                      total={totals.total}
+                      previousValue={prevTotals.inbound}
+                      previousTotal={prevTotals.total}
+                      tone="in"
+                      icon={<PhoneIncoming className="h-3.5 w-3.5 text-teal" />}
+                    />
+                  </div>
+                  <div className="px-3 py-2 flex flex-col justify-center min-w-0 overflow-hidden">
+                    <HeroCounter
+                      label="Uitgaand"
+                      value={totals.outbound}
+                      total={totals.total}
+                      previousValue={prevTotals.outbound}
+                      previousTotal={prevTotals.total}
+                      tone="out"
+                      icon={<PhoneOutgoing className="h-3.5 w-3.5 text-primary" />}
+                    />
+                  </div>
+                  <div className="px-3 py-2 flex flex-col justify-center min-w-0 overflow-hidden">
+                    <HeroCounter
+                      label="Gesprekstijd"
+                      value={totals.durationSec}
+                      format="duration"
+                      previousValue={prevTotals.durationSec}
+                      icon={<Clock className="h-3.5 w-3.5 text-success" />}
+                      hideShare
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -282,6 +314,7 @@ function CallDashboardingBody() {
       </div>
     );
   }
+
 
 
   // ─── Standard page ──────────────────────────────────────────────────────
