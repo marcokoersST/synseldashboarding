@@ -244,28 +244,37 @@ function CallDashboardingBody() {
             <h2 className="text-lg font-bold text-foreground leading-none">Call Dashboarding</h2>
             <p className="text-[0.7em] text-muted-foreground mt-0.5">{period.label}</p>
           </div>
-          <div className="flex gap-3">
-            <HeroCounter label="Totaal gesprekken" value={totals.total} previousValue={prevTotals.total} hideShare />
-            <HeroCounter label="Inkomend" value={totals.inbound} total={totals.total} previousValue={prevTotals.inbound} previousTotal={prevTotals.total} tone="in" />
-            <HeroCounter label="Uitgaand" value={totals.outbound} total={totals.total} previousValue={prevTotals.outbound} previousTotal={prevTotals.total} tone="out" />
-            <HeroCounter label="Gesprekstijd" value={totals.durationSec} format="duration" previousValue={prevTotals.durationSec} hideShare />
-          </div>
           <PeriodFilter value={period} onChange={setPeriod} />
         </div>
-        <div className="grid grid-cols-12 gap-2 flex-1 min-h-0">
-          <div className="col-span-5 min-h-0">
+        <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
+          <div className="col-span-2 min-h-0">
             <TVConsultantSummaryTile calls={calls} />
           </div>
-          <div className="col-span-4 min-h-0">
-            <TVOutreachEffectivenessTile calls={calls} prevCalls={prevCalls} />
-          </div>
-          <div className="col-span-3 min-h-0">
-            <TVHourlyCallsTile calls={calls} />
+          <div className="col-span-1 grid grid-rows-3 gap-2 h-full min-h-0">
+            <div className="min-h-0 rounded-xl bg-card border border-border flex flex-col overflow-hidden">
+              <div className="px-3 py-2 border-b border-border flex items-baseline justify-between">
+                <h3 className="text-sm font-semibold text-foreground">Totalen</h3>
+                <span className="text-[0.7em] text-muted-foreground">{period.label}</span>
+              </div>
+              <div className="p-3 grid grid-cols-2 gap-3 flex-1 min-h-0">
+                <HeroCounter label="Totaal gesprekken" value={totals.total} previousValue={prevTotals.total} hideShare />
+                <HeroCounter label="Inkomend" value={totals.inbound} total={totals.total} previousValue={prevTotals.inbound} previousTotal={prevTotals.total} tone="in" />
+                <HeroCounter label="Uitgaand" value={totals.outbound} total={totals.total} previousValue={prevTotals.outbound} previousTotal={prevTotals.total} tone="out" />
+                <HeroCounter label="Gesprekstijd" value={totals.durationSec} format="duration" previousValue={prevTotals.durationSec} hideShare />
+              </div>
+            </div>
+            <div className="min-h-0">
+              <TVOutreachEffectivenessTile calls={calls} prevCalls={prevCalls} />
+            </div>
+            <div className="min-h-0">
+              <TVHourlyCallsTile calls={calls} />
+            </div>
           </div>
         </div>
       </div>
     );
   }
+
 
   // ─── Standard page ──────────────────────────────────────────────────────
   if (drilldownId !== null) {
