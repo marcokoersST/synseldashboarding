@@ -81,35 +81,34 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
             size="md"
             shareLabel="opgepakt"
           />
-          <div className="grid grid-cols-3 gap-2 mt-3 min-w-0">
-            <HeroCounter
-              label="Voicemail"
-              value={agg.byOutcome.voicemail}
-              total={agg.total}
-              previousValue={prev.byOutcome.voicemail}
-              previousTotal={prev.total}
-              size="sm"
-              inverse
-            />
-            <HeroCounter
-              label="Geen gehoor"
-              value={agg.byOutcome.no_answer}
-              total={agg.total}
-              previousValue={prev.byOutcome.no_answer}
-              previousTotal={prev.total}
-              size="sm"
-              inverse
-            />
-            <HeroCounter
-              label="Opgehangen"
-              value={agg.byOutcome.hangup}
-              total={agg.total}
-              previousValue={prev.byOutcome.hangup}
-              previousTotal={prev.total}
-              size="sm"
-              inverse
-            />
+          <div className="grid grid-cols-3 gap-1.5 mt-2 min-w-0">
+            {([
+              ["Voicemail", agg.byOutcome.voicemail, prev.byOutcome.voicemail],
+              ["Geen gehoor", agg.byOutcome.no_answer, prev.byOutcome.no_answer],
+              ["Opgehangen", agg.byOutcome.hangup, prev.byOutcome.hangup],
+            ] as const).map(([label, v, pv]) => {
+              const share = agg.total ? (v / agg.total) * 100 : 0;
+              const prevShare = prev.total ? (pv / prev.total) * 100 : 0;
+              const pp = share - prevShare;
+              return (
+                <div key={label} className="min-w-0">
+                  <div className="text-[11px] text-muted-foreground truncate">{label}</div>
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="text-lg font-bold tabular-nums leading-tight text-foreground">
+                      {new Intl.NumberFormat("nl-NL").format(v)}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground tabular-nums">
+                      {share.toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground tabular-nums">
+                    {pp >= 0 ? "+" : ""}{pp.toFixed(1)} pp
+                  </div>
+                </div>
+              );
+            })}
           </div>
+
         </div>
 
       </div>
