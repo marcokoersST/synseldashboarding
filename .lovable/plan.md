@@ -1,62 +1,107 @@
-# Plan: Belstatistieken — per-metric scope toggle
+## Goal
+Extend `/calldashboarding` (`src/pages/concepts/CallDashboarding.tsx`) with: (1) a consultant drill-down with call log + side panel, (2) a TV Mode with three aggregate tiles, (3) a historic period filter that also drives TV Mode, (4) hero counters that always show **absolute number + percentage** side by side.
 
-Add two independent toggles in the "Kolommen" popover that switch each Belstatistieken-metric between **Uitgaand** and **Totaal (inkomend + uitgaand)**:
+## 1. Hero counter pattern (applies everywhere)
 
-1. Aantal telefoontjes: Uitgaand ↔ Totaal (in + uit)
-2. Gespreksduur: Uitgaand ↔ Totaal (in + uit)
+Every KPI / aggregate value in the new screens renders as a dual counter:
 
-Both are independently selectable and only take effect when the swap "Belstatistieken i.p.v. Niet begonnen" is active.
-
-## UX in the "Kolommen" popover
-
-Under the existing swap-checkbox, a nested sub-section appears (only when `swapNietBegonnen` is true) — slightly indented, with subtle separator. Each metric becomes a compact segmented toggle (shadcn `ToggleGroup`, `size=sm`, `type=single`), so the user can clearly see which scope is active:
-
-```text
-[x] Toon belstatistieken i.p.v. "Niet begonnen"
-    ├─ Telefoontjes:   [ Uitgaand | Totaal ]
-    └─ Gespreksduur:   [ Uitgaand | Totaal ]
+```
+  1.284          ← large absolute number
+  62 %  ▲ 4 pp   ← percentage of the relevant whole + delta vs prev period
 ```
 
-- Segmented toggles read as one visual unit per row, consistent with the existing popover-styling (text-xs, subtle borders, rounded).
-- When the parent swap is off, the sub-section is collapsed (not rendered) so the popover stays compact.
-- Header tooltip + column header text update dynamically:
-  - "Belstatistieken (Uitgaand)" when both Uitgaand
-  - "Belstatistieken (Totaal)" when both Totaal
-  - "Belstatistieken (Gemengd)" when mixed; tooltip explains which metric is which scope.
-- The compact swap-icon next to the sort icon (in both desktop + TV table headers) keeps working as today (toggles the whole feature on/off).
+The percentage's denominator depends on what is being counted (documented per tile below). All percentages are rendered with the `pp` (percentage-point) unit when expressing deltas, and `%` for the share itself.
 
-## Data layer (`src/data/ranglijstenData.ts`)
+Reusable presentational component:
 
-Extend `getBelstatistiekenColumn` to accept an options object:
-
-```ts
-getBelstatistiekenColumn(year, mode, num, {
-  callsScope: "uitgaand" | "totaal",
-  durationScope: "uitgaand" | "totaal",
-})
+`src/components/calldashboarding/HeroCounter.tsx`
+```tsx
+type Props = {
+  label: string;
+  value: number;            // absolute
+  total?: number;           // denominator for share %
+  previousValue?: number;   // for delta
+  previousTotal?: number;
+  format?: "number" | "duration"; // duration shows H:M:S
+  tone?: "default" | "in" | "out" | "positive" | "negative";
+};
 ```
+Renders absolute value (formatted) + `share %` + delta in pp/%. Used by both the page-header KPI strip, the drill-down KPI strip and the TV tiles.
 
-Deterministic generation per consultant:
-- Outgoing calls (current) = `calls` (unchanged).
-- Incoming calls = `Math.round(calls * (0.35 + seededRandom(s+77, i) * 0.35))` — ratio 35–70 % of outgoing, so totals are always > uitgaand and stable across renders.
-- Outgoing minutes (current) = `minutes` (unchanged).
-- Incoming minutes ≈ `Math.round(incomingCalls * (60 + seededRandom(s+91, i) * 120) / 60)` — shorter avg (1–3 min).
-- `value` = outgoing-or-total calls based on `callsScope`.
-- `valueDone` = outgoing-or-total minutes based on `durationScope`.
-- Sort still by `value` desc; ranks recomputed.
-- Totals / previousTotals recomputed from the chosen scope.
+## 2. Data layer
 
-## State (`src/pages/TVRanglijsten.tsx`)
+New `src/data/callDashboardingData.ts`:
 
-- Add `callsScope` and `durationScope` state (default `"uitgaand"`).
-- Pass them into `getBelstatistiekenColumn(...)` in the existing memo (extend dep array).
-- Update `COLUMN_CONFIG["Belstatistieken"].headerTitle` resolution to a small helper that returns Uitgaand / Totaal / Gemengd label.
-- Update `SORT_OPTIONS["Belstatistieken"]` labels to match active scope (e.g. "Op aantal telefoontjes (totaal)").
-- Update the popover label `"Belstatistieken (uitgaand)"` on line 625 to use the dynamic label.
+- **CallRecord** (data shape, unchanged from previous plan):
+  ```ts
+  { id; consultantId; direction: "in"|"out"; from: string; to: string;
+    durationSec: number; startedAt: number;
+    match: "candidate"|"organisation"|"contact_person"|"new";
+    contactName?: string; company?: string;
+    connected: boolean;
+    outcome: "connected"|"voicemail"|"no_answer"|"hangup"; }
+  ```
+- Generate ~28 days of seeded history, 07:30–19:00, ~15–40 calls/consultant/day, weighted to peak hours, ~65 % outbound, ~55 % connected, match mix 35/20/20/25.
+- Aggregator output is now always a `{ value, total }` pair (the absolute + the denominator the HeroCounter should divide by). Same shape for the previous-period aggregate so deltas can be computed.
 
-## Files touched
+Aggregators:
+- `aggregatePerConsultant(calls)` → per consultant: `{ total, inbound, outbound, durationSec, connected, lastCallAt }`.
+- `aggregateOutreach(calls)` → totals + per-match breakdown + `{ connected, voicemail, no_answer, hangup }`.
+- `aggregateHourly(calls)` → 23 half-hour buckets with `{ inbound, outbound, connected, total }`.
 
-- `src/data/ranglijstenData.ts` — extend `getBelstatistiekenColumn` signature + add incoming-call/minute synthesis.
-- `src/pages/TVRanglijsten.tsx` — add 2 state vars, dynamic header/label helper, sub-section UI in the Kolommen popover using shadcn `ToggleGroup`.
+## 3. Historic period filter
 
-No changes to sort logic, swap-icon, or other columns.
+Header control next to existing filters:
+- Presets: `Vandaag`, `Deze week (Ma–nu)` (default), `Vorige week`, `Laatste 7 dagen`, `Laatste 30 dagen`, `Aangepast…`.
+- State `period: { from, to, label }` lifted on the page.
+- Drives the agent table, drill-down, and TV tiles. Every HeroCounter also receives the matching previous-period aggregate (same length window) to render its delta.
+- Active period shown as a chip under the title.
+
+## 4. Page-level KPI strip
+
+Replace the four existing summary cards with `HeroCounter`s:
+- **Totaal gesprekken** — abs total; share = 100 %, delta vs prev period.
+- **Inkomend** — abs; share = inkomend / totaal.
+- **Uitgaand** — abs; share = uitgaand / totaal.
+- **Totale gesprekstijd** — `H:M:S`; share = connected-minutes / total-minutes; delta in pp.
+
+## 5. Consultant drill-down
+
+Row click → in-page detail view ("← Terug" returns). Layout:
+- Header: name, unit, status, period label.
+- **HeroCounter strip** for this consultant in the active period: Totaal, Inkomend, Uitgaand, Gesprekstijd, Connect-rate (connected/total).
+- **Call-log table**: Tijd, Richting, Van, Naar, Duur, Match (Kandidaat/Organisatie/Contactpersoon/Nieuw badge), Resultaat.
+- Row click opens a right-side `Sheet` with full detail: numbers, full timestamp, duration, matched contact card (Recruit-CRM style badge for candidates), outcome, notes placeholder.
+
+## 6. TV Mode
+
+Wrap the page in `TVDashboardLayout` (gets existing TV-modus button + fullscreen). When `useTVCompact()` is true, render the TV layout in place of the table:
+
+### Tile A — Per-consultant summary
+Compact scrollable list, sorted by total desc. Columns: Consultant, Totaal, In, Uit, Duur, Laatste gesprek, Status dot. Each numeric cell renders the absolute + small `%` of team total in muted text underneath.
+
+### Tile B — Outreach effectiveness
+- Stacked share-bar for match mix (Kandidaat/Organisatie/Contactpersoon/Nieuw) with abs + % per segment as a HeroCounter row beneath.
+- Connect-rate gauge: connected vs total — HeroCounter showing `820  56 % ▲ 3 pp`, plus smaller HeroCounters for Voicemail / Geen gehoor / Opgehangen.
+
+### Tile C — Hourly call chart (Recharts)
+- X-axis 07:30 → 19:00 in 30-min buckets.
+- Stacked bars per bucket: inbound + outbound.
+- Overlay line: pickup-rate % per bucket (right Y-axis) — "most effective calling moments".
+- Header HeroCounters: Piekuur (`10:30`, `12 %`), Beste oppakratio (`14:00`, `71 %`).
+- When TV Mode + historic period active, period label is shown top-right and all tiles use that range.
+
+## 7. Files
+
+- **New** `src/data/callDashboardingData.ts`
+- **New** `src/components/calldashboarding/HeroCounter.tsx`
+- **New** `src/components/calldashboarding/PeriodFilter.tsx`
+- **New** `src/components/calldashboarding/ConsultantDetail.tsx`
+- **New** `src/components/calldashboarding/tv/TVConsultantSummaryTile.tsx`
+- **New** `src/components/calldashboarding/tv/TVOutreachEffectivenessTile.tsx`
+- **New** `src/components/calldashboarding/tv/TVHourlyCallsTile.tsx`
+- **Edit** `src/pages/concepts/CallDashboarding.tsx` — wrap in `TVDashboardLayout`, wire period filter, replace `allRows` with derived data, KPI strip uses `HeroCounter`, add row-click → drill-down, swap to TV layout under `useTVCompact()`.
+
+## Out of scope
+- No backend / Cloud changes — all data stays mock & seeded.
+- No changes to other dashboards or shared components beyond imports.
