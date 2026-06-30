@@ -58,7 +58,7 @@ export function TVHourlyCallsTile({ calls }: Props) {
           <div>
             <HeroCounter
               label="Beste oppakratio"
-              value={Math.round((bestPickup?.pickupRate ?? 0) * 100)}
+              value={pickupPercentile}
               size="sm"
               hideShare
               tone="positive"
