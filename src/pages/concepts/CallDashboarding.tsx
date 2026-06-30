@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import {
   Phone, PhoneIncoming, PhoneOutgoing, Clock, ArrowUpDown,
-  Search, Filter, Users, Check,
+  Search, Filter, Users, Check, Info,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatedCard } from "@/components/animations/AnimatedCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -245,14 +246,16 @@ function CallDashboardingBody() {
   if (isTV) {
     return (
       <div className="h-full flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3 px-1">
+        <div className="flex items-start justify-between gap-3 px-1">
           <div>
             <h2 className="text-lg font-bold text-foreground leading-none">Call Dashboarding</h2>
             <p className="text-[0.7em] text-muted-foreground mt-0.5">{period.label}</p>
+            <p className="text-[10px] text-muted-foreground/80 mt-1 leading-snug">
+              <span className="font-semibold text-foreground">%</span> = aandeel van alle gesprekken in de geselecteerde periode
+              <span className="mx-1.5 text-border">·</span>
+              <span className="font-semibold text-foreground">↑ / ↓</span> = verschil t.o.v. vorige even lange periode (in procentpunten)
+            </p>
           </div>
-          <p className="text-[11px] text-muted-foreground leading-snug max-w-[360px] text-right">
-            % = aandeel van alle gesprekken in de geselecteerde periode. ↑/↓ = verschil t.o.v. vorige even lange periode (in procentpunten).
-          </p>
           <PeriodFilter value={period} onChange={setPeriod} />
         </div>
         <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
@@ -348,19 +351,37 @@ function CallDashboardingBody() {
         </div>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">Call Dashboarding</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold text-foreground">Call Dashboarding</h1>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Uitleg metrics"
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="start" className="max-w-xs text-xs leading-relaxed">
+                    <p className="mb-1">
+                      <span className="font-semibold">%</span> = aandeel van alle gesprekken in de geselecteerde periode.
+                    </p>
+                    <p>
+                      <span className="font-semibold">↑ / ↓</span> = verschil t.o.v. vorige even lange periode (in procentpunten).
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <p className="text-sm text-muted-foreground">
               Inkomende en uitgaande gesprekken per consultant.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <p className="text-xs text-muted-foreground leading-snug max-w-[380px] text-right">
-              % = aandeel van alle gesprekken in de geselecteerde periode. ↑/↓ = verschil t.o.v. vorige even lange periode (in procentpunten).
-            </p>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[11px]">{period.label}</Badge>
-              <PeriodFilter value={period} onChange={setPeriod} />
-            </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[11px]">{period.label}</Badge>
+            <PeriodFilter value={period} onChange={setPeriod} />
           </div>
         </div>
       </header>
