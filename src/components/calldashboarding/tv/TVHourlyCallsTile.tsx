@@ -40,7 +40,7 @@ export function TVHourlyCallsTile({ calls }: Props) {
           <h3 className="text-sm font-semibold text-foreground">Belactiviteit per half uur</h3>
           <p className="text-[0.7em] text-muted-foreground">07:30 – 19:00 · stapelbalk = inkomend + uitgaand · lijn = oppakratio</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-start gap-4">
           <HeroCounter
             label="Piekuur"
             value={peakBucket?.total ?? 0}
@@ -48,13 +48,17 @@ export function TVHourlyCallsTile({ calls }: Props) {
             size="sm"
             shareLabel={`bij ${peakBucket?.label ?? "—"}`}
           />
-          <HeroCounter
-            label="Beste oppakratio"
-            value={Math.round((bestPickup?.pickupRate ?? 0) * 100)}
-            size="sm"
-            hideShare
-            tone="positive"
-          />
+          <div>
+            <HeroCounter
+              label="Beste oppakratio"
+              value={Math.round((bestPickup?.pickupRate ?? 0) * 100)}
+              size="sm"
+              hideShare
+              tone="positive"
+            />
+            <div className="text-[11px] invisible" aria-hidden>.</div>
+          </div>
+
         </div>
       </div>
       <div className="flex-1 p-2 min-h-0">
