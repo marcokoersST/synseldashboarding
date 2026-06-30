@@ -17,6 +17,31 @@ const MATCH_COLOR: Record<string, string> = {
   new: "bg-muted-foreground/60",
 };
 
+function DeltaPP({ pp, inverse = false }: { pp: number; inverse?: boolean }) {
+  const up = pp > 0.05;
+  const down = pp < -0.05;
+  const good = inverse ? down : up;
+  const bad = inverse ? up : down;
+  const Icon = up ? ArrowUp : down ? ArrowDown : Minus;
+  const sign = pp > 0 ? "+" : pp < 0 ? "−" : "";
+  return (
+    <div
+      className={cn(
+        "mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-medium tabular-nums",
+        good && "text-success",
+        bad && "text-destructive",
+        !good && !bad && "text-muted-foreground",
+      )}
+    >
+      <Icon className="h-3 w-3" />
+      {sign}
+      {Math.abs(pp).toFixed(1)} pp
+      <span className="ml-1 text-muted-foreground font-normal">vs vorige</span>
+    </div>
+  );
+}
+
+
 export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
   const agg = useMemo(() => aggregateOutreach(calls), [calls]);
   const prev = useMemo(() => aggregateOutreach(prevCalls), [prevCalls]);
