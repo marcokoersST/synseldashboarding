@@ -1,21 +1,28 @@
-## Issues
+## Call Dashboarding refinements
 
-1. **Date range clipping in PeriodFilter popover** — the two `type="date"` inputs sit in a 288px (`w-72`) popover and clip the date text + calendar icon, especially with NL date formatting.
-2. **Unit filter not retained in TV live mode** — `TVConsultantSummaryTile` ignores `visibleIds` when `isLive=true`: it iterates over the full `CONSULTANTS` list instead of the unit/consultant-filtered subset. The state IS retained in `CallDashboardingBody`, but this tile bypasses it.
+### 1. Smart "all-selected" toggle for Unit & Consultant selectors
+In `MultiSelect` (`src/pages/concepts/CallDashboarding.tsx`), change the row click handler:
+- If currently all options are selected, clicking an option deselects all others and keeps only the clicked one (solo-select).
+- Otherwise behave as today (toggle the single option).
 
-## Fix
+Applied to both the Unit and Consultant multiselects. When the Unit selector triggers a solo-select, also reset the Consultant selection to "all within that unit" so the filter stays coherent.
 
-**`src/components/calldashboarding/PeriodFilter.tsx`**
-- Widen `PopoverContent` from `w-72` to `w-80`.
-- Stack the two date inputs vertically (`flex-col gap-1.5`) so each input gets the full popover width and the value never clips.
+### 2. Redesign the Period selector
+Rewrite `src/components/calldashboarding/PeriodFilter.tsx`:
+- Wider popover (`w-[360px]`), cleaner sectioning, soft card surface.
+- Presets shown as a 2-column chip grid with active pill state (primary tint border + check icon).
+- "Live" presets (Vandaag, Deze week, Deze maand) get a small green pulsing dot to indicate they update live.
+- Custom-range block: stacked label + date input pairs ("Van" / "Tot") styled as form rows with proper spacing, calendar icon inside the field, an inline error if from > to, and an "Aangepast toepassen" CTA.
+- Trigger button: shows calendar icon, the active label, and the small green live dot if the current period is a live preset.
 
-**`src/pages/concepts/CallDashboarding.tsx`**
-- Pass `visibleIds` prop to `<TVConsultantSummaryTile />` (line ~251).
+### 3. Live dashboarding for Today / This week / This month
+- Extend `presetPeriods()` in `src/data/callDashboardingData.ts` to add `this-month` (Vandaag, Deze week, Deze maand, Vorige week, Laatste 7 dagen, Laatste 30 dagen).
+- Mark live presets via a new `live: true` flag on `Period`.
+- In `CallDashboarding.tsx` TV branch, derive `isLive` from `period.live === true` (instead of only `period.key === 'today'`) and pass it to `TVConsultantSummaryTile`. The "live" green dot in the header also follows this flag.
 
-**`src/components/calldashboarding/tv/TVConsultantSummaryTile.tsx`**
-- Add optional `visibleIds?: Set<number>` prop.
-- When building `list`, intersect with `visibleIds` in both branches:
-  - Live branch: `CONSULTANTS.filter(c => !visibleIds || visibleIds.has(c.id))`
-  - Non-live branch: same filter applied after mapping ids from the aggregation map.
+### 4. "Niet aanwezig" always last in Activiteit per consultant
+In `TVConsultantSummaryTile.tsx`:
+- Add a primary sort key: rows where `isLive && status === "Niet aanwezig"` sink to the bottom regardless of the metric sort.
+- Secondary sort stays the existing `total desc`.
 
-No other tiles need changes — they already operate on the already-filtered `calls` / `prevCalls` arrays.
+No other behaviour changes.

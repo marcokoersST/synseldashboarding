@@ -53,7 +53,15 @@ export function TVConsultantSummaryTile({ calls, isLive = false, visibleIds }: P
           status: getStatus(c.id),
         };
       })
-      .sort((a, b) => b.total - a.total);
+      .sort((a, b) => {
+        if (isLive) {
+          const aAway = a.status === "Niet aanwezig" ? 1 : 0;
+          const bAway = b.status === "Niet aanwezig" ? 1 : 0;
+          if (aAway !== bAway) return aAway - bAway;
+        }
+        return b.total - a.total;
+      });
+
     const totals = list.reduce(
       (acc, r) => ({
         total: acc.total + r.total,
