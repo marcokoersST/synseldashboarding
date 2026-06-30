@@ -303,6 +303,7 @@ export interface Period {
   to: number;
   label: string;
   key: string;
+  live?: boolean;
 }
 
 function startOfWeekMonday(ms: number) {
@@ -313,12 +314,20 @@ function startOfWeekMonday(ms: number) {
   return d.getTime();
 }
 
+function startOfMonth(ms: number) {
+  const d = new Date(startOfDay(ms));
+  d.setDate(1);
+  return d.getTime();
+}
+
 export function presetPeriods(): Period[] {
   const today = startOfDay(NOW);
   const weekStart = startOfWeekMonday(NOW);
+  const monthStart = startOfMonth(NOW);
   return [
-    { key: "today", label: "Vandaag", from: today, to: NOW },
-    { key: "this-week", label: "Deze week (Ma–nu)", from: weekStart, to: NOW },
+    { key: "today", label: "Vandaag", from: today, to: NOW, live: true },
+    { key: "this-week", label: "Deze week", from: weekStart, to: NOW, live: true },
+    { key: "this-month", label: "Deze maand", from: monthStart, to: NOW, live: true },
     { key: "prev-week", label: "Vorige week", from: weekStart - 7 * DAY_MS, to: weekStart - 1 },
     { key: "last-7", label: "Laatste 7 dagen", from: NOW - 7 * DAY_MS, to: NOW },
     { key: "last-30", label: "Laatste 30 dagen", from: NOW - 30 * DAY_MS, to: NOW },
@@ -328,6 +337,7 @@ export function presetPeriods(): Period[] {
 export function defaultPeriod(): Period {
   return presetPeriods()[1];
 }
+
 
 // Previous equal-length window directly before `period`.
 export function previousPeriod(p: Period): Period {
