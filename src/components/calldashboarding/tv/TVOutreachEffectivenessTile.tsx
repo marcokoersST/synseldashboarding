@@ -1,0 +1,117 @@
+import { useMemo } from "react";
+import { CallRecord, aggregateOutreach, MATCH_LABEL } from "@/data/callDashboardingData";
+import { HeroCounter } from "../HeroCounter";
+
+interface Props {
+  calls: CallRecord[];
+  prevCalls: CallRecord[];
+}
+
+const MATCH_COLOR: Record<string, string> = {
+  candidate: "bg-primary",
+  organisation: "bg-teal",
+  contact_person: "bg-success",
+  new: "bg-muted-foreground/60",
+};
+
+export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
+  const agg = useMemo(() => aggregateOutreach(calls), [calls]);
+  const prev = useMemo(() => aggregateOutreach(prevCalls), [prevCalls]);
+
+  const matches: Array<keyof typeof MATCH_LABEL> = ["candidate", "organisation", "contact_person", "new"];
+
+  return (
+    <div className="rounded-xl bg-card border border-border h-full flex flex-col overflow-hidden">
+      <div className="px-3 py-2 border-b border-border">
+        <h3 className="text-sm font-semibold text-foreground">Effectiviteit outreach</h3>
+        <p className="text-[0.7em] text-muted-foreground">Bekende vs nieuwe nummers + connect-rate</p>
+      </div>
+
+      <div className="p-3 space-y-4 flex-1 overflow-auto">
+        {/* Match mix bar */}
+        <div>
+          <div className="flex items-center justify-between text-[0.7em] text-muted-foreground mb-1">
+            <span>Mix gebelde nummers</span>
+            <span className="tabular-nums">{agg.total} gesprekken</span>
+          </div>
+          <div className="flex h-3 rounded overflow-hidden bg-muted">
+            {matches.map((m) => {
+              const v = agg.byMatch[m];
+              const pct = agg.total ? (v / agg.total) * 100 : 0;
+              return (
+                <div
+                  key={m}
+                  className={MATCH_COLOR[m]}
+                  style={{ width: `${pct}%` }}
+                  title={`${MATCH_LABEL[m]}: ${v}`}
+                />
+              );
+            })}
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            {matches.map((m) => (
+              <div key={m} className="rounded-lg border border-border/60 p-2">
+                <div className="flex items-center gap-1.5 text-[0.7em] text-muted-foreground mb-0.5">
+                  <span className={`inline-block h-2 w-2 rounded ${MATCH_COLOR[m]}`} />
+                  {MATCH_LABEL[m]}
+                </div>
+                <HeroCounter
+                  label=""
+                  value={agg.byMatch[m]}
+                  total={agg.total}
+                  previousValue={prev.byMatch[m]}
+                  previousTotal={prev.total}
+                  size="sm"
+                  className="space-y-0"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Connect rate */}
+        <div className="rounded-lg border border-border/60 p-3 bg-muted/10">
+          <HeroCounter
+            label="Connected (echt gesprek)"
+            value={agg.connected}
+            total={agg.total}
+            previousValue={prev.connected}
+            previousTotal={prev.total}
+            tone="positive"
+            size="lg"
+            shareLabel="opgepakt"
+          />
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            <HeroCounter
+              label="Voicemail"
+              value={agg.byOutcome.voicemail}
+              total={agg.total}
+              previousValue={prev.byOutcome.voicemail}
+              previousTotal={prev.total}
+              size="sm"
+              inverse
+            />
+            <HeroCounter
+              label="Geen gehoor"
+              value={agg.byOutcome.no_answer}
+              total={agg.total}
+              previousValue={prev.byOutcome.no_answer}
+              previousTotal={prev.total}
+              size="sm"
+              inverse
+            />
+            <HeroCounter
+              label="Opgehangen"
+              value={agg.byOutcome.hangup}
+              total={agg.total}
+              previousValue={prev.byOutcome.hangup}
+              previousTotal={prev.total}
+              size="sm"
+              inverse
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
