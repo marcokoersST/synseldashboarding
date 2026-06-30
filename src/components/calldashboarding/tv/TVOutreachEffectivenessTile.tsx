@@ -81,9 +81,6 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               );
             })}
           </div>
-          <p className="mt-1 text-[0.65em] text-muted-foreground leading-snug">
-            % = aandeel van alle gesprekken in de geselecteerde periode. ↑/↓ = verschil t.o.v. vorige even lange periode (in procentpunten).
-          </p>
           <div className="grid grid-cols-2 gap-2 mt-2">
             {matches.map((m) => {
               const v = agg.byMatch[m];
