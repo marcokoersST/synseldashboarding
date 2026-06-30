@@ -353,9 +353,14 @@ function CallDashboardingBody() {
               Inkomende en uitgaande gesprekken per consultant.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[11px]">{period.label}</Badge>
-            <PeriodFilter value={period} onChange={setPeriod} />
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-muted-foreground leading-snug max-w-[380px] text-right">
+              % = aandeel van alle gesprekken in de geselecteerde periode. ↑/↓ = verschil t.o.v. vorige even lange periode (in procentpunten).
+            </p>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-[11px]">{period.label}</Badge>
+              <PeriodFilter value={period} onChange={setPeriod} />
+            </div>
           </div>
         </div>
       </header>
