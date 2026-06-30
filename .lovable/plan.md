@@ -1,17 +1,21 @@
-## Problem
+## Issues
 
-In the "Effectiviteit outreach" tile, the "Verbonden gesprekken" sub-card shows the labels Voicemail / Geen gehoor / Opgehangen but their numbers are clipped — the parent tile (1/3 of the right column, fixed grid-rows-3 height) does not have enough vertical space for the full `HeroCounter` block (label + big number + share %).
+1. **Date range clipping in PeriodFilter popover** — the two `type="date"` inputs sit in a 288px (`w-72`) popover and clip the date text + calendar icon, especially with NL date formatting.
+2. **Unit filter not retained in TV live mode** — `TVConsultantSummaryTile` ignores `visibleIds` when `isLive=true`: it iterates over the full `CONSULTANTS` list instead of the unit/consultant-filtered subset. The state IS retained in `CallDashboardingBody`, but this tile bypasses it.
 
 ## Fix
 
-In `src/components/calldashboarding/tv/TVOutreachEffectivenessTile.tsx`, replace the 3 stacked `HeroCounter`s inside the "Verbonden gesprekken" card with a compact inline row layout that guarantees visibility in the available height:
+**`src/components/calldashboarding/PeriodFilter.tsx`**
+- Widen `PopoverContent` from `w-72` to `w-80`.
+- Stack the two date inputs vertically (`flex-col gap-1.5`) so each input gets the full popover width and the value never clips.
 
-- Render each outcome (Voicemail, Geen gehoor, Opgehangen) as a small horizontal block:
-  - Top line: label (`text-[11px] text-muted-foreground`)
-  - Bottom line: number + share % side by side (`text-lg font-bold tabular-nums` + `text-[10px] text-muted-foreground`)
-  - Tiny pp delta arrow next to share, only if it fits
-- Keep the 3-column grid, tighter `gap-1.5`, no inner borders.
-- Keep the main "Verbonden gesprekken" hero counter unchanged (size `md`).
-- Reduce the surrounding card `p-2` → `p-2` (unchanged) but drop `mt-3` to `mt-2` to claw back height.
+**`src/pages/concepts/CallDashboarding.tsx`**
+- Pass `visibleIds` prop to `<TVConsultantSummaryTile />` (line ~251).
 
-No changes to data, other tiles, or non-TV mode.
+**`src/components/calldashboarding/tv/TVConsultantSummaryTile.tsx`**
+- Add optional `visibleIds?: Set<number>` prop.
+- When building `list`, intersect with `visibleIds` in both branches:
+  - Live branch: `CONSULTANTS.filter(c => !visibleIds || visibleIds.has(c.id))`
+  - Non-live branch: same filter applied after mapping ids from the aggregation map.
+
+No other tiles need changes — they already operate on the already-filtered `calls` / `prevCalls` arrays.

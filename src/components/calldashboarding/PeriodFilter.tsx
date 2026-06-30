@@ -41,7 +41,7 @@ export function PeriodFilter({ value, onChange }: Props) {
           {value.label}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-0" align="end">
+      <PopoverContent className="w-80 p-0" align="end">
         <div className="p-2 border-b border-border">
           <span className="text-xs font-medium text-foreground">Periode</span>
         </div>
