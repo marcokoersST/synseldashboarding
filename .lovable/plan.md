@@ -1,30 +1,26 @@
-Fix the "Effectiviteit outreach" tile header alignment and tighten the connect-rate block.
+Make the "Effectiviteit outreach" tile fill its full vertical space by stretching its two content blocks and reorganizing the match grid.
 
 ## File
 `src/components/calldashboarding/tv/TVOutreachEffectivenessTile.tsx`
 
 ## Changes
 
-**1. Header alignment**
-- Currently the title block uses `text-right` and `shrink-0`, leaving the title floating oddly. Align it left like the other TV tiles (Totalen, Belactiviteit): remove `text-right`, drop the inner wrapper, and use `justify-between` so the title sits flush left and any right-side meta can live opposite it.
+**1. Vertical stretching**
+- Change the body wrapper from `space-y-3 overflow-auto` to `flex flex-col gap-3` and remove the scroll, so both blocks share the available height instead of stacking at the top.
+- Wrap each of the two sections (mix block + connect-rate strip) in `flex-1 flex flex-col`, with their inner bordered grids using `flex-1` so the rows themselves grow.
 
-**2. Redesign connect-rate section (fix excess whitespace)**
-Replace the current "big Verbonden card on top + 3 small bordered sub-cards below" layout with a denser single-row composition:
+**2. Match-mix grid: 2×2 → 1×4**
+- Replace the `grid-cols-2 gap-2` of 4 stacked cards with a single bordered container split into 4 equal columns with `divide-x divide-border` (same pattern as the connect-rate strip).
+- Inside each column: colored dot + label on top, big number + share % in the middle (vertically centered with `flex-1 flex flex-col justify-center`), DeltaPP at the bottom.
+- This aligns visually with the 4-column connect-rate strip directly below it and removes the wasted gutter between rows.
 
-```text
-┌──────────────────────────────────────────────────────────────────┐
-│ Verbonden gesprekken │ Voicemail │ Geen gehoor │ Opgehangen     │
-│   306    60%         │ 101  20%  │  62  12%    │  42   8%       │
-│   ↓ -3.2 pp opgepakt │ ↑ +2.3 pp │ ↑ +1.5 pp   │ ↓ -0.5 pp      │
-└──────────────────────────────────────────────────────────────────┘
-```
+**3. Connect-rate strip**
+- Same `flex-1` treatment so it expands to fill the remaining height.
+- Add `flex flex-col justify-center` inside each column so values sit centered in the taller cell.
+- Keep "Verbonden gesprekken" highlighted (success color, larger number).
 
-- One bordered container split into 4 equal columns with `divide-x divide-border`.
-- "Verbonden gesprekken" is the highlight column: tone="positive" color on the big number, slightly larger font than the three outcome columns.
-- Each column: label (text-xs muted) → row with bold number + share % → DeltaPP row.
-- Remove the redundant inner sub-borders to eliminate the airy stacked look; rely on the dividers.
-- Keep `DeltaPP inverse` for the negative-outcome columns.
-- Tighten vertical padding (`py-2`) and reduce the section's outer spacing (`space-y-3` instead of `space-y-4`) so the block fills the tile without bottom whitespace.
+**4. Stack bar**
+- Increase the mix bar height from `h-3` to `h-4` for visual weight now that the section is taller.
 
 ## Result
-Title sits aligned with the other TV tile titles. The connect-rate block becomes a compact 4-column strip that fills the available width, removing the empty band beneath the previous design.
+No empty band beneath the cards. Two equal-height 4-column strips (matches + outcomes) align column-for-column and fill the tile.
