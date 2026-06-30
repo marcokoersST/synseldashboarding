@@ -81,7 +81,7 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
             size="md"
             shareLabel="opgepakt"
           />
-          <div className="grid grid-cols-3 gap-1.5 mt-2 min-w-0">
+          <div className="grid grid-cols-3 gap-2 mt-3 min-w-0">
             {([
               ["Voicemail", agg.byOutcome.voicemail, prev.byOutcome.voicemail],
               ["Geen gehoor", agg.byOutcome.no_answer, prev.byOutcome.no_answer],
@@ -91,17 +91,17 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
               const prevShare = prev.total ? (pv / prev.total) * 100 : 0;
               const pp = share - prevShare;
               return (
-                <div key={label} className="min-w-0">
-                  <div className="text-[11px] text-muted-foreground truncate">{label}</div>
+                <div key={label} className="min-w-0 rounded-md border border-border/60 p-2">
+                  <div className="text-xs text-muted-foreground truncate">{label}</div>
                   <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="text-lg font-bold tabular-nums leading-tight text-foreground">
+                    <span className="text-xl font-bold tabular-nums leading-tight text-foreground">
                       {new Intl.NumberFormat("nl-NL").format(v)}
                     </span>
-                    <span className="text-[10px] text-muted-foreground tabular-nums">
+                    <span className="text-xs text-muted-foreground tabular-nums">
                       {share.toFixed(0)}%
                     </span>
                   </div>
-                  <div className="text-[10px] text-muted-foreground tabular-nums">
+                  <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
                     {pp >= 0 ? "+" : ""}{pp.toFixed(1)} pp
                   </div>
                 </div>

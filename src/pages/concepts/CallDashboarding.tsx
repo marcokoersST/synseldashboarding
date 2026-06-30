@@ -250,63 +250,61 @@ function CallDashboardingBody() {
           <div className="col-span-2 min-h-0">
             <TVConsultantSummaryTile calls={calls} isLive={period.key === "today"} visibleIds={visibleIds} />
           </div>
-          <div className="col-span-1 grid grid-rows-3 gap-2 h-full min-h-0">
-            <div className="min-h-0 rounded-xl bg-card border border-border flex flex-col overflow-hidden">
-              <div className="px-3 py-2 border-b border-border flex items-baseline justify-between">
+          <div className="col-span-1 grid grid-rows-6 gap-2 h-full min-h-0">
+            {/* Totalen 1/6, Effectiviteit 3/6, Belactiviteit 2/6 */}
+            <div className="row-span-1 min-h-0 rounded-xl bg-card border border-border flex flex-col overflow-hidden">
+              <div className="px-3 py-1.5 border-b border-border flex items-baseline justify-between">
                 <h3 className="text-sm font-semibold text-foreground">Totalen</h3>
                 <span className="text-[0.7em] text-muted-foreground">{period.label}</span>
               </div>
-              <div className="flex-1 min-h-0 flex flex-col divide-y divide-border">
-                <div className="px-4 py-3 flex-1 flex flex-col justify-center min-w-0">
+              <div className="flex-1 min-h-0 grid grid-cols-4 divide-x divide-border">
+                <div className="px-3 py-1.5 flex flex-col justify-center min-w-0 overflow-hidden">
                   <HeroCounter
-                    label="Totaal gesprekken"
+                    label="Totaal"
                     value={totals.total}
                     previousValue={prevTotals.total}
-                    icon={<Phone className="h-4 w-4 text-primary" />}
+                    icon={<Phone className="h-3.5 w-3.5 text-primary" />}
                     hideShare
-                    size="lg"
                   />
                 </div>
-                <div className="grid grid-cols-3 divide-x divide-border flex-1 min-h-0">
-                  <div className="px-3 py-2 flex flex-col justify-center min-w-0 overflow-hidden">
-                    <HeroCounter
-                      label="Inkomend"
-                      value={totals.inbound}
-                      total={totals.total}
-                      previousValue={prevTotals.inbound}
-                      previousTotal={prevTotals.total}
-                      tone="in"
-                      icon={<PhoneIncoming className="h-3.5 w-3.5 text-teal" />}
-                    />
-                  </div>
-                  <div className="px-3 py-2 flex flex-col justify-center min-w-0 overflow-hidden">
-                    <HeroCounter
-                      label="Uitgaand"
-                      value={totals.outbound}
-                      total={totals.total}
-                      previousValue={prevTotals.outbound}
-                      previousTotal={prevTotals.total}
-                      tone="out"
-                      icon={<PhoneOutgoing className="h-3.5 w-3.5 text-primary" />}
-                    />
-                  </div>
-                  <div className="px-3 py-2 flex flex-col justify-center min-w-0 overflow-hidden">
-                    <HeroCounter
-                      label="Gesprekstijd"
-                      value={totals.durationSec}
-                      format="duration"
-                      previousValue={prevTotals.durationSec}
-                      icon={<Clock className="h-3.5 w-3.5 text-success" />}
-                      hideShare
-                    />
-                  </div>
+                <div className="px-3 py-1.5 flex flex-col justify-center min-w-0 overflow-hidden">
+                  <HeroCounter
+                    label="Inkomend"
+                    value={totals.inbound}
+                    total={totals.total}
+                    previousValue={prevTotals.inbound}
+                    previousTotal={prevTotals.total}
+                    tone="in"
+                    icon={<PhoneIncoming className="h-3.5 w-3.5 text-teal" />}
+                  />
+                </div>
+                <div className="px-3 py-1.5 flex flex-col justify-center min-w-0 overflow-hidden">
+                  <HeroCounter
+                    label="Uitgaand"
+                    value={totals.outbound}
+                    total={totals.total}
+                    previousValue={prevTotals.outbound}
+                    previousTotal={prevTotals.total}
+                    tone="out"
+                    icon={<PhoneOutgoing className="h-3.5 w-3.5 text-primary" />}
+                  />
+                </div>
+                <div className="px-3 py-1.5 flex flex-col justify-center min-w-0 overflow-hidden">
+                  <HeroCounter
+                    label="Gesprekstijd"
+                    value={totals.durationSec}
+                    format="duration"
+                    previousValue={prevTotals.durationSec}
+                    icon={<Clock className="h-3.5 w-3.5 text-success" />}
+                    hideShare
+                  />
                 </div>
               </div>
             </div>
-            <div className="min-h-0">
+            <div className="row-span-3 min-h-0">
               <TVOutreachEffectivenessTile calls={calls} prevCalls={prevCalls} />
             </div>
-            <div className="min-h-0">
+            <div className="row-span-2 min-h-0">
               <TVHourlyCallsTile calls={calls} />
             </div>
           </div>
