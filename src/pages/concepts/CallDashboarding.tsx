@@ -248,7 +248,7 @@ function CallDashboardingBody() {
         </div>
         <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
           <div className="col-span-2 min-h-0">
-            <TVConsultantSummaryTile calls={calls} isLive={period.key === "today"} />
+            <TVConsultantSummaryTile calls={calls} isLive={period.key === "today"} visibleIds={visibleIds} />
           </div>
           <div className="col-span-1 grid grid-rows-3 gap-2 h-full min-h-0">
             <div className="min-h-0 rounded-xl bg-card border border-border flex flex-col overflow-hidden">
