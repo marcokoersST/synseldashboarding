@@ -72,7 +72,7 @@ export function TVOutreachEffectivenessTile({ calls, prevCalls }: Props) {
         {/* Connect rate */}
         <div className="rounded-lg border border-border/60 p-3 bg-muted/10">
           <HeroCounter
-            label="Connected (echt gesprek)"
+            label="Verbonden gesprekken"
             value={agg.connected}
             total={agg.total}
             previousValue={prev.connected}
