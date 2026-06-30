@@ -41,10 +41,16 @@ function MultiSelect({ label, icon: Icon, options, selected, onChange, searchabl
   const filtered = query ? options.filter(o => o.toLowerCase().includes(query.toLowerCase())) : options;
 
   const toggle = (v: string) => {
+    // Smart "all-selected" → clicking solo-selects that single option.
+    if (allOn) {
+      onChange(new Set([v]));
+      return;
+    }
     const next = new Set(selected);
     if (next.has(v)) next.delete(v); else next.add(v);
     onChange(next);
   };
+
 
   return (
     <Popover>
@@ -248,7 +254,7 @@ function CallDashboardingBody() {
         </div>
         <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
           <div className="col-span-2 min-h-0">
-            <TVConsultantSummaryTile calls={calls} isLive={period.key === "today"} visibleIds={visibleIds} />
+            <TVConsultantSummaryTile calls={calls} isLive={!!period.live} visibleIds={visibleIds} />
           </div>
           <div className="col-span-1 grid grid-rows-6 gap-2 h-full min-h-0">
             {/* Totalen 1/6, Effectiviteit 3/6, Belactiviteit 2/6 */}
