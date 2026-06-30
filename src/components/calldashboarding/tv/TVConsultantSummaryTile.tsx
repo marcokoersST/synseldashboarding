@@ -37,11 +37,11 @@ export function TVConsultantSummaryTile({ calls }: Props) {
   return (
     <div className="rounded-xl bg-card border border-border h-full flex flex-col overflow-hidden">
       <div className="px-3 py-2 border-b border-border flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Activiteit per consultant</h3>
+        <h3 className="text-base font-semibold text-foreground">Activiteit per consultant</h3>
         <span className="text-[0.7em] text-muted-foreground">{rows.list.length} agents</span>
       </div>
       <ScrollArea className="flex-1">
-        <table className="w-full text-xs">
+        <table className="w-full text-sm">
           <thead className="bg-muted/30 text-muted-foreground sticky top-0">
             <tr>
               <th className="text-left py-1.5 px-2 font-medium">Consultant</th>
@@ -49,7 +49,7 @@ export function TVConsultantSummaryTile({ calls }: Props) {
               <th className="text-right py-1.5 px-2 font-medium">In</th>
               <th className="text-right py-1.5 px-2 font-medium">Uit</th>
               <th className="text-right py-1.5 px-2 font-medium">Duur</th>
-              <th className="text-right py-1.5 px-2 font-medium">Laatste</th>
+              <th className="text-right py-1.5 px-2 font-medium">Laatste gesprek</th>
             </tr>
           </thead>
           <tbody>

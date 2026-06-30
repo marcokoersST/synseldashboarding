@@ -256,11 +256,19 @@ function CallDashboardingBody() {
                 <h3 className="text-sm font-semibold text-foreground">Totalen</h3>
                 <span className="text-[0.7em] text-muted-foreground">{period.label}</span>
               </div>
-              <div className="p-3 grid grid-cols-2 gap-3 flex-1 min-h-0">
-                <HeroCounter label="Totaal gesprekken" value={totals.total} previousValue={prevTotals.total} hideShare />
-                <HeroCounter label="Inkomend" value={totals.inbound} total={totals.total} previousValue={prevTotals.inbound} previousTotal={prevTotals.total} tone="in" />
-                <HeroCounter label="Uitgaand" value={totals.outbound} total={totals.total} previousValue={prevTotals.outbound} previousTotal={prevTotals.total} tone="out" />
-                <HeroCounter label="Gesprekstijd" value={totals.durationSec} format="duration" previousValue={prevTotals.durationSec} hideShare />
+              <div className="p-3 grid grid-cols-2 gap-3 flex-1 min-h-0 items-center">
+                <div className="rounded-lg border border-border/60 p-2">
+                  <HeroCounter label="Totaal gesprekken" value={totals.total} previousValue={prevTotals.total} hideShare size="lg" />
+                </div>
+                <div className="rounded-lg border border-border/60 p-2">
+                  <HeroCounter label="Inkomend" value={totals.inbound} total={totals.total} previousValue={prevTotals.inbound} previousTotal={prevTotals.total} tone="in" size="lg" />
+                </div>
+                <div className="rounded-lg border border-border/60 p-2">
+                  <HeroCounter label="Uitgaand" value={totals.outbound} total={totals.total} previousValue={prevTotals.outbound} previousTotal={prevTotals.total} tone="out" size="lg" />
+                </div>
+                <div className="rounded-lg border border-border/60 p-2">
+                  <HeroCounter label="Gesprekstijd" value={totals.durationSec} format="duration" previousValue={prevTotals.durationSec} hideShare size="lg" />
+                </div>
               </div>
             </div>
             <div className="min-h-0">
