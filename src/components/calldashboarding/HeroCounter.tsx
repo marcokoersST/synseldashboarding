@@ -107,8 +107,8 @@ export function HeroCounter({
   }
 
   return (
-    <div className={cn("space-y-1", className)}>
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+    <div className={cn("flex flex-col items-center text-center space-y-1", className)}>
+      <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
         {icon}
         <span>{label}</span>
       </div>
@@ -116,7 +116,7 @@ export function HeroCounter({
         {formatAbs(value, format)}
       </div>
       {(deltaNode || (!hideShare && share !== null)) ? (
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
           {!hideShare && share !== null && (
             <span className="tabular-nums font-medium text-foreground/80">
               {(share * 100).toFixed(share < 0.1 ? 1 : 0)}%
@@ -132,3 +132,4 @@ export function HeroCounter({
     </div>
   );
 }
+
