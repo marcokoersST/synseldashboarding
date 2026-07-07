@@ -417,17 +417,19 @@ export function besteVoorConsultant(rows: Kandidaat[], consultant: string): Cons
 
 // Weekly trend
 export function weeklyTrend(rows: Kandidaat[]) {
-  const perWeek = new Map<string, { kandidaten: number; plaatsingen: number }>();
+  const perWeek = new Map<string, { kandidaten: number; plaatsingen: number; gesprekken: number }>();
   for (const r of rows) {
     const d = new Date(r.datumBinnenkomst);
     const week = `${d.getFullYear()}-W${Math.ceil(((d.getTime() - new Date(d.getFullYear(), 0, 1).getTime()) / 86400000 + 1) / 7).toString().padStart(2, "0")}`;
-    if (!perWeek.has(week)) perWeek.set(week, { kandidaten: 0, plaatsingen: 0 });
+    if (!perWeek.has(week)) perWeek.set(week, { kandidaten: 0, plaatsingen: 0, gesprekken: 0 });
     const cell = perWeek.get(week)!;
     cell.kandidaten++;
     if (r.geplaatst) cell.plaatsingen++;
+    if (r.inGesprek) cell.gesprekken++;
   }
   return Array.from(perWeek.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([week, v]) => ({ week, ...v }));
 }
+
 
 // Opportunity list
 export interface Opportunity {
