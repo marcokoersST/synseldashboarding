@@ -15,7 +15,7 @@ import {
   Info, TrendingUp, TrendingDown, Target, MapPin, Users, Megaphone, Sparkles,
   ArrowRight, ChevronDown, ChevronRight, Check, ChevronDown as ChevDown,
   Calendar as CalendarIcon, ArrowUpRight, ArrowDownRight, Maximize2, Code2,
-  Phone, MessagesSquare, PartyPopper, UsersRound,
+  Phone, MessagesSquare, PartyPopper, UsersRound, Lock,
 } from "lucide-react";
 import {
   ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip as RTooltip,
