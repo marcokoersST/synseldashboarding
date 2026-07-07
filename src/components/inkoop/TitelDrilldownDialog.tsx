@@ -21,6 +21,7 @@ interface Props {
   allRows: Kandidaat[]; // all kandidaten (unfiltered) — for full titel dataset
   filter: FilterState;
   onClose: () => void;
+  filterBar?: React.ReactNode;
 }
 
 function periodKey(dateISO: string, g: Granularity): string {
@@ -47,7 +48,7 @@ function DeltaBadge({ v, suffix = "" }: { v: number; suffix?: string }) {
   );
 }
 
-export function TitelDrilldownDialog({ titel, allRows, filter, onClose }: Props) {
+export function TitelDrilldownDialog({ titel, allRows, filter, onClose, filterBar }: Props) {
   const [granularity, setGranularity] = useState<Granularity>("week");
   const [showTable, setShowTable] = useState(false);
   const [locSort, setLocSort] = useState<{ k: string; dir: "asc" | "desc" }>({ k: "plaatsingspct", dir: "desc" });
@@ -194,6 +195,13 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose }: Props)
             </div>
           )}
         </DialogHeader>
+
+        {filterBar && (
+          <div className="border rounded-md bg-muted/30 px-3 py-2 mt-2">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Filters aanpassen</div>
+            {filterBar}
+          </div>
+        )}
 
         {/* KPI strip */}
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mt-1">
