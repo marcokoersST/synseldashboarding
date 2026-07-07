@@ -1262,6 +1262,21 @@ export default function InkoopYieldDashboard() {
 
         {/* ═══ 2. TITELS ═══ */}
         <TabsContent value="titels" className="space-y-6">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs text-muted-foreground">4-kwadranten matrix op:</div>
+            <div className="flex gap-0.5 rounded-md border border-border p-0.5 bg-background">
+              {(["plaatsingen", "gesprekken"] as const).map(m => (
+                <button
+                  key={m}
+                  onClick={() => setScatterMode(m)}
+                  className={`text-xs px-2.5 py-1 rounded transition ${scatterMode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {m === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Card className="border border-border">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
