@@ -1113,25 +1113,23 @@ export default function InkoopYieldDashboard() {
   const avgYield = activeTitels.reduce((s, t) => s + (scatterMode === "plaatsingen" ? t.plaatsingspct : t.gesprekspct), 0) / (activeTitels.length || 1);
   const avgTopMetric = activeTitels.reduce((s, t) => s + (t as any)[topMetricKey], 0) / (activeTitels.length || 1);
 
-  // Executive-tab kwadrant-groepen gebaseerd op topMode
+  // Executive-tab kwadrant-groepen gebaseerd op topMode (3 kaarten)
   const execAvgYield = activeTitels.reduce((s, t) => s + (t as any)[topMetricKey], 0) / (activeTitels.length || 1);
-  const quadrantGroups = useMemo(() => {
-    const groups: Record<Quadrant, typeof activeTitels> = {
-      beschermen: [],
-      extra_inkopen: [],
-      kritisch: [],
-      lage_prio: [],
-    };
+  const quadrantGroups3 = useMemo(() => {
+    const beschermen: typeof activeTitels = [];
+    const extraInkoop: typeof activeTitels = [];
+    const kritisch: typeof activeTitels = [];
     for (const t of activeTitels) {
       const yieldPct = (t as any)[topMetricKey] as number;
       const q = classifyYield(t.volume, yieldPct, avgVol, execAvgYield);
-      groups[q].push(t);
+      if (q === "beschermen") beschermen.push(t);
+      else if (q === "extra_inkopen") extraInkoop.push(t);
+      else kritisch.push(t); // samenvoegen van kritisch + lage_prio
     }
-    groups.beschermen.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
-    groups.extra_inkopen.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
-    groups.kritisch.sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey]);
-    groups.lage_prio.sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey]);
-    return groups;
+    beschermen.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
+    extraInkoop.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
+    kritisch.sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey]);
+    return { beschermen, extraInkoop, kritisch };
   }, [activeTitels, topMetricKey, avgVol, execAvgYield]);
 
 
