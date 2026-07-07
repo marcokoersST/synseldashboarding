@@ -313,11 +313,12 @@ function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number;
 
 // ─── Volledige lijst titels (popup) ───
 function FullListDialog({
-  title, allTitels, sortDir,
+  title, allTitels, sortDir, onSelectTitel,
 }: {
   title: string;
   allTitels: Array<{ titel: string; volume: number; bemiddelbaar: number; plaatsingen: number; plaatsingspct: number; gesprekken: number; gesprekspct: number }>;
   sortDir: "asc" | "desc";
+  onSelectTitel?: (titel: string) => void;
 }) {
   const [q, setQ] = useState("");
   const [sortKey, setSortKey] = useState<"titel" | "volume" | "gesprekken" | "gesprekspct" | "plaatsingen" | "plaatsingspct">("plaatsingspct");
