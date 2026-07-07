@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Minus, Eye, EyeOff } from "lucide-react";
 import {
   ComposedChart, Bar, Line, LineChart, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ResponsiveContainer, Legend, Cell, BarChart,
@@ -52,6 +52,39 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose, filterBa
   const [granularity, setGranularity] = useState<Granularity>("week");
   const [showTable, setShowTable] = useState(false);
   const [locSort, setLocSort] = useState<{ k: string; dir: "asc" | "desc" }>({ k: "plaatsingspct", dir: "desc" });
+
+  // Toggle visibility per metric in charts
+  const [topChartSeries, setTopChartSeries] = useState({
+    volume: true,
+    gesprekken: true,
+    plaatsingen: true,
+  });
+  const [ratioSeries, setRatioSeries] = useState({
+    bemPct: true,
+    gespPct: true,
+    procPct: true,
+    plPct: true,
+  });
+
+  const topSeriesMeta = [
+    { key: "volume" as const, label: "Instroom", color: "hsl(210,70%,55%)" },
+    { key: "gesprekken" as const, label: "Gesprekken", color: "hsl(35,85%,55%)" },
+    { key: "plaatsingen" as const, label: "Plaatsingen", color: "hsl(150,65%,45%)" },
+  ];
+
+  const ratioSeriesMeta = [
+    { key: "bemPct" as const, label: "Bemiddelbaar %", color: "hsl(200,60%,50%)" },
+    { key: "gespPct" as const, label: "Gesprek %", color: "hsl(35,85%,55%)" },
+    { key: "procPct" as const, label: "Procedure %", color: "hsl(260,60%,55%)" },
+    { key: "plPct" as const, label: "Plaatsings %", color: "hsl(150,65%,45%)" },
+  ];
+
+  function toggleTop(key: keyof typeof topChartSeries) {
+    setTopChartSeries(prev => ({ ...prev, [key]: !prev[key] }));
+  }
+  function toggleRatio(key: keyof typeof ratioSeries) {
+    setRatioSeries(prev => ({ ...prev, [key]: !prev[key] }));
+  }
 
   // Base subset: alle dashboard-filters toegepast + hard gepinned op deze titel.
   // applyFilterAllStatuses geeft ook niet-bemiddelbare kandidaten mee zodat we instroom zien.
@@ -248,7 +281,26 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose, filterBa
             ) : (
               <>
                 <div className="border border-border rounded-md p-3">
-                  <div className="text-xs font-semibold mb-2">Instroom · Gesprekken · Plaatsingen</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-semibold">Instroom · Gesprekken · Plaatsingen</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {topSeriesMeta.map(s => {
+                        const active = topChartSeries[s.key];
+                        return (
+                          <button
+                            key={s.key}
+                            onClick={() => toggleTop(s.key)}
+                            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded border transition ${active ? "bg-card border-border" : "bg-muted/40 border-transparent text-muted-foreground opacity-60"}`}
+                            title={active ? "Klik om te verbergen" : "Klik om te tonen"}
+                          >
+                            <span className="w-2 h-2 rounded-full" style={{ background: s.color, opacity: active ? 1 : 0.3 }} />
+                            {active ? <Eye className="h-2.5 w-2.5" /> : <EyeOff className="h-2.5 w-2.5" />}
+                            {s.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                   <ResponsiveContainer width="100%" height={260}>
                     <ComposedChart data={timeSeries} margin={{ top: 8, right: 20, bottom: 8, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -257,15 +309,34 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose, filterBa
                       <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                       <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar yAxisId="left" dataKey="volume" name="Instroom" fill="hsl(210,70%,55%)" opacity={0.7} />
-                      <Line yAxisId="right" type="monotone" dataKey="gesprekken" name="Gesprekken" stroke="hsl(35,85%,55%)" strokeWidth={2.5} dot={{ r: 2 }} />
-                      <Line yAxisId="right" type="monotone" dataKey="plaatsingen" name="Plaatsingen" stroke="hsl(150,65%,45%)" strokeWidth={2.5} dot={{ r: 2 }} />
+                      {topChartSeries.volume && <Bar yAxisId="left" dataKey="volume" name="Instroom" fill="hsl(210,70%,55%)" opacity={0.7} />}
+                      {topChartSeries.gesprekken && <Line yAxisId="right" type="monotone" dataKey="gesprekken" name="Gesprekken" stroke="hsl(35,85%,55%)" strokeWidth={2.5} dot={{ r: 2 }} />}
+                      {topChartSeries.plaatsingen && <Line yAxisId="right" type="monotone" dataKey="plaatsingen" name="Plaatsingen" stroke="hsl(150,65%,45%)" strokeWidth={2.5} dot={{ r: 2 }} />}
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
 
                 <div className="border border-border rounded-md p-3">
-                  <div className="text-xs font-semibold mb-2">Ratio's over tijd (%)</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-semibold">Ratio's over tijd (%)</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {ratioSeriesMeta.map(s => {
+                        const active = ratioSeries[s.key];
+                        return (
+                          <button
+                            key={s.key}
+                            onClick={() => toggleRatio(s.key)}
+                            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded border transition ${active ? "bg-card border-border" : "bg-muted/40 border-transparent text-muted-foreground opacity-60"}`}
+                            title={active ? "Klik om te verbergen" : "Klik om te tonen"}
+                          >
+                            <span className="w-2 h-2 rounded-full" style={{ background: s.color, opacity: active ? 1 : 0.3 }} />
+                            {active ? <Eye className="h-2.5 w-2.5" /> : <EyeOff className="h-2.5 w-2.5" />}
+                            {s.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                   <ResponsiveContainer width="100%" height={240}>
                     <LineChart data={timeSeries} margin={{ top: 8, right: 20, bottom: 8, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -274,10 +345,10 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose, filterBa
                       <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
                         formatter={(v: any) => `${Number(v).toFixed(1)}%`} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Line type="monotone" dataKey="bemPct" name="Bemiddelbaar %" stroke="hsl(200,60%,50%)" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="gespPct" name="Gesprek %" stroke="hsl(35,85%,55%)" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="procPct" name="Procedure %" stroke="hsl(260,60%,55%)" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="plPct" name="Plaatsings %" stroke="hsl(150,65%,45%)" strokeWidth={2.5} dot={false} />
+                      {ratioSeries.bemPct && <Line type="monotone" dataKey="bemPct" name="Bemiddelbaar %" stroke="hsl(200,60%,50%)" strokeWidth={2} dot={false} />}
+                      {ratioSeries.gespPct && <Line type="monotone" dataKey="gespPct" name="Gesprek %" stroke="hsl(35,85%,55%)" strokeWidth={2} dot={false} />}
+                      {ratioSeries.procPct && <Line type="monotone" dataKey="procPct" name="Procedure %" stroke="hsl(260,60%,55%)" strokeWidth={2} dot={false} />}
+                      {ratioSeries.plPct && <Line type="monotone" dataKey="plPct" name="Plaatsings %" stroke="hsl(150,65%,45%)" strokeWidth={2.5} dot={false} />}
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
