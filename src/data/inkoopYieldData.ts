@@ -334,8 +334,17 @@ export function statsPerBron(rows: Kandidaat[]): BronStats[] {
 export type Quadrant = "beschermen" | "extra_inkopen" | "kritisch" | "lage_prio";
 
 export function classify(stats: TitelStats, avgVolume: number, avgYield: number): Quadrant {
-  const hoogVol = stats.volume >= avgVolume;
-  const hoogYield = stats.plaatsingspct >= avgYield;
+  return classifyYield(stats.volume, stats.plaatsingspct, avgVolume, avgYield);
+}
+
+export function classifyYield(
+  volume: number,
+  yieldPct: number,
+  avgVolume: number,
+  avgYield: number
+): Quadrant {
+  const hoogVol = volume >= avgVolume;
+  const hoogYield = yieldPct >= avgYield;
   if (hoogVol && hoogYield) return "beschermen";
   if (!hoogVol && hoogYield) return "extra_inkopen";
   if (hoogVol && !hoogYield) return "kritisch";
