@@ -1177,7 +1177,7 @@ export default function InkoopYieldDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {([
               {
-                title: `Top 10 titels op ${topMetricLabel}`, data: topRatio, badge: "Bescherm",
+                title: "Top 10 titels: Behouden", data: topRatio, badge: "Bescherm",
                 color: "hsl(150,65%,45%)", sortDir: "desc" as const,
                 dev: {
                   source: "activeTitels = statsPerTitel(rows).filter(t => t.volume > 0)",
@@ -1191,7 +1191,7 @@ export default function InkoopYieldDashboard() {
                 },
               },
               {
-                title: "Top 10 titels: extra instroom nodig", data: topExtraInstroom, badge: "Inkopen",
+                title: "Top 10 titels: Opschalen", data: topExtraInstroom, badge: "Inkopen",
                 color: "hsl(200,75%,50%)", sortDir: "desc" as const,
                 dev: {
                   source: "activeTitels \\ topRatioSet",
@@ -1206,7 +1206,7 @@ export default function InkoopYieldDashboard() {
                 },
               },
               {
-                title: "Top 10 titels: mogelijk te hoge instroom", data: topTeHoog, badge: "Kritisch",
+                title: "Slechtste 10 titels", data: topTeHoog, badge: "Kritisch",
                 color: "hsl(0,70%,55%)", sortDir: "asc" as const,
                 dev: {
                   source: "activeTitels",
