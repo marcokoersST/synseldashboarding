@@ -53,6 +53,39 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose, filterBa
   const [showTable, setShowTable] = useState(false);
   const [locSort, setLocSort] = useState<{ k: string; dir: "asc" | "desc" }>({ k: "plaatsingspct", dir: "desc" });
 
+  // Toggle visibility per metric in charts
+  const [topChartSeries, setTopChartSeries] = useState({
+    volume: true,
+    gesprekken: true,
+    plaatsingen: true,
+  });
+  const [ratioSeries, setRatioSeries] = useState({
+    bemPct: true,
+    gespPct: true,
+    procPct: true,
+    plPct: true,
+  });
+
+  const topSeriesMeta = [
+    { key: "volume" as const, label: "Instroom", color: "hsl(210,70%,55%)" },
+    { key: "gesprekken" as const, label: "Gesprekken", color: "hsl(35,85%,55%)" },
+    { key: "plaatsingen" as const, label: "Plaatsingen", color: "hsl(150,65%,45%)" },
+  ];
+
+  const ratioSeriesMeta = [
+    { key: "bemPct" as const, label: "Bemiddelbaar %", color: "hsl(200,60%,50%)" },
+    { key: "gespPct" as const, label: "Gesprek %", color: "hsl(35,85%,55%)" },
+    { key: "procPct" as const, label: "Procedure %", color: "hsl(260,60%,55%)" },
+    { key: "plPct" as const, label: "Plaatsings %", color: "hsl(150,65%,45%)" },
+  ];
+
+  function toggleTop(key: keyof typeof topChartSeries) {
+    setTopChartSeries(prev => ({ ...prev, [key]: !prev[key] }));
+  }
+  function toggleRatio(key: keyof typeof ratioSeries) {
+    setRatioSeries(prev => ({ ...prev, [key]: !prev[key] }));
+  }
+
   // Base subset: alle dashboard-filters toegepast + hard gepinned op deze titel.
   // applyFilterAllStatuses geeft ook niet-bemiddelbare kandidaten mee zodat we instroom zien.
   const titelRows = useMemo(() => {
