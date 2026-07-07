@@ -1314,10 +1314,10 @@ export default function InkoopYieldDashboard() {
                   ]}
                   formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} ≥ avgYield` }]}
                   notes={[
-                    "Inflow (kandidaten): het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters per genormaliseerde titel.",
-                    "Plaatsingspercentage: het plaatsingspercentage per genormaliseerde titel.",
-                    "Gesprekspercentage: het percentage kandidaten met een sollicitatiegesprek per genormaliseerde titel.",
-                    "Schakel tussen plaatsingspercentage en gesprekspercentage via de toggle boven de matrix.",
+                    "Inflow (candidates): the number of candidates that reached the candidate status \u201C1 | Inschrijven\u201D within the selected filters per normalized job title.",
+                    "Placement percentage: the placement percentage per normalized job title.",
+                    "Interview percentage: the percentage of candidates that has a job interview per normalized job title.",
+                    "Here I want to be able to switch between analyzing on placement percentage and interview percentage.",
                   ]}
                   rowCount={scatterData.length}
                 />
