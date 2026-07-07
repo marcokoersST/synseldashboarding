@@ -1350,90 +1350,13 @@ export default function InkoopYieldDashboard() {
             </CardContent>
           </Card>
 
-          {/* ─── Titel-detail popup ─── */}
-          <Dialog open={!!titelDetail} onOpenChange={(o) => !o && setTitelDetail(null)}>
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-base">{titelDetail} — scores per provincie</DialogTitle>
-              </DialogHeader>
-              {titelDetailData && (
-                <div className="space-y-4">
-                  <div className="border border-border rounded-md overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Provincie</TableHead>
-                          <TableHead className="text-right">Ins.</TableHead>
-                          <TableHead className="text-right">Gespr.</TableHead>
-                          <TableHead className="text-right">Plaats.</TableHead>
-                          <TableHead className="text-right">Plaatsings %</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {titelDetailData.perProv.map(p => (
-                          <TableRow key={p.provincie}>
-                            <TableCell className="text-xs font-medium">{p.provincie}</TableCell>
-                            <TableCell className="text-xs text-right tabular-nums">{p.ins}</TableCell>
-                            <TableCell className="text-xs text-right tabular-nums">{p.gesprekken}</TableCell>
-                            <TableCell className="text-xs text-right tabular-nums font-semibold">{p.plaatsingen}</TableCell>
-                            <TableCell className="text-xs text-right tabular-nums">{pct(p.plaatsingspct, 1)}</TableCell>
-                          </TableRow>
-                        ))}
-                        {titelDetailData.perProv.length === 0 && (
-                          <TableRow><TableCell colSpan={5} className="text-xs text-center text-muted-foreground py-4">Geen data</TableCell></TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  <div className="border border-border rounded-md">
-                    <button
-                      type="button"
-                      onClick={() => setShowTitelConsultants(v => !v)}
-                      className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium hover:bg-muted/50 transition"
-                    >
-                      <span className="flex items-center gap-2">
-                        {showTitelConsultants ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                        Consultants — wie scoort het best op {titelDetail}?
-                      </span>
-                      <span className="text-muted-foreground">{titelDetailData.perCons.length}</span>
-                    </button>
-                    {showTitelConsultants && (
-                      <div className="border-t border-border overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Consultant</TableHead>
-                              <TableHead>Unit</TableHead>
-                              <TableHead className="text-right">Ins.</TableHead>
-                              <TableHead className="text-right">Gespr.</TableHead>
-                              <TableHead className="text-right">Plaats.</TableHead>
-                              <TableHead className="text-right">Plaatsings %</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {titelDetailData.perCons.map(c => (
-                              <TableRow key={c.consultant}>
-                                <TableCell className="text-xs font-medium">{c.consultant}</TableCell>
-                                <TableCell className="text-xs text-muted-foreground">{c.unit}</TableCell>
-                                <TableCell className="text-xs text-right tabular-nums">{c.ins}</TableCell>
-                                <TableCell className="text-xs text-right tabular-nums">{c.gesprekken}</TableCell>
-                                <TableCell className="text-xs text-right tabular-nums font-semibold">{c.plaatsingen}</TableCell>
-                                <TableCell className="text-xs text-right tabular-nums">{pct(c.plaatsingspct, 1)}</TableCell>
-                              </TableRow>
-                            ))}
-                            {titelDetailData.perCons.length === 0 && (
-                              <TableRow><TableCell colSpan={6} className="text-xs text-center text-muted-foreground py-4">Geen consultants</TableCell></TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
+          {/* ─── Titel-detail deep dive ─── */}
+          <TitelDrilldownDialog
+            titel={titelDetail}
+            allRows={kandidaten}
+            filter={filter}
+            onClose={() => setTitelDetail(null)}
+          />
 
         </TabsContent>
 
