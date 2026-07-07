@@ -21,6 +21,7 @@ interface Props {
   allRows: Kandidaat[]; // all kandidaten (unfiltered) — for full titel dataset
   filter: FilterState;
   onClose: () => void;
+  filterBar?: React.ReactNode;
 }
 
 function periodKey(dateISO: string, g: Granularity): string {
