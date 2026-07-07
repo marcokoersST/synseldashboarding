@@ -24,7 +24,7 @@ import {
 } from "recharts";
 import {
   kandidaten, applyFilter, applyFilterAllStatuses, metrics, statsPerTitel, statsPerProvincie,
-  statsPerConsultant, weeklyTrend, classify, QUADRANT_LABEL,
+  statsPerConsultant, weeklyTrend, classify, classifyYield, QUADRANT_LABEL,
   QUADRANT_COLOR, buildOpportunities, defaultFilter, TITELS, PROVINCIES,
   BUSINESS_UNITS, CONSULTANTS, DATE_MIN, DATE_MAX,
   titelsPerConsultant, regiosPerConsultant, combisPerConsultant, besteVoorConsultant,
@@ -1067,6 +1067,9 @@ export default function InkoopYieldDashboard() {
   const topMetricKey = topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct";
   const topMetricLabel = topMode === "plaatsingen" ? "plaatsingsratio" : "gespreksratio";
 
+  // Toggle voor de 4-kwadranten scatter chart
+  const [scatterMode, setScatterMode] = useState<"plaatsingen" | "gesprekken">("plaatsingen");
+
 
   // Provincie-detail popup state
   const [provincieDetail, setProvincieDetail] = useState<string | null>(null);
@@ -1092,7 +1095,7 @@ export default function InkoopYieldDashboard() {
   }, [provincieDetail, rows]);
 
   const avgVol = activeTitels.reduce((s, t) => s + t.volume, 0) / (activeTitels.length || 1);
-  const avgYield = activeTitels.reduce((s, t) => s + t.plaatsingspct, 0) / (activeTitels.length || 1);
+  const avgYield = activeTitels.reduce((s, t) => s + (scatterMode === "plaatsingen" ? t.plaatsingspct : t.gesprekspct), 0) / (activeTitels.length || 1);
   const avgTopMetric = activeTitels.reduce((s, t) => s + (t as any)[topMetricKey], 0) / (activeTitels.length || 1);
 
   // Card 1: hoogste ratio (op geselecteerde metric)
@@ -1116,11 +1119,18 @@ export default function InkoopYieldDashboard() {
     .slice(0, 10);
 
 
-  const scatterData = activeTitels.map(t => ({
-    ...t, x: t.volume, y: Math.round(t.plaatsingspct * 100),
-    q: classify(t, avgVol, avgYield),
-    z: 100 + t.plaatsingen * 8,
-  }));
+  const scatterData = activeTitels.map(t => {
+    const yieldPct = scatterMode === "plaatsingen" ? t.plaatsingspct : t.gesprekspct;
+    const count = scatterMode === "plaatsingen" ? t.plaatsingen : t.gesprekken;
+    return {
+      ...t, x: t.volume, y: Math.round(yieldPct * 100),
+      q: classifyYield(t.volume, yieldPct, avgVol, avgYield),
+      z: 100 + count * 8,
+      _yieldPct: yieldPct,
+      _countLabel: scatterMode === "plaatsingen" ? "Plaatsingen" : "Gesprekken",
+      _countValue: count,
+    };
+  });
 
   return (
     <ConsultantLayout
@@ -1252,22 +1262,37 @@ export default function InkoopYieldDashboard() {
 
         {/* ═══ 2. TITELS ═══ */}
         <TabsContent value="titels" className="space-y-6">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs text-muted-foreground">4-kwadranten matrix op:</div>
+            <div className="flex gap-0.5 rounded-md border border-border p-0.5 bg-background">
+              {(["plaatsingen", "gesprekken"] as const).map(m => (
+                <button
+                  key={m}
+                  onClick={() => setScatterMode(m)}
+                  className={`text-xs px-2.5 py-1 rounded transition ${scatterMode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {m === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Card className="border border-border">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <CardTitle className="text-base">Instroom vs plaatsingskans — 4-kwadranten matrix</CardTitle>
-                  <p className="text-xs text-muted-foreground">Elke bubble = genormaliseerde titel. Grootte = aantal plaatsingen. Kleur = kwadrant-advies.</p>
+                  <CardTitle className="text-base">Instroom vs {scatterMode === "plaatsingen" ? "plaatsingskans" : "gesprekkans"} — 4-kwadranten matrix</CardTitle>
+                  <p className="text-xs text-muted-foreground">Elke bubble = genormaliseerde titel. Grootte = aantal {scatterMode === "plaatsingen" ? "plaatsingen" : "gesprekken"}. Kleur = kwadrant-advies.</p>
                 </div>
                 <DevInfo
                   source="scatterData = activeTitels.map(...) uit statsPerTitel(rows)"
                   filters={CORE_FILTER}
                   transforms={[
-                    "x = t.volume · y = round(plaatsingspct × 100) · z = 100 + plaatsingen × 8 (bubble-grootte)",
-                    "avgVol = Σ volume / n(activeTitels), avgYield = Σ plaatsingspct / n",
-                    "Kwadrant q = classify(t, avgVol, avgYield) → {beschermen, extra_inkopen, kritisch, lage_prio}",
+                    `x = t.volume · y = round(${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} × 100) · z = 100 + ${scatterMode === "plaatsingen" ? "plaatsingen" : "gesprekken"} × 8 (bubble-grootte)`,
+                    `avgVol = Σ volume / n(activeTitels), avgYield = Σ ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} / n`,
+                    `Kwadrant q = classifyYield(volume, ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"}, avgVol, avgYield) → {beschermen, extra_inkopen, kritisch, lage_prio}`,
                   ]}
-                  formulas={[{ name: "classify", expr: "hoogVol = volume ≥ avgVol; hoogYield = plaatsingspct ≥ avgYield" }]}
+                  formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} ≥ avgYield` }]}
                   rowCount={scatterData.length}
                 />
               </div>
@@ -1287,9 +1312,9 @@ export default function InkoopYieldDashboard() {
                   <XAxis type="number" dataKey="x" name="Instroom"
                     tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     label={{ value: "Instroom (kandidaten)", position: "bottom", offset: 0, fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis type="number" dataKey="y" name="Plaatsingskans"
+                  <YAxis type="number" dataKey="y" name={scatterMode === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}
                     tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                    label={{ value: "Plaatsingskans %", angle: -90, position: "insideLeft", fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    label={{ value: scatterMode === "plaatsingen" ? "Plaatsingskans %" : "Gesprekkans %", angle: -90, position: "insideLeft", fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                   <ZAxis type="number" dataKey="z" range={[80, 500]} />
                   <ReferenceLine x={avgVol} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
                   <ReferenceLine y={avgYield * 100} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
@@ -1300,8 +1325,8 @@ export default function InkoopYieldDashboard() {
                       return (
                         <div className="bg-card border border-border rounded p-2 text-xs shadow-lg">
                           <div className="font-semibold">{p.titel}</div>
-                          <div>Instroom: {p.volume} · Plaatsingen: {p.plaatsingen}</div>
-                          <div>Plaatsingskans: {pct(p.plaatsingspct, 1)}</div>
+                          <div>Instroom: {p.volume} · {p._countLabel}: {p._countValue}</div>
+                          <div>{scatterMode === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}: {pct(p._yieldPct, 1)}</div>
                           <div className="mt-1 text-[10px]" style={{ color: QUADRANT_COLOR[p.q as Quadrant] }}>
                             → {QUADRANT_LABEL[p.q as Quadrant]}
                           </div>
