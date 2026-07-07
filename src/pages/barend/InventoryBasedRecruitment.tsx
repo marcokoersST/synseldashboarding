@@ -1093,29 +1093,28 @@ export default function InkoopYieldDashboard() {
 
   const avgVol = activeTitels.reduce((s, t) => s + t.volume, 0) / (activeTitels.length || 1);
   const avgYield = activeTitels.reduce((s, t) => s + t.plaatsingspct, 0) / (activeTitels.length || 1);
+  const avgTopMetric = activeTitels.reduce((s, t) => s + (t as any)[topMetricKey], 0) / (activeTitels.length || 1);
 
-  // Card 1: hoogste plaatsingsratio
-  const topRatio = [...activeTitels].sort((a, b) => b.plaatsingspct - a.plaatsingspct).slice(0, 10);
+  // Card 1: hoogste ratio (op geselecteerde metric)
+  const topRatio = [...activeTitels].sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]).slice(0, 10);
   const topRatioSet = new Set(topRatio.map(t => t.titel));
   const topRatioMedVol = topRatio.length
     ? [...topRatio].sort((a, b) => a.volume - b.volume)[Math.floor(topRatio.length / 2)].volume
     : 0;
 
-  // Card 2: extra instroom nodig — titels met een hoog plaatsingsratio (bovengemiddeld
-  // of vergelijkbaar met de top 10) maar met een lager volume dan de top 10-mediaan.
-  // Score = plaatsingsratio × (tekort t.o.v. top 10-mediaanvolume) → grootste potentiële
-  // extra plaatsingen bij extra inkoop.
+  // Card 2: extra instroom nodig — titels met hoge ratio maar laag volume
   const topExtraInstroom = [...activeTitels]
     .filter(t => !topRatioSet.has(t.titel))
-    .filter(t => t.plaatsingspct >= avgYield && t.volume < topRatioMedVol)
-    .map(t => ({ ...t, _potentie: t.plaatsingspct * Math.max(1, topRatioMedVol - t.volume) }))
+    .filter(t => (t as any)[topMetricKey] >= avgTopMetric && t.volume < topRatioMedVol)
+    .map(t => ({ ...t, _potentie: (t as any)[topMetricKey] * Math.max(1, topRatioMedVol - t.volume) }))
     .sort((a, b) => b._potentie - a._potentie)
     .slice(0, 10);
 
-  // Card 3: 10 titels met laagste plaatsingsratio → mogelijk te hoge instroom
+  // Card 3: 10 titels met laagste ratio → mogelijk te hoge instroom
   const topTeHoog = [...activeTitels]
-    .sort((a, b) => a.plaatsingspct - b.plaatsingspct)
+    .sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey])
     .slice(0, 10);
+
 
   const scatterData = activeTitels.map(t => ({
     ...t, x: t.volume, y: Math.round(t.plaatsingspct * 100),
