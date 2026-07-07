@@ -66,6 +66,7 @@ const PeterJanOmzetDashboard = lazy(() => import("./pages/peter-jan/OmzetDashboa
 // Barend dashboards
 const BarendReverseMatching = lazy(() => import("./pages/barend/ReverseMatchingAnalytics"));
 const BarendFunnelOps = lazy(() => import("./pages/barend/FunnelOperations"));
+const BarendInventoryBasedRecruitment = lazy(() => import("./pages/barend/InventoryBasedRecruitment"));
 
 // Marketing dashboards
 const MarketingHub = lazy(() => import("./pages/marketing/MarketingHub"));
@@ -160,6 +161,7 @@ const App = () => (
               <Route path="/peter-jan/omzet-dashboard" element={<PeterJanOmzetDashboard />} />
               <Route path="/barend/reverse-matching" element={<BarendReverseMatching />} />
               <Route path="/barend/funnel-ops" element={<BarendFunnelOps />} />
+              <Route path="/barend/inventory-based-recruitment" element={<BarendInventoryBasedRecruitment />} />
               <Route path="/marketing" element={<MarketingHub />} />
               <Route path="/marketing/inflow" element={<MarketingHub />} />
               <Route path="/marketing/inschrijvingen" element={<MarketingHub />} />
