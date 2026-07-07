@@ -1322,6 +1322,12 @@ export default function InkoopYieldDashboard() {
                     `Kwadrant q = classifyYield(volume, ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"}, avgVol, avgYield) → {beschermen, extra_inkopen, kritisch, lage_prio}`,
                   ]}
                   formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} ≥ avgYield` }]}
+                  notes={[
+                    "Inflow (kandidaten): het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters per genormaliseerde titel.",
+                    "Plaatsingspercentage: het plaatsingspercentage per genormaliseerde titel.",
+                    "Gesprekspercentage: het percentage kandidaten met een sollicitatiegesprek per genormaliseerde titel.",
+                    "Schakel tussen plaatsingspercentage en gesprekspercentage via de toggle boven de matrix.",
+                  ]}
                   rowCount={scatterData.length}
                 />
               </div>
