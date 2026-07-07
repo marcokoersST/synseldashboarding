@@ -1266,7 +1266,7 @@ export default function InkoopYieldDashboard() {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <CardTitle className="text-base">Instroom vs {topMode === "plaatsingen" ? "plaatsingskans" : "gesprekkans"} — 4-kwadranten matrix</CardTitle>
+                  <CardTitle className="text-base">Instroom vs {scatterMode === "plaatsingen" ? "plaatsingskans" : "gesprekkans"} — 4-kwadranten matrix</CardTitle>
                   <p className="text-xs text-muted-foreground">Elke bubble = genormaliseerde titel. Grootte = aantal {topMode === "plaatsingen" ? "plaatsingen" : "gesprekken"}. Kleur = kwadrant-advies.</p>
                 </div>
                 <DevInfo
