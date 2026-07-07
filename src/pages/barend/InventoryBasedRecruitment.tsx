@@ -1092,7 +1092,7 @@ export default function InkoopYieldDashboard() {
   }, [provincieDetail, rows]);
 
   const avgVol = activeTitels.reduce((s, t) => s + t.volume, 0) / (activeTitels.length || 1);
-  const avgYield = activeTitels.reduce((s, t) => s + t.plaatsingspct, 0) / (activeTitels.length || 1);
+  const avgYield = activeTitels.reduce((s, t) => s + (topMode === "plaatsingen" ? t.plaatsingspct : t.gesprekspct), 0) / (activeTitels.length || 1);
   const avgTopMetric = activeTitels.reduce((s, t) => s + (t as any)[topMetricKey], 0) / (activeTitels.length || 1);
 
   // Card 1: hoogste ratio (op geselecteerde metric)
@@ -1116,11 +1116,18 @@ export default function InkoopYieldDashboard() {
     .slice(0, 10);
 
 
-  const scatterData = activeTitels.map(t => ({
-    ...t, x: t.volume, y: Math.round(t.plaatsingspct * 100),
-    q: classify(t, avgVol, avgYield),
-    z: 100 + t.plaatsingen * 8,
-  }));
+  const scatterData = activeTitels.map(t => {
+    const yieldPct = topMode === "plaatsingen" ? t.plaatsingspct : t.gesprekspct;
+    const count = topMode === "plaatsingen" ? t.plaatsingen : t.gesprekken;
+    return {
+      ...t, x: t.volume, y: Math.round(yieldPct * 100),
+      q: classifyYield(t.volume, yieldPct, avgVol, avgYield),
+      z: 100 + count * 8,
+      _yieldPct: yieldPct,
+      _countLabel: topMode === "plaatsingen" ? "Plaatsingen" : "Gesprekken",
+      _countValue: count,
+    };
+  });
 
   return (
     <ConsultantLayout
