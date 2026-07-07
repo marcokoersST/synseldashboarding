@@ -373,7 +373,7 @@ function FullListDialog({
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1">
-          <Maximize2 className="h-3 w-3 text-[#bfa16b]" /> Volledige lijst
+          <Maximize2 className="h-3 w-3 text-[#bfa16b]" /> Volledige lijst ({allTitels.length})
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
@@ -1098,25 +1098,26 @@ export default function InkoopYieldDashboard() {
   const avgYield = activeTitels.reduce((s, t) => s + (scatterMode === "plaatsingen" ? t.plaatsingspct : t.gesprekspct), 0) / (activeTitels.length || 1);
   const avgTopMetric = activeTitels.reduce((s, t) => s + (t as any)[topMetricKey], 0) / (activeTitels.length || 1);
 
-  // Card 1: hoogste ratio (op geselecteerde metric)
-  const topRatio = [...activeTitels].sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]).slice(0, 10);
-  const topRatioSet = new Set(topRatio.map(t => t.titel));
-  const topRatioMedVol = topRatio.length
-    ? [...topRatio].sort((a, b) => a.volume - b.volume)[Math.floor(topRatio.length / 2)].volume
-    : 0;
-
-  // Card 2: extra instroom nodig — titels met hoge ratio maar laag volume
-  const topExtraInstroom = [...activeTitels]
-    .filter(t => !topRatioSet.has(t.titel))
-    .filter(t => (t as any)[topMetricKey] >= avgTopMetric && t.volume < topRatioMedVol)
-    .map(t => ({ ...t, _potentie: (t as any)[topMetricKey] * Math.max(1, topRatioMedVol - t.volume) }))
-    .sort((a, b) => b._potentie - a._potentie)
-    .slice(0, 10);
-
-  // Card 3: 10 titels met laagste ratio → mogelijk te hoge instroom
-  const topTeHoog = [...activeTitels]
-    .sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey])
-    .slice(0, 10);
+  // Executive-tab kwadrant-groepen gebaseerd op topMode
+  const execAvgYield = activeTitels.reduce((s, t) => s + (t as any)[topMetricKey], 0) / (activeTitels.length || 1);
+  const quadrantGroups = useMemo(() => {
+    const groups: Record<Quadrant, typeof activeTitels> = {
+      beschermen: [],
+      extra_inkopen: [],
+      kritisch: [],
+      lage_prio: [],
+    };
+    for (const t of activeTitels) {
+      const yieldPct = (t as any)[topMetricKey] as number;
+      const q = classifyYield(t.volume, yieldPct, avgVol, execAvgYield);
+      groups[q].push(t);
+    }
+    groups.beschermen.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
+    groups.extra_inkopen.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
+    groups.kritisch.sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey]);
+    groups.lage_prio.sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey]);
+    return groups;
+  }, [activeTitels, topMetricKey, avgVol, execAvgYield]);
 
 
   const scatterData = activeTitels.map(t => {
@@ -1184,77 +1185,74 @@ export default function InkoopYieldDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
             {([
               {
-                title: "Top 10 titels: Behouden", data: topRatio, badge: "Bescherm",
-                color: "hsl(150,65%,45%)", sortDir: "desc" as const,
-                dev: {
-                  source: "activeTitels = statsPerTitel(rows).filter(t => t.volume > 0)",
-                  filters: CORE_FILTER,
-                  transforms: [
-                    `topRatio = [...activeTitels].sort((a,b) => b.${topMetricKey} - a.${topMetricKey}).slice(0, 10)`,
-                    "topRatioSet = new Set(topRatio.map(t => t.titel)) — hergebruikt door 'extra instroom'-kaart",
-                  ],
-                  formulas: [{ name: topMetricKey, expr: topMode === "plaatsingen" ? "plaatsingen / bemiddelbaar (per titel)" : "kandidaten met gesprek / bemiddelbaar (per titel)" }],
-                  rowCount: topRatio.length,
-                },
+                key: "beschermen" as Quadrant,
+                title: QUADRANT_LABEL.beschermen,
+                color: QUADRANT_COLOR.beschermen,
+                sortDir: "desc" as const,
               },
               {
-                title: "Top 10 titels: Opschalen", data: topExtraInstroom, badge: "Inkopen",
-                color: "hsl(200,75%,50%)", sortDir: "desc" as const,
-                dev: {
-                  source: "activeTitels \\ topRatioSet",
-                  filters: `${CORE_FILTER}\nExtra: t.${topMetricKey} ≥ avgTopMetric · t.volume < topRatioMedVol`,
-                  transforms: [
-                    "topRatioMedVol = mediaan van topRatio.volume",
-                    `avgTopMetric = Σ ${topMetricKey} / n (over activeTitels)`,
-                    "Sortering op _potentie descending → slice(0, 10)",
-                  ],
-                  formulas: [{ name: "_potentie", expr: `${topMetricKey} × max(1, topRatioMedVol − volume)` }],
-                  rowCount: topExtraInstroom.length,
-                },
+                key: "extra_inkopen" as Quadrant,
+                title: QUADRANT_LABEL.extra_inkopen,
+                color: QUADRANT_COLOR.extra_inkopen,
+                sortDir: "desc" as const,
               },
               {
-                title: "Slechtste 10 titels", data: topTeHoog, badge: "Kritisch",
-                color: "hsl(0,70%,55%)", sortDir: "asc" as const,
-                dev: {
-                  source: "activeTitels",
-                  filters: CORE_FILTER,
-                  transforms: [`Sortering op ${topMetricKey} ascending → slice(0, 10)`],
-                  notes: ["Bedoeld om overschot in instroom vs yield te signaleren"],
-                  rowCount: topTeHoog.length,
-                },
+                key: "kritisch" as Quadrant,
+                title: QUADRANT_LABEL.kritisch,
+                color: QUADRANT_COLOR.kritisch,
+                sortDir: "asc" as const,
               },
-            ]).map((section) => (
-              <Card key={section.title} className="border border-border">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="text-sm">{section.title}</CardTitle>
-                    <div className="flex items-center gap-1.5">
-                      <FullListDialog title={section.title} allTitels={section.data} sortDir={section.sortDir} onSelectTitel={setTitelDetail} />
-                      <DevInfo {...section.dev} />
+              {
+                key: "lage_prio" as Quadrant,
+                title: QUADRANT_LABEL.lage_prio,
+                color: QUADRANT_COLOR.lage_prio,
+                sortDir: "asc" as const,
+              },
+            ]).map((section) => {
+              const fullData = quadrantGroups[section.key];
+              const cardData = fullData.slice(0, 10);
+              return (
+                <Card key={section.key} className="border border-border">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-sm" style={{ color: section.color }}>{section.title}</CardTitle>
+                      <div className="flex items-center gap-1.5">
+                        <FullListDialog title={section.title} allTitels={fullData} sortDir={section.sortDir} onSelectTitel={setTitelDetail} />
+                        <DevInfo
+                          source={`quadrantGroups["${section.key}"]`}
+                          filters={`${CORE_FILTER}\nExtra: classifyYield(volume, ${topMetricKey}, avgVol, execAvgYield) === "${section.key}"`}
+                          transforms={[
+                            `execAvgYield = Σ ${topMetricKey} / n (over activeTitels)`,
+                            `Sortering op ${topMetricKey} ${section.sortDir}`,
+                          ]}
+                          formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${topMetricKey} ≥ execAvgYield` }]}
+                          rowCount={cardData.length}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableBody>
-                      {section.data.map(t => (
-                        <TableRow key={t.titel} className="cursor-pointer hover:bg-muted/50" onClick={() => setTitelDetail(t.titel)}>
-                          <TableCell className="text-xs font-medium py-2 underline-offset-2 hover:underline">{t.titel}</TableCell>
-                          <TableCell className="text-xs text-right text-muted-foreground py-2">n={t.volume}</TableCell>
-                          <TableCell className="text-xs text-right font-semibold py-2 tabular-nums">{pct((t as any)[topMetricKey], 1)}</TableCell>
-                        </TableRow>
-                      ))}
-                      {section.data.length === 0 && (
-                        <TableRow><TableCell className="text-xs text-muted-foreground text-center py-4">Geen titels bij huidige filters</TableCell></TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableBody>
+                        {cardData.map(t => (
+                          <TableRow key={t.titel} className="cursor-pointer hover:bg-muted/50" onClick={() => setTitelDetail(t.titel)}>
+                            <TableCell className="text-xs font-medium py-2 underline-offset-2 hover:underline">{t.titel}</TableCell>
+                            <TableCell className="text-xs text-right text-muted-foreground py-2">n={t.volume}</TableCell>
+                            <TableCell className="text-xs text-right font-semibold py-2 tabular-nums">{pct((t as any)[topMetricKey], 1)}</TableCell>
+                          </TableRow>
+                        ))}
+                        {cardData.length === 0 && (
+                          <TableRow><TableCell className="text-xs text-muted-foreground text-center py-4">Geen titels bij huidige filters</TableCell></TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </TabsContent>
 
