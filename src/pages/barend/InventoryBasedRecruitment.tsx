@@ -1263,18 +1263,18 @@ export default function InkoopYieldDashboard() {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <CardTitle className="text-base">Instroom vs plaatsingskans — 4-kwadranten matrix</CardTitle>
-                  <p className="text-xs text-muted-foreground">Elke bubble = genormaliseerde titel. Grootte = aantal plaatsingen. Kleur = kwadrant-advies.</p>
+                  <CardTitle className="text-base">Instroom vs {topMode === "plaatsingen" ? "plaatsingskans" : "gesprekkans"} — 4-kwadranten matrix</CardTitle>
+                  <p className="text-xs text-muted-foreground">Elke bubble = genormaliseerde titel. Grootte = aantal {topMode === "plaatsingen" ? "plaatsingen" : "gesprekken"}. Kleur = kwadrant-advies.</p>
                 </div>
                 <DevInfo
                   source="scatterData = activeTitels.map(...) uit statsPerTitel(rows)"
                   filters={CORE_FILTER}
                   transforms={[
-                    "x = t.volume · y = round(plaatsingspct × 100) · z = 100 + plaatsingen × 8 (bubble-grootte)",
-                    "avgVol = Σ volume / n(activeTitels), avgYield = Σ plaatsingspct / n",
-                    "Kwadrant q = classify(t, avgVol, avgYield) → {beschermen, extra_inkopen, kritisch, lage_prio}",
+                    `x = t.volume · y = round(${topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} × 100) · z = 100 + ${topMode === "plaatsingen" ? "plaatsingen" : "gesprekken"} × 8 (bubble-grootte)`,
+                    `avgVol = Σ volume / n(activeTitels), avgYield = Σ ${topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} / n`,
+                    `Kwadrant q = classifyYield(volume, ${topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"}, avgVol, avgYield) → {beschermen, extra_inkopen, kritisch, lage_prio}`,
                   ]}
-                  formulas={[{ name: "classify", expr: "hoogVol = volume ≥ avgVol; hoogYield = plaatsingspct ≥ avgYield" }]}
+                  formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} ≥ avgYield` }]}
                   rowCount={scatterData.length}
                 />
               </div>
