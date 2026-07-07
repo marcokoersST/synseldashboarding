@@ -1207,24 +1207,40 @@ export default function InkoopYieldDashboard() {
                 title: QUADRANT_LABEL.beschermen,
                 color: QUADRANT_COLOR.beschermen,
                 sortDir: "desc" as const,
+                notes: [
+                  "De 10 titels met de hoogste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het hoge kwadrant qua aantal bemiddelbare kandidaten.",
+                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                ],
               },
               {
                 key: "extra_inkopen" as Quadrant,
                 title: QUADRANT_LABEL.extra_inkopen,
                 color: QUADRANT_COLOR.extra_inkopen,
                 sortDir: "desc" as const,
+                notes: [
+                  "De 10 titels met de hoogste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het lage kwadrant qua aantal bemiddelbare kandidaten.",
+                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                ],
               },
               {
                 key: "kritisch" as Quadrant,
                 title: QUADRANT_LABEL.kritisch,
                 color: QUADRANT_COLOR.kritisch,
                 sortDir: "asc" as const,
+                notes: [
+                  "De 10 titels met de laagste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het hoge kwadrant qua aantal bemiddelbare kandidaten.",
+                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                ],
               },
               {
                 key: "lage_prio" as Quadrant,
                 title: QUADRANT_LABEL.lage_prio,
                 color: QUADRANT_COLOR.lage_prio,
                 sortDir: "asc" as const,
+                notes: [
+                  "De 10 titels met de laagste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het lage kwadrant qua aantal bemiddelbare kandidaten.",
+                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                ],
               },
             ]).map((section) => {
               const fullData = quadrantGroups[section.key];
@@ -1244,6 +1260,7 @@ export default function InkoopYieldDashboard() {
                             `Sortering op ${topMetricKey} ${section.sortDir}`,
                           ]}
                           formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${topMetricKey} ≥ execAvgYield` }]}
+                          notes={section.notes}
                           rowCount={cardData.length}
                         />
                       </div>
