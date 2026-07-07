@@ -373,8 +373,12 @@ function FullListDialog({
             </TableHeader>
             <TableBody>
               {list.map(t => (
-                <TableRow key={t.titel}>
-                  <TableCell className="text-xs font-medium py-1.5">{t.titel}</TableCell>
+                <TableRow
+                  key={t.titel}
+                  className={onSelectTitel ? "cursor-pointer hover:bg-muted/50" : ""}
+                  onClick={onSelectTitel ? () => onSelectTitel(t.titel) : undefined}
+                >
+                  <TableCell className={`text-xs font-medium py-1.5 ${onSelectTitel ? "underline-offset-2 hover:underline" : ""}`}>{t.titel}</TableCell>
                   <TableCell className="text-xs text-right tabular-nums py-1.5">{t.volume}</TableCell>
                   <TableCell className="text-xs text-right tabular-nums py-1.5">{t.gesprekken}</TableCell>
                   <TableCell className="text-xs text-right tabular-nums py-1.5">{pct(t.gesprekspct, 1)}</TableCell>
