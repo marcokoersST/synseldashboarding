@@ -1206,7 +1206,7 @@ export default function InkoopYieldDashboard() {
                 },
               },
               {
-                title: "Top 10 titels: mogelijk te hoge instroom", data: topTeHoog, badge: "Kritisch",
+                title: "Slechtste 10 titels", data: topTeHoog, badge: "Kritisch",
                 color: "hsl(0,70%,55%)", sortDir: "asc" as const,
                 dev: {
                   source: "activeTitels",
