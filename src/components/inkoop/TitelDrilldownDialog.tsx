@@ -52,15 +52,24 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose }: Props)
   const [showTable, setShowTable] = useState(false);
   const [locSort, setLocSort] = useState<{ k: string; dir: "asc" | "desc" }>({ k: "plaatsingspct", dir: "desc" });
 
-  // Base subset: rows for this titel, within date-range (all statuses so we see inschrijvingen)
+  // Base subset: alle dashboard-filters toegepast + hard gepinned op deze titel.
+  // applyFilterAllStatuses geeft ook niet-bemiddelbare kandidaten mee zodat we instroom zien.
   const titelRows = useMemo(() => {
     if (!titel) return [] as Kandidaat[];
-    return allRows.filter(r =>
-      r.titel === titel
-      && r.datumBinnenkomst >= filter.dateFrom
-      && r.datumBinnenkomst <= filter.dateTo
-    );
-  }, [allRows, titel, filter.dateFrom, filter.dateTo]);
+    return applyFilterAllStatuses(allRows, { ...filter, titel: [titel] });
+  }, [allRows, titel, filter]);
+
+  // Actieve filter-chips voor de header
+  const activeFilterChips = useMemo(() => {
+    const chips: string[] = [];
+    if (filter.provincie.length) chips.push(`Provincie: ${filter.provincie.length === 1 ? filter.provincie[0] : `${filter.provincie.length} gekozen`}`);
+    if (filter.consultant.length) chips.push(`Consultant: ${filter.consultant.length === 1 ? filter.consultant[0] : `${filter.consultant.length} gekozen`}`);
+    if (filter.businessUnit.length) chips.push(`Unit: ${filter.businessUnit.length === 1 ? filter.businessUnit[0] : `${filter.businessUnit.length} gekozen`}`);
+    if (filter.kandidaatType.length) chips.push(`Type: ${filter.kandidaatType.join(", ")}`);
+    if (filter.geplaatst.length) chips.push(`Geplaatst: ${filter.geplaatst.join(", ")}`);
+    return chips;
+  }, [filter]);
+
 
   // ─── KPI-strip ───
   const kpis = useMemo(() => {
