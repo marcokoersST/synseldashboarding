@@ -270,8 +270,8 @@ function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number;
   return (
     <Card className="border border-border">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
             <CardTitle className="text-base">Trend per week</CardTitle>
             <div className="flex gap-0.5 rounded-md border border-border p-0.5 bg-background">
               {(["plaatsingen", "gesprekken"] as const).map(m => (
@@ -285,15 +285,30 @@ function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number;
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-4 text-[12px]">
-            {items.map(it => (
-              <label key={it.key} className="flex items-center gap-2 cursor-pointer select-none">
-                <Checkbox checked={show[it.key]} onCheckedChange={() => toggle(it.key)} />
-                <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: it.color }} />
-                <span className="text-foreground">{it.label}</span>
-              </label>
-            ))}
-          </div>
+          <DevInfo
+            source="weeklyTrend(rows) uit inkoopYieldData.ts"
+            filters={CORE_FILTER}
+            transforms={[
+              "Groepering op ISO-week (maandag-zondag)",
+              "Kandidaten = count(bemiddelbaar), Plaatsingen = count(geplaatst), Gesprekken = count(inGesprek)",
+            ]}
+            notes={[
+              "Kandidaten: het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+              "Plaatsingen: het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
+              "Plaatsingsratio %: het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt, gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt.",
+              "Er is ook de optie om te schakelen naar Gesprekken. In dat geval gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek' en de gespreksratio.",
+            ]}
+            rowCount={trend.length}
+          />
+        </div>
+        <div className="flex items-center gap-4 text-[12px] mt-2">
+          {items.map(it => (
+            <label key={it.key} className="flex items-center gap-2 cursor-pointer select-none">
+              <Checkbox checked={show[it.key]} onCheckedChange={() => toggle(it.key)} />
+              <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: it.color }} />
+              <span className="text-foreground">{it.label}</span>
+            </label>
+          ))}
         </div>
       </CardHeader>
       <CardContent>
