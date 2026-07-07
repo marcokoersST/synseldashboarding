@@ -1375,14 +1375,6 @@ export default function InkoopYieldDashboard() {
             </CardContent>
           </Card>
 
-          {/* ─── Titel-detail deep dive ─── */}
-          <TitelDrilldownDialog
-            titel={titelDetail}
-            allRows={kandidaten}
-            filter={filter}
-            onClose={() => setTitelDetail(null)}
-          />
-
         </TabsContent>
 
         {/* ═══ 3. REGIO ═══ */}
@@ -1754,6 +1746,14 @@ export default function InkoopYieldDashboard() {
           </DialogContent>
         </Dialog>
       </Tabs>
+
+      {/* ─── Titel-detail deep dive (shared across tabs) ─── */}
+      <TitelDrilldownDialog
+        titel={titelDetail}
+        allRows={kandidaten}
+        filter={filter}
+        onClose={() => setTitelDetail(null)}
+      />
     </ConsultantLayout>
   );
 }
