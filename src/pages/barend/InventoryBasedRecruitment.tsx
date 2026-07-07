@@ -293,10 +293,10 @@ function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number;
               "Kandidaten = count(bemiddelbaar), Plaatsingen = count(geplaatst), Gesprekken = count(inGesprek)",
             ]}
             notes={[
-              "Kandidaten: het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
-              "Plaatsingen: het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
-              "Plaatsingsratio %: het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt, gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt.",
-              "Er is ook de optie om te schakelen naar Gesprekken. In dat geval gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek' en de gespreksratio.",
+              "Candidates – the number of candidates that reached the candidate status \u201C1 | Inschrijven\u201D within the selected filters.",
+              "Placement – the number of candidates that reached the candidate status \u201CGeplaatst\u201D within the selected filters.",
+              "Placement ratio % – the percentage of candidates that reached the candidate status \u201CGeplaatst\u201D within the selected filters based on the number of candidates that reached the candidate status \u201C1 | Inschrijven\u201D within the selected filters. Various metrics can be toggled on and off in this chart.",
+              "There is also the option to switch to Interviews. In that case we use the deal status \u201C3.1 | 1e sollicitatiegesprek\u201D. And the ratio of Interviews.",
             ]}
             rowCount={trend.length}
           />
