@@ -233,34 +233,58 @@ function KPI({
   );
 }
 
-// ─── Trend per week (checkbox selectie: kandidaten / plaatsingen / ratio) ───
-function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number; plaatsingen: number }> }) {
-  const [show, setShow] = useState({ kandidaten: true, plaatsingen: true, ratio: false });
-  const data = trend.map(w => ({
-    ...w,
-    ratio: w.kandidaten > 0 ? (w.plaatsingen / w.kandidaten) * 100 : 0,
-  }));
+// ─── Trend per week (checkbox selectie + Plaatsingen/Gesprekken toggle) ───
+function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number; plaatsingen: number; gesprekken: number }> }) {
+  const [mode, setMode] = useState<"plaatsingen" | "gesprekken">("plaatsingen");
+  const [show, setShow] = useState({ kandidaten: true, metric: true, ratio: false });
+
+  const metricConf = mode === "plaatsingen"
+    ? { label: "Plaatsingen", ratioLabel: "Plaatsingsratio %", color: "hsl(150,65%,45%)", ratioColor: "hsl(260,60%,55%)" }
+    : { label: "Gesprekken", ratioLabel: "Gespreksratio %", color: "hsl(35,85%,55%)", ratioColor: "hsl(200,80%,55%)" };
+
+  const data = trend.map(w => {
+    const metricVal = mode === "plaatsingen" ? w.plaatsingen : w.gesprekken;
+    return {
+      week: w.week,
+      kandidaten: w.kandidaten,
+      metric: metricVal,
+      ratio: w.kandidaten > 0 ? (metricVal / w.kandidaten) * 100 : 0,
+    };
+  });
   const pad = (min: number, max: number) => {
     const range = Math.max(1, max - min);
     return [Math.max(0, Math.floor(min - range * 0.15)), Math.ceil(max + range * 0.15)];
   };
   const [kMin, kMax] = pad(0, Math.max(...data.map(d => d.kandidaten), 1));
-  const [pMin, pMax] = pad(0, Math.max(...data.map(d => d.plaatsingen), 1));
+  const [pMin, pMax] = pad(0, Math.max(...data.map(d => d.metric), 1));
   const [rMin, rMax] = pad(0, Math.max(...data.map(d => d.ratio), 1));
 
   const toggle = (k: keyof typeof show) => setShow(s => ({ ...s, [k]: !s[k] }));
 
   const items: Array<{ key: keyof typeof show; label: string; color: string }> = [
     { key: "kandidaten", label: "Kandidaten", color: "hsl(200,70%,50%)" },
-    { key: "plaatsingen", label: "Plaatsingen", color: "hsl(150,65%,45%)" },
-    { key: "ratio", label: "Plaatsingsratio %", color: "hsl(260,60%,55%)" },
+    { key: "metric", label: metricConf.label, color: metricConf.color },
+    { key: "ratio", label: metricConf.ratioLabel, color: metricConf.ratioColor },
   ];
 
   return (
     <Card className="border border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <CardTitle className="text-base">Trend per week</CardTitle>
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-base">Trend per week</CardTitle>
+            <div className="flex gap-0.5 rounded-md border border-border p-0.5 bg-background">
+              {(["plaatsingen", "gesprekken"] as const).map(m => (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  className={`text-xs px-2.5 py-1 rounded transition ${mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {m === "plaatsingen" ? "Plaatsingen" : "Gesprekken"}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center gap-4 text-[12px]">
             {items.map(it => (
               <label key={it.key} className="flex items-center gap-2 cursor-pointer select-none">
@@ -281,28 +305,28 @@ function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number;
               <YAxis yAxisId="left" domain={[kMin, kMax]} tick={{ fontSize: 10, fill: "hsl(200,70%,50%)" }}
                 label={{ value: "Kandidaten", angle: -90, position: "insideLeft", fontSize: 10, fill: "hsl(200,70%,50%)" }} />
             )}
-            {show.plaatsingen && (
-              <YAxis yAxisId="right" orientation="right" domain={[pMin, pMax]} tick={{ fontSize: 10, fill: "hsl(150,65%,45%)" }}
-                label={{ value: "Plaatsingen", angle: 90, position: "insideRight", fontSize: 10, fill: "hsl(150,65%,45%)" }} />
+            {show.metric && (
+              <YAxis yAxisId="right" orientation="right" domain={[pMin, pMax]} tick={{ fontSize: 10, fill: metricConf.color }}
+                label={{ value: metricConf.label, angle: 90, position: "insideRight", fontSize: 10, fill: metricConf.color }} />
             )}
             {show.ratio && (
-              <YAxis yAxisId="ratio" orientation="right" domain={[rMin, rMax]} tick={{ fontSize: 10, fill: "hsl(260,60%,55%)" }}
+              <YAxis yAxisId="ratio" orientation="right" domain={[rMin, rMax]} tick={{ fontSize: 10, fill: metricConf.ratioColor }}
                 tickFormatter={v => `${v.toFixed(0)}%`}
-                label={{ value: "Ratio %", angle: 90, position: "insideRight", fontSize: 10, fill: "hsl(260,60%,55%)" }} />
+                label={{ value: "Ratio %", angle: 90, position: "insideRight", fontSize: 10, fill: metricConf.ratioColor }} />
             )}
-            {!show.kandidaten && !show.plaatsingen && !show.ratio && (
+            {!show.kandidaten && !show.metric && !show.ratio && (
               <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
             )}
             <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 12 }}
-              formatter={(v: any, n: any) => n === "Plaatsingsratio %" ? `${(+v).toFixed(1)}%` : v} />
+              formatter={(v: any, n: any) => (n === metricConf.ratioLabel ? `${(+v).toFixed(1)}%` : v)} />
             {show.kandidaten && (
               <Line yAxisId="left" type="monotone" dataKey="kandidaten" name="Kandidaten" stroke="hsl(200,70%,50%)" strokeWidth={2} dot={false} />
             )}
-            {show.plaatsingen && (
-              <Line yAxisId="right" type="monotone" dataKey="plaatsingen" name="Plaatsingen" stroke="hsl(150,65%,45%)" strokeWidth={2.5} dot={{ r: 2 }} />
+            {show.metric && (
+              <Line yAxisId="right" type="monotone" dataKey="metric" name={metricConf.label} stroke={metricConf.color} strokeWidth={2.5} dot={{ r: 2 }} />
             )}
             {show.ratio && (
-              <Line yAxisId="ratio" type="monotone" dataKey="ratio" name="Plaatsingsratio %" stroke="hsl(260,60%,55%)" strokeWidth={2.5} dot={{ r: 2 }} />
+              <Line yAxisId="ratio" type="monotone" dataKey="ratio" name={metricConf.ratioLabel} stroke={metricConf.ratioColor} strokeWidth={2.5} dot={{ r: 2 }} />
             )}
           </LineChart>
         </ResponsiveContainer>
@@ -310,6 +334,7 @@ function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number;
     </Card>
   );
 }
+
 
 
 // ─── Volledige lijst titels (popup) ───
