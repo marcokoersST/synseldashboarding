@@ -1375,14 +1375,6 @@ export default function InkoopYieldDashboard() {
             </CardContent>
           </Card>
 
-          {/* ─── Titel-detail deep dive ─── */}
-          <TitelDrilldownDialog
-            titel={titelDetail}
-            allRows={kandidaten}
-            filter={filter}
-            onClose={() => setTitelDetail(null)}
-          />
-
         </TabsContent>
 
         {/* ═══ 3. REGIO ═══ */}
