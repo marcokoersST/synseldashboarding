@@ -1067,6 +1067,9 @@ export default function InkoopYieldDashboard() {
   const topMetricKey = topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct";
   const topMetricLabel = topMode === "plaatsingen" ? "plaatsingsratio" : "gespreksratio";
 
+  // Toggle voor de 4-kwadranten scatter chart
+  const [scatterMode, setScatterMode] = useState<"plaatsingen" | "gesprekken">("plaatsingen");
+
 
   // Provincie-detail popup state
   const [provincieDetail, setProvincieDetail] = useState<string | null>(null);
