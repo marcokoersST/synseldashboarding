@@ -373,7 +373,7 @@ function FullListDialog({
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1">
-          <Maximize2 className="h-3 w-3 text-[#bfa16b]" /> Volledige lijst
+          <Maximize2 className="h-3 w-3 text-[#bfa16b]" /> Volledige lijst ({allTitels.length})
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
