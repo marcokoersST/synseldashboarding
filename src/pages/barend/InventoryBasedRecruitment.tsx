@@ -1753,6 +1753,7 @@ export default function InkoopYieldDashboard() {
         allRows={kandidaten}
         filter={filter}
         onClose={() => setTitelDetail(null)}
+        filterBar={<div className="flex flex-wrap items-center gap-2"><MultiSelect label="Provincie" options={PROVINCIES} selected={filter.provincie} onChange={v => setFilter({ ...filter, provincie: v })} /><MultiSelect label="Consultant" options={CONSULTANTS.map(c => c.naam)} selected={filter.consultant} onChange={v => setFilter({ ...filter, consultant: v })} /><MultiSelect label="Unit" options={BUSINESS_UNITS} selected={filter.businessUnit} onChange={v => setFilter({ ...filter, businessUnit: v })} /><MultiSelect label="Kandidaten" options={["Nieuw", "Heractivering"]} selected={filter.kandidaatType} onChange={v => setFilter({ ...filter, kandidaatType: v as any })} /><MultiSelect label="Geplaatst" options={["Ja", "Nee"]} selected={filter.geplaatst} onChange={v => setFilter({ ...filter, geplaatst: v as any })} /><SmartDatePicker filter={filter} setFilter={setFilter} /><Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setFilter(defaultFilter)}>Reset</Button></div>}
       />
     </ConsultantLayout>
   );
