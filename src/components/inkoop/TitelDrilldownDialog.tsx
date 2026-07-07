@@ -48,7 +48,7 @@ function DeltaBadge({ v, suffix = "" }: { v: number; suffix?: string }) {
   );
 }
 
-export function TitelDrilldownDialog({ titel, allRows, filter, onClose }: Props) {
+export function TitelDrilldownDialog({ titel, allRows, filter, onClose, filterBar }: Props) {
   const [granularity, setGranularity] = useState<Granularity>("week");
   const [showTable, setShowTable] = useState(false);
   const [locSort, setLocSort] = useState<{ k: string; dir: "asc" | "desc" }>({ k: "plaatsingspct", dir: "desc" });
