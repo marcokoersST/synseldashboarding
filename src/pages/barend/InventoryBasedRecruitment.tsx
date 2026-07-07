@@ -1232,7 +1232,7 @@ export default function InkoopYieldDashboard() {
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-sm">{section.title}</CardTitle>
                     <div className="flex items-center gap-1.5">
-                      <FullListDialog title={section.title} allTitels={activeTitels} sortDir={section.sortDir} onSelectTitel={setTitelDetail} />
+                      <FullListDialog title={section.title} allTitels={section.data} sortDir={section.sortDir} onSelectTitel={setTitelDetail} />
                       <DevInfo {...section.dev} />
                     </div>
                   </div>
