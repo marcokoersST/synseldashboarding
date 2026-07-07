@@ -15,7 +15,7 @@ import {
   Info, TrendingUp, TrendingDown, Target, MapPin, Users, Megaphone, Sparkles,
   ArrowRight, ChevronDown, ChevronRight, Check, ChevronDown as ChevDown,
   Calendar as CalendarIcon, ArrowUpRight, ArrowDownRight, Maximize2, Code2,
-  Phone, MessagesSquare, PartyPopper, UsersRound, Lock,
+  Phone, MessagesSquare, PartyPopper, UsersRound,
 } from "lucide-react";
 import {
   ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip as RTooltip,
@@ -1117,9 +1117,9 @@ export default function InkoopYieldDashboard() {
         <TabsList className="mb-6 flex-wrap h-auto">
           <TabsTrigger value="exec"><Target className="h-3.5 w-3.5 mr-1.5 text-[#bfa16b]" />Executive</TabsTrigger>
           <TabsTrigger value="titels"><Sparkles className="h-3.5 w-3.5 mr-1.5 text-[#bfa16b]" />Titels</TabsTrigger>
-          <TabsTrigger value="regio" disabled><Lock className="h-3 w-3 mr-1.5 text-muted-foreground" />Regio</TabsTrigger>
-          <TabsTrigger value="consultant" disabled><Lock className="h-3 w-3 mr-1.5 text-muted-foreground" />Consultants</TabsTrigger>
-          <TabsTrigger value="opps" disabled><Lock className="h-3 w-3 mr-1.5 text-muted-foreground" />Actielijst</TabsTrigger>
+          <TabsTrigger value="regio">Regio</TabsTrigger>
+          <TabsTrigger value="consultant">Consultants</TabsTrigger>
+          <TabsTrigger value="opps">Actielijst</TabsTrigger>
         </TabsList>
 
         {/* ═══ 1. EXECUTIVE ═══ */}
