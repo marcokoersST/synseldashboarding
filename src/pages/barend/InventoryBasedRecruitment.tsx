@@ -38,25 +38,25 @@ const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
 
 // ─── Info-tooltip helper ───
 const HELP: Record<string, string> = {
-  conversies: "Alle instroom (bemiddelbaar + niet-bemiddelbaar) binnen de gekozen filters. Puur ter context — de rest van het dashboard focust op bemiddelbare kandidaten.",
-  bemiddelbaar: "Kandidaten die door recruitment goedgekeurd en werkbaar zijn. Basis voor alle plaatsingsberekeningen.",
-  acquisitie: "Bemiddelbare kandidaten die actief in het salestraject zitten (in gesprek/procedure/geplaatst óf matchscore ≥ 60).",
-  gesprek: "Bemiddelbare kandidaten met minimaal één sales-gesprek.",
-  plaatsing: "Bemiddelbare kandidaten die succesvol zijn geplaatst.",
-  kand: "Aantal bemiddelbare kandidaten binnen de filters.",
-  bem: "Aantal bemiddelbare kandidaten.",
-  gespr: "Aantal kandidaten met minimaal één sales-gesprek.",
-  totaalGespr: "Totaal aantal gesprekken (som van alle gesprekken per kandidaat).",
-  
-  plaats: "Aantal succesvolle plaatsingen.",
-  plaatsingsPct: "Plaatsingen ÷ bemiddelbare kandidaten. Hoofd-yield metric.",
-  gesprekPct: "Kandidaten met gesprek ÷ bemiddelbare kandidaten.",
+  conversies: "Het aantal kandidaten dat de kandidaatstatus 'Nieuw' heeft bereikt binnen de geselecteerde filters.",
+  bemiddelbaar: "Het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+  acquisitie: "Het aantal kandidaten dat de kandidaatstatus '2 | Acquisitie' heeft bereikt binnen de geselecteerde filters.",
+  gesprek: "Het aantal kandidaten met de dealstatus '3.1 | 1e sollicitatiegesprek' binnen de geselecteerde filters.",
+  plaatsing: "Het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
+  kand: "Het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+  bem: "Het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+  gespr: "Het aantal kandidaten met minimaal één deal met dealstatus '3.1 | 1e sollicitatiegesprek' binnen de geselecteerde filters.",
+  totaalGespr: "Het totaal aantal deals met dealstatus '3.1 | 1e sollicitatiegesprek' binnen de geselecteerde filters.",
+
+  plaats: "Het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
+  plaatsingsPct: "Het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters, gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt.",
+  gesprekPct: "Het percentage kandidaten dat minimaal één deal met dealstatus '3.1 | 1e sollicitatiegesprek' heeft bereikt binnen de geselecteerde filters, gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt.",
   advies: "Automatisch kwadrant-advies op basis van volume vs plaatsingskans t.o.v. gemiddelde.",
   besteTitel: "Titel waarop deze consultant/provincie de hoogste plaatsingskans behaalt (minimaal 3 kandidaten).",
   besteRegio: "Provincie waarin deze consultant de hoogste plaatsingskans behaalt.",
   besteCombi: "Beste titel × regio combinatie, gescoord op plaatsingskans × ln(1+volume).",
   conversiePct: "Plaatsingen ÷ bemiddelbare kandidaten in deze regio. Efficiency onafhankelijk van volume.",
-  
+
   prio: "Prioriteitscore van de aanbeveling — hoger = eerder oppakken.",
   impact: "Ingeschatte extra plaatsingen bij uitvoering van de aanbeveling.",
   kans: "Plaatsingskans die als basis dient voor deze aanbeveling.",
