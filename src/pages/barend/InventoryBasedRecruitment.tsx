@@ -1197,7 +1197,7 @@ export default function InkoopYieldDashboard() {
                     <CardTitle className="text-sm">{section.title}</CardTitle>
                     <div className="flex items-center gap-1.5">
                       <Badge style={{ background: section.color, color: "white" }} className="text-[10px]">{section.badge}</Badge>
-                      <FullListDialog title={section.title} allTitels={activeTitels} sortDir={section.sortDir} />
+                      <FullListDialog title={section.title} allTitels={activeTitels} sortDir={section.sortDir} onSelectTitel={setTitelDetail} />
                       <DevInfo {...section.dev} />
                     </div>
                   </div>
