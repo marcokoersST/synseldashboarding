@@ -1270,7 +1270,7 @@ export default function InkoopYieldDashboard() {
                   onClick={() => setScatterMode(m)}
                   className={`text-xs px-2.5 py-1 rounded transition ${scatterMode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
                 >
-                  {m === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}
+                  {m === "plaatsingen" ? "Plaatsingsratio" : "Gespreksratio"}
                 </button>
               ))}
             </div>
