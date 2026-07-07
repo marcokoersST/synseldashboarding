@@ -1282,7 +1282,11 @@ export default function InkoopYieldDashboard() {
                         </div>
                       );
                     }} />
-                  <Scatter data={scatterData}>
+                  <Scatter
+                    data={scatterData}
+                    cursor="pointer"
+                    onClick={(p: any) => { if (p?.titel) setTitelDetail(p.titel); }}
+                  >
                     {scatterData.map((d, i) => (
                       <Cell key={i} fill={QUADRANT_COLOR[d.q]} fillOpacity={0.8} />
                     ))}
