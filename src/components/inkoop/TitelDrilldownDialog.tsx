@@ -193,8 +193,6 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose }: Props)
               ))}
             </div>
           )}
-          <p className="hidden">
-          </p>
         </DialogHeader>
 
         {/* KPI strip */}
