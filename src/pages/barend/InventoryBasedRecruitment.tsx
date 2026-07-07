@@ -1243,7 +1243,9 @@ export default function InkoopYieldDashboard() {
                         <FullListDialog title={section.title} allTitels={fullData} sortDir={section.sortDir} onSelectTitel={setTitelDetail} />
                         <DevInfo
                           source={`quadrantGroups3.${groupKey}`}
-                          filters={`${CORE_FILTER}\nExtra: classifyYield(volume, ${topMetricKey}, avgVol, execAvgYield) ${section.key === "kritisch" ? "!== \\"beschermen\\" && !== \\"extra_inkopen\\"" : `=== "${section.key}"`}`}
+                          filters={section.key === "kritisch"
+                            ? `${CORE_FILTER}\nExtra: classifyYield yield < execAvgYield (any volume)`
+                            : `${CORE_FILTER}\nExtra: classifyYield === "${section.key}"`}
                           transforms={[
                             `execAvgYield = Σ ${topMetricKey} / n (over activeTitels)`,
                             `Sortering op ${topMetricKey} ${section.sortDir}`,
