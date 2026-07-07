@@ -185,6 +185,16 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose }: Props)
           <p className="text-xs text-muted-foreground">
             Periode {filter.dateFrom} → {filter.dateTo} · alle statussen, gefilterd op titel.
           </p>
+          {activeFilterChips.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              <span className="text-[10px] uppercase tracking-wide text-muted-foreground pt-0.5">Actieve filters:</span>
+              {activeFilterChips.map(c => (
+                <Badge key={c} variant="secondary" className="text-[10px] font-normal">{c}</Badge>
+              ))}
+            </div>
+          )}
+          <p className="hidden">
+          </p>
         </DialogHeader>
 
         {/* KPI strip */}
