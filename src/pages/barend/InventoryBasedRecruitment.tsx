@@ -1397,6 +1397,15 @@ export default function InkoopYieldDashboard() {
                   { name: "gesprekspct", expr: "gesprekken / bemiddelbaar" },
                   { name: "gemTijdPlaatsing", expr: "Ø dagen tussen datumBinnenkomst en plaatsingsdatum (alleen geplaatst)" },
                 ]}
+                notes={[
+                  "Titel: genormaliseerde titel.",
+                  "Inschrijvingen: het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+                  "Kandidaten met gesprekken: het aantal kandidaten met minimaal één deal met dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                  "Totaal gesprekken: het totaal aantal deals met dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                  "Plaatsingen: het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
+                  "Plaatsingspercentage: plaatsingen ÷ inschrijvingen.",
+                  "Gesprekspercentage: kandidaten met gesprek ÷ inschrijvingen.",
+                ]}
                 rowCount={activeTitels.length}
               />
             </CardHeader>
