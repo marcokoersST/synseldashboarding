@@ -1314,7 +1314,7 @@ export default function InkoopYieldDashboard() {
                   {[...activeTitels].sort((a, b) => b.plaatsingspct - a.plaatsingspct).map(t => {
                     const q = classify(t, avgVol, avgYield);
                     return (
-                      <TableRow key={t.titel} className="cursor-pointer hover:bg-muted/50" onClick={() => { setTitelDetail(t.titel); setShowTitelConsultants(false); }}>
+                      <TableRow key={t.titel} className="cursor-pointer hover:bg-muted/50" onClick={() => setTitelDetail(t.titel)}>
                         <TableCell className="text-xs font-medium underline-offset-2 hover:underline">{t.titel}</TableCell>
                         <TableCell className="text-xs text-right tabular-nums">{t.bemiddelbaar}</TableCell>
                         <TableCell className="text-xs text-right tabular-nums">{t.gesprekken}</TableCell>
