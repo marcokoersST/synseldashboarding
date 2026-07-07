@@ -1177,7 +1177,7 @@ export default function InkoopYieldDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {([
               {
-                title: `Top 10 titels op ${topMetricLabel}`, data: topRatio, badge: "Bescherm",
+                title: "Top 10 titels: Behouden", data: topRatio, badge: "Bescherm",
                 color: "hsl(150,65%,45%)", sortDir: "desc" as const,
                 dev: {
                   source: "activeTitels = statsPerTitel(rows).filter(t => t.volume > 0)",
