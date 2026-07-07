@@ -1159,19 +1159,34 @@ export default function InkoopYieldDashboard() {
           <TrendCard trend={trend} />
 
 
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs text-muted-foreground">Top-titels ranking op:</div>
+            <div className="flex gap-0.5 rounded-md border border-border p-0.5 bg-background">
+              {(["plaatsingen", "gesprekken"] as const).map(m => (
+                <button
+                  key={m}
+                  onClick={() => setTopMode(m)}
+                  className={`text-xs px-2.5 py-1 rounded transition ${topMode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {m === "plaatsingen" ? "Plaatsingsratio" : "Gespreksratio"}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {([
               {
-                title: "Top 10 titels op plaatsingsratio", data: topRatio, badge: "Bescherm",
+                title: `Top 10 titels op ${topMetricLabel}`, data: topRatio, badge: "Bescherm",
                 color: "hsl(150,65%,45%)", sortDir: "desc" as const,
                 dev: {
                   source: "activeTitels = statsPerTitel(rows).filter(t => t.volume > 0)",
                   filters: CORE_FILTER,
                   transforms: [
-                    "topRatio = [...activeTitels].sort((a,b) => b.plaatsingspct - a.plaatsingspct).slice(0, 10)",
+                    `topRatio = [...activeTitels].sort((a,b) => b.${topMetricKey} - a.${topMetricKey}).slice(0, 10)`,
                     "topRatioSet = new Set(topRatio.map(t => t.titel)) — hergebruikt door 'extra instroom'-kaart",
                   ],
-                  formulas: [{ name: "plaatsingspct", expr: "plaatsingen / bemiddelbaar (per titel)" }],
+                  formulas: [{ name: topMetricKey, expr: topMode === "plaatsingen" ? "plaatsingen / bemiddelbaar (per titel)" : "kandidaten met gesprek / bemiddelbaar (per titel)" }],
                   rowCount: topRatio.length,
                 },
               },
@@ -1180,13 +1195,13 @@ export default function InkoopYieldDashboard() {
                 color: "hsl(200,75%,50%)", sortDir: "desc" as const,
                 dev: {
                   source: "activeTitels \\ topRatioSet",
-                  filters: `${CORE_FILTER}\nExtra: t.plaatsingspct ≥ avgYield · t.volume < topRatioMedVol`,
+                  filters: `${CORE_FILTER}\nExtra: t.${topMetricKey} ≥ avgTopMetric · t.volume < topRatioMedVol`,
                   transforms: [
                     "topRatioMedVol = mediaan van topRatio.volume",
-                    "avgYield = Σ plaatsingspct / n (over activeTitels)",
+                    `avgTopMetric = Σ ${topMetricKey} / n (over activeTitels)`,
                     "Sortering op _potentie descending → slice(0, 10)",
                   ],
-                  formulas: [{ name: "_potentie", expr: "plaatsingspct × max(1, topRatioMedVol − volume)" }],
+                  formulas: [{ name: "_potentie", expr: `${topMetricKey} × max(1, topRatioMedVol − volume)` }],
                   rowCount: topExtraInstroom.length,
                 },
               },
@@ -1196,7 +1211,7 @@ export default function InkoopYieldDashboard() {
                 dev: {
                   source: "activeTitels",
                   filters: CORE_FILTER,
-                  transforms: ["Sortering op plaatsingspct ascending → slice(0, 10)"],
+                  transforms: [`Sortering op ${topMetricKey} ascending → slice(0, 10)`],
                   notes: ["Bedoeld om overschot in instroom vs yield te signaleren"],
                   rowCount: topTeHoog.length,
                 },
@@ -1220,7 +1235,7 @@ export default function InkoopYieldDashboard() {
                         <TableRow key={t.titel} className="cursor-pointer hover:bg-muted/50" onClick={() => setTitelDetail(t.titel)}>
                           <TableCell className="text-xs font-medium py-2 underline-offset-2 hover:underline">{t.titel}</TableCell>
                           <TableCell className="text-xs text-right text-muted-foreground py-2">n={t.volume}</TableCell>
-                          <TableCell className="text-xs text-right font-semibold py-2 tabular-nums">{pct(t.plaatsingspct, 1)}</TableCell>
+                          <TableCell className="text-xs text-right font-semibold py-2 tabular-nums">{pct((t as any)[topMetricKey], 1)}</TableCell>
                         </TableRow>
                       ))}
                       {section.data.length === 0 && (
