@@ -24,7 +24,7 @@ import {
 } from "recharts";
 import {
   kandidaten, applyFilter, applyFilterAllStatuses, metrics, statsPerTitel, statsPerProvincie,
-  statsPerConsultant, weeklyTrend, classify, QUADRANT_LABEL,
+  statsPerConsultant, weeklyTrend, classify, classifyYield, QUADRANT_LABEL,
   QUADRANT_COLOR, buildOpportunities, defaultFilter, TITELS, PROVINCIES,
   BUSINESS_UNITS, CONSULTANTS, DATE_MIN, DATE_MAX,
   titelsPerConsultant, regiosPerConsultant, combisPerConsultant, besteVoorConsultant,
