@@ -1206,8 +1206,8 @@ export default function InkoopYieldDashboard() {
                 color: QUADRANT_COLOR.beschermen,
                 sortDir: "desc" as const,
                 notes: [
-                  "De 10 titels met de hoogste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het hoge kwadrant qua aantal bemiddelbare kandidaten.",
-                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                  "The 10 titles with the highest placement ratio, i.e. the percentage of candidates that reached the candidate status \u201CGeplaatst\u201D within the selected filters based on the number of candidates that reached the candidate status \u201C1 | Inschrijven\u201D within the selected filters, within the high quadrant in the number of placeable candidates.",
+                  "Can be expanded to show all titles within the high quadrant in number of candidates and the high placement percentage. There is also the option to switch to Interviews. In that case we use the deal status \u201C3.1 | 1e sollicitatiegesprek\u201D.",
                 ],
               },
               {
@@ -1216,8 +1216,8 @@ export default function InkoopYieldDashboard() {
                 color: QUADRANT_COLOR.extra_inkopen,
                 sortDir: "desc" as const,
                 notes: [
-                  "De 10 titels met de hoogste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het lage kwadrant qua aantal bemiddelbare kandidaten.",
-                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                  "The 10 titles with the highest placement ratio, i.e. the percentage of candidates that reached the candidate status \u201CGeplaatst\u201D within the selected filters based on the number of candidates that reached the candidate status \u201C1 | Inschrijven\u201D within the selected filters, within the low quadrant in the number of placeable candidates.",
+                  "Can be expanded to show all titles within the low quadrant in number of candidates and the high placement percentage. There is also the option to switch to Interviews. In that case we use the deal status \u201C3.1 | 1e sollicitatiegesprek\u201D.",
                 ],
               },
               {
@@ -1226,8 +1226,8 @@ export default function InkoopYieldDashboard() {
                 color: QUADRANT_COLOR.kritisch,
                 sortDir: "asc" as const,
                 notes: [
-                  "De 10 titels met de laagste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt. Dit omvat zowel het hoge als lage volume-kwadrant (kritisch + lage prioriteit).",
-                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                  "The 10 titles with the lowest placement ratio, i.e. the percentage of candidates that reached the candidate status \u201CGeplaatst\u201D within the selected filters based on the number of candidates that reached the candidate status \u201C1 | Inschrijven\u201D within the selected filters, within the high quadrant in the number of placeable candidates.",
+                  "Can be expanded to show all titles within the high quadrant in number of candidates and the low placement percentage. There is also the option to switch to Interviews. In that case we use the deal status \u201C3.1 | 1e sollicitatiegesprek\u201D.",
                 ],
               },
             ]).map((section) => {
