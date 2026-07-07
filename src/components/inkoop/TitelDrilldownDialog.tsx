@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Minus, Eye, EyeOff } from "lucide-react";
 import {
   ComposedChart, Bar, Line, LineChart, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ResponsiveContainer, Legend, Cell, BarChart,
