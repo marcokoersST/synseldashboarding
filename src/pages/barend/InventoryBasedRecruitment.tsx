@@ -1034,28 +1034,9 @@ export default function InkoopYieldDashboard() {
   const activeTitels = useMemo(() => titelStats.filter(t => t.volume > 0), [titelStats]);
   const activeConsultants = useMemo(() => consStats.filter(c => c.volume > 0), [consStats]);
 
-  // Titel-detail popup state
+  // Titel-detail deep-dive state
   const [titelDetail, setTitelDetail] = useState<string | null>(null);
-  const [showTitelConsultants, setShowTitelConsultants] = useState(false);
-  const titelDetailData = useMemo(() => {
-    if (!titelDetail) return null;
-    const titelRows = rows.filter(r => r.titel === titelDetail);
-    const perProv = PROVINCIES.map(provincie => {
-      const list = titelRows.filter(r => r.provincie === provincie);
-      const bem = list.filter(r => r.bemiddelbaar).length;
-      const gesp = list.filter(r => r.inGesprek || r.inProcedure || r.geplaatst).length;
-      const pl = list.filter(r => r.geplaatst).length;
-      return { provincie, ins: bem, gesprekken: gesp, plaatsingen: pl, plaatsingspct: bem ? pl / bem : 0 };
-    }).filter(p => p.ins > 0).sort((a, b) => b.plaatsingen - a.plaatsingen);
-    const perCons = CONSULTANTS.map(c => {
-      const list = titelRows.filter(r => r.consultant === c.naam);
-      const bem = list.filter(r => r.bemiddelbaar).length;
-      const gesp = list.filter(r => r.inGesprek || r.inProcedure || r.geplaatst).length;
-      const pl = list.filter(r => r.geplaatst).length;
-      return { consultant: c.naam, unit: c.unit, ins: bem, gesprekken: gesp, plaatsingen: pl, plaatsingspct: bem ? pl / bem : 0 };
-    }).filter(c => c.ins > 0).sort((a, b) => b.plaatsingspct - a.plaatsingspct || b.plaatsingen - a.plaatsingen);
-    return { perProv, perCons };
-  }, [titelDetail, rows]);
+
 
   // Provincie-detail popup state
   const [provincieDetail, setProvincieDetail] = useState<string | null>(null);
