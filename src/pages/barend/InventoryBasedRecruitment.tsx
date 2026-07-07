@@ -30,6 +30,7 @@ import {
   titelsPerConsultant, regiosPerConsultant, combisPerConsultant, besteVoorConsultant,
   type FilterState, type Quadrant, type Metrics,
 } from "@/data/inkoopYieldData";
+import { TitelDrilldownDialog } from "@/components/inkoop/TitelDrilldownDialog";
 
 const fmt = (n: number) => n.toLocaleString("nl-NL");
 const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
@@ -313,11 +314,12 @@ function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number;
 
 // ─── Volledige lijst titels (popup) ───
 function FullListDialog({
-  title, allTitels, sortDir,
+  title, allTitels, sortDir, onSelectTitel,
 }: {
   title: string;
   allTitels: Array<{ titel: string; volume: number; bemiddelbaar: number; plaatsingen: number; plaatsingspct: number; gesprekken: number; gesprekspct: number }>;
   sortDir: "asc" | "desc";
+  onSelectTitel?: (titel: string) => void;
 }) {
   const [q, setQ] = useState("");
   const [sortKey, setSortKey] = useState<"titel" | "volume" | "gesprekken" | "gesprekspct" | "plaatsingen" | "plaatsingspct">("plaatsingspct");
@@ -372,8 +374,12 @@ function FullListDialog({
             </TableHeader>
             <TableBody>
               {list.map(t => (
-                <TableRow key={t.titel}>
-                  <TableCell className="text-xs font-medium py-1.5">{t.titel}</TableCell>
+                <TableRow
+                  key={t.titel}
+                  className={onSelectTitel ? "cursor-pointer hover:bg-muted/50" : ""}
+                  onClick={onSelectTitel ? () => onSelectTitel(t.titel) : undefined}
+                >
+                  <TableCell className={`text-xs font-medium py-1.5 ${onSelectTitel ? "underline-offset-2 hover:underline" : ""}`}>{t.titel}</TableCell>
                   <TableCell className="text-xs text-right tabular-nums py-1.5">{t.volume}</TableCell>
                   <TableCell className="text-xs text-right tabular-nums py-1.5">{t.gesprekken}</TableCell>
                   <TableCell className="text-xs text-right tabular-nums py-1.5">{pct(t.gesprekspct, 1)}</TableCell>
@@ -1028,28 +1034,9 @@ export default function InkoopYieldDashboard() {
   const activeTitels = useMemo(() => titelStats.filter(t => t.volume > 0), [titelStats]);
   const activeConsultants = useMemo(() => consStats.filter(c => c.volume > 0), [consStats]);
 
-  // Titel-detail popup state
+  // Titel-detail deep-dive state
   const [titelDetail, setTitelDetail] = useState<string | null>(null);
-  const [showTitelConsultants, setShowTitelConsultants] = useState(false);
-  const titelDetailData = useMemo(() => {
-    if (!titelDetail) return null;
-    const titelRows = rows.filter(r => r.titel === titelDetail);
-    const perProv = PROVINCIES.map(provincie => {
-      const list = titelRows.filter(r => r.provincie === provincie);
-      const bem = list.filter(r => r.bemiddelbaar).length;
-      const gesp = list.filter(r => r.inGesprek || r.inProcedure || r.geplaatst).length;
-      const pl = list.filter(r => r.geplaatst).length;
-      return { provincie, ins: bem, gesprekken: gesp, plaatsingen: pl, plaatsingspct: bem ? pl / bem : 0 };
-    }).filter(p => p.ins > 0).sort((a, b) => b.plaatsingen - a.plaatsingen);
-    const perCons = CONSULTANTS.map(c => {
-      const list = titelRows.filter(r => r.consultant === c.naam);
-      const bem = list.filter(r => r.bemiddelbaar).length;
-      const gesp = list.filter(r => r.inGesprek || r.inProcedure || r.geplaatst).length;
-      const pl = list.filter(r => r.geplaatst).length;
-      return { consultant: c.naam, unit: c.unit, ins: bem, gesprekken: gesp, plaatsingen: pl, plaatsingspct: bem ? pl / bem : 0 };
-    }).filter(c => c.ins > 0).sort((a, b) => b.plaatsingspct - a.plaatsingspct || b.plaatsingen - a.plaatsingen);
-    return { perProv, perCons };
-  }, [titelDetail, rows]);
+
 
   // Provincie-detail popup state
   const [provincieDetail, setProvincieDetail] = useState<string | null>(null);
@@ -1192,7 +1179,7 @@ export default function InkoopYieldDashboard() {
                     <CardTitle className="text-sm">{section.title}</CardTitle>
                     <div className="flex items-center gap-1.5">
                       <Badge style={{ background: section.color, color: "white" }} className="text-[10px]">{section.badge}</Badge>
-                      <FullListDialog title={section.title} allTitels={activeTitels} sortDir={section.sortDir} />
+                      <FullListDialog title={section.title} allTitels={activeTitels} sortDir={section.sortDir} onSelectTitel={setTitelDetail} />
                       <DevInfo {...section.dev} />
                     </div>
                   </div>
@@ -1201,8 +1188,8 @@ export default function InkoopYieldDashboard() {
                   <Table>
                     <TableBody>
                       {section.data.map(t => (
-                        <TableRow key={t.titel}>
-                          <TableCell className="text-xs font-medium py-2">{t.titel}</TableCell>
+                        <TableRow key={t.titel} className="cursor-pointer hover:bg-muted/50" onClick={() => setTitelDetail(t.titel)}>
+                          <TableCell className="text-xs font-medium py-2 underline-offset-2 hover:underline">{t.titel}</TableCell>
                           <TableCell className="text-xs text-right text-muted-foreground py-2">n={t.volume}</TableCell>
                           <TableCell className="text-xs text-right font-semibold py-2 tabular-nums">{pct(t.plaatsingspct, 1)}</TableCell>
                         </TableRow>
@@ -1277,7 +1264,11 @@ export default function InkoopYieldDashboard() {
                         </div>
                       );
                     }} />
-                  <Scatter data={scatterData}>
+                  <Scatter
+                    data={scatterData}
+                    cursor="pointer"
+                    onClick={(p: any) => { if (p?.titel) setTitelDetail(p.titel); }}
+                  >
                     {scatterData.map((d, i) => (
                       <Cell key={i} fill={QUADRANT_COLOR[d.q]} fillOpacity={0.8} />
                     ))}
@@ -1323,7 +1314,7 @@ export default function InkoopYieldDashboard() {
                   {[...activeTitels].sort((a, b) => b.plaatsingspct - a.plaatsingspct).map(t => {
                     const q = classify(t, avgVol, avgYield);
                     return (
-                      <TableRow key={t.titel} className="cursor-pointer hover:bg-muted/50" onClick={() => { setTitelDetail(t.titel); setShowTitelConsultants(false); }}>
+                      <TableRow key={t.titel} className="cursor-pointer hover:bg-muted/50" onClick={() => setTitelDetail(t.titel)}>
                         <TableCell className="text-xs font-medium underline-offset-2 hover:underline">{t.titel}</TableCell>
                         <TableCell className="text-xs text-right tabular-nums">{t.bemiddelbaar}</TableCell>
                         <TableCell className="text-xs text-right tabular-nums">{t.gesprekken}</TableCell>
@@ -1340,90 +1331,13 @@ export default function InkoopYieldDashboard() {
             </CardContent>
           </Card>
 
-          {/* ─── Titel-detail popup ─── */}
-          <Dialog open={!!titelDetail} onOpenChange={(o) => !o && setTitelDetail(null)}>
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-base">{titelDetail} — scores per provincie</DialogTitle>
-              </DialogHeader>
-              {titelDetailData && (
-                <div className="space-y-4">
-                  <div className="border border-border rounded-md overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Provincie</TableHead>
-                          <TableHead className="text-right">Ins.</TableHead>
-                          <TableHead className="text-right">Gespr.</TableHead>
-                          <TableHead className="text-right">Plaats.</TableHead>
-                          <TableHead className="text-right">Plaatsings %</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {titelDetailData.perProv.map(p => (
-                          <TableRow key={p.provincie}>
-                            <TableCell className="text-xs font-medium">{p.provincie}</TableCell>
-                            <TableCell className="text-xs text-right tabular-nums">{p.ins}</TableCell>
-                            <TableCell className="text-xs text-right tabular-nums">{p.gesprekken}</TableCell>
-                            <TableCell className="text-xs text-right tabular-nums font-semibold">{p.plaatsingen}</TableCell>
-                            <TableCell className="text-xs text-right tabular-nums">{pct(p.plaatsingspct, 1)}</TableCell>
-                          </TableRow>
-                        ))}
-                        {titelDetailData.perProv.length === 0 && (
-                          <TableRow><TableCell colSpan={5} className="text-xs text-center text-muted-foreground py-4">Geen data</TableCell></TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  <div className="border border-border rounded-md">
-                    <button
-                      type="button"
-                      onClick={() => setShowTitelConsultants(v => !v)}
-                      className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium hover:bg-muted/50 transition"
-                    >
-                      <span className="flex items-center gap-2">
-                        {showTitelConsultants ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                        Consultants — wie scoort het best op {titelDetail}?
-                      </span>
-                      <span className="text-muted-foreground">{titelDetailData.perCons.length}</span>
-                    </button>
-                    {showTitelConsultants && (
-                      <div className="border-t border-border overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Consultant</TableHead>
-                              <TableHead>Unit</TableHead>
-                              <TableHead className="text-right">Ins.</TableHead>
-                              <TableHead className="text-right">Gespr.</TableHead>
-                              <TableHead className="text-right">Plaats.</TableHead>
-                              <TableHead className="text-right">Plaatsings %</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {titelDetailData.perCons.map(c => (
-                              <TableRow key={c.consultant}>
-                                <TableCell className="text-xs font-medium">{c.consultant}</TableCell>
-                                <TableCell className="text-xs text-muted-foreground">{c.unit}</TableCell>
-                                <TableCell className="text-xs text-right tabular-nums">{c.ins}</TableCell>
-                                <TableCell className="text-xs text-right tabular-nums">{c.gesprekken}</TableCell>
-                                <TableCell className="text-xs text-right tabular-nums font-semibold">{c.plaatsingen}</TableCell>
-                                <TableCell className="text-xs text-right tabular-nums">{pct(c.plaatsingspct, 1)}</TableCell>
-                              </TableRow>
-                            ))}
-                            {titelDetailData.perCons.length === 0 && (
-                              <TableRow><TableCell colSpan={6} className="text-xs text-center text-muted-foreground py-4">Geen consultants</TableCell></TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
+          {/* ─── Titel-detail deep dive ─── */}
+          <TitelDrilldownDialog
+            titel={titelDetail}
+            allRows={kandidaten}
+            filter={filter}
+            onClose={() => setTitelDetail(null)}
+          />
 
         </TabsContent>
 
