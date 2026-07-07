@@ -196,6 +196,13 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose, filterBa
           )}
         </DialogHeader>
 
+        {filterBar && (
+          <div className="border rounded-md bg-muted/30 px-3 py-2 mt-2">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Filters aanpassen</div>
+            {filterBar}
+          </div>
+        )}
+
         {/* KPI strip */}
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mt-1">
           {[
