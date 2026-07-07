@@ -1267,17 +1267,17 @@ export default function InkoopYieldDashboard() {
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <CardTitle className="text-base">Instroom vs {scatterMode === "plaatsingen" ? "plaatsingskans" : "gesprekkans"} — 4-kwadranten matrix</CardTitle>
-                  <p className="text-xs text-muted-foreground">Elke bubble = genormaliseerde titel. Grootte = aantal {topMode === "plaatsingen" ? "plaatsingen" : "gesprekken"}. Kleur = kwadrant-advies.</p>
+                  <p className="text-xs text-muted-foreground">Elke bubble = genormaliseerde titel. Grootte = aantal {scatterMode === "plaatsingen" ? "plaatsingen" : "gesprekken"}. Kleur = kwadrant-advies.</p>
                 </div>
                 <DevInfo
                   source="scatterData = activeTitels.map(...) uit statsPerTitel(rows)"
                   filters={CORE_FILTER}
                   transforms={[
-                    `x = t.volume · y = round(${topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} × 100) · z = 100 + ${topMode === "plaatsingen" ? "plaatsingen" : "gesprekken"} × 8 (bubble-grootte)`,
-                    `avgVol = Σ volume / n(activeTitels), avgYield = Σ ${topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} / n`,
-                    `Kwadrant q = classifyYield(volume, ${topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"}, avgVol, avgYield) → {beschermen, extra_inkopen, kritisch, lage_prio}`,
+                    `x = t.volume · y = round(${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} × 100) · z = 100 + ${scatterMode === "plaatsingen" ? "plaatsingen" : "gesprekken"} × 8 (bubble-grootte)`,
+                    `avgVol = Σ volume / n(activeTitels), avgYield = Σ ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} / n`,
+                    `Kwadrant q = classifyYield(volume, ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"}, avgVol, avgYield) → {beschermen, extra_inkopen, kritisch, lage_prio}`,
                   ]}
-                  formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} ≥ avgYield` }]}
+                  formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} ≥ avgYield` }]}
                   rowCount={scatterData.length}
                 />
               </div>
@@ -1297,9 +1297,9 @@ export default function InkoopYieldDashboard() {
                   <XAxis type="number" dataKey="x" name="Instroom"
                     tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     label={{ value: "Instroom (kandidaten)", position: "bottom", offset: 0, fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis type="number" dataKey="y" name={topMode === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}
+                  <YAxis type="number" dataKey="y" name={scatterMode === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}
                     tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                    label={{ value: topMode === "plaatsingen" ? "Plaatsingskans %" : "Gesprekkans %", angle: -90, position: "insideLeft", fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    label={{ value: scatterMode === "plaatsingen" ? "Plaatsingskans %" : "Gesprekkans %", angle: -90, position: "insideLeft", fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                   <ZAxis type="number" dataKey="z" range={[80, 500]} />
                   <ReferenceLine x={avgVol} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
                   <ReferenceLine y={avgYield * 100} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
@@ -1311,7 +1311,7 @@ export default function InkoopYieldDashboard() {
                         <div className="bg-card border border-border rounded p-2 text-xs shadow-lg">
                           <div className="font-semibold">{p.titel}</div>
                           <div>Instroom: {p.volume} · {p._countLabel}: {p._countValue}</div>
-                          <div>{topMode === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}: {pct(p._yieldPct, 1)}</div>
+                          <div>{scatterMode === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}: {pct(p._yieldPct, 1)}</div>
                           <div className="mt-1 text-[10px]" style={{ color: QUADRANT_COLOR[p.q as Quadrant] }}>
                             → {QUADRANT_LABEL[p.q as Quadrant]}
                           </div>
