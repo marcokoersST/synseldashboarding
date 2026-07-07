@@ -9,7 +9,7 @@ import {
   ComposedChart, Bar, Line, LineChart, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ResponsiveContainer, Legend, Cell, BarChart,
 } from "recharts";
-import { PROVINCIES, type Kandidaat, type FilterState } from "@/data/inkoopYieldData";
+import { PROVINCIES, applyFilterAllStatuses, type Kandidaat, type FilterState } from "@/data/inkoopYieldData";
 
 const fmt = (n: number) => n.toLocaleString("nl-NL");
 const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
