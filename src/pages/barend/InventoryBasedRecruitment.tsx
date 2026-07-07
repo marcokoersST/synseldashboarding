@@ -1062,6 +1062,11 @@ export default function InkoopYieldDashboard() {
   // Titel-detail deep-dive state
   const [titelDetail, setTitelDetail] = useState<string | null>(null);
 
+  // Toggle voor de 3 top-titel kaarten: op plaatsings- of gespreksratio
+  const [topMode, setTopMode] = useState<"plaatsingen" | "gesprekken">("plaatsingen");
+  const topMetricKey = topMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct";
+  const topMetricLabel = topMode === "plaatsingen" ? "plaatsingsratio" : "gespreksratio";
+
 
   // Provincie-detail popup state
   const [provincieDetail, setProvincieDetail] = useState<string | null>(null);
