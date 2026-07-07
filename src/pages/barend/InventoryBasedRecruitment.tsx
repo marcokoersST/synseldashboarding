@@ -1113,25 +1113,23 @@ export default function InkoopYieldDashboard() {
   const avgYield = activeTitels.reduce((s, t) => s + (scatterMode === "plaatsingen" ? t.plaatsingspct : t.gesprekspct), 0) / (activeTitels.length || 1);
   const avgTopMetric = activeTitels.reduce((s, t) => s + (t as any)[topMetricKey], 0) / (activeTitels.length || 1);
 
-  // Executive-tab kwadrant-groepen gebaseerd op topMode
+  // Executive-tab kwadrant-groepen gebaseerd op topMode (3 kaarten)
   const execAvgYield = activeTitels.reduce((s, t) => s + (t as any)[topMetricKey], 0) / (activeTitels.length || 1);
-  const quadrantGroups = useMemo(() => {
-    const groups: Record<Quadrant, typeof activeTitels> = {
-      beschermen: [],
-      extra_inkopen: [],
-      kritisch: [],
-      lage_prio: [],
-    };
+  const quadrantGroups3 = useMemo(() => {
+    const beschermen: typeof activeTitels = [];
+    const extraInkoop: typeof activeTitels = [];
+    const kritisch: typeof activeTitels = [];
     for (const t of activeTitels) {
       const yieldPct = (t as any)[topMetricKey] as number;
       const q = classifyYield(t.volume, yieldPct, avgVol, execAvgYield);
-      groups[q].push(t);
+      if (q === "beschermen") beschermen.push(t);
+      else if (q === "extra_inkopen") extraInkoop.push(t);
+      else kritisch.push(t); // samenvoegen van kritisch + lage_prio
     }
-    groups.beschermen.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
-    groups.extra_inkopen.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
-    groups.kritisch.sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey]);
-    groups.lage_prio.sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey]);
-    return groups;
+    beschermen.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
+    extraInkoop.sort((a, b) => (b as any)[topMetricKey] - (a as any)[topMetricKey]);
+    kritisch.sort((a, b) => (a as any)[topMetricKey] - (b as any)[topMetricKey]);
+    return { beschermen, extraInkoop, kritisch };
   }, [activeTitels, topMetricKey, avgVol, execAvgYield]);
 
 
@@ -1200,10 +1198,10 @@ export default function InkoopYieldDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {([
               {
-                key: "beschermen" as Quadrant,
+                key: "beschermen" as const,
                 title: QUADRANT_LABEL.beschermen,
                 color: QUADRANT_COLOR.beschermen,
                 sortDir: "desc" as const,
@@ -1213,7 +1211,7 @@ export default function InkoopYieldDashboard() {
                 ],
               },
               {
-                key: "extra_inkopen" as Quadrant,
+                key: "extra_inkopen" as const,
                 title: QUADRANT_LABEL.extra_inkopen,
                 color: QUADRANT_COLOR.extra_inkopen,
                 sortDir: "desc" as const,
@@ -1223,27 +1221,18 @@ export default function InkoopYieldDashboard() {
                 ],
               },
               {
-                key: "kritisch" as Quadrant,
+                key: "kritisch" as const,
                 title: QUADRANT_LABEL.kritisch,
                 color: QUADRANT_COLOR.kritisch,
                 sortDir: "asc" as const,
                 notes: [
-                  "De 10 titels met de laagste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het hoge kwadrant qua aantal bemiddelbare kandidaten.",
-                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
-                ],
-              },
-              {
-                key: "lage_prio" as Quadrant,
-                title: QUADRANT_LABEL.lage_prio,
-                color: QUADRANT_COLOR.lage_prio,
-                sortDir: "asc" as const,
-                notes: [
-                  "De 10 titels met de laagste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het lage kwadrant qua aantal bemiddelbare kandidaten.",
+                  "De 10 titels met de laagste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt. Dit omvat zowel het hoge als lage volume-kwadrant (kritisch + lage prioriteit).",
                   "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
                 ],
               },
             ]).map((section) => {
-              const fullData = quadrantGroups[section.key];
+              const groupKey = section.key === "extra_inkopen" ? "extraInkoop" : section.key;
+              const fullData = (quadrantGroups3 as any)[groupKey];
               const cardData = fullData.slice(0, 10);
               return (
                 <Card key={section.key} className="border border-border">
@@ -1253,8 +1242,10 @@ export default function InkoopYieldDashboard() {
                       <div className="flex items-center gap-1.5">
                         <FullListDialog title={section.title} allTitels={fullData} sortDir={section.sortDir} onSelectTitel={setTitelDetail} />
                         <DevInfo
-                          source={`quadrantGroups["${section.key}"]`}
-                          filters={`${CORE_FILTER}\nExtra: classifyYield(volume, ${topMetricKey}, avgVol, execAvgYield) === "${section.key}"`}
+                          source={`quadrantGroups3.${groupKey}`}
+                          filters={section.key === "kritisch"
+                            ? `${CORE_FILTER}\nExtra: classifyYield yield < execAvgYield (any volume)`
+                            : `${CORE_FILTER}\nExtra: classifyYield === "${section.key}"`}
                           transforms={[
                             `execAvgYield = Σ ${topMetricKey} / n (over activeTitels)`,
                             `Sortering op ${topMetricKey} ${section.sortDir}`,
