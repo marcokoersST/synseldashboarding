@@ -33,7 +33,8 @@ import {
     Sparkles,
     ShieldCheck,
     Radar,
-    Phone
+    Phone,
+    Target
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -185,6 +186,7 @@ const navItems: NavItem[] = [
     subItems: [
       { icon: Filter, label: "Reverse Matching Analytics", path: "/barend/reverse-matching" },
       { icon: BarChart3, label: "Funnel Operations", path: "/barend/funnel-ops" },
+      { icon: Target, label: "Inventory Based Recruitment", path: "/barend/inventory-based-recruitment" },
     ]
   },
   {

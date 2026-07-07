@@ -1,20 +1,25 @@
 ## Goal
-Rebalance the TV-mode right-column layout so the "Totalen" tile is more prominent and the "Effectiviteit outreach" tile is smaller, while keeping the outcome row (Verbonden/Voicemail/Geen gehoor/Opgehangen) intact.
+Bring the "Inventory Based Recruitment" dashboard from the source project (`Remix of AI Data dashboarding 2026 - Synsel`) into this project under the **Dashboards Barend** section, keeping the source code intact.
 
-## Changes
+## Files to copy (verbatim from source)
+1. `src/data/inkoopYieldData.ts` → same path here (572 lines, self-contained mock data).
+2. `src/pages/marketing/InkoopYieldDashboard.tsx` → **relocated** to `src/pages/barend/InventoryBasedRecruitment.tsx` so it lives with Barend's other dashboards. The file contents stay unchanged (it uses `ConsultantLayout`, shadcn/ui, recharts, lucide-react — all already present in this project).
 
-### 1. `src/pages/concepts/CallDashboarding.tsx` — TV layout grid
-- Change the right-column grid from:
-  - Totalen `row-span-1` → `row-span-2`
-  - Effectiviteit outreach `row-span-3` → `row-span-2`
-- Pass `size="lg"` to all four `HeroCounter` instances inside the Totalen tile so the numbers and labels scale up.
+Rationale for the path change: the request is to place it under Dashboards Barend, and Barend pages live in `src/pages/barend/`. The React component code itself is not modified.
 
-### 2. `src/components/calldashboarding/tv/TVOutreachEffectivenessTile.tsx` — internal flex proportions
-- Reduce the primary match-mix section (Kandidaat / Organisatie / Contactpersoon / Nieuw nummer) from `flex-[7]` to `flex-[4]`.
-- Increase the secondary connect-rate footer (Verbonden / Voicemail / Geen gehoor / Opgehangen) from `flex-[3]` to `flex-[5]` so the outcome row does not shrink and remains readable.
-- Tighten vertical padding inside the big-number cells (`py-2` → `py-1`) if needed to avoid clipping in the shorter tile.
+## Wiring
+1. **Route** — `src/App.tsx`:
+   - Add lazy import: `const BarendInventoryBasedRecruitment = lazy(() => import("./pages/barend/InventoryBasedRecruitment"));`
+   - Add route: `<Route path="/barend/inventory-based-recruitment" element={<BarendInventoryBasedRecruitment />} />` next to the other `/barend/*` routes.
 
-## Result
-- Totalen tile doubles in height with larger numbers, making it the dominant KPI strip.
-- Effectiviteit outreach tile shrinks overall, but the outcome row at the bottom keeps its relative size. Only the Kandidaat/Organisatie/Contactpersoon/Nieuw-nummer number row is compressed.
-- No changes to data logic, colors, or content.
+2. **Sidebar** — `src/components/dashboard/Sidebar.tsx`:
+   - Under the `Dashboards Barend` section (currently has Reverse Matching Analytics + Funnel Operations), add a third child:
+     `{ icon: Target, label: "Inventory Based Recruitment", path: "/barend/inventory-based-recruitment" }`
+     (Import `Target` from `lucide-react` if it isn't already imported there.)
+
+## Verification
+- Typecheck runs automatically after edits.
+- Navigate to `/barend/inventory-based-recruitment` in the preview to confirm the dashboard renders and the sidebar item appears under Dashboards Barend.
+
+## Out of scope
+No changes to the source project. No refactor of the dashboard component itself.
