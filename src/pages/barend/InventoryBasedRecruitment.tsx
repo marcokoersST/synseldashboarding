@@ -30,6 +30,7 @@ import {
   titelsPerConsultant, regiosPerConsultant, combisPerConsultant, besteVoorConsultant,
   type FilterState, type Quadrant, type Metrics,
 } from "@/data/inkoopYieldData";
+import { TitelDrilldownDialog } from "@/components/inkoop/TitelDrilldownDialog";
 
 const fmt = (n: number) => n.toLocaleString("nl-NL");
 const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
