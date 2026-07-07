@@ -1206,8 +1206,8 @@ export default function InkoopYieldDashboard() {
                   <Table>
                     <TableBody>
                       {section.data.map(t => (
-                        <TableRow key={t.titel}>
-                          <TableCell className="text-xs font-medium py-2">{t.titel}</TableCell>
+                        <TableRow key={t.titel} className="cursor-pointer hover:bg-muted/50" onClick={() => setTitelDetail(t.titel)}>
+                          <TableCell className="text-xs font-medium py-2 underline-offset-2 hover:underline">{t.titel}</TableCell>
                           <TableCell className="text-xs text-right text-muted-foreground py-2">n={t.volume}</TableCell>
                           <TableCell className="text-xs text-right font-semibold py-2 tabular-nums">{pct(t.plaatsingspct, 1)}</TableCell>
                         </TableRow>
