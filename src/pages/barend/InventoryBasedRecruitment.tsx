@@ -38,25 +38,25 @@ const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
 
 // ─── Info-tooltip helper ───
 const HELP: Record<string, string> = {
-  conversies: "Alle instroom (bemiddelbaar + niet-bemiddelbaar) binnen de gekozen filters. Puur ter context — de rest van het dashboard focust op bemiddelbare kandidaten.",
-  bemiddelbaar: "Kandidaten die door recruitment goedgekeurd en werkbaar zijn. Basis voor alle plaatsingsberekeningen.",
-  acquisitie: "Bemiddelbare kandidaten die actief in het salestraject zitten (in gesprek/procedure/geplaatst óf matchscore ≥ 60).",
-  gesprek: "Bemiddelbare kandidaten met minimaal één sales-gesprek.",
-  plaatsing: "Bemiddelbare kandidaten die succesvol zijn geplaatst.",
-  kand: "Aantal bemiddelbare kandidaten binnen de filters.",
-  bem: "Aantal bemiddelbare kandidaten.",
-  gespr: "Aantal kandidaten met minimaal één sales-gesprek.",
-  totaalGespr: "Totaal aantal gesprekken (som van alle gesprekken per kandidaat).",
-  
-  plaats: "Aantal succesvolle plaatsingen.",
-  plaatsingsPct: "Plaatsingen ÷ bemiddelbare kandidaten. Hoofd-yield metric.",
-  gesprekPct: "Kandidaten met gesprek ÷ bemiddelbare kandidaten.",
+  conversies: "Het aantal kandidaten dat de kandidaatstatus 'Nieuw' heeft bereikt binnen de geselecteerde filters.",
+  bemiddelbaar: "Het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+  acquisitie: "Het aantal kandidaten dat de kandidaatstatus '2 | Acquisitie' heeft bereikt binnen de geselecteerde filters.",
+  gesprek: "Het aantal kandidaten met de dealstatus '3.1 | 1e sollicitatiegesprek' binnen de geselecteerde filters.",
+  plaatsing: "Het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
+  kand: "Het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+  bem: "Het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+  gespr: "Het aantal kandidaten met minimaal één deal met dealstatus '3.1 | 1e sollicitatiegesprek' binnen de geselecteerde filters.",
+  totaalGespr: "Het totaal aantal deals met dealstatus '3.1 | 1e sollicitatiegesprek' binnen de geselecteerde filters.",
+
+  plaats: "Het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
+  plaatsingsPct: "Het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters, gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt.",
+  gesprekPct: "Het percentage kandidaten dat minimaal één deal met dealstatus '3.1 | 1e sollicitatiegesprek' heeft bereikt binnen de geselecteerde filters, gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt.",
   advies: "Automatisch kwadrant-advies op basis van volume vs plaatsingskans t.o.v. gemiddelde.",
   besteTitel: "Titel waarop deze consultant/provincie de hoogste plaatsingskans behaalt (minimaal 3 kandidaten).",
   besteRegio: "Provincie waarin deze consultant de hoogste plaatsingskans behaalt.",
   besteCombi: "Beste titel × regio combinatie, gescoord op plaatsingskans × ln(1+volume).",
   conversiePct: "Plaatsingen ÷ bemiddelbare kandidaten in deze regio. Efficiency onafhankelijk van volume.",
-  
+
   prio: "Prioriteitscore van de aanbeveling — hoger = eerder oppakken.",
   impact: "Ingeschatte extra plaatsingen bij uitvoering van de aanbeveling.",
   kans: "Plaatsingskans die als basis dient voor deze aanbeveling.",
@@ -270,8 +270,8 @@ function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number;
   return (
     <Card className="border border-border">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
             <CardTitle className="text-base">Trend per week</CardTitle>
             <div className="flex gap-0.5 rounded-md border border-border p-0.5 bg-background">
               {(["plaatsingen", "gesprekken"] as const).map(m => (
@@ -285,15 +285,30 @@ function TrendCard({ trend }: { trend: Array<{ week: string; kandidaten: number;
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-4 text-[12px]">
-            {items.map(it => (
-              <label key={it.key} className="flex items-center gap-2 cursor-pointer select-none">
-                <Checkbox checked={show[it.key]} onCheckedChange={() => toggle(it.key)} />
-                <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: it.color }} />
-                <span className="text-foreground">{it.label}</span>
-              </label>
-            ))}
-          </div>
+          <DevInfo
+            source="weeklyTrend(rows) uit inkoopYieldData.ts"
+            filters={CORE_FILTER}
+            transforms={[
+              "Groepering op ISO-week (maandag-zondag)",
+              "Kandidaten = count(bemiddelbaar), Plaatsingen = count(geplaatst), Gesprekken = count(inGesprek)",
+            ]}
+            notes={[
+              "Kandidaten: het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+              "Plaatsingen: het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
+              "Plaatsingsratio %: het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt, gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt.",
+              "Er is ook de optie om te schakelen naar Gesprekken. In dat geval gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek' en de gespreksratio.",
+            ]}
+            rowCount={trend.length}
+          />
+        </div>
+        <div className="flex items-center gap-4 text-[12px] mt-2">
+          {items.map(it => (
+            <label key={it.key} className="flex items-center gap-2 cursor-pointer select-none">
+              <Checkbox checked={show[it.key]} onCheckedChange={() => toggle(it.key)} />
+              <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: it.color }} />
+              <span className="text-foreground">{it.label}</span>
+            </label>
+          ))}
         </div>
       </CardHeader>
       <CardContent>
@@ -1192,24 +1207,40 @@ export default function InkoopYieldDashboard() {
                 title: QUADRANT_LABEL.beschermen,
                 color: QUADRANT_COLOR.beschermen,
                 sortDir: "desc" as const,
+                notes: [
+                  "De 10 titels met de hoogste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het hoge kwadrant qua aantal bemiddelbare kandidaten.",
+                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                ],
               },
               {
                 key: "extra_inkopen" as Quadrant,
                 title: QUADRANT_LABEL.extra_inkopen,
                 color: QUADRANT_COLOR.extra_inkopen,
                 sortDir: "desc" as const,
+                notes: [
+                  "De 10 titels met de hoogste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het lage kwadrant qua aantal bemiddelbare kandidaten.",
+                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                ],
               },
               {
                 key: "kritisch" as Quadrant,
                 title: QUADRANT_LABEL.kritisch,
                 color: QUADRANT_COLOR.kritisch,
                 sortDir: "asc" as const,
+                notes: [
+                  "De 10 titels met de laagste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het hoge kwadrant qua aantal bemiddelbare kandidaten.",
+                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                ],
               },
               {
                 key: "lage_prio" as Quadrant,
                 title: QUADRANT_LABEL.lage_prio,
                 color: QUADRANT_COLOR.lage_prio,
                 sortDir: "asc" as const,
+                notes: [
+                  "De 10 titels met de laagste plaatsingsratio (of gespreksratio), het percentage kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters gebaseerd op het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt, binnen het lage kwadrant qua aantal bemiddelbare kandidaten.",
+                  "Kan worden uitgeklapt om alle titels in dit kwadrant te tonen. Er is ook de optie om te schakelen naar Gesprekken; dan gebruiken we de dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                ],
               },
             ]).map((section) => {
               const fullData = quadrantGroups[section.key];
@@ -1229,6 +1260,7 @@ export default function InkoopYieldDashboard() {
                             `Sortering op ${topMetricKey} ${section.sortDir}`,
                           ]}
                           formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${topMetricKey} ≥ execAvgYield` }]}
+                          notes={section.notes}
                           rowCount={cardData.length}
                         />
                       </div>
@@ -1290,6 +1322,12 @@ export default function InkoopYieldDashboard() {
                     `Kwadrant q = classifyYield(volume, ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"}, avgVol, avgYield) → {beschermen, extra_inkopen, kritisch, lage_prio}`,
                   ]}
                   formulas={[{ name: "classifyYield", expr: `hoogVol = volume ≥ avgVol; hoogYield = ${scatterMode === "plaatsingen" ? "plaatsingspct" : "gesprekspct"} ≥ avgYield` }]}
+                  notes={[
+                    "Inflow (kandidaten): het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters per genormaliseerde titel.",
+                    "Plaatsingspercentage: het plaatsingspercentage per genormaliseerde titel.",
+                    "Gesprekspercentage: het percentage kandidaten met een sollicitatiegesprek per genormaliseerde titel.",
+                    "Schakel tussen plaatsingspercentage en gesprekspercentage via de toggle boven de matrix.",
+                  ]}
                   rowCount={scatterData.length}
                 />
               </div>
@@ -1358,6 +1396,15 @@ export default function InkoopYieldDashboard() {
                   { name: "plaatsingspct", expr: "plaatsingen / bemiddelbaar" },
                   { name: "gesprekspct", expr: "gesprekken / bemiddelbaar" },
                   { name: "gemTijdPlaatsing", expr: "Ø dagen tussen datumBinnenkomst en plaatsingsdatum (alleen geplaatst)" },
+                ]}
+                notes={[
+                  "Titel: genormaliseerde titel.",
+                  "Inschrijvingen: het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
+                  "Kandidaten met gesprekken: het aantal kandidaten met minimaal één deal met dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                  "Totaal gesprekken: het totaal aantal deals met dealstatus '3.1 | 1e sollicitatiegesprek'.",
+                  "Plaatsingen: het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
+                  "Plaatsingspercentage: plaatsingen ÷ inschrijvingen.",
+                  "Gesprekspercentage: kandidaten met gesprek ÷ inschrijvingen.",
                 ]}
                 rowCount={activeTitels.length}
               />
