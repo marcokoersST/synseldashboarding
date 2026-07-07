@@ -1191,7 +1191,7 @@ export default function InkoopYieldDashboard() {
                 },
               },
               {
-                title: "Top 10 titels: extra instroom nodig", data: topExtraInstroom, badge: "Inkopen",
+                title: "Top 10 titels: Opschalen", data: topExtraInstroom, badge: "Inkopen",
                 color: "hsl(200,75%,50%)", sortDir: "desc" as const,
                 dev: {
                   source: "activeTitels \\ topRatioSet",
