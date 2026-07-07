@@ -1389,13 +1389,13 @@ export default function InkoopYieldDashboard() {
                   { name: "gemTijdPlaatsing", expr: "Ø dagen tussen datumBinnenkomst en plaatsingsdatum (alleen geplaatst)" },
                 ]}
                 notes={[
-                  "Titel: genormaliseerde titel.",
-                  "Inschrijvingen: het aantal kandidaten dat de kandidaatstatus '1 | Inschrijven' heeft bereikt binnen de geselecteerde filters.",
-                  "Kandidaten met gesprekken: het aantal kandidaten met minimaal één deal met dealstatus '3.1 | 1e sollicitatiegesprek'.",
-                  "Totaal gesprekken: het totaal aantal deals met dealstatus '3.1 | 1e sollicitatiegesprek'.",
-                  "Plaatsingen: het aantal kandidaten dat de kandidaatstatus 'Geplaatst' heeft bereikt binnen de geselecteerde filters.",
-                  "Plaatsingspercentage: plaatsingen ÷ inschrijvingen.",
-                  "Gesprekspercentage: kandidaten met gesprek ÷ inschrijvingen.",
+                  "Title: Normalized title.",
+                  "Registrations: the number of candidates that reached the candidate status \u201C1 | Inschrijven\u201D within the selected filters.",
+                  "Candidates with interviews.",
+                  "Total interviews: the number of deals with the deal status \u201C3.1 | 1e sollicitatiegesprek\u201D within the set filters.",
+                  "Placements: the number of candidates that reached the candidate status \u201CGeplaatst\u201D within the selected filters.",
+                  "Placement percentage: the percentage of candidates that reached the candidate status \u201CGeplaatst\u201D within the selected filters based on the number of candidates that reached the candidate status \u201C1 | Inschrijven\u201D within the selected filters.",
+                  "Interview percentage: the percentage of candidates that reached at least 1 deal with the deal status \u201C3.1 | 1e sollicitatiegesprek\u201D within the selected filters based on the number of candidates that reached the candidate status \u201C1 | Inschrijven\u201D within the selected filters.",
                 ]}
                 rowCount={activeTitels.length}
               />
