@@ -9,7 +9,7 @@ import {
   ComposedChart, Bar, Line, LineChart, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ResponsiveContainer, Legend, Cell, BarChart,
 } from "recharts";
-import { PROVINCIES, type Kandidaat, type FilterState } from "@/data/inkoopYieldData";
+import { PROVINCIES, applyFilterAllStatuses, type Kandidaat, type FilterState } from "@/data/inkoopYieldData";
 
 const fmt = (n: number) => n.toLocaleString("nl-NL");
 const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
@@ -52,15 +52,24 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose }: Props)
   const [showTable, setShowTable] = useState(false);
   const [locSort, setLocSort] = useState<{ k: string; dir: "asc" | "desc" }>({ k: "plaatsingspct", dir: "desc" });
 
-  // Base subset: rows for this titel, within date-range (all statuses so we see inschrijvingen)
+  // Base subset: alle dashboard-filters toegepast + hard gepinned op deze titel.
+  // applyFilterAllStatuses geeft ook niet-bemiddelbare kandidaten mee zodat we instroom zien.
   const titelRows = useMemo(() => {
     if (!titel) return [] as Kandidaat[];
-    return allRows.filter(r =>
-      r.titel === titel
-      && r.datumBinnenkomst >= filter.dateFrom
-      && r.datumBinnenkomst <= filter.dateTo
-    );
-  }, [allRows, titel, filter.dateFrom, filter.dateTo]);
+    return applyFilterAllStatuses(allRows, { ...filter, titel: [titel] });
+  }, [allRows, titel, filter]);
+
+  // Actieve filter-chips voor de header
+  const activeFilterChips = useMemo(() => {
+    const chips: string[] = [];
+    if (filter.provincie.length) chips.push(`Provincie: ${filter.provincie.length === 1 ? filter.provincie[0] : `${filter.provincie.length} gekozen`}`);
+    if (filter.consultant.length) chips.push(`Consultant: ${filter.consultant.length === 1 ? filter.consultant[0] : `${filter.consultant.length} gekozen`}`);
+    if (filter.businessUnit.length) chips.push(`Unit: ${filter.businessUnit.length === 1 ? filter.businessUnit[0] : `${filter.businessUnit.length} gekozen`}`);
+    if (filter.kandidaatType.length) chips.push(`Type: ${filter.kandidaatType.join(", ")}`);
+    if (filter.geplaatst.length) chips.push(`Geplaatst: ${filter.geplaatst.join(", ")}`);
+    return chips;
+  }, [filter]);
+
 
   // ─── KPI-strip ───
   const kpis = useMemo(() => {
@@ -176,6 +185,14 @@ export function TitelDrilldownDialog({ titel, allRows, filter, onClose }: Props)
           <p className="text-xs text-muted-foreground">
             Periode {filter.dateFrom} → {filter.dateTo} · alle statussen, gefilterd op titel.
           </p>
+          {activeFilterChips.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              <span className="text-[10px] uppercase tracking-wide text-muted-foreground pt-0.5">Actieve filters:</span>
+              {activeFilterChips.map(c => (
+                <Badge key={c} variant="secondary" className="text-[10px] font-normal">{c}</Badge>
+              ))}
+            </div>
+          )}
         </DialogHeader>
 
         {/* KPI strip */}
