@@ -1294,9 +1294,9 @@ export default function InkoopYieldDashboard() {
                   <XAxis type="number" dataKey="x" name="Instroom"
                     tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     label={{ value: "Instroom (kandidaten)", position: "bottom", offset: 0, fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis type="number" dataKey="y" name="Plaatsingskans"
+                  <YAxis type="number" dataKey="y" name={topMode === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}
                     tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                    label={{ value: "Plaatsingskans %", angle: -90, position: "insideLeft", fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    label={{ value: topMode === "plaatsingen" ? "Plaatsingskans %" : "Gesprekkans %", angle: -90, position: "insideLeft", fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                   <ZAxis type="number" dataKey="z" range={[80, 500]} />
                   <ReferenceLine x={avgVol} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
                   <ReferenceLine y={avgYield * 100} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
@@ -1307,8 +1307,8 @@ export default function InkoopYieldDashboard() {
                       return (
                         <div className="bg-card border border-border rounded p-2 text-xs shadow-lg">
                           <div className="font-semibold">{p.titel}</div>
-                          <div>Instroom: {p.volume} · Plaatsingen: {p.plaatsingen}</div>
-                          <div>Plaatsingskans: {pct(p.plaatsingspct, 1)}</div>
+                          <div>Instroom: {p.volume} · {p._countLabel}: {p._countValue}</div>
+                          <div>{topMode === "plaatsingen" ? "Plaatsingskans" : "Gesprekkans"}: {pct(p._yieldPct, 1)}</div>
                           <div className="mt-1 text-[10px]" style={{ color: QUADRANT_COLOR[p.q as Quadrant] }}>
                             → {QUADRANT_LABEL[p.q as Quadrant]}
                           </div>
