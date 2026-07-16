@@ -53,12 +53,11 @@ interface Props {
 }
 
 const BERICHT_TYPES = [
-  "Niet kunnen spreken",
-  "Bezig met Studie",
-  "ZZP/Freelance",
-  "Nu niet werkzoekend",
-  "Nieuwe baan eigen",
-  "Blijft bij huidige werkgever",
+  "Regular Reactivation",
+  "Studying",
+  "Alumni",
+  "Congratulatory",
+  "Follow up",
 ];
 
 const FUNCTIEGROEPEN = ["Engineering Mechanical", "Engineering Allround", "Operators", "Productie"];
@@ -68,12 +67,11 @@ const PERIODES = ["Per dag", "Per week", "Per maand"];
 
 // Mock data per berichttype
 const berichtData: Record<string, { verzonden: number; gelezen: number; reactie: number; inschrijven: number; failed: number }> = {
-  "Niet kunnen spreken": { verzonden: 210, gelezen: 178, reactie: 32, inschrijven: 18, failed: 6 },
-  "Bezig met Studie": { verzonden: 140, gelezen: 119, reactie: 24, inschrijven: 12, failed: 3 },
-  "ZZP/Freelance": { verzonden: 165, gelezen: 132, reactie: 22, inschrijven: 9, failed: 4 },
-  "Nu niet werkzoekend": { verzonden: 198, gelezen: 154, reactie: 26, inschrijven: 11, failed: 5 },
-  "Nieuwe baan eigen": { verzonden: 122, gelezen: 96, reactie: 17, inschrijven: 7, failed: 2 },
-  "Blijft bij huidige werkgever": { verzonden: 88, gelezen: 64, reactie: 9, inschrijven: 3, failed: 2 },
+  "Regular Reactivation": { verzonden: 210, gelezen: 178, reactie: 32, inschrijven: 18, failed: 6 },
+  "Studying": { verzonden: 140, gelezen: 119, reactie: 24, inschrijven: 12, failed: 3 },
+  "Alumni": { verzonden: 165, gelezen: 132, reactie: 22, inschrijven: 9, failed: 4 },
+  "Congratulatory": { verzonden: 198, gelezen: 154, reactie: 26, inschrijven: 11, failed: 5 },
+  "Follow up": { verzonden: 122, gelezen: 96, reactie: 17, inschrijven: 7, failed: 2 },
 };
 
 const trendBaseData = [
