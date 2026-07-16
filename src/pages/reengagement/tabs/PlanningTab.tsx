@@ -193,7 +193,7 @@ const PlanningTab = () => {
   const VERDELING_OPTS: Verdeling[] = ["Evenredig", "Begin week", "Eind week", "Begin maand", "Eind maand"];
   const MEDIUM_OPTS: Medium[] = ["App & Mail", "App", "Mail"];
   const FUNCTIE_OPTS = FUNCTIES_DEFAULT;
-  const BERICHT_OPTS = ["Bezig met Studie", "ZZP/Freelance", "Nu niet werkzoekend", "Nieuwe baan eigen", "Blijft bij huidige werkgever"];
+  const BERICHT_OPTS = ["Regular Reactivation", "Studying", "Alumni", "Congratulatory", "Follow up"];
   const CATEGORIE_OPTS = ["A+", "A", "B"];
   const VERSIE_OPTS = ["Versie 1", "Versie 2", "Versie 3"];
 
