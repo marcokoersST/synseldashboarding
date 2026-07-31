@@ -49,6 +49,7 @@ const PreMatchingHub = () => {
         onChange={setFilters}
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
+        showFilters={false}
       />
 
       <div className="flex gap-1 border-b border-border">
@@ -69,16 +70,24 @@ const PreMatchingHub = () => {
       </div>
 
       {activeTab === "overview" && (
-        <OverviewTab filters={effectiveFilters} onSelectVacature={openVacature} />
+        <OverviewTab
+          filters={effectiveFilters}
+          filterState={filters}
+          onFiltersChange={setFilters}
+          onSelectVacature={openVacature}
+        />
       )}
       {activeTab === "vacature" && (
         <VacatureDrilldownTab
           vacatureId={selectedVacature ?? ""}
           filters={effectiveFilters}
-          onBack={() => setActiveTab("overview")}
+          filterState={filters}
+          onFiltersChange={setFilters}
+          onBack={() => setSelectedVacature(null)}
           onSelectVacature={setSelectedVacature}
         />
       )}
+
       {activeTab === "consultant" && (
         <ConsultantInzichtTab filters={effectiveFilters} onSelectVacature={openVacature} />
       )}

@@ -63,8 +63,10 @@ function MultiSelect({ label, options, value, onChange }: MultiProps) {
 interface Props {
   filters: PreMatchingFilters;
   onChange: (f: PreMatchingFilters) => void;
-  dateRange: DateRange;
-  onDateRangeChange: (r: DateRange) => void;
+  dateRange?: DateRange;
+  onDateRangeChange?: (r: DateRange) => void;
+  showDate?: boolean;
+  showFilters?: boolean;
 }
 
 const STATUS: { id: PreMatchingFilters["vacatureStatus"]; label: string }[] = [
@@ -73,20 +75,32 @@ const STATUS: { id: PreMatchingFilters["vacatureStatus"]; label: string }[] = [
   { id: "gesloten", label: "Gesloten" },
 ];
 
-export function PreMatchingFilterBar({ filters, onChange, dateRange, onDateRangeChange }: Props) {
+export function PreMatchingFilterBar({
+  filters,
+  onChange,
+  dateRange,
+  onDateRangeChange,
+  showDate = true,
+  showFilters = true,
+}: Props) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <DateFilterPanel
-        dateRange={dateRange}
-        onDateRangeChange={onDateRangeChange}
-        compareEnabled={false}
-        onCompareEnabledChange={() => {}}
-        compareRange={null}
-        onCompareRangeChange={() => {}}
-        deltaMode="percent"
-        onDeltaModeChange={() => {}}
-      />
+      {showDate && dateRange && onDateRangeChange && (
+        <DateFilterPanel
+          dateRange={dateRange}
+          onDateRangeChange={onDateRangeChange}
+          compareEnabled={false}
+          onCompareEnabledChange={() => {}}
+          compareRange={null}
+          onCompareRangeChange={() => {}}
+          deltaMode="percent"
+          onDeltaModeChange={() => {}}
+        />
+      )}
+      {showFilters && (
+        <>
       <MultiSelect
+
         label="Consultant"
         options={CONSULTANTS}
         value={filters.consultants}
@@ -120,7 +134,10 @@ export function PreMatchingFilterBar({ filters, onChange, dateRange, onDateRange
           </button>
         ))}
       </div>
+        </>
+      )}
     </div>
+
   );
 }
 

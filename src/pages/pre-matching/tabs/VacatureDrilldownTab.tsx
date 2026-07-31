@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import FunnelSteps from "@/components/pre-matching/FunnelSteps";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import VacatureTable from "@/components/pre-matching/VacatureTable";
 import {
   FUNNEL_STEPS,
   aggregateFunnel,
@@ -15,7 +15,7 @@ import {
   rcrmCandidateProfileUrl,
   synselCandidateProfileUrl,
 
-  vacatureRows,
+  
   vacatures,
 
   type PreMatchingFilters,
@@ -24,37 +24,25 @@ import {
 interface Props {
   vacatureId: string;
   filters: PreMatchingFilters;
+  filterState?: PreMatchingFilters;
+  onFiltersChange?: (f: PreMatchingFilters) => void;
   onBack: () => void;
   onSelectVacature?: (id: string) => void;
 }
 
 type SortKey = "matchScore" | "candidateName" | "reachedStep" | "crmStatus";
 
-export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVacature }: Props) {
+export function VacatureDrilldownTab({
+  vacatureId,
+  filters,
+  filterState,
+  onFiltersChange,
+  onBack,
+  onSelectVacature,
+}: Props) {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "matchScore", dir: "desc" });
   const vac = vacatures.find((v) => v.id === vacatureId);
 
-  const options = useMemo(() => {
-    // Zelfde set + sortering als de overview-tabel (grootste gemiste kans eerst)
-    const rows = [...vacatureRows(filters)].sort((a, b) => b.gemisteKansen - a.gemisteKansen);
-    const list = rows.map((r) => r.vacature);
-    return vac && !list.some((v) => v.id === vac.id) ? [vac, ...list] : list;
-  }, [filters, vac]);
-
-  const selector = (
-    <Select value={vacatureId || undefined} onValueChange={(v) => onSelectVacature?.(v)}>
-      <SelectTrigger className="h-9 w-[420px] max-w-full text-xs">
-        <SelectValue placeholder="Kies een vacature…" />
-      </SelectTrigger>
-      <SelectContent className="max-h-[320px]">
-        {options.map((v) => (
-          <SelectItem key={v.id} value={v.id} className="text-xs">
-            {v.titel} — {v.klant} ({v.consultant}) · {v.id}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
 
 
 
@@ -81,11 +69,13 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
   if (!vac) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2">
-          <ArrowLeft className="mr-1 h-4 w-4" /> Terug naar overview
-        </Button>
-        {selector}
-        <p className="text-sm text-muted-foreground">Kies hierboven een vacature of selecteer er één in de overview-tabel.</p>
+        <VacatureTable
+          filters={filters}
+          filterState={filterState ?? filters}
+          onFiltersChange={onFiltersChange ?? (() => {})}
+          onSelectVacature={(id) => onSelectVacature?.(id)}
+          title="Kies een vacature — klik op een rij voor de drill-down"
+        />
       </div>
     );
   }
@@ -97,10 +87,10 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
         <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2">
-          <ArrowLeft className="mr-1 h-4 w-4" /> Terug naar overview
+          <ArrowLeft className="mr-1 h-4 w-4" /> Terug naar vacaturelijst
         </Button>
-        {selector}
       </div>
+
 
 
       <Card>
