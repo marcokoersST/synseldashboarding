@@ -225,6 +225,9 @@ export function ConsultantInzichtTab({ filters, onSelectVacature }: Props) {
         <div className="px-3 py-2 text-[11px] text-muted-foreground">
           Stappen: {FUNNEL_STEPS.join(" → ")}
         </div>
+        <div className="px-3 pb-3">
+          <DevNote story="Consultant inzicht — Conversie per funnelstap (alle consultants)" logic={CONSULTANT_DEV_LOGIC} />
+        </div>
       </CardContent>
     </Card>
   );
