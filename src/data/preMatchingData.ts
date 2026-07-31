@@ -367,3 +367,8 @@ export function teamFunnel(f: PreMatchingFilters): FunnelAgg[] {
 export function rcrmCandidateProfileUrl(id: string) {
   return `https://app.recruitcrm.io/candidate/${id}`;
 }
+
+export function synselCandidateProfileUrl(id: string) {
+  return `https://ai.synsel.nl/kandidaat/${id}`;
+}
+
