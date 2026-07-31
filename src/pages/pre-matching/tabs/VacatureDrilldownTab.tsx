@@ -27,9 +27,31 @@ interface Props {
 
 type SortKey = "matchScore" | "candidateName" | "reachedStep";
 
-export function VacatureDrilldownTab({ vacatureId, filters, onBack }: Props) {
+export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVacature }: Props) {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "matchScore", dir: "desc" });
   const vac = vacatures.find((v) => v.id === vacatureId);
+
+  const options = useMemo(() => {
+    const list = filterVacatures(filters);
+    const withCurrent = vac && !list.some((v) => v.id === vac.id) ? [vac, ...list] : list;
+    return [...withCurrent].sort((a, b) => a.titel.localeCompare(b.titel));
+  }, [filters, vac]);
+
+  const selector = (
+    <Select value={vacatureId || undefined} onValueChange={(v) => onSelectVacature?.(v)}>
+      <SelectTrigger className="h-9 w-[380px] max-w-full text-xs">
+        <SelectValue placeholder="Kies een vacature…" />
+      </SelectTrigger>
+      <SelectContent className="max-h-[320px]">
+        {options.map((v) => (
+          <SelectItem key={v.id} value={v.id} className="text-xs">
+            {v.titel} — {v.klant} ({v.consultant})
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
 
   const list = useMemo(() => {
     const ms = filterMatches({ ...filters, vacatureStatus: "alle", consultants: [], functiegroepen: [], klanten: [] });
