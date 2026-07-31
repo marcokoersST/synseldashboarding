@@ -3,6 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DevNote } from "@/components/groeimodel/DevNote";
+
+const CONSULTANT_DEV_LOGIC = `Naam: Name of the consultants
+
+Actieve vacatures: amount of open vacancies the consultant has on their name.
+
+# matches: the amount of candidates that were matched on the vacancies where the consultant is the owner
+
+# plaatsingen: the amount of placements that were matched on the vacancies where the consultant is the owner.
+
+After this each are the conversion rates from this step since the previous step in the funnel.`;
 import {
   ResponsiveContainer,
   BarChart,
