@@ -49,7 +49,7 @@ const PreMatchingHub = () => {
         onChange={setFilters}
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
-        showFilters={false}
+        showFilters={activeTab !== "vacature"}
       />
 
       <div className="flex gap-1 border-b border-border">
