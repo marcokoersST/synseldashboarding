@@ -209,7 +209,7 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                 ))}
                 {sorted.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
                       Geen matches binnen de gekozen periode.
                     </td>
                   </tr>
