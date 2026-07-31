@@ -131,6 +131,11 @@ const navItems: NavItem[] = [
   },
   {
     icon: Megaphone,
+    label: "Pre-Matching Engine",
+    path: "/pre-matching",
+  },
+  {
+    icon: Megaphone,
     label: "Recruitment Intern Hub",
     path: "/recruitment-intern",
   },

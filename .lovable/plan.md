@@ -1,38 +1,31 @@
-# Diepgaande Titel-analyse
+## Pre-Matching Engine Dashboard
 
-Klikbare titels (in de matrix én de volledige titel-lijst) openen een grote drilldown-dialog met een titel-specifieke deep dive.
+Nieuwe hub op `/pre-matching` met drie tabs, in dezelfde stijl als de bestaande hubs (Reengagement/Marketing): gedeelde filterbalk bovenaan, tab-navigatie eronder, statische demo-data.
 
-## UX
+### Datamodel (mock, `src/data/preMatchingData.ts`)
+- 5 vaste funnelstappen: Match gegenereerd → Voorgesteld aan consultant → Voorgesteld aan kandidaat → Voorgesteld aan klant → Plaatsing.
+- ~40 vacatures (titel, klant, functiegroep, consultant, status actief/gesloten, datum geopend) en ~600 matches (kandidaatnaam, matchscore 40–99%, verst bereikte stap, doorgezet/afgevallen + afvalreden, datum).
+- Helpers: filteren op periode/consultant/functiegroep/klant/status, funnel-aggregatie met conversie% per stap, gemiste-kans-score (# matches met score >80% die stap 2 niet bereikten), weektrend per funnelstap, consultant-aggregatie vs. teamgemiddelde.
 
-- **Trigger:** klik op titel-label in Matrix-scatter (dot + label) en op titel-rij in `AllTitelsDialog` → opent nieuwe `TitelDrilldownDialog`.
-- **Layout:** breed modal (`max-w-6xl`) met header (titel, huidige filters actief, KPI-strip: Volume · Bemiddelbaar · Gesprekken · Plaatsingen · Plaatsings% · Gem. tijd tot plaatsing) en 2 tabs.
+### Filters (gedeeld over alle pagina's)
+Periode (datumrange via bestaand `DateFilterPanel`), consultant, functiegroep, klant en vacaturestatus (actief/gesloten/alle) als multi-select popovers. State leeft in de hub en wordt aan elke tab doorgegeven.
 
-## Tab 1 — Tijdsverloop
+### Pagina 1 — Overview
+- Totaalfunnel: 5 stappen met aantallen en conversie% t.o.v. vorige stap.
+- Vacaturetabel: vacature, klant, consultant, # matches, # plaatsingen, conversie%, kolom "Gemiste kansen (>80%)" — standaard gesorteerd op gemiste kansen aflopend, andere kolommen sorteerbaar. Rij klikbaar → drill-down.
+- Trendgrafiek (Recharts, lijnen per funnelstap-conversie over de weken) met aan/uit te vinken series.
 
-Weekly/monthly toggle (default = weekly, hergebruikt `weeklyTrend`-stijl).
+### Pagina 2 — Vacature drill-down
+- Header: titel, klant, consultant, status, datum geopend, terugknop naar overview.
+- Funnel voor deze vacature (aantallen + conversie per stap).
+- Kandidatenlijst: naam (link naar kandidaatprofiel via bestaand Recruit CRM-icoonpatroon), status doorgezet/afgevallen, laatst bereikte stap, matchscore (gekleurd, >80% benadrukt), afvalreden indien aanwezig. Sorteerbaar op matchscore.
 
-- **Stacked/line chart** met 3 series: Inschrijvingen (volume), Gesprekken (inGesprek), Plaatsingen (geplaatst). Recharts `ComposedChart`: bars voor volume, lines voor gesprekken & plaatsingen op secundaire as.
-- **Ratio-lijnenchart** eronder: Bemiddelbaar%, Gesprek%, Procedure%, Plaatsings% per periode. Legend-toggles (bestaande interactieve stijl).
-- **Trendindicatoren:** delta huidige periode vs vorige gelijke window (bestaand compare-patroon) — pijltjes per ratio.
-- **Onderliggende tabel** (collapsible): per periode kolommen Volume · Bemiddelbaar · Gesprekken · Procedures · Plaatsingen · alle bijbehorende %.
+### Pagina 3 — Consultant-inzicht
+- Overzichtstabel: per consultant conversie% per funnelstap, met kleurmarkering bij afwijking van teamgemiddelde; teamrij als footer. Rij klikbaar.
+- Individuele weergave: naam, # actieve vacatures, # matches in periode, gegroepeerde staafgrafiek consultant-% vs. team-% per funnelstap, plus tabel met vacatures van deze consultant → doorklikbaar naar vacature drill-down.
 
-## Tab 2 — Locatie
-
-- **Provincietabel** met kolommen Provincie · Volume · Bemiddelbaar · Gesprekken · Gesprek% · Procedures · Plaatsingen · Plaatsings%. Sortable, alleen provincies met volume ≥ 1.
-- **Ontwikkeling over tijd:** splits filterperiode in twee helften (H1 vs H2). Extra kolommen: Δ Volume · Δ Plaatsings%-punt, met kleur (groen ↑ / rood ↓) en pijl.
-- **Verbeterd/verslechterd samenvatting:** twee kleine kaartjes bovenaan — "Sterkste stijgers" (top 3 op Δ plaatsings%) en "Sterkste dalers" (bottom 3), met sparkline per regio.
-- **Provinciekaart** (hergebruik `NetherlandsHeatmap`-patroon indien makkelijk): kleur = plaatsings%, tooltip toont beide periodes + delta. Als hergebruik te complex, skip kaart en houd het bij tabel + samenvatting.
-
-## Technisch
-
-- **Nieuwe helpers in `src/data/inkoopYieldData.ts`:**
-  - `timeSeriesForTitel(rows, titel, granularity: "week"|"month")` → array met periode + metrics + ratios.
-  - `provincieStatsForTitel(rows, titel)` → provincie-array met metrics + delta tussen twee halve periodes van de filter-window.
-- **Nieuw component `src/components/inkoop/TitelDrilldownDialog.tsx`** (Dialog + Tabs + Recharts).
-- **Wijziging `InventoryBasedRecruitment.tsx`:**
-  - Local state `drilldownTitel: string | null`.
-  - Klikhandler op matrix-dots/labels (scatter `onClick`) en op `AllTitelsDialog` rows.
-  - `AllTitelsDialog` krijgt `onSelectTitel` prop; rij wordt clickable (cursor-pointer, hover-highlight).
-  - Render `<TitelDrilldownDialog titel={drilldownTitel} rows={filtered} filter={filter} onClose={...} />`.
-
-Bestaande code (matrix, lijst-dialog, filters) blijft ongewijzigd behalve de toegevoegde click-hooks. Geen wijziging aan sidebar/routes.
+### Technisch
+- Nieuwe bestanden: `src/data/preMatchingData.ts`, `src/pages/pre-matching/PreMatchingHub.tsx`, `tabs/OverviewTab.tsx`, `tabs/VacatureDrilldownTab.tsx`, `tabs/ConsultantInzichtTab.tsx`, plus kleine componenten (`FunnelSteps.tsx`, filterbalk).
+- Route toevoegen in `src/App.tsx` (lazy) en menu-item in `src/components/dashboard/Sidebar.tsx`.
+- Navigatie tussen tabs via hub-state (geselecteerde vacature/consultant), geen extra routes nodig.
+- Alleen semantische design tokens, Nederlandse labels, geen backend.
