@@ -130,6 +130,18 @@ export function VacatureDrilldownTab({
       <div>
         <h2 className="mb-2 text-sm font-semibold text-foreground">Funnel voor deze vacature</h2>
         <FunnelSteps data={funnel} />
+        <DevNote
+          story="Vacature drilldown — Funnel voor deze vacature"
+          logic={`Match gegenereerd: the amount of candidates for which a match was found on this vacancy.
+
+Voorgesteld aan Consultant: the amount of candidates where a match was found and the candidate was set to the status Inschrijven on name of that consultant (as owner) on this vacancy.
+
+Voorgesteld aan kandidaat: the amount of candidates where a match was found and the candidate was set to the status Inschrijven on name of that consultant (as owner) and there is an Inschrijvings call on this vacancy.
+
+Voorgesteld aan klant: the amount of candidates for which we found a match and there was a deal created by a consultant on the status 2.0 or higher on this vacancy.
+
+Plaatsing: the amount of candidates placed at this vacancy.`}
+        />
       </div>
 
       <Card>
