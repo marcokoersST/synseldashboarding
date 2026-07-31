@@ -161,7 +161,7 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                       Matchscore <ArrowUpDown className={cn("h-3 w-3", sort.key === "matchScore" ? "opacity-100" : "opacity-30")} />
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left font-medium">Reden afval</th>
+                  <th className="px-3 py-2" />
                   <th className="px-3 py-2" />
                 </tr>
               </thead>
