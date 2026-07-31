@@ -12,9 +12,10 @@ import {
   FUNNEL_STEPS,
   aggregateFunnel,
   filterMatches,
-  filterVacatures,
   rcrmCandidateProfileUrl,
+  vacatureRows,
   vacatures,
+
   type PreMatchingFilters,
 } from "@/data/preMatchingData";
 
