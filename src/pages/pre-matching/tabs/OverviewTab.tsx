@@ -11,7 +11,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
+
 } from "recharts";
 import FunnelSteps from "@/components/pre-matching/FunnelSteps";
 import {
