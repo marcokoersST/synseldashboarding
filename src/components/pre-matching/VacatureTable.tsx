@@ -16,6 +16,7 @@ interface Props {
   onFiltersChange: (f: PreMatchingFilters) => void;
   onSelectVacature: (id: string) => void;
   title?: string;
+  showFilters?: boolean;
 }
 
 export function VacatureTable({
@@ -24,7 +25,9 @@ export function VacatureTable({
   onFiltersChange,
   onSelectVacature,
   title = "Alle vacatures — gesorteerd op grootste gemiste kans",
+  showFilters = true,
 }: Props) {
+
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "gemisteKansen", dir: "desc" });
   const rows = useMemo(() => vacatureRows(filters), [filters]);
 
