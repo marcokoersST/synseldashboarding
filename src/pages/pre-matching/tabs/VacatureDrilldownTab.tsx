@@ -13,6 +13,8 @@ import {
   aggregateFunnel,
   filterMatches,
   rcrmCandidateProfileUrl,
+  synselCandidateProfileUrl,
+
   vacatureRows,
   vacatures,
 
