@@ -56,7 +56,8 @@ export function FunnelSteps({ data, className }: Props) {
             {d.fromStart.toFixed(1)}% van alle matches
           </div>
         </Card>
-      ))}
+        );
+      })}
     </div>
   );
 }
