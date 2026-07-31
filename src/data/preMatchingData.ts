@@ -329,6 +329,7 @@ export function trendByWeek(ms: PreMatch[]): TrendPoint[] {
         s2: Math.round(f[2].conversion ?? 0),
         s3: Math.round(f[3].conversion ?? 0),
         s4: Math.round(f[4].conversion ?? 0),
+        e2e: Math.round(f[4].fromStart ?? 0),
       };
     });
 }
