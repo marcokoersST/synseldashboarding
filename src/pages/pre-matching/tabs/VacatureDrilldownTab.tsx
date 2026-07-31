@@ -7,10 +7,12 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import FunnelSteps from "@/components/pre-matching/FunnelSteps";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   FUNNEL_STEPS,
   aggregateFunnel,
   filterMatches,
+  filterVacatures,
   rcrmCandidateProfileUrl,
   vacatures,
   type PreMatchingFilters,
@@ -20,13 +22,36 @@ interface Props {
   vacatureId: string;
   filters: PreMatchingFilters;
   onBack: () => void;
+  onSelectVacature?: (id: string) => void;
 }
 
 type SortKey = "matchScore" | "candidateName" | "reachedStep";
 
-export function VacatureDrilldownTab({ vacatureId, filters, onBack }: Props) {
+export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVacature }: Props) {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "matchScore", dir: "desc" });
   const vac = vacatures.find((v) => v.id === vacatureId);
+
+  const options = useMemo(() => {
+    const list = filterVacatures(filters);
+    const withCurrent = vac && !list.some((v) => v.id === vac.id) ? [vac, ...list] : list;
+    return [...withCurrent].sort((a, b) => a.titel.localeCompare(b.titel));
+  }, [filters, vac]);
+
+  const selector = (
+    <Select value={vacatureId || undefined} onValueChange={(v) => onSelectVacature?.(v)}>
+      <SelectTrigger className="h-9 w-[380px] max-w-full text-xs">
+        <SelectValue placeholder="Kies een vacature…" />
+      </SelectTrigger>
+      <SelectContent className="max-h-[320px]">
+        {options.map((v) => (
+          <SelectItem key={v.id} value={v.id} className="text-xs">
+            {v.titel} — {v.klant} ({v.consultant})
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
 
   const list = useMemo(() => {
     const ms = filterMatches({ ...filters, vacatureStatus: "alle", consultants: [], functiegroepen: [], klanten: [] });
@@ -51,10 +76,11 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack }: Props) {
   if (!vac) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" size="sm" onClick={onBack}>
+        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2">
           <ArrowLeft className="mr-1 h-4 w-4" /> Terug naar overview
         </Button>
-        <p className="text-sm text-muted-foreground">Selecteer een vacature in de overview-tabel.</p>
+        {selector}
+        <p className="text-sm text-muted-foreground">Kies hierboven een vacature of selecteer er één in de overview-tabel.</p>
       </div>
     );
   }
@@ -64,9 +90,13 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack }: Props) {
 
   return (
     <div className="space-y-6">
-      <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2">
-        <ArrowLeft className="mr-1 h-4 w-4" /> Terug naar overview
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2">
+          <ArrowLeft className="mr-1 h-4 w-4" /> Terug naar overview
+        </Button>
+        {selector}
+      </div>
+
 
       <Card>
         <CardContent className="flex flex-wrap items-center gap-x-8 gap-y-3 p-4">
