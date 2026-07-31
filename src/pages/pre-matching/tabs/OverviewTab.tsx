@@ -180,7 +180,7 @@ export function OverviewTab({ filters, onSelectVacature }: Props) {
                   }}
                   formatter={(v: number, n: string) => [`${v}%`, n]}
                 />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
+                
                 {SERIES.filter((s) => visible.includes(s.key)).map((s) => (
                   <Line
                     key={s.key}
