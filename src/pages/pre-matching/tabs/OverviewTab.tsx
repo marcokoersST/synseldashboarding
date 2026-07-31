@@ -1,32 +1,12 @@
-import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from "recharts";
+import { useMemo } from "react";
 import FunnelSteps from "@/components/pre-matching/FunnelSteps";
 import { DevNote } from "@/components/groeimodel/DevNote";
 import VacatureTable from "@/components/pre-matching/VacatureTable";
 import {
   aggregateFunnel,
   filterMatches,
-  trendByWeek,
   type PreMatchingFilters,
 } from "@/data/preMatchingData";
-
-const SERIES = [
-  { key: "s1", label: "Match → consultant", color: "hsl(var(--primary))" },
-  { key: "s2", label: "Consultant → kandidaat", color: "hsl(199 89% 48%)" },
-  { key: "s3", label: "Kandidaat → klant", color: "hsl(38 92% 50%)" },
-  { key: "s4", label: "Klant → plaatsing", color: "hsl(142 71% 45%)" },
-  { key: "e2e", label: "Match → plaatsing (totaal)", color: "hsl(280 65% 55%)" },
-] as const;
 
 interface Props {
   filters: PreMatchingFilters;
@@ -36,11 +16,8 @@ interface Props {
 }
 
 export function OverviewTab({ filters, filterState, onFiltersChange, onSelectVacature }: Props) {
-  const [visible, setVisible] = useState<string[]>(SERIES.map((s) => s.key));
-
   const ms = useMemo(() => filterMatches(filters), [filters]);
   const funnel = useMemo(() => aggregateFunnel(ms), [ms]);
-  const trend = useMemo(() => trendByWeek(ms), [ms]);
 
   return (
     <div className="space-y-6">
