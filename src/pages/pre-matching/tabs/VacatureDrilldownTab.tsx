@@ -7,10 +7,12 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import FunnelSteps from "@/components/pre-matching/FunnelSteps";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   FUNNEL_STEPS,
   aggregateFunnel,
   filterMatches,
+  filterVacatures,
   rcrmCandidateProfileUrl,
   vacatures,
   type PreMatchingFilters,
@@ -20,6 +22,7 @@ interface Props {
   vacatureId: string;
   filters: PreMatchingFilters;
   onBack: () => void;
+  onSelectVacature?: (id: string) => void;
 }
 
 type SortKey = "matchScore" | "candidateName" | "reachedStep";
