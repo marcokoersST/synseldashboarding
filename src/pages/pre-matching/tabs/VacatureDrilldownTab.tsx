@@ -161,7 +161,6 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                       Matchscore <ArrowUpDown className={cn("h-3 w-3", sort.key === "matchScore" ? "opacity-100" : "opacity-30")} />
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left font-medium">Reden afval</th>
                   <th className="px-3 py-2" />
                 </tr>
               </thead>
@@ -174,14 +173,14 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                       <span
                         className={cn(
                           "rounded px-1.5 py-0.5 text-[10px] font-medium",
-                          m.reachedStep === 4
+                          m.crmStatus === "Geplaatst"
                             ? "bg-emerald-500/15 text-emerald-600"
-                            : m.status === "afgevallen"
+                            : m.crmStatus === "Niet Beschikbaar" || m.crmStatus === "Niet Geplaatst"
                               ? "bg-destructive/15 text-destructive"
                               : "bg-primary/10 text-primary",
                         )}
                       >
-                        {m.reachedStep === 4 ? "geplaatst" : m.status}
+                        {m.crmStatus}
                       </span>
                     </td>
                     <td
@@ -192,7 +191,7 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                     >
                       {m.matchScore}%
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground">{m.dropReason ?? "—"}</td>
+
                     <td className="px-3 py-2 text-right">
                       <a
                         href={rcrmCandidateProfileUrl(m.candidateId)}
@@ -210,7 +209,7 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                 ))}
                 {sorted.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
                       Geen matches binnen de gekozen periode.
                     </td>
                   </tr>
