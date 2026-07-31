@@ -168,19 +168,18 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                 {sorted.map((m) => (
                   <tr key={m.id} className="border-t border-border hover:bg-muted/40">
                     <td className="px-3 py-2 font-medium text-foreground">{m.candidateName}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{FUNNEL_STEPS[m.reachedStep]}</td>
                     <td className="px-3 py-2">
                       <span
                         className={cn(
                           "rounded px-1.5 py-0.5 text-[10px] font-medium",
-                          m.reachedStep === 4
+                          m.crmStatus === "Geplaatst"
                             ? "bg-emerald-500/15 text-emerald-600"
-                            : m.status === "afgevallen"
+                            : m.crmStatus === "Niet Beschikbaar" || m.crmStatus === "Niet Geplaatst"
                               ? "bg-destructive/15 text-destructive"
                               : "bg-primary/10 text-primary",
                         )}
                       >
-                        {m.reachedStep === 4 ? "geplaatst" : m.status}
+                        {m.crmStatus}
                       </span>
                     </td>
                     <td
@@ -191,7 +190,7 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                     >
                       {m.matchScore}%
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground">{m.dropReason ?? "—"}</td>
+
                     <td className="px-3 py-2 text-right">
                       <a
                         href={rcrmCandidateProfileUrl(m.candidateId)}
