@@ -69,11 +69,13 @@ export function VacatureDrilldownTab({
   if (!vac) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2">
-          <ArrowLeft className="mr-1 h-4 w-4" /> Terug naar overview
-        </Button>
-        {selector}
-        <p className="text-sm text-muted-foreground">Kies hierboven een vacature of selecteer er één in de overview-tabel.</p>
+        <VacatureTable
+          filters={filters}
+          filterState={filterState ?? filters}
+          onFiltersChange={onFiltersChange ?? (() => {})}
+          onSelectVacature={(id) => onSelectVacature?.(id)}
+          title="Kies een vacature — klik op een rij voor de drill-down"
+        />
       </div>
     );
   }
@@ -85,10 +87,10 @@ export function VacatureDrilldownTab({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
         <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2">
-          <ArrowLeft className="mr-1 h-4 w-4" /> Terug naar overview
+          <ArrowLeft className="mr-1 h-4 w-4" /> Terug naar vacaturelijst
         </Button>
-        {selector}
       </div>
+
 
 
       <Card>
