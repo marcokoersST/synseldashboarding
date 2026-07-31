@@ -160,6 +160,17 @@ function buildMatches(): PreMatch[] {
       const isPlaced = reached === 4;
       // Bij niet-geplaatst: afgevallen of nog doorlopend (doorgezet)
       const afgevallen = !isPlaced && rng() < 0.72;
+      const openStatus: CrmStatus[][] = [
+        ["Nieuw", "Verdelen", "Lead"],
+        ["Inschrijven"],
+        ["Acquisitie"],
+        ["In Procedure"],
+      ];
+      const crmStatus: CrmStatus = isPlaced
+        ? "Geplaatst"
+        : afgevallen
+          ? pick<CrmStatus>(["Niet Beschikbaar", "Niet Geplaatst"])
+          : pick<CrmStatus>(openStatus[reached]);
       out.push({
         id: `M-${n++}`,
         vacatureId: vac.id,
@@ -168,7 +179,9 @@ function buildMatches(): PreMatch[] {
         matchScore,
         reachedStep: reached,
         status: afgevallen ? "afgevallen" : "doorgezet",
+        crmStatus,
         dropReason: afgevallen ? pick(DROP_REASONS) : undefined,
+
         date: daysAgo(randInt(0, 120)),
       });
     }
