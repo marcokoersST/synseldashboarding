@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import FunnelSteps from "@/components/pre-matching/FunnelSteps";
+import { DevNote } from "@/components/groeimodel/DevNote";
 import VacatureTable from "@/components/pre-matching/VacatureTable";
 import {
   FUNNEL_STEPS,
@@ -129,6 +130,18 @@ export function VacatureDrilldownTab({
       <div>
         <h2 className="mb-2 text-sm font-semibold text-foreground">Funnel voor deze vacature</h2>
         <FunnelSteps data={funnel} />
+        <DevNote
+          story="Vacature drilldown — Funnel voor deze vacature"
+          logic={`Match gegenereerd: the amount of candidates for which a match was found on this vacancy.
+
+Voorgesteld aan Consultant: the amount of candidates where a match was found and the candidate was set to the status Inschrijven on name of that consultant (as owner) on this vacancy.
+
+Voorgesteld aan kandidaat: the amount of candidates where a match was found and the candidate was set to the status Inschrijven on name of that consultant (as owner) and there is an Inschrijvings call on this vacancy.
+
+Voorgesteld aan klant: the amount of candidates for which we found a match and there was a deal created by a consultant on the status 2.0 or higher on this vacancy.
+
+Plaatsing: the amount of candidates placed at this vacancy.`}
+        />
       </div>
 
       <Card>
@@ -231,6 +244,22 @@ export function VacatureDrilldownTab({
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="px-3 pb-3">
+            <DevNote
+              story="Vacature drilldown — Kandidaten"
+              logic={`Naam: Name of the candidate
+
+Laatst bereikte stap: till which point of the funnel explained above did this candidate go?
+
+Status: Candidate status in RCRM
+
+Matchscore: the matchscore for the candidate on this vacancy
+
+R: link to RCRM profile
+
+S: link to Synsel AI profile`}
+            />
           </div>
         </CardContent>
       </Card>

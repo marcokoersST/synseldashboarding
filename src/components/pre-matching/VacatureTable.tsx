@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PreMatchingFilterBar from "@/components/pre-matching/PreMatchingFilterBar";
+import { DevNote } from "@/components/groeimodel/DevNote";
 import { vacatureRows, type PreMatchingFilters } from "@/data/preMatchingData";
 
 type SortKey = "gemisteKansen" | "matches" | "plaatsingen" | "conversie" | "titel";
@@ -133,6 +134,26 @@ export function VacatureTable({
               )}
             </tbody>
           </table>
+        </div>
+        <div className="px-3 pb-3">
+          <DevNote
+            story="Overview — Alle vacatures (gesorteerd op grootste gemiste kans)"
+            logic={`Vacature: name of the vacancy
+
+Klant: company of the vacancy
+
+Consultant: owner of the vacancy
+
+Status: Open or Gesloten vacancy in RCRM
+
+Matches: amount of matches on this vacancy
+
+Plaatsingen: amount of placements on this vacancy
+
+Conversie %: conversionrate between amount of candidates matched and amount of candidates placed.
+
+Gemiste kansen: amount of candidates with a matchscore above 80% that were never set to the status Inschrijven with the vacancyowner.`}
+          />
         </div>
       </CardContent>
     </Card>
