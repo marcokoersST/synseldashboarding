@@ -73,6 +73,7 @@ const MarketingHub = lazy(() => import("./pages/marketing/MarketingHub"));
 const MarketingVacatureFunnel = lazy(() => import("./pages/marketing/VacatureFunnelMonitor"));
 const RecruitmentInternHub = lazy(() => import("./pages/recruitment-intern/RecruitmentInternHub"));
 const ReengagementHub = lazy(() => import("./pages/reengagement/ReengagementHub"));
+const PreMatchingHub = lazy(() => import("./pages/pre-matching/PreMatchingHub"));
 const CorporateRecruitmentInflow = lazy(() => import("./pages/corporate-recruitment/InflowDashboard"));
 
 const CLevelDashboard = lazy(() => import("./pages/CLevelDashboard"));
