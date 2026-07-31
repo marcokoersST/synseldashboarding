@@ -245,6 +245,22 @@ Plaatsing: the amount of candidates placed at this vacancy.`}
               </tbody>
             </table>
           </div>
+          <div className="px-3 pb-3">
+            <DevNote
+              story="Vacature drilldown — Kandidaten"
+              logic={`Naam: Name of the candidate
+
+Laatst bereikte stap: till which point of the funnel explained above did this candidate go?
+
+Status: Candidate status in RCRM
+
+Matchscore: the matchscore for the candidate on this vacancy
+
+R: link to RCRM profile
+
+S: link to Synsel AI profile`}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
