@@ -11,6 +11,20 @@ export const FUNNEL_STEPS = [
 
 export type FunnelStepIndex = 0 | 1 | 2 | 3 | 4;
 
+export const CRM_STATUSSEN = [
+  "Nieuw",
+  "Verdelen",
+  "Inschrijven",
+  "Acquisitie",
+  "In Procedure",
+  "Geplaatst",
+  "Niet Beschikbaar",
+  "Niet Geplaatst",
+  "Lead",
+] as const;
+
+export type CrmStatus = (typeof CRM_STATUSSEN)[number];
+
 export interface PreMatch {
   id: string;
   vacatureId: string;
@@ -19,6 +33,7 @@ export interface PreMatch {
   matchScore: number; // 0-100
   reachedStep: FunnelStepIndex; // verst bereikte stap
   status: "doorgezet" | "afgevallen";
+  crmStatus: CrmStatus; // kandidaatstatus in RecruitCRM
   dropReason?: string;
   date: Date; // datum match gegenereerd
 }
