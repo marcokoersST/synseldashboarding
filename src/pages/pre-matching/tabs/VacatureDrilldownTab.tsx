@@ -15,7 +15,7 @@ import {
   rcrmCandidateProfileUrl,
   synselCandidateProfileUrl,
 
-  vacatureRows,
+  
   vacatures,
 
   type PreMatchingFilters,
