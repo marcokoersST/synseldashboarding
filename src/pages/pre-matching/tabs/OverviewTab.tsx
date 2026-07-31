@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "recharts";
 import FunnelSteps from "@/components/pre-matching/FunnelSteps";
+import { DevNote } from "@/components/groeimodel/DevNote";
 import VacatureTable from "@/components/pre-matching/VacatureTable";
 import {
   aggregateFunnel,
