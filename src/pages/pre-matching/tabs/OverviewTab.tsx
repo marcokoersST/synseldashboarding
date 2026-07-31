@@ -53,6 +53,8 @@ export function OverviewTab({ filters, filterState, onFiltersChange, onSelectVac
         filterState={filterState}
         onFiltersChange={onFiltersChange}
         onSelectVacature={onSelectVacature}
+        showFilters={false}
+
       />
 
 
