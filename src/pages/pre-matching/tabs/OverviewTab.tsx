@@ -69,62 +69,6 @@ Plaatsing: the amount of candidates placed at the vacancy they were matched on.`
         showFilters={false}
 
       />
-
-
-      <Card>
-        <CardHeader className="flex-row items-center justify-between gap-3 space-y-0 pb-2">
-          <CardTitle className="text-sm">Conversie per funnelstap over tijd</CardTitle>
-          <div className="flex flex-wrap gap-1">
-            {SERIES.map((s) => (
-              <button
-                key={s.key}
-                onClick={() =>
-                  setVisible((v) => (v.includes(s.key) ? v.filter((x) => x !== s.key) : [...v, s.key]))
-                }
-                className={cn(
-                  "rounded border px-2 py-0.5 text-[11px] transition-colors",
-                  visible.includes(s.key) ? "bg-muted text-foreground" : "text-muted-foreground opacity-60",
-                )}
-              >
-                <span className="mr-1 inline-block h-2 w-2 rounded-full" style={{ background: s.color }} />
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="week" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis unit="%" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(var(--popover))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                  formatter={(v: number, n: string) => [`${v}%`, n]}
-                />
-                
-                {SERIES.filter((s) => visible.includes(s.key)).map((s) => (
-                  <Line
-                    key={s.key}
-                    type="monotone"
-                    dataKey={s.key}
-                    name={s.label}
-                    stroke={s.color}
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
