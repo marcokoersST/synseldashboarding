@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import FunnelSteps from "@/components/pre-matching/FunnelSteps";
+import { DevNote } from "@/components/groeimodel/DevNote";
 import VacatureTable from "@/components/pre-matching/VacatureTable";
 import {
   FUNNEL_STEPS,
