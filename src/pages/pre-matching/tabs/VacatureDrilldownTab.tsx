@@ -162,7 +162,6 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                     </button>
                   </th>
                   <th className="px-3 py-2" />
-                  <th className="px-3 py-2" />
                 </tr>
               </thead>
               <tbody>
