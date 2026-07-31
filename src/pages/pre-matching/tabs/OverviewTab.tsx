@@ -29,6 +29,7 @@ const SERIES = [
   { key: "s2", label: "Consultant → kandidaat", color: "hsl(199 89% 48%)" },
   { key: "s3", label: "Kandidaat → klant", color: "hsl(38 92% 50%)" },
   { key: "s4", label: "Klant → plaatsing", color: "hsl(142 71% 45%)" },
+  { key: "e2e", label: "Match → plaatsing (totaal)", color: "hsl(280 65% 55%)" },
 ] as const;
 
 interface Props {
