@@ -134,7 +134,10 @@ export function PreMatchingFilterBar({
           </button>
         ))}
       </div>
+        </>
+      )}
     </div>
+
   );
 }
 
