@@ -61,7 +61,9 @@ export function VacatureTable({
           <CardTitle className="text-sm">{title}</CardTitle>
           <p className="text-xs text-muted-foreground">
             Gemiste kans = matches met matchscore &gt; 80% die nooit bij de consultant zijn aangekomen.
+          </p>
         </div>
+
         {showFilters && (
           <PreMatchingFilterBar
             filters={filterState}
