@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PreMatchingFilterBar from "@/components/pre-matching/PreMatchingFilterBar";
+import { DevNote } from "@/components/groeimodel/DevNote";
 import { vacatureRows, type PreMatchingFilters } from "@/data/preMatchingData";
 
 type SortKey = "gemisteKansen" | "matches" | "plaatsingen" | "conversie" | "titel";
