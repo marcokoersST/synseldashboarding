@@ -200,18 +200,34 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                     </td>
 
                     <td className="px-3 py-2 text-right">
-                      <a
-                        href={rcrmCandidateProfileUrl(m.candidateId)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-primary hover:underline"
-                      >
-                        <span className="flex h-4 w-4 items-center justify-center rounded bg-primary text-[9px] font-bold text-primary-foreground">
-                          R
-                        </span>
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
+                      <div className="inline-flex items-center gap-2">
+                        <a
+                          href={rcrmCandidateProfileUrl(m.candidateId)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Recruit CRM"
+                          className="inline-flex items-center gap-1 text-primary hover:underline"
+                        >
+                          <span className="flex h-4 w-4 items-center justify-center rounded bg-primary text-[9px] font-bold text-primary-foreground">
+                            R
+                          </span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                        <a
+                          href={synselCandidateProfileUrl(m.candidateId)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="AI.synsel"
+                          className="inline-flex items-center gap-1 text-foreground hover:underline"
+                        >
+                          <span className="flex h-4 w-4 items-center justify-center rounded bg-foreground text-[9px] font-bold text-background">
+                            S
+                          </span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
                     </td>
+
                   </tr>
                 ))}
                 {sorted.length === 0 && (
