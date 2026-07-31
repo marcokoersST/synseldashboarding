@@ -76,6 +76,7 @@ const PreMatchingHub = () => {
           vacatureId={selectedVacature ?? ""}
           filters={effectiveFilters}
           onBack={() => setActiveTab("overview")}
+          onSelectVacature={setSelectedVacature}
         />
       )}
       {activeTab === "consultant" && (
