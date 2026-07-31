@@ -296,6 +296,7 @@ export interface TrendPoint {
   s2: number;
   s3: number;
   s4: number;
+  e2e: number; // match -> plaatsing
   matches: number;
 }
 
