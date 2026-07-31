@@ -32,25 +32,27 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
   const vac = vacatures.find((v) => v.id === vacatureId);
 
   const options = useMemo(() => {
-    const list = filterVacatures(filters);
-    const withCurrent = vac && !list.some((v) => v.id === vac.id) ? [vac, ...list] : list;
-    return [...withCurrent].sort((a, b) => a.titel.localeCompare(b.titel));
+    // Zelfde set + sortering als de overview-tabel (grootste gemiste kans eerst)
+    const rows = [...vacatureRows(filters)].sort((a, b) => b.gemisteKansen - a.gemisteKansen);
+    const list = rows.map((r) => r.vacature);
+    return vac && !list.some((v) => v.id === vac.id) ? [vac, ...list] : list;
   }, [filters, vac]);
 
   const selector = (
     <Select value={vacatureId || undefined} onValueChange={(v) => onSelectVacature?.(v)}>
-      <SelectTrigger className="h-9 w-[380px] max-w-full text-xs">
+      <SelectTrigger className="h-9 w-[420px] max-w-full text-xs">
         <SelectValue placeholder="Kies een vacature…" />
       </SelectTrigger>
       <SelectContent className="max-h-[320px]">
         {options.map((v) => (
           <SelectItem key={v.id} value={v.id} className="text-xs">
-            {v.titel} — {v.klant} ({v.consultant})
+            {v.titel} — {v.klant} ({v.consultant}) · {v.id}
           </SelectItem>
         ))}
       </SelectContent>
     </Select>
   );
+
 
 
   const list = useMemo(() => {
