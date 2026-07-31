@@ -168,6 +168,7 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                 {sorted.map((m) => (
                   <tr key={m.id} className="border-t border-border hover:bg-muted/40">
                     <td className="px-3 py-2 font-medium text-foreground">{m.candidateName}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{FUNNEL_STEPS[m.reachedStep]}</td>
                     <td className="px-3 py-2">
                       <span
                         className={cn(
