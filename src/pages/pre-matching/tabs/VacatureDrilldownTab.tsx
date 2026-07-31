@@ -24,37 +24,25 @@ import {
 interface Props {
   vacatureId: string;
   filters: PreMatchingFilters;
+  filterState?: PreMatchingFilters;
+  onFiltersChange?: (f: PreMatchingFilters) => void;
   onBack: () => void;
   onSelectVacature?: (id: string) => void;
 }
 
 type SortKey = "matchScore" | "candidateName" | "reachedStep" | "crmStatus";
 
-export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVacature }: Props) {
+export function VacatureDrilldownTab({
+  vacatureId,
+  filters,
+  filterState,
+  onFiltersChange,
+  onBack,
+  onSelectVacature,
+}: Props) {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "matchScore", dir: "desc" });
   const vac = vacatures.find((v) => v.id === vacatureId);
 
-  const options = useMemo(() => {
-    // Zelfde set + sortering als de overview-tabel (grootste gemiste kans eerst)
-    const rows = [...vacatureRows(filters)].sort((a, b) => b.gemisteKansen - a.gemisteKansen);
-    const list = rows.map((r) => r.vacature);
-    return vac && !list.some((v) => v.id === vac.id) ? [vac, ...list] : list;
-  }, [filters, vac]);
-
-  const selector = (
-    <Select value={vacatureId || undefined} onValueChange={(v) => onSelectVacature?.(v)}>
-      <SelectTrigger className="h-9 w-[420px] max-w-full text-xs">
-        <SelectValue placeholder="Kies een vacature…" />
-      </SelectTrigger>
-      <SelectContent className="max-h-[320px]">
-        {options.map((v) => (
-          <SelectItem key={v.id} value={v.id} className="text-xs">
-            {v.titel} — {v.klant} ({v.consultant}) · {v.id}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
 
 
 
