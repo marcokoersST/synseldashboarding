@@ -25,7 +25,7 @@ interface Props {
   onSelectVacature?: (id: string) => void;
 }
 
-type SortKey = "matchScore" | "candidateName" | "reachedStep";
+type SortKey = "matchScore" | "candidateName" | "reachedStep" | "crmStatus";
 
 export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVacature }: Props) {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "matchScore", dir: "desc" });
@@ -155,7 +155,11 @@ export function VacatureDrilldownTab({ vacatureId, filters, onBack, onSelectVaca
                       Laatst bereikte stap <ArrowUpDown className={cn("h-3 w-3", sort.key === "reachedStep" ? "opacity-100" : "opacity-30")} />
                     </button>
                   </th>
-                  <th className="px-3 py-2 text-left font-medium">Status</th>
+                  <th className="px-3 py-2 text-left font-medium">
+                    <button onClick={() => toggleSort("crmStatus")} className="inline-flex items-center gap-1">
+                      Status <ArrowUpDown className={cn("h-3 w-3", sort.key === "crmStatus" ? "opacity-100" : "opacity-30")} />
+                    </button>
+                  </th>
                   <th className="px-3 py-2 text-right font-medium">
                     <button onClick={() => toggleSort("matchScore")} className="inline-flex items-center gap-1">
                       Matchscore <ArrowUpDown className={cn("h-3 w-3", sort.key === "matchScore" ? "opacity-100" : "opacity-30")} />
