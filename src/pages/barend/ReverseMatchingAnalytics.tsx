@@ -818,9 +818,8 @@ Initials badge: Recruit CRM-style blue pill (#3B82F6).`}
             subtitle="Omzet, marge, pipeline & ROI · inclusief pipeline"
             tone="accent"
             devStory={<>As <strong>Barend</strong>, I want to see the financial translation of the matching engine — not just activity but hard euros, margin, pipeline and ROI — to back the business case to leadership.</>}
-            devLogic={`4 financial tiles (financieleMetrics):
+            devLogic={`3 financial tiles (financieleMetrics):
   • Revenue       (primary)
-  • Gross margin  (accent)        — incl. margin %
   • Pipeline      (chart-primary) — open vacancies
   • Total ROI     (gold)          — outreach cost as basis
 
@@ -831,10 +830,9 @@ Below the tiles:
 
 ROI = (revenue - cost) / cost, displayed as ×.`}
           />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
             {[
               { label: "Omzet", value: fmtEuro(financieleMetrics.omzet.value), change: financieleMetrics.omzet.change, sub: financieleMetrics.omzet.sub, icon: Wallet, tone: "primary" },
-              { label: "Brutomarge", value: fmtEuro(financieleMetrics.brutomarge.value), change: financieleMetrics.brutomarge.change, sub: financieleMetrics.brutomarge.sub, icon: Percent, tone: "accent" },
               { label: "Pipeline value", value: fmtEuro(financieleMetrics.pipeline.value), change: financieleMetrics.pipeline.change, sub: financieleMetrics.pipeline.sub, icon: PiggyBank, tone: "chart-primary" },
               { label: "ROI totaal", value: `${financieleMetrics.roiTotaal.value}×`, sub: financieleMetrics.roiTotaal.sub, icon: Gauge, tone: "gold" },
             ].map(t => {
