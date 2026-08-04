@@ -14,7 +14,7 @@ import {
   Briefcase, Users, Send, Building2, MessageSquare, CheckCircle,
   PhoneOff, Clock, MessageSquareWarning, AlarmClock,
   TrendingUp, TrendingDown, Filter, Mail, Smartphone, Linkedin,
-  ArrowUpDown, Trophy, Wallet, Percent, PiggyBank, Gauge, Radar,
+  ArrowUpDown, Trophy, Wallet, PiggyBank, Gauge, Radar,
   ArrowLeftRight, X,
 } from "lucide-react";
 import {
