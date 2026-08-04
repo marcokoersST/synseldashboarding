@@ -325,15 +325,19 @@ via context (delta = current - compare).`}
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Funnel KPI's</h2>
         <DevInfo
           story={<>The 6 hero tiles show the main stages of the reverse-matching funnel: vacancies picked up → candidates matched → forwarded → proposed → interviewed → placed. <strong>Barend</strong> wants a single glance at the whole engine and to immediately spot any drop-off.</>}
-          logic={`KPI tiles (6) — source: reverseFunnelKpis in barendData.ts.
-Per tile:
-  • value (AnimatedNumber count-up)
-  • delta vs. previous period (DeltaBadge)
-  • subtitle with context (e.g. "Via matching engine")
-  • tone drives accent colour (primary/accent/gold/chart-primary)
+          logic={`Funnel KPI's
 
-Step-to-step conversions are NOT rendered on this
-strip — see Trend over time + Match quality for those.`}
+Vacatures opgepakt: amount of vacancies for which a workflow was started within Synsel AI
+
+Kandidaten gematched: amount of candidates that were accepted within Synsel AI
+
+Kandidaten doorgezet: amount of candidates that were set on the status Vacature aanvraag within RCRM
+
+Voorgesteld bij bedrijf: amount of candidates that were proposed to the specific vacancy they were matched on.
+
+Op gesprek: amount of candidates that went on a interview to the specific vacancy they were matched on.
+
+Geplaatst: amount of candidates that were placed on the specific vacancy they were matched on.`}
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
