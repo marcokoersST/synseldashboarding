@@ -344,8 +344,17 @@ Geplaatst: amount of candidates that were placed on the specific vacancy they we
         {reverseFunnelKpis.map((k, i) => {
           const Icon = iconMap[k.icon] ?? Briefcase;
           return (
-            <Card key={k.key} className="animate-fade-in overflow-hidden" style={{ animationDelay: `${i * 60}ms` }}>
+            <Card
+              key={k.key}
+              onClick={() => setOpenKpi({ key: k.key, label: k.label })}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpenKpi({ key: k.key, label: k.label }); } }}
+              className="animate-fade-in overflow-hidden cursor-pointer transition-all hover:shadow-md hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
               <div className={cn("h-1 w-full", toneClasses[k.tone].split(" ")[1])} />
+
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className={cn("w-7 h-7 rounded-md flex items-center justify-center", toneClasses[k.tone])}>
