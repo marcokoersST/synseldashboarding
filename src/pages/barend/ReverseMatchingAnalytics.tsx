@@ -1005,6 +1005,14 @@ ROI = (revenue - cost) / cost, displayed as ×.`}
         </SheetContent>
       </Sheet>
 
+      {/* ============= Funnel KPI deep-dive pop-up ============= */}
+      <FunnelStepDialog
+        kpiKey={openKpi?.key ?? null}
+        kpiLabel={openKpi?.label ?? ""}
+        onClose={() => setOpenKpi(null)}
+      />
+
+
     </ConsultantLayout>
   );
 }
