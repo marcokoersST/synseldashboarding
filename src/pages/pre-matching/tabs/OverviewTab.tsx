@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import FunnelSteps from "@/components/pre-matching/FunnelSteps";
 import { DevNote } from "@/components/groeimodel/DevNote";
 import VacatureTable from "@/components/pre-matching/VacatureTable";
+import PreFunnelStepDialog from "@/components/pre-matching/PreFunnelStepDialog";
 import {
   aggregateFunnel,
   filterMatches,
@@ -18,12 +19,13 @@ interface Props {
 export function OverviewTab({ filters, filterState, onFiltersChange, onSelectVacature }: Props) {
   const ms = useMemo(() => filterMatches(filters), [filters]);
   const funnel = useMemo(() => aggregateFunnel(ms), [ms]);
+  const [deepDiveStep, setDeepDiveStep] = useState<number | null>(null);
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="mb-2 text-sm font-semibold text-foreground">Totaalfunnel</h2>
-        <FunnelSteps data={funnel} />
+        <FunnelSteps data={funnel} onStepClick={setDeepDiveStep} />
         <DevNote
           story="Overview — Totaalfunnel"
           logic={`Match gegenereerd: the amount of candidates for which a match was found.
@@ -46,6 +48,8 @@ Plaatsing: the amount of candidates placed at the vacancy they were matched on.`
         showFilters={false}
 
       />
+
+      <PreFunnelStepDialog stepIndex={deepDiveStep} onClose={() => setDeepDiveStep(null)} />
     </div>
   );
 }

@@ -372,3 +372,66 @@ export function synselCandidateProfileUrl(id: string) {
   return `https://ai.synsel.nl/kandidaat/${id}`;
 }
 
+
+// ---------- Deep dive per funnelstap ----------
+
+export const PRE_TODAY = TODAY;
+export const vacatureTitelOpties: string[] = Array.from(
+  new Set(vacatures.map((v) => v.titel)),
+).sort();
+export const vacatureById = new Map(vacatures.map((v) => [v.id, v]));
+
+/** Deterministische datum per funnelstap, afgeleid van de matchdatum. */
+export function stepDatesFor(m: PreMatch): (Date | undefined)[] {
+  const seed = Number(m.id.replace("M-", "")) || 1;
+  const out: (Date | undefined)[] = [m.date];
+  let cursor = m.date;
+  for (let s = 1; s <= 4; s++) {
+    if (m.reachedStep < s) {
+      out.push(undefined);
+      continue;
+    }
+    const gap = 1 + ((seed * (s + 3)) % 9);
+    cursor = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + gap);
+    out.push(cursor);
+  }
+  return out;
+}
+
+export interface PreDeepDiveFilters {
+  from?: Date;
+  to?: Date;
+  consultants: string[];
+  klanten: string[];
+  vacatures: string[];
+}
+
+export const emptyPreDeepDiveFilters: PreDeepDiveFilters = {
+  consultants: [],
+  klanten: [],
+  vacatures: [],
+};
+
+/** Alle matches die minimaal de gegeven stap bereikten, gefilterd op de stapdatum. */
+export function matchesAtStep(stepIndex: number, f: PreDeepDiveFilters): PreMatch[] {
+  return matches.filter((m) => {
+    if (m.reachedStep < stepIndex) return false;
+    const vac = vacatureById.get(m.vacatureId);
+    if (!vac) return false;
+    if (f.consultants.length && !f.consultants.includes(vac.consultant)) return false;
+    if (f.klanten.length && !f.klanten.includes(vac.klant)) return false;
+    if (f.vacatures.length && !f.vacatures.includes(vac.titel)) return false;
+    const d = stepDatesFor(m)[stepIndex];
+    if (!d) return false;
+    if (f.from && d < startOfDay(f.from)) return false;
+    if (f.to && d > endOfDay(f.to)) return false;
+    return true;
+  });
+}
+
+export function preStepDistribution(ms: PreMatch[]) {
+  return FUNNEL_STEPS.map((step, idx) => {
+    const count = ms.filter((m) => m.reachedStep === idx).length;
+    return { index: idx, step, count, share: ms.length ? (count / ms.length) * 100 : 0 };
+  });
+}
