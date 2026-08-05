@@ -15,16 +15,25 @@ const STEP_TONES = [
 interface Props {
   data: FunnelAgg[];
   className?: string;
+  onStepClick?: (index: number) => void;
 }
 
-export function FunnelSteps({ data, className }: Props) {
+export function FunnelSteps({ data, className, onStepClick }: Props) {
   const max = Math.max(...data.map((d) => d.count), 1);
   return (
     <div className={cn("grid gap-2 md:grid-cols-5", className)}>
       {data.map((d, i) => {
         const Icon = STEP_ICONS[i] ?? Sparkles;
         return (
-        <Card key={d.step} className="relative p-4">
+        <Card
+          key={d.step}
+          onClick={onStepClick ? () => onStepClick(i) : undefined}
+          className={cn(
+            "relative p-4",
+            onStepClick && "cursor-pointer transition-all hover:border-primary/50 hover:shadow-md",
+          )}
+        >
+
           {i > 0 && (
             <ChevronRight className="absolute -left-3 top-1/2 hidden h-5 w-5 -translate-y-1/2 text-muted-foreground md:block" />
           )}
