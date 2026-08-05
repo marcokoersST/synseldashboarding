@@ -156,6 +156,8 @@ export default function ReverseMatchingAnalytics() {
   const [matchPeriod, setMatchPeriod] = useState<TilePeriod>("YTD");
   const [matchHidden, setMatchHidden] = useState<Set<string>>(new Set());
   const [openTile, setOpenTile] = useState<string | null>(null);
+  const [openKpi, setOpenKpi] = useState<{ key: string; label: string } | null>(null);
+
   const openTileMeta = openTile ? actieNodigTiles.find(t => t.key === openTile) : null;
   const openTileCandidates = openTile ? actieNodigCandidates[openTile] ?? [] : [];
 
