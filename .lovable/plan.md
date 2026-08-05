@@ -1,31 +1,38 @@
-## Pre-Matching Engine Dashboard
+# Funnel KPI deep-dive pop-ups (Reverse Matching Analytics)
 
-Nieuwe hub op `/pre-matching` met drie tabs, in dezelfde stijl als de bestaande hubs (Reengagement/Marketing): gedeelde filterbalk bovenaan, tab-navigatie eronder, statische demo-data.
+Make each of the 6 Funnel KPI tiles clickable. Clicking opens a modal with the full candidate list behind that funnel step, plus its own date range and filters.
 
-### Datamodel (mock, `src/data/preMatchingData.ts`)
-- 5 vaste funnelstappen: Match gegenereerd → Voorgesteld aan consultant → Voorgesteld aan kandidaat → Voorgesteld aan klant → Plaatsing.
-- ~40 vacatures (titel, klant, functiegroep, consultant, status actief/gesloten, datum geopend) en ~600 matches (kandidaatnaam, matchscore 40–99%, verst bereikte stap, doorgezet/afgevallen + afvalreden, datum).
-- Helpers: filteren op periode/consultant/functiegroep/klant/status, funnel-aggregatie met conversie% per stap, gemiste-kans-score (# matches met score >80% die stap 2 niet bereikten), weektrend per funnelstap, consultant-aggregatie vs. teamgemiddelde.
+## What the user gets
 
-### Filters (gedeeld over alle pagina's)
-Periode (datumrange via bestaand `DateFilterPanel`), consultant, functiegroep, klant en vacaturestatus (actief/gesloten/alle) als multi-select popovers. State leeft in de hub en wordt aan elke tab doorgegeven.
+- The 6 tiles (Vacatures opgepakt, Kandidaten gematched, Kandidaten doorgezet, Voorgesteld bij bedrijf, Op gesprek, Geplaatst) get a hover/cursor affordance and open a pop-up on click.
+- Pop-up header: step name + count of candidates matching the current pop-up filters.
+- Filters inside the pop-up, independent of the page filter bar:
+  - Date range (date-range picker, default last 30 days)
+  - Consultant (multi-select)
+  - Bedrijf (multi-select)
+  - Vacature (multi-select, narrowed to the selected bedrijf when one is chosen)
+  - Quick reset button
+- Candidate table, sortable, with columns:
+  - Kandidaat (with Recruit CRM "R" and Synsel "S" profile badges, matching the existing pattern)
+  - Vacature · Bedrijf
+  - Consultant
+  - Datum (date the candidate reached this step)
+  - Verst bereikte stap — badge showing how far in the funnel the candidate got (e.g. "Op gesprek"), colour-coded, plus a compact 6-dot progress indicator
+  - Status (drop-off vs still running)
+- Mini step-distribution strip at the top of the pop-up: of the candidates that reached this step, how many stalled here vs progressed further, per next step.
+- Dev info button in the pop-up reusing the existing Funnel KPI logic text, extended with the deep-dive definition.
 
-### Pagina 1 — Overview
-- Totaalfunnel: 5 stappen met aantallen en conversie% t.o.v. vorige stap.
-- Vacaturetabel: vacature, klant, consultant, # matches, # plaatsingen, conversie%, kolom "Gemiste kansen (>80%)" — standaard gesorteerd op gemiste kansen aflopend, andere kolommen sorteerbaar. Rij klikbaar → drill-down.
-- Trendgrafiek (Recharts, lijnen per funnelstap-conversie over de weken) met aan/uit te vinken series.
+For "Vacatures opgepakt" the list is vacancy-oriented (vacancy, bedrijf, consultant, opened date, number of matched candidates, furthest step reached by any candidate on it), since that step counts vacancies rather than candidates.
 
-### Pagina 2 — Vacature drill-down
-- Header: titel, klant, consultant, status, datum geopend, terugknop naar overview.
-- Funnel voor deze vacature (aantallen + conversie per stap).
-- Kandidatenlijst: naam (link naar kandidaatprofiel via bestaand Recruit CRM-icoonpatroon), status doorgezet/afgevallen, laatst bereikte stap, matchscore (gekleurd, >80% benadrukt), afvalreden indien aanwezig. Sorteerbaar op matchscore.
+## Technical approach
 
-### Pagina 3 — Consultant-inzicht
-- Overzichtstabel: per consultant conversie% per funnelstap, met kleurmarkering bij afwijking van teamgemiddelde; teamrij als footer. Rij klikbaar.
-- Individuele weergave: naam, # actieve vacatures, # matches in periode, gegroepeerde staafgrafiek consultant-% vs. team-% per funnelstap, plus tabel met vacatures van deze consultant → doorklikbaar naar vacature drill-down.
-
-### Technisch
-- Nieuwe bestanden: `src/data/preMatchingData.ts`, `src/pages/pre-matching/PreMatchingHub.tsx`, `tabs/OverviewTab.tsx`, `tabs/VacatureDrilldownTab.tsx`, `tabs/ConsultantInzichtTab.tsx`, plus kleine componenten (`FunnelSteps.tsx`, filterbalk).
-- Route toevoegen in `src/App.tsx` (lazy) en menu-item in `src/components/dashboard/Sidebar.tsx`.
-- Navigatie tussen tabs via hub-state (geselecteerde vacature/consultant), geen extra routes nodig.
-- Alleen semantische design tokens, Nederlandse labels, geen backend.
+- New data file `src/data/reverseMatchingCandidates.ts`:
+  - Deterministic seeded generator (same PRNG style as `barendData.ts`) producing ~2100 candidate records so the counts reconcile with `reverseFunnelKpis` (2104 matched, 488 doorgezet, 286 voorgesteld, 124 op gesprek, 38 geplaatst) and ~174 vacancies.
+  - Each record: id, name, candidateId, vacatureId, vacature, bedrijf, consultant, reachedStep (0–5), per-step timestamps, status.
+  - Exported helpers: `REVERSE_FUNNEL_STEPS`, `filterReverseCandidates(filters)`, `candidatesAtStep(stepIndex, filters)`, `stepDistribution(...)`, plus consultant/bedrijf/vacature option lists.
+- New component `src/components/barend/FunnelStepDialog.tsx`:
+  - shadcn `Dialog` (`max-w-5xl`, scrollable body), local filter state, multi-select `Popover` + `Command` filters, `Calendar` in a `Popover` for the date range (with `pointer-events-auto`), sortable table.
+- `src/pages/barend/ReverseMatchingAnalytics.tsx`:
+  - Wrap each KPI card in a button/clickable card, store `openStep` state, render one `FunnelStepDialog` at page level.
+  - No changes to existing tiles, charts or the Actie-nodig Sheet.
+- Static demo data only; no backend changes.
