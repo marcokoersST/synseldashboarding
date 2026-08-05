@@ -28,6 +28,8 @@ import {
   recruiterLeaderboard, financieleMetrics, monthlyRevenue, roiPerKanaal,
   periodOptions, type PeriodOption,
 } from "@/data/barendData";
+import { FunnelStepDialog } from "@/components/barend/FunnelStepDialog";
+
 
 const iconMap: Record<string, typeof Briefcase> = {
   Briefcase, Users, Send, Building2, MessageSquare, CheckCircle,
