@@ -1909,6 +1909,14 @@ export default function InkoopYieldDashboard() {
       </Tabs>
 
       {/* ─── Titel-detail deep dive (shared across tabs) ─── */}
+      <KandidaatToewijzenDialog
+        kandidaat={openKandidaat}
+        titels={TITELS}
+        assignedTitel={openKandidaat ? assignments[openKandidaat.id] ?? null : null}
+        onAssign={(id, titel) => setAssignments(prev => ({ ...prev, [id]: titel }))}
+        onClose={() => setOpenKandidaatId(null)}
+      />
+
       <TitelDrilldownDialog
         titel={titelDetail}
         allRows={kandidaten}
