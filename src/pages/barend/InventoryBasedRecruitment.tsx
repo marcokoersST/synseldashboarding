@@ -1699,13 +1699,9 @@ export default function InkoopYieldDashboard() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Kandidaat</TableHead>
-                      <TableHead>Functie (RCRM)</TableHead>
                       <TableHead>Functiegroep</TableHead>
-                      <TableHead>Provincie</TableHead>
-                      <TableHead>Consultant</TableHead>
                       <TableHead>Binnenkomst</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Genormaliseerde titel</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1716,21 +1712,13 @@ export default function InkoopYieldDashboard() {
                         onClick={() => setOpenKandidaatId(k.id)}
                       >
                         <TableCell className="text-xs font-medium">{k.naam}</TableCell>
-                        <TableCell className="text-xs">{k.rcrmFunctie}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{k.functiegroep}</TableCell>
-                        <TableCell className="text-xs">{k.provincie}</TableCell>
-                        <TableCell className="text-xs">{k.consultant}</TableCell>
                         <TableCell className="text-xs tabular-nums">{k.datumBinnenkomst}</TableCell>
                         <TableCell className="text-xs"><Badge variant="secondary" className="text-[10px]">{k.status}</Badge></TableCell>
-                        <TableCell className="text-xs">
-                          {assignments[k.id]
-                            ? <Badge className="text-[10px] bg-emerald-600 hover:bg-emerald-600">{assignments[k.id]}</Badge>
-                            : <span className="text-muted-foreground">— nog niet toegewezen</span>}
-                        </TableCell>
                       </TableRow>
                     ))}
                     {filteredPending.length === 0 && (
-                      <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Geen kandidaten gevonden</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Geen kandidaten gevonden</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
