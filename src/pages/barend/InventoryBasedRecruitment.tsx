@@ -1157,9 +1157,9 @@ export default function InkoopYieldDashboard() {
         <TabsList className="mb-6 flex-wrap h-auto">
           <TabsTrigger value="exec"><Target className="h-3.5 w-3.5 mr-1.5 text-[#bfa16b]" />Executive</TabsTrigger>
           <TabsTrigger value="titels"><Sparkles className="h-3.5 w-3.5 mr-1.5 text-[#bfa16b]" />Titels</TabsTrigger>
-          <TabsTrigger value="regio" disabled className="opacity-60 cursor-not-allowed text-muted-foreground"><Lock className="h-3 w-3 mr-1.5 text-muted-foreground" />Regio</TabsTrigger>
-          <TabsTrigger value="consultant" disabled className="opacity-60 cursor-not-allowed text-muted-foreground"><Lock className="h-3 w-3 mr-1.5 text-muted-foreground" />Consultants</TabsTrigger>
-          <TabsTrigger value="opps" disabled className="opacity-60 cursor-not-allowed text-muted-foreground"><Lock className="h-3 w-3 mr-1.5 text-muted-foreground" />Actielijst</TabsTrigger>
+          <TabsTrigger value="regio"><Target className="h-3.5 w-3.5 mr-1.5 text-[#bfa16b]" />Regio</TabsTrigger>
+          <TabsTrigger value="consultant"><UsersRound className="h-3.5 w-3.5 mr-1.5 text-[#bfa16b]" />Consultants</TabsTrigger>
+          <TabsTrigger value="opps"><Sparkles className="h-3.5 w-3.5 mr-1.5 text-[#bfa16b]" />Actielijst</TabsTrigger>
         </TabsList>
 
         {/* ═══ 1. EXECUTIVE ═══ */}
