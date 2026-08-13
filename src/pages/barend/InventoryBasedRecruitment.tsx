@@ -1669,7 +1669,7 @@ export default function InkoopYieldDashboard() {
           <TabsContent value="recruitment" className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <KPI label="Nog toe te wijzen" value={fmt(pendingKandidaten.length)} sub="Zonder genormaliseerde titel" icon={UsersRound} />
-              <KPI label="Toegewezen (deze sessie)" value={fmt(Object.keys(assignments).length)} icon={Check} />
+              <KPI label="Toegewezen (deze sessie)" value={fmt(confirmedIds.size)} icon={Check} />
               <KPI label="Functiegroepen" value={fmt(new Set(pendingKandidaten.map(k => k.functiegroep)).size)} />
               <KPI label="Beschikbare titels" value={fmt(TITELS.length)} sub="Genormaliseerd" />
             </div>
