@@ -31,6 +31,8 @@ import {
   type FilterState, type Quadrant, type Metrics,
 } from "@/data/inkoopYieldData";
 import { TitelDrilldownDialog } from "@/components/inkoop/TitelDrilldownDialog";
+import { KandidaatToewijzenDialog } from "@/components/inkoop/KandidaatToewijzenDialog";
+import { toeTeWijzenKandidaten } from "@/data/toewijzenKandidaten";
 
 const fmt = (n: number) => n.toLocaleString("nl-NL");
 const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`;
