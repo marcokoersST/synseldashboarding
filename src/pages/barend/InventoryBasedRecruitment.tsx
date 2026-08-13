@@ -1634,7 +1634,89 @@ export default function InkoopYieldDashboard() {
 
         {/* ═══ 6. OPPORTUNITY LIST ═══ */}
         <TabsContent value="opps" className="space-y-6">
+        <Tabs defaultValue="recruitment" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="recruitment"><UsersRound className="h-3.5 w-3.5 mr-1.5 text-[#bfa16b]" />Recruitment</TabsTrigger>
+            <TabsTrigger value="marketing"><Megaphone className="h-3.5 w-3.5 mr-1.5 text-[#bfa16b]" />Marketing</TabsTrigger>
+          </TabsList>
+
+          {/* ─── RECRUITMENT: kandidaten zonder genormaliseerde titel ─── */}
+          <TabsContent value="recruitment" className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <KPI label="Nog toe te wijzen" value={fmt(pendingKandidaten.length)} sub="Zonder genormaliseerde titel" icon={UsersRound} />
+              <KPI label="Toegewezen (deze sessie)" value={fmt(Object.keys(assignments).length)} icon={Check} />
+              <KPI label="Functiegroepen" value={fmt(new Set(pendingKandidaten.map(k => k.functiegroep)).size)} />
+              <KPI label="Beschikbare titels" value={fmt(TITELS.length)} sub="Genormaliseerd" />
+            </div>
+
+            <Card className="border border-border">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      Nog in te delen kandidaten
+                      <Badge variant="secondary" className="text-xs">{filteredPending.length} kandidaten</Badge>
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      Klik op een kandidaat om het CV te bekijken en een genormaliseerde titel toe te wijzen.
+                    </p>
+                  </div>
+                  <Input
+                    value={recruitSearch}
+                    onChange={(e) => setRecruitSearch(e.target.value)}
+                    placeholder="Zoek op naam of functie..."
+                    className="h-8 w-64 text-xs"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Kandidaat</TableHead>
+                      <TableHead>Functie (RCRM)</TableHead>
+                      <TableHead>Functiegroep</TableHead>
+                      <TableHead>Provincie</TableHead>
+                      <TableHead>Consultant</TableHead>
+                      <TableHead>Binnenkomst</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Genormaliseerde titel</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPending.map(k => (
+                      <TableRow
+                        key={k.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => setOpenKandidaatId(k.id)}
+                      >
+                        <TableCell className="text-xs font-medium">{k.naam}</TableCell>
+                        <TableCell className="text-xs">{k.rcrmFunctie}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{k.functiegroep}</TableCell>
+                        <TableCell className="text-xs">{k.provincie}</TableCell>
+                        <TableCell className="text-xs">{k.consultant}</TableCell>
+                        <TableCell className="text-xs tabular-nums">{k.datumBinnenkomst}</TableCell>
+                        <TableCell className="text-xs"><Badge variant="secondary" className="text-[10px]">{k.status}</Badge></TableCell>
+                        <TableCell className="text-xs">
+                          {assignments[k.id]
+                            ? <Badge className="text-[10px] bg-emerald-600 hover:bg-emerald-600">{assignments[k.id]}</Badge>
+                            : <span className="text-muted-foreground">— nog niet toegewezen</span>}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredPending.length === 0 && (
+                      <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Geen kandidaten gevonden</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ─── MARKETING ─── */}
+          <TabsContent value="marketing" className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+
             <KPI label="Aanbevelingen" value={fmt(opportunities.length)} />
             <KPI label="Extra inkopen" value={fmt(opportunities.filter(o => o.type === "inkopen").length)} sub="Titel × regio" />
             <KPI label="Budget verlagen" value={fmt(opportunities.filter(o => o.type === "verlagen").length)} />
