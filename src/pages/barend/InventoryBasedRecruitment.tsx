@@ -1080,8 +1080,12 @@ export default function InkoopYieldDashboard() {
   const [titelDetail, setTitelDetail] = useState<string | null>(null);
   const [recruitSearch, setRecruitSearch] = useState("");
   const [assignments, setAssignments] = useState<Record<string, string>>({});
+  const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set());
   const [openKandidaatId, setOpenKandidaatId] = useState<string | null>(null);
-  const pendingKandidaten = toeTeWijzenKandidaten;
+  const pendingKandidaten = useMemo(
+    () => toeTeWijzenKandidaten.filter(k => !confirmedIds.has(k.id)),
+    [confirmedIds],
+  );
   const filteredPending = useMemo(() => {
     const q = recruitSearch.trim().toLowerCase();
     if (!q) return pendingKandidaten;
@@ -1092,6 +1096,14 @@ export default function InkoopYieldDashboard() {
     );
   }, [pendingKandidaten, recruitSearch]);
   const openKandidaat = pendingKandidaten.find(k => k.id === openKandidaatId) ?? null;
+
+  const handleConfirmKandidaat = (id: string) => {
+    const idx = filteredPending.findIndex(k => k.id === id);
+    const remaining = filteredPending.filter(k => k.id !== id);
+    setConfirmedIds(prev => { const n = new Set(prev); n.add(id); return n; });
+    const nextK = remaining[idx] ?? remaining[Math.max(0, idx - 1)] ?? null;
+    setOpenKandidaatId(nextK ? nextK.id : null);
+  };
 
   // Toggle voor de 3 top-titel kaarten: op plaatsings- of gespreksratio
   const [topMode, setTopMode] = useState<"plaatsingen" | "gesprekken">("plaatsingen");
@@ -1657,7 +1669,7 @@ export default function InkoopYieldDashboard() {
           <TabsContent value="recruitment" className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <KPI label="Nog toe te wijzen" value={fmt(pendingKandidaten.length)} sub="Zonder genormaliseerde titel" icon={UsersRound} />
-              <KPI label="Toegewezen (deze sessie)" value={fmt(Object.keys(assignments).length)} icon={Check} />
+              <KPI label="Toegewezen (deze sessie)" value={fmt(confirmedIds.size)} icon={Check} />
               <KPI label="Functiegroepen" value={fmt(new Set(pendingKandidaten.map(k => k.functiegroep)).size)} />
               <KPI label="Beschikbare titels" value={fmt(TITELS.length)} sub="Genormaliseerd" />
             </div>
@@ -1914,6 +1926,7 @@ export default function InkoopYieldDashboard() {
         titels={TITELS}
         assignedTitel={openKandidaat ? assignments[openKandidaat.id] ?? null : null}
         onAssign={(id, titel) => setAssignments(prev => ({ ...prev, [id]: titel }))}
+        onConfirm={handleConfirmKandidaat}
         onClose={() => setOpenKandidaatId(null)}
       />
 

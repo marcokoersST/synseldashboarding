@@ -14,6 +14,7 @@ interface Props {
   titels: string[];
   assignedTitel?: string | null;
   onAssign: (kandidaatId: string, titel: string) => void;
+  onConfirm: (kandidaatId: string) => void;
   onClose: () => void;
 }
 
@@ -56,10 +57,11 @@ function Row({ icon: Icon, label, value }: { icon: any; label: string; value: st
   );
 }
 
-export function KandidaatToewijzenDialog({ kandidaat, titels, assignedTitel, onAssign, onClose }: Props) {
+export function KandidaatToewijzenDialog({ kandidaat, titels, assignedTitel, onAssign, onConfirm, onClose }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   if (!kandidaat) return null;
+  const canConfirm = !!assignedTitel;
   const cv = kandidaat.cv;
 
   return (
@@ -134,6 +136,20 @@ export function KandidaatToewijzenDialog({ kandidaat, titels, assignedTitel, onA
               <p className="text-[11px] text-muted-foreground">
                 Zoek en scroll door de volledige lijst met genormaliseerde titels.
               </p>
+
+              {canConfirm && (
+                <Button
+                  size="sm"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 gap-2"
+                  onClick={() => {
+                    toast({ title: "Bevestigd", description: `${kandidaat.naam} → ${assignedTitel}` });
+                    onConfirm(kandidaat.id);
+                  }}
+                >
+                  <Check className="h-4 w-4" />
+                  Bevestig & naar volgende
+                </Button>
+              )}
             </div>
           </div>
 
