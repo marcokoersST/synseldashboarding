@@ -1926,6 +1926,7 @@ export default function InkoopYieldDashboard() {
         titels={TITELS}
         assignedTitel={openKandidaat ? assignments[openKandidaat.id] ?? null : null}
         onAssign={(id, titel) => setAssignments(prev => ({ ...prev, [id]: titel }))}
+        onConfirm={handleConfirmKandidaat}
         onClose={() => setOpenKandidaatId(null)}
       />
 
