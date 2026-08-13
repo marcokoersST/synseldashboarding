@@ -14,6 +14,7 @@ interface Props {
   titels: string[];
   assignedTitel?: string | null;
   onAssign: (kandidaatId: string, titel: string) => void;
+  onConfirm: (kandidaatId: string) => void;
   onClose: () => void;
 }
 
