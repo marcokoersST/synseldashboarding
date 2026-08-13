@@ -1079,6 +1079,17 @@ export default function InkoopYieldDashboard() {
   const [recruitSearch, setRecruitSearch] = useState("");
   const [assignments, setAssignments] = useState<Record<string, string>>({});
   const [openKandidaatId, setOpenKandidaatId] = useState<string | null>(null);
+  const pendingKandidaten = toeTeWijzenKandidaten;
+  const filteredPending = useMemo(() => {
+    const q = recruitSearch.trim().toLowerCase();
+    if (!q) return pendingKandidaten;
+    return pendingKandidaten.filter(k =>
+      k.naam.toLowerCase().includes(q) ||
+      k.rcrmFunctie.toLowerCase().includes(q) ||
+      k.functiegroep.toLowerCase().includes(q),
+    );
+  }, [pendingKandidaten, recruitSearch]);
+  const openKandidaat = pendingKandidaten.find(k => k.id === openKandidaatId) ?? null;
 
   // Toggle voor de 3 top-titel kaarten: op plaatsings- of gespreksratio
   const [topMode, setTopMode] = useState<"plaatsingen" | "gesprekken">("plaatsingen");
