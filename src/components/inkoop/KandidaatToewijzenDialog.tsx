@@ -136,6 +136,20 @@ export function KandidaatToewijzenDialog({ kandidaat, titels, assignedTitel, onA
               <p className="text-[11px] text-muted-foreground">
                 Zoek en scroll door de volledige lijst met genormaliseerde titels.
               </p>
+
+              {canConfirm && (
+                <Button
+                  size="sm"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 gap-2"
+                  onClick={() => {
+                    toast({ title: "Bevestigd", description: `${kandidaat.naam} → ${assignedTitel}` });
+                    onConfirm(kandidaat.id);
+                  }}
+                >
+                  <Check className="h-4 w-4" />
+                  Bevestig & naar volgende
+                </Button>
+              )}
             </div>
           </div>
 
