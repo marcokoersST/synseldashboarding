@@ -57,10 +57,11 @@ function Row({ icon: Icon, label, value }: { icon: any; label: string; value: st
   );
 }
 
-export function KandidaatToewijzenDialog({ kandidaat, titels, assignedTitel, onAssign, onClose }: Props) {
+export function KandidaatToewijzenDialog({ kandidaat, titels, assignedTitel, onAssign, onConfirm, onClose }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   if (!kandidaat) return null;
+  const canConfirm = !!assignedTitel;
   const cv = kandidaat.cv;
 
   return (
