@@ -1804,7 +1804,10 @@ export default function InkoopYieldDashboard() {
               </Table>
             </CardContent>
           </Card>
+          </TabsContent>
+        </Tabs>
         </TabsContent>
+
 
         {/* ─── Provincie-detail popup ─── */}
         <Dialog open={!!provincieDetail} onOpenChange={(o) => !o && setProvincieDetail(null)}>
