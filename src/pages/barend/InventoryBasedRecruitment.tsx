@@ -1076,6 +1076,9 @@ export default function InkoopYieldDashboard() {
 
   // Titel-detail deep-dive state
   const [titelDetail, setTitelDetail] = useState<string | null>(null);
+  const [recruitSearch, setRecruitSearch] = useState("");
+  const [assignments, setAssignments] = useState<Record<string, string>>({});
+  const [openKandidaatId, setOpenKandidaatId] = useState<string | null>(null);
 
   // Toggle voor de 3 top-titel kaarten: op plaatsings- of gespreksratio
   const [topMode, setTopMode] = useState<"plaatsingen" | "gesprekken">("plaatsingen");
