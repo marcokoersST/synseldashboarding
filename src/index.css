@@ -301,7 +301,6 @@
     z-index: 2;
     overflow: visible;
     background-color: hsl(var(--ranking-flow) / 0.11);
-    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
   }
 
   .ranking-path-header::before {
@@ -312,34 +311,33 @@
     background: hsl(var(--ranking-flow) / 0.72);
   }
 
-  .ranking-path-first {
-    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
+  .ranking-path-header:not(.ranking-path-last)::after {
+    content: "";
+    position: absolute;
+    z-index: 6;
+    right: -0.7rem;
+    top: 50%;
+    width: 0.8rem;
+    height: 1rem;
+    background-color: hsl(var(--ranking-flow) / 0.72);
+    clip-path: polygon(0 38%, 58% 38%, 58% 12%, 100% 50%, 58% 88%, 58% 62%, 0 62%);
+    transform: translateY(-50%);
+    animation: ranking-flow-connector 2.8s ease-in-out infinite;
+    pointer-events: none;
   }
 
   .ranking-path-last {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 10px 50%);
     padding-right: 2rem;
   }
 
-  @keyframes ranking-flow-arrow {
-    0%, 25% { opacity: 0.25; transform: translate(-4px, -50%); }
-    55% { opacity: 1; }
-    100% { opacity: 0.25; transform: translate(4px, -50%); }
+  @keyframes ranking-flow-connector {
+    0%, 100% { opacity: 0.42; transform: translate(-1px, -50%); }
+    50% { opacity: 0.9; transform: translate(1px, -50%); }
   }
 
   @keyframes ranking-cycle-return {
     0%, 70%, 100% { transform: rotate(0deg); opacity: 0.55; }
     85% { transform: rotate(-180deg); opacity: 1; }
-  }
-
-  .ranking-flow-arrow {
-    position: absolute;
-    z-index: 5;
-    right: 1px;
-    top: 50%;
-    color: hsl(var(--ranking-flow));
-    animation: ranking-flow-arrow 2.8s ease-in-out infinite;
-    pointer-events: none;
   }
 
   .ranking-cycle-return {
@@ -353,7 +351,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ranking-flow-arrow,
+    .ranking-path-header:not(.ranking-path-last)::after,
     .ranking-cycle-return {
       animation: none;
     }
