@@ -528,38 +528,55 @@ function RanglijstenContent() {
     return () => { ro.disconnect(); el.removeEventListener("scroll", updateScrollButtons); };
   }, [isCompact, updateScrollButtons, columns]);
 
-  // Slow right-to-left carousel of the column strip (pauses on hover / interaction)
+  // Auto-carousel: every 15s the column strip steps one column to the left (non-TV),
+  // and in TV mode the visible column window rotates one position.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (columns.length < 2) return;
+
+    const id = window.setInterval(() => {
+      if (Date.now() < pausedUntilRef.current) return;
+
+      if (isCompact) {
+        setRotationOffset(prev => (prev + 1) % columns.length);
+        return;
+      }
+
+      const el = scrollRef.current;
+      if (!el) return;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 4) return;
+      const first = el.querySelector<HTMLElement>("[data-ranglijst-col]");
+      const step = first ? first.offsetWidth + 8 : el.clientWidth * 0.3;
+      const next = el.scrollLeft + step;
+      el.scrollTo({ left: next >= maxScroll - 2 ? 0 : next, behavior: "smooth" });
+    }, 15000);
+
+    return () => window.clearInterval(id);
+  }, [isCompact, columns.length]);
+
+  // Pause the carousel while the user hovers the strip
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let paused = false;
-    let raf = 0;
-    let last = performance.now();
-    const SPEED = 18; // px per second
-    const onEnter = () => { paused = true; };
-    const onLeave = () => { paused = false; };
+    if (!el || isCompact) return;
+    const onEnter = () => { pausedUntilRef.current = Number.MAX_SAFE_INTEGER; };
+    const onLeave = () => { pausedUntilRef.current = Date.now() + 5000; };
     el.addEventListener("mouseenter", onEnter);
     el.addEventListener("mouseleave", onLeave);
-    el.addEventListener("pointerdown", onEnter);
-    const step = (now: number) => {
-      const dt = (now - last) / 1000;
-      last = now;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (!paused && maxScroll > 4) {
-        const next = el.scrollLeft + SPEED * dt;
-        el.scrollLeft = next >= maxScroll - 0.5 ? 0 : next;
-      }
-      raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
     return () => {
-      cancelAnimationFrame(raf);
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mouseleave", onLeave);
-      el.removeEventListener("pointerdown", onEnter);
     };
-  }, [isCompact, columns.length]);
+  }, [isCompact]);
+
+  // Rotated column order for TV mode
+  const displayColumns = useMemo(() => {
+    if (!isCompact || columns.length < 2) return columns;
+    const off = rotationOffset % columns.length;
+    return [...columns.slice(off), ...columns.slice(0, off)];
+  }, [columns, isCompact, rotationOffset]);
+
+
 
   return (
     <div className={cn(isCompact && "flex flex-col h-full")}>
