@@ -403,8 +403,11 @@ function RanglijstenContent() {
   const belHeaderTitle = `Belstatistieken (${belScopeLabel})`;
   const isCompact = useTVCompact();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const pausedUntilRef = useRef(0);
+  const [rotationOffset, setRotationOffset] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+
 
   const [sortModes, setSortModes] = useState<Record<string, string>>({
     "Inschrijvingen": "name",
