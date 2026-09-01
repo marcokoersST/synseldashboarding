@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone, PhoneOutgoing, PhoneIncoming, PhoneCall } from "lucide-react";
+import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone, PhoneOutgoing, PhoneIncoming, PhoneCall, UserPlus, Send, MessagesSquare, ClipboardCheck, Handshake, CirclePause, FilePlus2, type LucideIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -86,15 +86,30 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
   return null;
 }
 
-// Column configuration for dual-value display
-const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string; isTimeSecondary?: boolean; hidePercent?: boolean }> = {
-  "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false },
-  "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false },
-  "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true },
-  "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq." },
-  "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
-  "Belstatistieken": { headerTitle: "Belstatistieken (Uitgaand)", primaryLabel: "telefoontjes", doneLabel: "beltijd", isInverse: false, isTimeSecondary: true },
-  "Vacature aanvragen": { headerTitle: "Vacature aanvragen", primaryLabel: "aanvragen", doneLabel: "kandidaten vanuit pre-matching", isInverse: false, hidePercent: true },
+interface ColumnConfig {
+  headerTitle: string;
+  primaryLabel?: string;
+  doneLabel?: string;
+  isInverse: boolean;
+  isRatioOnly?: boolean;
+  ratioLabel?: string;
+  isTimeSecondary?: boolean;
+  hidePercent?: boolean;
+  icon: LucideIcon;
+  headerClassName: string;
+  iconClassName: string;
+}
+
+// Color and icon stay coupled to the metric, even when the carousel changes order.
+const COLUMN_CONFIG: Record<string, ColumnConfig> = {
+  "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false, icon: UserPlus, headerClassName: "bg-ranking-inschrijvingen/10 border-ranking-inschrijvingen/45", iconClassName: "text-ranking-inschrijvingen" },
+  "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false, icon: Send, headerClassName: "bg-ranking-acquisities/10 border-ranking-acquisities/45", iconClassName: "text-ranking-acquisities" },
+  "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true, icon: MessagesSquare, headerClassName: "bg-ranking-gesprekken/10 border-ranking-gesprekken/45", iconClassName: "text-ranking-gesprekken" },
+  "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq.", icon: ClipboardCheck, headerClassName: "bg-ranking-intakes/10 border-ranking-intakes/45", iconClassName: "text-ranking-intakes" },
+  "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false, icon: Handshake, headerClassName: "bg-ranking-plaatsingen/10 border-ranking-plaatsingen/45", iconClassName: "text-ranking-plaatsingen" },
+  "Niet begonnen": { headerTitle: "Niet begonnen", isInverse: false, icon: CirclePause, headerClassName: "bg-ranking-niet-begonnen/10 border-ranking-niet-begonnen/45", iconClassName: "text-ranking-niet-begonnen" },
+  "Belstatistieken": { headerTitle: "Belstatistieken (Uitgaand)", primaryLabel: "telefoontjes", doneLabel: "beltijd", isInverse: false, isTimeSecondary: true, icon: PhoneCall, headerClassName: "bg-ranking-telefonie/10 border-ranking-telefonie/45", iconClassName: "text-ranking-telefonie" },
+  "Vacature aanvragen": { headerTitle: "Vacature aanvragen", primaryLabel: "aanvragen", doneLabel: "kandidaten vanuit pre-matching", isInverse: false, hidePercent: true, icon: FilePlus2, headerClassName: "bg-ranking-vacatures/10 border-ranking-vacatures/45", iconClassName: "text-ranking-vacatures" },
 };
 
 const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {

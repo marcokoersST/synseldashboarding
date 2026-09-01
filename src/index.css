@@ -63,6 +63,16 @@
     --chart-secondary: 45 30% 55%;
     --chart-muted: 220 10% 85%;
     --progress-bg: 220 15% 92%;
+
+    /* Stable metric identities for the rotating Ranglijsten columns */
+    --ranking-inschrijvingen: 217 71% 45%;
+    --ranking-acquisities: 263 48% 48%;
+    --ranking-gesprekken: 173 67% 30%;
+    --ranking-intakes: 32 82% 38%;
+    --ranking-plaatsingen: 151 55% 33%;
+    --ranking-niet-begonnen: 350 55% 43%;
+    --ranking-telefonie: 193 73% 36%;
+    --ranking-vacatures: 231 54% 48%;
   }
 
   .dark {
@@ -102,6 +112,15 @@
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 220 15% 12%;
     --sidebar-ring: 45 30% 55%;
+
+    --ranking-inschrijvingen: 217 72% 66%;
+    --ranking-acquisities: 263 55% 70%;
+    --ranking-gesprekken: 173 53% 55%;
+    --ranking-intakes: 32 76% 58%;
+    --ranking-plaatsingen: 151 48% 53%;
+    --ranking-niet-begonnen: 350 58% 62%;
+    --ranking-telefonie: 193 67% 58%;
+    --ranking-vacatures: 231 60% 68%;
   }
 }
 
