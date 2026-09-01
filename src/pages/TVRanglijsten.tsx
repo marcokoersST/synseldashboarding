@@ -414,6 +414,8 @@ function RanglijstenContent() {
     "Plaatsingen": "value",
     "Niet begonnen": "value",
     "Belstatistieken": "value",
+    "Vacature aanvragen": "value",
+
   });
 
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode" | "custom">("week");
