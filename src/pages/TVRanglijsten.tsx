@@ -1137,15 +1137,40 @@ function RanglijstenContent() {
               })}
             </div>
           </div>
+          <div className="flex items-center justify-end gap-2 mt-3">
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Kolommen naar links"
+              disabled={!canScrollLeft}
+              className="h-12 w-12 rounded-full bg-card shadow-lg border-border disabled:opacity-40"
+              onClick={() => scrollByDir("left")}
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Kolommen naar rechts"
+              disabled={!canScrollRight}
+              className="h-12 w-12 rounded-full bg-card shadow-lg border-border disabled:opacity-40"
+              onClick={() => scrollByDir("right")}
+            >
+              <ChevronRight className="w-6 h-6" />
+            </Button>
+          </div>
         </div>
       )}
 
       {isCompact && (
         <div
-          className="grid gap-1.5 flex-1 min-h-0"
-          style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, gridTemplateRows: '1fr' }}
+          key={rotationOffset}
+          className="grid gap-1.5 flex-1 min-h-0 tv-col-rotate"
+          style={{ gridTemplateColumns: `repeat(${displayColumns.length}, minmax(0, 1fr))`, gridTemplateRows: '1fr' }}
         >
-          {columns.map((col) => {
+          <style>{`@keyframes tvColRotate { from { transform: translateX(4%); opacity: .55; } to { transform: translateX(0); opacity: 1; } } .tv-col-rotate { animation: tvColRotate 700ms cubic-bezier(0.22, 1, 0.36, 1) both; }`}</style>
+          {displayColumns.map((col) => {
+
             const isNegative = col.title === "Niet begonnen";
             const isPlain = col.title === "Inschrijvingen";
             const isAcquisities = col.title === "Acquisities";
