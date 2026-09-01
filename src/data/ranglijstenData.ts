@@ -132,6 +132,7 @@ const baseWeekTopValues: number[][] = [
   [5, 4, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1],
   [2, 1, 1, 1, 1, 1, 1],
   [1],
+  [7, 6, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1],
 ];
 
 const basePeriodeTopValues: number[][] = [
@@ -141,9 +142,11 @@ const basePeriodeTopValues: number[][] = [
   [18, 16, 14, 13, 12, 12, 11, 11, 10, 10, 9, 8, 8, 7, 7, 6, 6, 5, 4, 3, 2, 1, 1],
   [6, 4, 4, 4, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [2, 1, 1],
+  [26, 22, 20, 18, 17, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4, 3, 3, 2, 2, 1, 1, 1],
 ];
 
-const columnTitles = ["Inschrijvingen", "Acquisities", "Gesprekken", "Intakes", "Plaatsingen", "Niet begonnen"];
+const columnTitles = ["Inschrijvingen", "Acquisities", "Gesprekken", "Intakes", "Plaatsingen", "Niet begonnen", "Vacature aanvragen"];
+
 
 function generateVariedRanking(baseValues: number[], seed: number): RankingEntry[] {
   // Apply variation: scale values by a factor between 0.7 and 1.3
@@ -275,7 +278,20 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
     }
 
+    // For "Vacature aanvragen": valueDone = kandidaten toegestuurd vanuit pre-matching
+    if (title === "Vacature aanvragen") {
+      const preRatio = (s: number, i: number) => 1.2 + seededRandom(s + 1500, i) * 2.3;
+      entries.forEach((e, i) => {
+        e.valueDone = e.value > 0 ? Math.round(e.value * preRatio(seed, i)) : 0;
+      });
+      const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
+      const previousTotalDone = prevEntries.reduce(
+        (s, e, i) => s + (e.value > 0 ? Math.round(e.value * preRatio(prevSeed, i)) : 0), 0);
+      return { title, total, previousTotal, totalDone, previousTotalDone, entries };
+    }
+
     return { title, total, previousTotal, entries };
+
   });
 
   // Post-process: set Intakes valueDone = acquisities count per consultant (cross-reference)
@@ -313,6 +329,8 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
     Intakes:        { value: 2 },                  // valueDone (= acq) re-set below
     Plaatsingen:    { value: 3, valueDone: 2 },    // 3 plaatsingen / 2 detachering
     "Niet begonnen":{ value: 1 },
+    "Vacature aanvragen": { value: 3, valueDone: 7 },
+
   };
   result.forEach((col) => {
     const min = robinMinimums[col.title];

@@ -87,13 +87,14 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
 }
 
 // Column configuration for dual-value display
-const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string; isTimeSecondary?: boolean }> = {
+const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string; isTimeSecondary?: boolean; hidePercent?: boolean }> = {
   "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false },
   "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false },
   "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true },
   "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq." },
   "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
   "Belstatistieken": { headerTitle: "Belstatistieken (Uitgaand)", primaryLabel: "telefoontjes", doneLabel: "beltijd", isInverse: false, isTimeSecondary: true },
+  "Vacature aanvragen": { headerTitle: "Vacature aanvragen", primaryLabel: "aanvragen", doneLabel: "kandidaten vanuit pre-matching", isInverse: false, hidePercent: true },
 };
 
 const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
@@ -104,7 +105,9 @@ const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
   "Plaatsingen": { value: "Op plaatsingen", done: "Op detachering" },
   "Niet begonnen": { value: "Op niet begonnen" },
   "Belstatistieken": { value: "Op aantal telefoontjes", done: "Op beltijd" },
+  "Vacature aanvragen": { value: "Op aanvragen", done: "Op kandidaten pre-matching" },
 };
+
 
 interface EntryRowProps {
   entry: { rank: number; name: string; firstName: string; lastName: string; value: number; valueDone?: number };
@@ -118,6 +121,7 @@ interface EntryRowProps {
   isRatioOnly?: boolean;
   ratioLabel?: string;
   isTimeSecondary?: boolean;
+  hidePercent?: boolean;
   primaryScope?: "uitgaand" | "totaal";
   secondaryScope?: "uitgaand" | "totaal";
 }
@@ -134,7 +138,7 @@ function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaa
   );
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary, primaryScope, secondaryScope }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary, hidePercent, primaryScope, secondaryScope }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? shortName(entry.firstName, entry.lastName);
   
@@ -159,7 +163,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         <span className={cn(isTop3 ? "text-[clamp(9px,0.9vw,14px)] font-bold" : "text-[10px] font-semibold")}>
           {entry.valueDone}
         </span>
-        {entry.value > 0 && (
+        {entry.value > 0 && !hidePercent && (
           isAcquisities ? (
             <span className={cn(
               "font-semibold shrink-0",
@@ -410,6 +414,8 @@ function RanglijstenContent() {
     "Plaatsingen": "value",
     "Niet begonnen": "value",
     "Belstatistieken": "value",
+    "Vacature aanvragen": "value",
+
   });
 
   const [tvViewMode, setTvViewMode] = useState<"week" | "periode" | "custom">("week");
@@ -521,6 +527,39 @@ function RanglijstenContent() {
     el.addEventListener("scroll", updateScrollButtons, { passive: true });
     return () => { ro.disconnect(); el.removeEventListener("scroll", updateScrollButtons); };
   }, [isCompact, updateScrollButtons, columns]);
+
+  // Slow right-to-left carousel of the column strip (pauses on hover / interaction)
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let paused = false;
+    let raf = 0;
+    let last = performance.now();
+    const SPEED = 18; // px per second
+    const onEnter = () => { paused = true; };
+    const onLeave = () => { paused = false; };
+    el.addEventListener("mouseenter", onEnter);
+    el.addEventListener("mouseleave", onLeave);
+    el.addEventListener("pointerdown", onEnter);
+    const step = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (!paused && maxScroll > 4) {
+        const next = el.scrollLeft + SPEED * dt;
+        el.scrollLeft = next >= maxScroll - 0.5 ? 0 : next;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("mouseenter", onEnter);
+      el.removeEventListener("mouseleave", onLeave);
+      el.removeEventListener("pointerdown", onEnter);
+    };
+  }, [isCompact, columns.length]);
 
   return (
     <div className={cn(isCompact && "flex flex-col h-full")}>
@@ -910,8 +949,8 @@ function RanglijstenContent() {
               <ChevronRight className="w-4 h-4" />
             </Button>
           )}
-          <div ref={scrollRef} className="overflow-x-auto scroll-smooth">
-            <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(0, 1fr)) !important; } }`}</style>
+          <div ref={scrollRef} className="overflow-x-auto">
+            <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(300px, 1fr)) !important; } }`}</style>
             <div
               className="ranglijsten-grid grid gap-2 grid-cols-1 md:grid-cols-3"
               style={{ ['--col-count' as any]: columns.length }}
@@ -933,6 +972,8 @@ function RanglijstenContent() {
                 const colIsRatioOnly = config?.isRatioOnly ?? false;
                 const colRatioLabel = config?.ratioLabel;
                 const colIsTimeSecondary = config?.isTimeSecondary ?? false;
+                const colHidePercent = config?.hidePercent ?? false;
+
                 const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
                 return (
@@ -1010,7 +1051,7 @@ function RanglijstenContent() {
                             })())}>
                               ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
                             </span>
-                          ) : (
+                          ) : colHidePercent ? null : (
                             <span className="text-xs text-muted-foreground ml-1">
                               ({isInverse
                                 ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
@@ -1040,7 +1081,7 @@ function RanglijstenContent() {
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
                         {top3.map((entry) => (
-                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
+                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} hidePercent={colHidePercent} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
                         ))}
                       </div>
                     )}
@@ -1058,7 +1099,7 @@ function RanglijstenContent() {
                           isInverseRatio={isInverse}
                           isRatioOnly={colIsRatioOnly}
                           ratioLabel={colRatioLabel}
-                          isTimeSecondary={colIsTimeSecondary}
+                          isTimeSecondary={colIsTimeSecondary} hidePercent={colHidePercent}
                           primaryScope={col.title === "Belstatistieken" ? callsScope : undefined}
                           secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined}
                         />
@@ -1094,6 +1135,8 @@ function RanglijstenContent() {
             const colIsRatioOnly = config?.isRatioOnly ?? false;
             const colRatioLabel = config?.ratioLabel;
             const colIsTimeSecondary = config?.isTimeSecondary ?? false;
+            const colHidePercent = config?.hidePercent ?? false;
+
             const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
             return (
@@ -1171,7 +1214,7 @@ function RanglijstenContent() {
                         })())}>
                           ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
                         </span>
-                      ) : (
+                      ) : colHidePercent ? null : (
                         <span className="text-[10px] text-muted-foreground ml-0.5">
                           ({isInverse
                             ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
@@ -1201,7 +1244,7 @@ function RanglijstenContent() {
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
                     {top3.map((entry) => (
-                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} hidePercent={colHidePercent} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
                     ))}
                   </div>
                 )}
@@ -1219,7 +1262,7 @@ function RanglijstenContent() {
                       isInverseRatio={isInverse}
                       isRatioOnly={colIsRatioOnly}
                       ratioLabel={colRatioLabel}
-                      isTimeSecondary={colIsTimeSecondary}
+                      isTimeSecondary={colIsTimeSecondary} hidePercent={colHidePercent}
                       primaryScope={col.title === "Belstatistieken" ? callsScope : undefined}
                       secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined}
                     />
