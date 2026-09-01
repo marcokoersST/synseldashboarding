@@ -121,6 +121,7 @@ interface EntryRowProps {
   isRatioOnly?: boolean;
   ratioLabel?: string;
   isTimeSecondary?: boolean;
+  hidePercent?: boolean;
   primaryScope?: "uitgaand" | "totaal";
   secondaryScope?: "uitgaand" | "totaal";
 }
@@ -137,7 +138,7 @@ function ScopeIcon({ scope, size = 12, className }: { scope: "uitgaand" | "totaa
   );
 }
 
-function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary, primaryScope, secondaryScope }: EntryRowProps) {
+function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, isPlain, isAcquisities, isInverseRatio, isRatioOnly, ratioLabel, isTimeSecondary, hidePercent, primaryScope, secondaryScope }: EntryRowProps) {
   const isTop3 = !isPlain && entry.rank <= 3;
   const shownName = displayName ?? shortName(entry.firstName, entry.lastName);
   
@@ -162,7 +163,7 @@ function EntryRow({ entry, displayName, compact, isNegative, showStatusIcons, is
         <span className={cn(isTop3 ? "text-[clamp(9px,0.9vw,14px)] font-bold" : "text-[10px] font-semibold")}>
           {entry.valueDone}
         </span>
-        {entry.value > 0 && (
+        {entry.value > 0 && !hidePercent && (
           isAcquisities ? (
             <span className={cn(
               "font-semibold shrink-0",
@@ -1043,7 +1044,7 @@ function RanglijstenContent() {
                     {top3.length > 0 && (
                       <div className="mt-3 space-y-0">
                         {top3.map((entry) => (
-                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
+                          <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} hidePercent={colHidePercent} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
                         ))}
                       </div>
                     )}
@@ -1061,7 +1062,7 @@ function RanglijstenContent() {
                           isInverseRatio={isInverse}
                           isRatioOnly={colIsRatioOnly}
                           ratioLabel={colRatioLabel}
-                          isTimeSecondary={colIsTimeSecondary}
+                          isTimeSecondary={colIsTimeSecondary} hidePercent={colHidePercent}
                           primaryScope={col.title === "Belstatistieken" ? callsScope : undefined}
                           secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined}
                         />
@@ -1204,7 +1205,7 @@ function RanglijstenContent() {
                 {top3.length > 0 && (
                   <div className="mt-3 space-y-0">
                     {top3.map((entry) => (
-                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
+                      <EntryRow key={`${entry.rank}-${entry.name}`} entry={entry} displayName={shortName(entry.firstName, entry.lastName)} compact isNegative={isNegative} showStatusIcons={showStatusIcons} isAcquisities={isAcquisities} isInverseRatio={isInverse} isRatioOnly={colIsRatioOnly} ratioLabel={colRatioLabel} isTimeSecondary={colIsTimeSecondary} hidePercent={colHidePercent} primaryScope={col.title === "Belstatistieken" ? callsScope : undefined} secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined} />
                     ))}
                   </div>
                 )}
@@ -1222,7 +1223,7 @@ function RanglijstenContent() {
                       isInverseRatio={isInverse}
                       isRatioOnly={colIsRatioOnly}
                       ratioLabel={colRatioLabel}
-                      isTimeSecondary={colIsTimeSecondary}
+                      isTimeSecondary={colIsTimeSecondary} hidePercent={colHidePercent}
                       primaryScope={col.title === "Belstatistieken" ? callsScope : undefined}
                       secondaryScope={col.title === "Belstatistieken" ? durationScope : undefined}
                     />
