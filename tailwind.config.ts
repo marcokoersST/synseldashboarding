@@ -77,6 +77,16 @@ export default {
         progress: {
           bg: "hsl(var(--progress-bg))",
         },
+        ranking: {
+          inschrijvingen: "hsl(var(--ranking-inschrijvingen))",
+          acquisities: "hsl(var(--ranking-acquisities))",
+          gesprekken: "hsl(var(--ranking-gesprekken))",
+          intakes: "hsl(var(--ranking-intakes))",
+          plaatsingen: "hsl(var(--ranking-plaatsingen))",
+          "niet-begonnen": "hsl(var(--ranking-niet-begonnen))",
+          telefonie: "hsl(var(--ranking-telefonie))",
+          vacatures: "hsl(var(--ranking-vacatures))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
