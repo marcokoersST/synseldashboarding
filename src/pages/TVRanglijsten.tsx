@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, Phone, PhoneOutgoing, PhoneIncoming, PhoneCall, UserPlus, Send, MessagesSquare, ClipboardCheck, Handshake, CirclePause, FilePlus2, type LucideIcon } from "lucide-react";
+import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, Phone, PhoneOutgoing, PhoneIncoming, PhoneCall, UserPlus, Send, MessagesSquare, ClipboardCheck, Handshake, CirclePause, FilePlus2, RotateCcw, type LucideIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -98,27 +98,31 @@ interface ColumnConfig {
   icon: LucideIcon;
   headerClassName: string;
   iconClassName: string;
+  flowClassName: string;
 }
 
 // Color and icon stay coupled to the metric, even when the carousel changes order.
 const COLUMN_CONFIG: Record<string, ColumnConfig> = {
-  "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false, icon: UserPlus, headerClassName: "bg-ranking-inschrijvingen/10 border-ranking-inschrijvingen/45", iconClassName: "text-ranking-inschrijvingen" },
-  "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false, icon: Send, headerClassName: "bg-ranking-acquisities/10 border-ranking-acquisities/45", iconClassName: "text-ranking-acquisities" },
-  "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true, icon: MessagesSquare, headerClassName: "bg-ranking-gesprekken/10 border-ranking-gesprekken/45", iconClassName: "text-ranking-gesprekken" },
-  "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq.", icon: ClipboardCheck, headerClassName: "bg-ranking-intakes/10 border-ranking-intakes/45", iconClassName: "text-ranking-intakes" },
-  "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false, icon: Handshake, headerClassName: "bg-ranking-plaatsingen/10 border-ranking-plaatsingen/45", iconClassName: "text-ranking-plaatsingen" },
-  "Niet begonnen": { headerTitle: "Niet begonnen", isInverse: false, icon: CirclePause, headerClassName: "bg-ranking-niet-begonnen/10 border-ranking-niet-begonnen/45", iconClassName: "text-ranking-niet-begonnen" },
-  "Belstatistieken": { headerTitle: "Belstatistieken (Uitgaand)", primaryLabel: "telefoontjes", doneLabel: "beltijd", isInverse: false, isTimeSecondary: true, icon: PhoneCall, headerClassName: "bg-ranking-telefonie/10 border-ranking-telefonie/45", iconClassName: "text-ranking-telefonie" },
-  "Vacature aanvragen": { headerTitle: "Vacature aanvragen", primaryLabel: "aanvragen", doneLabel: "kandidaten vanuit pre-matching", isInverse: false, hidePercent: true, icon: FilePlus2, headerClassName: "bg-ranking-vacatures/10 border-ranking-vacatures/45", iconClassName: "text-ranking-vacatures" },
+  "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false, icon: UserPlus, headerClassName: "border-ranking-inschrijvingen/45", iconClassName: "text-ranking-inschrijvingen", flowClassName: "ranking-flow-inschrijvingen" },
+  "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false, icon: Send, headerClassName: "border-ranking-acquisities/45", iconClassName: "text-ranking-acquisities", flowClassName: "ranking-flow-acquisities" },
+  "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true, icon: MessagesSquare, headerClassName: "border-ranking-gesprekken/45", iconClassName: "text-ranking-gesprekken", flowClassName: "ranking-flow-gesprekken" },
+  "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq.", icon: ClipboardCheck, headerClassName: "border-ranking-intakes/45", iconClassName: "text-ranking-intakes", flowClassName: "ranking-flow-intakes" },
+  "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false, icon: Handshake, headerClassName: "border-ranking-plaatsingen/45", iconClassName: "text-ranking-plaatsingen", flowClassName: "ranking-flow-plaatsingen" },
+  "Niet begonnen": { headerTitle: "Niet begonnen", isInverse: false, icon: CirclePause, headerClassName: "border-ranking-niet-begonnen/45", iconClassName: "text-ranking-niet-begonnen", flowClassName: "ranking-flow-niet-begonnen" },
+  "Belstatistieken": { headerTitle: "Belstatistieken (Uitgaand)", primaryLabel: "telefoontjes", doneLabel: "beltijd", isInverse: false, isTimeSecondary: true, icon: PhoneCall, headerClassName: "border-ranking-telefonie/45", iconClassName: "text-ranking-telefonie", flowClassName: "ranking-flow-telefonie" },
+  "Vacature aanvragen": { headerTitle: "Vacature aanvragen", primaryLabel: "aanvragen", doneLabel: "kandidaten vanuit pre-matching", isInverse: false, hidePercent: true, icon: FilePlus2, headerClassName: "border-ranking-vacatures/45", iconClassName: "text-ranking-vacatures", flowClassName: "ranking-flow-vacatures" },
 };
 
-function RankingColumnHeader({ config, title, compact, children }: { config: ColumnConfig; title: string; compact?: boolean; children?: ReactNode }) {
+function RankingColumnHeader({ config, title, compact, isFirst, isLast, children }: { config: ColumnConfig; title: string; compact?: boolean; isFirst?: boolean; isLast?: boolean; children?: ReactNode }) {
   const Icon = config.icon;
   return (
     <div className={cn(
-      "-mx-1.5 -mt-1.5 px-1.5 flex items-center gap-1.5 border-b-2 rounded-t-md",
-      compact ? "mb-1 min-h-[1.65rem] py-1" : "mb-1.5 min-h-[2rem] py-1.5",
+      "ranking-path-header -mx-1.5 -mt-1.5 flex items-center gap-1.5 border-b-2",
+      compact ? "mb-1 min-h-[1.8rem] px-2 py-1" : "mb-1.5 min-h-[2.25rem] px-2.5 py-1.5",
+      isFirst && "ranking-path-first",
+      isLast && "ranking-path-last",
       config.headerClassName,
+      config.flowClassName,
     )}>
       <Icon className={cn("shrink-0", compact ? "h-3.5 w-3.5" : "h-4 w-4", config.iconClassName)} aria-hidden="true" />
       <h2 className={cn(
@@ -128,47 +132,16 @@ function RankingColumnHeader({ config, title, compact, children }: { config: Col
         {title}
       </h2>
       {children}
-    </div>
-  );
-}
-
-function RankingProcessLine({ columns, compact = false }: { columns: RankingColumn[]; compact?: boolean }) {
-  return (
-    <div
-      className={cn("grid gap-2", compact ? "mb-1.5" : "ranglijsten-grid mb-3")}
-      style={{
-        gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
-        ...(!compact ? { ["--col-count" as string]: columns.length } : {}),
-      }}
-      aria-label="Ranglijsten procespad"
-    >
-      {columns.map((col, index) => {
-        const config = COLUMN_CONFIG[col.title];
-        const Icon = config.icon;
-        const isLast = index === columns.length - 1;
-        return (
-          <div key={col.title} className="relative flex min-w-0 items-center justify-center">
-            {!isLast && (
-              <>
-                <span className="absolute left-1/2 right-[-0.5rem] top-1/2 h-px -translate-y-1/2 bg-border" aria-hidden="true" />
-                <ChevronRight className="absolute -right-[0.42rem] top-1/2 z-10 h-3 w-3 -translate-y-1/2 rounded-full bg-background text-muted-foreground" aria-hidden="true" />
-              </>
-            )}
-            <div className={cn(
-              "relative z-10 flex min-w-0 items-center border bg-background shadow-sm",
-              compact ? "h-6 w-6 justify-center rounded-full" : "max-w-[92%] gap-1.5 rounded-md px-2 py-1",
-              config.headerClassName,
-            )}>
-              <Icon className={cn("shrink-0", compact ? "h-3 w-3" : "h-3.5 w-3.5", config.iconClassName)} aria-hidden="true" />
-              {!compact && (
-                <span className="truncate text-[10px] font-semibold text-foreground">
-                  {config.headerTitle}
-                </span>
-              )}
-            </div>
-          </div>
-        );
-      })}
+      {!isLast && (
+        <span className="ranking-flow-arrow" aria-hidden="true">
+          <ChevronRight className="h-3.5 w-3.5" />
+        </span>
+      )}
+      {isLast && (
+        <span className="ranking-cycle-return" title="Succescyclus gaat verder bij Vacature aanvragen" aria-label="Terug naar Vacature aanvragen">
+          <RotateCcw className="h-3.5 w-3.5" />
+        </span>
+      )}
     </div>
   );
 }
@@ -1040,12 +1013,11 @@ function RanglijstenContent() {
           <div ref={scrollRef} className="overflow-x-auto">
 
             <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(300px, 1fr)) !important; } }`}</style>
-            <RankingProcessLine columns={columns} />
             <div
               className="ranglijsten-grid grid gap-2 grid-cols-1 md:grid-cols-3"
               style={{ ['--col-count' as any]: columns.length }}
             >
-              {columns.map((col) => {
+              {columns.map((col, columnIndex) => {
                 const isNegative = col.title === "Niet begonnen";
                 const isPlain = col.title === "Inschrijvingen";
                 const isAcquisities = col.title === "Acquisities";
@@ -1066,7 +1038,7 @@ function RanglijstenContent() {
 
                 return (
                   <div key={col.title} data-ranglijst-col className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
-                    <RankingColumnHeader config={config} title={headerTitle}>
+                    <RankingColumnHeader config={config} title={headerTitle} isFirst={columnIndex === 0} isLast={columnIndex === columns.length - 1}>
                       {SORT_OPTIONS[col.title] && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -1216,12 +1188,11 @@ function RanglijstenContent() {
           className="flex min-h-0 flex-1 flex-col tv-col-rotate"
         >
           <style>{`@keyframes tvColRotate { from { transform: translateX(4%); opacity: .55; } to { transform: translateX(0); opacity: 1; } } .tv-col-rotate { animation: tvColRotate 700ms cubic-bezier(0.22, 1, 0.36, 1) both; }`}</style>
-          <RankingProcessLine columns={displayColumns} compact />
           <div
             className="grid min-h-0 flex-1 gap-1.5"
             style={{ gridTemplateColumns: `repeat(${displayColumns.length}, minmax(0, 1fr))`, gridTemplateRows: "1fr" }}
           >
-            {displayColumns.map((col) => {
+            {displayColumns.map((col, columnIndex) => {
 
             const isNegative = col.title === "Niet begonnen";
             const isPlain = col.title === "Inschrijvingen";
@@ -1243,7 +1214,7 @@ function RanglijstenContent() {
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card flex flex-col min-h-0 overflow-hidden">
-                <RankingColumnHeader config={config} title={headerTitle} compact>
+                <RankingColumnHeader config={config} title={headerTitle} compact isFirst={columnIndex === 0} isLast={columnIndex === displayColumns.length - 1}>
                   {SORT_OPTIONS[col.title] && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
