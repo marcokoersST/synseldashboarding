@@ -937,6 +937,8 @@ function RanglijstenContent() {
                 const colIsRatioOnly = config?.isRatioOnly ?? false;
                 const colRatioLabel = config?.ratioLabel;
                 const colIsTimeSecondary = config?.isTimeSecondary ?? false;
+            const colHidePercent = config?.hidePercent ?? false;
+                const colHidePercent = config?.hidePercent ?? false;
                 const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
                 return (
@@ -1014,7 +1016,7 @@ function RanglijstenContent() {
                             })())}>
                               ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
                             </span>
-                          ) : (
+                          ) : colHidePercent ? null : (
                             <span className="text-xs text-muted-foreground ml-1">
                               ({isInverse
                                 ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
@@ -1175,7 +1177,7 @@ function RanglijstenContent() {
                         })())}>
                           ×{col.total > 0 ? (col.totalDone! / col.total).toFixed(1) : "0.0"}
                         </span>
-                      ) : (
+                      ) : colHidePercent ? null : (
                         <span className="text-[10px] text-muted-foreground ml-0.5">
                           ({isInverse
                             ? (col.totalDone! > 0 ? Math.round((col.total / col.totalDone!) * 100) : 0)
