@@ -937,8 +937,8 @@ function RanglijstenContent() {
                 const colIsRatioOnly = config?.isRatioOnly ?? false;
                 const colRatioLabel = config?.ratioLabel;
                 const colIsTimeSecondary = config?.isTimeSecondary ?? false;
-            const colHidePercent = config?.hidePercent ?? false;
                 const colHidePercent = config?.hidePercent ?? false;
+
                 const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
                 return (
