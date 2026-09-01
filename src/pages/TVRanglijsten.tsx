@@ -952,28 +952,31 @@ function RanglijstenContent() {
 
       {/* Ranking Columns */}
       {!isCompact && (
-        <div className="relative">
-          {canScrollLeft && (
+        <div>
+          <div className="flex items-center justify-end gap-2 mb-2">
             <Button
               variant="outline"
               size="icon"
-              className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-card shadow-md border-border"
+              aria-label="Kolommen naar links"
+              disabled={!canScrollLeft}
+              className="h-12 w-12 rounded-full bg-card shadow-lg border-border disabled:opacity-40"
               onClick={() => scrollByDir("left")}
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-6 h-6" />
             </Button>
-          )}
-          {canScrollRight && (
             <Button
               variant="outline"
               size="icon"
-              className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-card shadow-md border-border"
+              aria-label="Kolommen naar rechts"
+              disabled={!canScrollRight}
+              className="h-12 w-12 rounded-full bg-card shadow-lg border-border disabled:opacity-40"
               onClick={() => scrollByDir("right")}
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-6 h-6" />
             </Button>
-          )}
+          </div>
           <div ref={scrollRef} className="overflow-x-auto">
+
             <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(300px, 1fr)) !important; } }`}</style>
             <div
               className="ranglijsten-grid grid gap-2 grid-cols-1 md:grid-cols-3"
