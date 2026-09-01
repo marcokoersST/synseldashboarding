@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, ArrowLeftRight, Phone, PhoneOutgoing, PhoneIncoming, PhoneCall, UserPlus, Send, MessagesSquare, ClipboardCheck, Handshake, CirclePause, FilePlus2, type LucideIcon } from "lucide-react";
+import { Trophy, Medal, TrendingUp, TrendingDown, Columns3, ChevronDown, CircleAlert, CircleMinus, ChevronLeft, ChevronRight, CheckCircle2, Check, ArrowUpDown, CalendarIcon, Phone, PhoneOutgoing, PhoneIncoming, PhoneCall, UserPlus, Send, MessagesSquare, ClipboardCheck, Handshake, CirclePause, FilePlus2, type LucideIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -128,6 +128,44 @@ function RankingColumnHeader({ config, title, compact, children }: { config: Col
         {title}
       </h2>
       {children}
+    </div>
+  );
+}
+
+function RankingProcessLine({ columns, compact = false }: { columns: RankingColumn[]; compact?: boolean }) {
+  return (
+    <div
+      className={cn("grid gap-2", compact ? "mb-1.5" : "mb-3")}
+      style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
+      aria-label="Ranglijsten procespad"
+    >
+      {columns.map((col, index) => {
+        const config = COLUMN_CONFIG[col.title];
+        const Icon = config.icon;
+        const isLast = index === columns.length - 1;
+        return (
+          <div key={col.title} className="relative flex min-w-0 items-center justify-center">
+            {!isLast && (
+              <>
+                <span className="absolute left-1/2 right-[-0.5rem] top-1/2 h-px -translate-y-1/2 bg-border" aria-hidden="true" />
+                <ChevronRight className="absolute -right-[0.42rem] top-1/2 z-10 h-3 w-3 -translate-y-1/2 rounded-full bg-background text-muted-foreground" aria-hidden="true" />
+              </>
+            )}
+            <div className={cn(
+              "relative z-10 flex min-w-0 items-center border bg-background shadow-sm",
+              compact ? "h-6 w-6 justify-center rounded-full" : "max-w-[92%] gap-1.5 rounded-md px-2 py-1",
+              config.headerClassName,
+            )}>
+              <Icon className={cn("shrink-0", compact ? "h-3 w-3" : "h-3.5 w-3.5", config.iconClassName)} aria-hidden="true" />
+              {!compact && (
+                <span className="truncate text-[10px] font-semibold text-foreground">
+                  {config.headerTitle}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -426,7 +464,6 @@ function RanglijstenContent() {
   const [consultantSearch, setConsultantSearch] = useState("");
   const [hideInactive, setHideInactive] = useState(true);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([...allColumnTitles]);
-  const [swapNietBegonnen, setSwapNietBegonnen] = useState(false);
   const [callsScope, setCallsScope] = useState<BelScope>("uitgaand");
   const [durationScope, setDurationScope] = useState<BelScope>("uitgaand");
 
@@ -493,12 +530,13 @@ function RanglijstenContent() {
 
   const rawColumns = useMemo(() => {
     const cols = getRanglijstenData(parseInt(jaar, 10), effectiveViewMode, currentNum);
-    if (swapNietBegonnen) {
-      const bel = getBelstatistiekenColumn(parseInt(jaar, 10), effectiveViewMode, currentNum, { callsScope, durationScope });
-      return cols.map(c => c.title === "Niet begonnen" ? bel : c);
-    }
-    return cols;
-  }, [jaar, effectiveViewMode, currentNum, swapNietBegonnen, callsScope, durationScope]);
+    const bel = getBelstatistiekenColumn(parseInt(jaar, 10), effectiveViewMode, currentNum, { callsScope, durationScope });
+    const byTitle = new Map([...cols, bel].map((col) => [col.title, col]));
+    return allColumnTitles.flatMap((title) => {
+      const col = byTitle.get(title);
+      return col ? [col] : [];
+    });
+  }, [jaar, effectiveViewMode, currentNum, callsScope, durationScope]);
 
   const sortEntries = useCallback((entries: typeof rawColumns[0]["entries"], colTitle: string) => {
     const mode = sortModes[colTitle];
@@ -547,10 +585,7 @@ function RanglijstenContent() {
   const columns = useMemo(() => {
     const unitFiltered = applyUnitFilter(rawColumns, selectedUnits);
     const consultantFiltered = applyConsultantFilter(unitFiltered, selectedConsultants);
-    const filtered = consultantFiltered.filter((col) => {
-      if (col.title === "Belstatistieken") return selectedColumns.includes("Niet begonnen");
-      return selectedColumns.includes(col.title);
-    });
+    const filtered = consultantFiltered.filter((col) => selectedColumns.includes(col.title));
     return filtered.map(col => {
       if (sortModes[col.title]) {
         return { ...col, entries: sortEntries(col.entries, col.title) };
