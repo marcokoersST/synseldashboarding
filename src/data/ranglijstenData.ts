@@ -132,6 +132,7 @@ const baseWeekTopValues: number[][] = [
   [5, 4, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1],
   [2, 1, 1, 1, 1, 1, 1],
   [1],
+  [7, 6, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1],
 ];
 
 const basePeriodeTopValues: number[][] = [
@@ -141,9 +142,11 @@ const basePeriodeTopValues: number[][] = [
   [18, 16, 14, 13, 12, 12, 11, 11, 10, 10, 9, 8, 8, 7, 7, 6, 6, 5, 4, 3, 2, 1, 1],
   [6, 4, 4, 4, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [2, 1, 1],
+  [26, 22, 20, 18, 17, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4, 3, 3, 2, 2, 1, 1, 1],
 ];
 
-const columnTitles = ["Inschrijvingen", "Acquisities", "Gesprekken", "Intakes", "Plaatsingen", "Niet begonnen"];
+const columnTitles = ["Inschrijvingen", "Acquisities", "Gesprekken", "Intakes", "Plaatsingen", "Niet begonnen", "Vacature aanvragen"];
+
 
 function generateVariedRanking(baseValues: number[], seed: number): RankingEntry[] {
   // Apply variation: scale values by a factor between 0.7 and 1.3
