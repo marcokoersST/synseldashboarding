@@ -432,10 +432,14 @@ function RanglijstenContent() {
   }, []);
 
   const scrollByDir = useCallback((dir: "left" | "right") => {
+    pausedUntilRef.current = Date.now() + 30000;
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -el.clientWidth * 0.8 : el.clientWidth * 0.8, behavior: "smooth" });
+    const first = el.querySelector<HTMLElement>("[data-ranglijst-col]");
+    const step = first ? first.offsetWidth + 8 : el.clientWidth * 0.8;
+    el.scrollBy({ left: dir === "left" ? -step : step, behavior: "smooth" });
   }, []);
+
 
   const toggleColumn = useCallback((title: string) => {
     setSelectedColumns((prev) => {
