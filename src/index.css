@@ -286,6 +286,79 @@
     display: inline-block;
   }
 
+  /* Ranglijsten: the table headers themselves form one continuous success cycle. */
+  .ranking-flow-inschrijvingen { --ranking-flow: var(--ranking-inschrijvingen); }
+  .ranking-flow-acquisities { --ranking-flow: var(--ranking-acquisities); }
+  .ranking-flow-gesprekken { --ranking-flow: var(--ranking-gesprekken); }
+  .ranking-flow-intakes { --ranking-flow: var(--ranking-intakes); }
+  .ranking-flow-plaatsingen { --ranking-flow: var(--ranking-plaatsingen); }
+  .ranking-flow-niet-begonnen { --ranking-flow: var(--ranking-niet-begonnen); }
+  .ranking-flow-telefonie { --ranking-flow: var(--ranking-telefonie); }
+  .ranking-flow-vacatures { --ranking-flow: var(--ranking-vacatures); }
+
+  .ranking-path-header {
+    position: relative;
+    z-index: 2;
+    overflow: visible;
+    background-color: hsl(var(--ranking-flow) / 0.11);
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
+  }
+
+  .ranking-path-header::before {
+    content: "";
+    position: absolute;
+    inset: auto 10px 0 10px;
+    height: 2px;
+    background: hsl(var(--ranking-flow) / 0.72);
+  }
+
+  .ranking-path-first {
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
+  }
+
+  .ranking-path-last {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 10px 50%);
+    padding-right: 2rem;
+  }
+
+  @keyframes ranking-flow-arrow {
+    0%, 25% { opacity: 0.25; transform: translate(-4px, -50%); }
+    55% { opacity: 1; }
+    100% { opacity: 0.25; transform: translate(4px, -50%); }
+  }
+
+  @keyframes ranking-cycle-return {
+    0%, 70%, 100% { transform: rotate(0deg); opacity: 0.55; }
+    85% { transform: rotate(-180deg); opacity: 1; }
+  }
+
+  .ranking-flow-arrow {
+    position: absolute;
+    z-index: 5;
+    right: 1px;
+    top: 50%;
+    color: hsl(var(--ranking-flow));
+    animation: ranking-flow-arrow 2.8s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .ranking-cycle-return {
+    position: absolute;
+    z-index: 5;
+    right: 0.55rem;
+    top: 50%;
+    margin-top: -0.4375rem;
+    color: hsl(var(--ranking-flow));
+    animation: ranking-cycle-return 5s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ranking-flow-arrow,
+    .ranking-cycle-return {
+      animation: none;
+    }
+  }
+
   /* Groeimodel: pulsing break-even point */
   @keyframes pulse-ring {
     0%   { transform: scale(1);   opacity: 0.85; }
