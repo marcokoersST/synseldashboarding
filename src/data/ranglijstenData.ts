@@ -329,6 +329,8 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
     Intakes:        { value: 2 },                  // valueDone (= acq) re-set below
     Plaatsingen:    { value: 3, valueDone: 2 },    // 3 plaatsingen / 2 detachering
     "Niet begonnen":{ value: 1 },
+    "Vacature aanvragen": { value: 3, valueDone: 7 },
+
   };
   result.forEach((col) => {
     const min = robinMinimums[col.title];
