@@ -87,13 +87,14 @@ function RankIcon({ rank, isTop3, isNegative }: { rank: number; isTop3?: boolean
 }
 
 // Column configuration for dual-value display
-const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string; isTimeSecondary?: boolean }> = {
+const COLUMN_CONFIG: Record<string, { headerTitle: string; primaryLabel: string; doneLabel: string; isInverse: boolean; isRatioOnly?: boolean; ratioLabel?: string; isTimeSecondary?: boolean; hidePercent?: boolean }> = {
   "Inschrijvingen": { headerTitle: "Inschrijvingen", primaryLabel: "op naam", doneLabel: "gedaan", isInverse: false },
   "Acquisities": { headerTitle: "Acquisities / Voorstellen", primaryLabel: "acquisities", doneLabel: "voorstellen", isInverse: false },
   "Gesprekken": { headerTitle: "Gesprekken / Uitnodigingen", primaryLabel: "gesprekken", doneLabel: "uitnodigingen", isInverse: true },
   "Intakes": { headerTitle: "Intakes", primaryLabel: "intakes", doneLabel: "van acquisities", isInverse: true, isRatioOnly: true, ratioLabel: "van acq." },
   "Plaatsingen": { headerTitle: "Plaatsingen / Detachering", primaryLabel: "plaatsingen", doneLabel: "detachering", isInverse: false },
   "Belstatistieken": { headerTitle: "Belstatistieken (Uitgaand)", primaryLabel: "telefoontjes", doneLabel: "beltijd", isInverse: false, isTimeSecondary: true },
+  "Vacature aanvragen": { headerTitle: "Vacature aanvragen", primaryLabel: "aanvragen", doneLabel: "kandidaten vanuit pre-matching", isInverse: false, hidePercent: true },
 };
 
 const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
@@ -104,7 +105,9 @@ const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
   "Plaatsingen": { value: "Op plaatsingen", done: "Op detachering" },
   "Niet begonnen": { value: "Op niet begonnen" },
   "Belstatistieken": { value: "Op aantal telefoontjes", done: "Op beltijd" },
+  "Vacature aanvragen": { value: "Op aanvragen", done: "Op kandidaten pre-matching" },
 };
+
 
 interface EntryRowProps {
   entry: { rank: number; name: string; firstName: string; lastName: string; value: number; valueDone?: number };
