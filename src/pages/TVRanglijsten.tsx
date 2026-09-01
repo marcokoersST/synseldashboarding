@@ -403,8 +403,11 @@ function RanglijstenContent() {
   const belHeaderTitle = `Belstatistieken (${belScopeLabel})`;
   const isCompact = useTVCompact();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const pausedUntilRef = useRef(0);
+  const [rotationOffset, setRotationOffset] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+
 
   const [sortModes, setSortModes] = useState<Record<string, string>>({
     "Inschrijvingen": "name",
@@ -429,10 +432,14 @@ function RanglijstenContent() {
   }, []);
 
   const scrollByDir = useCallback((dir: "left" | "right") => {
+    pausedUntilRef.current = Date.now() + 30000;
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -el.clientWidth * 0.8 : el.clientWidth * 0.8, behavior: "smooth" });
+    const first = el.querySelector<HTMLElement>("[data-ranglijst-col]");
+    const step = first ? first.offsetWidth + 8 : el.clientWidth * 0.8;
+    el.scrollBy({ left: dir === "left" ? -step : step, behavior: "smooth" });
   }, []);
+
 
   const toggleColumn = useCallback((title: string) => {
     setSelectedColumns((prev) => {
@@ -528,38 +535,55 @@ function RanglijstenContent() {
     return () => { ro.disconnect(); el.removeEventListener("scroll", updateScrollButtons); };
   }, [isCompact, updateScrollButtons, columns]);
 
-  // Slow right-to-left carousel of the column strip (pauses on hover / interaction)
+  // Auto-carousel: every 15s the column strip steps one column to the left (non-TV),
+  // and in TV mode the visible column window rotates one position.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (columns.length < 2) return;
+
+    const id = window.setInterval(() => {
+      if (Date.now() < pausedUntilRef.current) return;
+
+      if (isCompact) {
+        setRotationOffset(prev => (prev + 1) % columns.length);
+        return;
+      }
+
+      const el = scrollRef.current;
+      if (!el) return;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 4) return;
+      const first = el.querySelector<HTMLElement>("[data-ranglijst-col]");
+      const step = first ? first.offsetWidth + 8 : el.clientWidth * 0.3;
+      const next = el.scrollLeft + step;
+      el.scrollTo({ left: next >= maxScroll - 2 ? 0 : next, behavior: "smooth" });
+    }, 15000);
+
+    return () => window.clearInterval(id);
+  }, [isCompact, columns.length]);
+
+  // Pause the carousel while the user hovers the strip
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let paused = false;
-    let raf = 0;
-    let last = performance.now();
-    const SPEED = 18; // px per second
-    const onEnter = () => { paused = true; };
-    const onLeave = () => { paused = false; };
+    if (!el || isCompact) return;
+    const onEnter = () => { pausedUntilRef.current = Number.MAX_SAFE_INTEGER; };
+    const onLeave = () => { pausedUntilRef.current = Date.now() + 5000; };
     el.addEventListener("mouseenter", onEnter);
     el.addEventListener("mouseleave", onLeave);
-    el.addEventListener("pointerdown", onEnter);
-    const step = (now: number) => {
-      const dt = (now - last) / 1000;
-      last = now;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (!paused && maxScroll > 4) {
-        const next = el.scrollLeft + SPEED * dt;
-        el.scrollLeft = next >= maxScroll - 0.5 ? 0 : next;
-      }
-      raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
     return () => {
-      cancelAnimationFrame(raf);
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mouseleave", onLeave);
-      el.removeEventListener("pointerdown", onEnter);
     };
-  }, [isCompact, columns.length]);
+  }, [isCompact]);
+
+  // Rotated column order for TV mode
+  const displayColumns = useMemo(() => {
+    if (!isCompact || columns.length < 2) return columns;
+    const off = rotationOffset % columns.length;
+    return [...columns.slice(off), ...columns.slice(0, off)];
+  }, [columns, isCompact, rotationOffset]);
+
+
 
   return (
     <div className={cn(isCompact && "flex flex-col h-full")}>
@@ -928,28 +952,31 @@ function RanglijstenContent() {
 
       {/* Ranking Columns */}
       {!isCompact && (
-        <div className="relative">
-          {canScrollLeft && (
+        <div>
+          <div className="flex items-center justify-end gap-2 mb-2">
             <Button
               variant="outline"
               size="icon"
-              className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-card shadow-md border-border"
+              aria-label="Kolommen naar links"
+              disabled={!canScrollLeft}
+              className="h-12 w-12 rounded-full bg-card shadow-lg border-border disabled:opacity-40"
               onClick={() => scrollByDir("left")}
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-6 h-6" />
             </Button>
-          )}
-          {canScrollRight && (
             <Button
               variant="outline"
               size="icon"
-              className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-card shadow-md border-border"
+              aria-label="Kolommen naar rechts"
+              disabled={!canScrollRight}
+              className="h-12 w-12 rounded-full bg-card shadow-lg border-border disabled:opacity-40"
               onClick={() => scrollByDir("right")}
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-6 h-6" />
             </Button>
-          )}
+          </div>
           <div ref={scrollRef} className="overflow-x-auto">
+
             <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(300px, 1fr)) !important; } }`}</style>
             <div
               className="ranglijsten-grid grid gap-2 grid-cols-1 md:grid-cols-3"
@@ -977,7 +1004,7 @@ function RanglijstenContent() {
                 const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
                 return (
-                  <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
+                  <div key={col.title} data-ranglijst-col className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
                     {/* Title — fixed height for alignment */}
                     <div className="flex items-center gap-1 mb-1 min-h-[1.5rem]">
                       <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
@@ -1110,15 +1137,40 @@ function RanglijstenContent() {
               })}
             </div>
           </div>
+          <div className="flex items-center justify-end gap-2 mt-3">
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Kolommen naar links"
+              disabled={!canScrollLeft}
+              className="h-12 w-12 rounded-full bg-card shadow-lg border-border disabled:opacity-40"
+              onClick={() => scrollByDir("left")}
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Kolommen naar rechts"
+              disabled={!canScrollRight}
+              className="h-12 w-12 rounded-full bg-card shadow-lg border-border disabled:opacity-40"
+              onClick={() => scrollByDir("right")}
+            >
+              <ChevronRight className="w-6 h-6" />
+            </Button>
+          </div>
         </div>
       )}
 
       {isCompact && (
         <div
-          className="grid gap-1.5 flex-1 min-h-0"
-          style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, gridTemplateRows: '1fr' }}
+          key={rotationOffset}
+          className="grid gap-1.5 flex-1 min-h-0 tv-col-rotate"
+          style={{ gridTemplateColumns: `repeat(${displayColumns.length}, minmax(0, 1fr))`, gridTemplateRows: '1fr' }}
         >
-          {columns.map((col) => {
+          <style>{`@keyframes tvColRotate { from { transform: translateX(4%); opacity: .55; } to { transform: translateX(0); opacity: 1; } } .tv-col-rotate { animation: tvColRotate 700ms cubic-bezier(0.22, 1, 0.36, 1) both; }`}</style>
+          {displayColumns.map((col) => {
+
             const isNegative = col.title === "Niet begonnen";
             const isPlain = col.title === "Inschrijvingen";
             const isAcquisities = col.title === "Acquisities";
