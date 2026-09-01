@@ -113,13 +113,12 @@ const COLUMN_CONFIG: Record<string, ColumnConfig> = {
   "Vacature aanvragen": { headerTitle: "Vacature aanvragen", primaryLabel: "aanvragen", doneLabel: "kandidaten vanuit pre-matching", isInverse: false, hidePercent: true, icon: FilePlus2, headerClassName: "border-ranking-vacatures/45", iconClassName: "text-ranking-vacatures", flowClassName: "ranking-flow-vacatures" },
 };
 
-function RankingColumnHeader({ config, title, compact, isFirst, isLast, children }: { config: ColumnConfig; title: string; compact?: boolean; isFirst?: boolean; isLast?: boolean; children?: ReactNode }) {
+function RankingColumnHeader({ config, title, compact, isLast, children }: { config: ColumnConfig; title: string; compact?: boolean; isFirst?: boolean; isLast?: boolean; children?: ReactNode }) {
   const Icon = config.icon;
   return (
     <div className={cn(
       "ranking-path-header -mx-1.5 -mt-1.5 flex items-center gap-1.5 border-b-2",
       compact ? "mb-1 min-h-[1.8rem] px-2 py-1" : "mb-1.5 min-h-[2.25rem] px-2.5 py-1.5",
-      isFirst && "ranking-path-first",
       isLast && "ranking-path-last",
       config.headerClassName,
       config.flowClassName,
@@ -132,11 +131,6 @@ function RankingColumnHeader({ config, title, compact, isFirst, isLast, children
         {title}
       </h2>
       {children}
-      {!isLast && (
-        <span className="ranking-flow-arrow" aria-hidden="true">
-          <ChevronRight className="h-3.5 w-3.5" />
-        </span>
-      )}
       {isLast && (
         <span className="ranking-cycle-return" title="Succescyclus gaat verder bij Vacature aanvragen" aria-label="Terug naar Vacature aanvragen">
           <RotateCcw className="h-3.5 w-3.5" />
