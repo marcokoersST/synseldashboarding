@@ -278,7 +278,20 @@ function generateColumns(baseTopValues: number[][], seed: number, prevSeed: numb
       return { title, total, previousTotal, totalDone, previousTotalDone, entries };
     }
 
+    // For "Vacature aanvragen": valueDone = kandidaten toegestuurd vanuit pre-matching
+    if (title === "Vacature aanvragen") {
+      const preRatio = (s: number, i: number) => 1.2 + seededRandom(s + 1500, i) * 2.3;
+      entries.forEach((e, i) => {
+        e.valueDone = e.value > 0 ? Math.round(e.value * preRatio(seed, i)) : 0;
+      });
+      const totalDone = entries.reduce((s, e) => s + (e.valueDone ?? 0), 0);
+      const previousTotalDone = prevEntries.reduce(
+        (s, e, i) => s + (e.value > 0 ? Math.round(e.value * preRatio(prevSeed, i)) : 0), 0);
+      return { title, total, previousTotal, totalDone, previousTotalDone, entries };
+    }
+
     return { title, total, previousTotal, entries };
+
   });
 
   // Post-process: set Intakes valueDone = acquisities count per consultant (cross-reference)
