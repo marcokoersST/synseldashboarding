@@ -145,7 +145,19 @@ const basePeriodeTopValues: number[][] = [
   [26, 22, 20, 18, 17, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4, 3, 3, 2, 2, 1, 1, 1],
 ];
 
-const columnTitles = ["Inschrijvingen", "Acquisities", "Gesprekken", "Intakes", "Plaatsingen", "Niet begonnen", "Vacature aanvragen"];
+const generatedColumnTitles = ["Inschrijvingen", "Acquisities", "Gesprekken", "Intakes", "Plaatsingen", "Niet begonnen", "Vacature aanvragen"];
+
+// The presentation order follows the operational path shown on the Ranglijsten dashboard.
+export const allColumnTitles = [
+  "Vacature aanvragen",
+  "Inschrijvingen",
+  "Intakes",
+  "Acquisities",
+  "Belstatistieken",
+  "Gesprekken",
+  "Plaatsingen",
+  "Niet begonnen",
+];
 
 
 function generateVariedRanking(baseValues: number[], seed: number): RankingEntry[] {
@@ -197,7 +209,7 @@ function generateVariedRanking(baseValues: number[], seed: number): RankingEntry
 }
 
 function generateColumns(baseTopValues: number[][], seed: number, prevSeed: number): RankingColumn[] {
-  const result = columnTitles.map((title, colIdx) => {
+  const result = generatedColumnTitles.map((title, colIdx) => {
     const entries = generateVariedRanking(baseTopValues[colIdx], seed + colIdx * 7);
     const total = entries.reduce((s, e) => s + e.value, 0);
     const prevEntries = generateVariedRanking(baseTopValues[colIdx], prevSeed + colIdx * 7);
@@ -452,8 +464,6 @@ export function formatBeltijd(totalMinutes: number): string {
 export const ranglijstenWeekColumns = getRanglijstenData(2026, "week", 9);
 export const ranglijstenPeriodeColumns = getRanglijstenData(2026, "periode", 2);
 export const ranglijstenColumns = ranglijstenWeekColumns;
-
-export const allColumnTitles = columnTitles;
 
 export function getCurrentWeekNumber(): number {
   const now = new Date();
