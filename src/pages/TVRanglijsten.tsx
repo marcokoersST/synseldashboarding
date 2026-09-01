@@ -135,8 +135,11 @@ function RankingColumnHeader({ config, title, compact, children }: { config: Col
 function RankingProcessLine({ columns, compact = false }: { columns: RankingColumn[]; compact?: boolean }) {
   return (
     <div
-      className={cn("ranglijsten-grid grid gap-2", compact ? "mb-1.5" : "mb-3")}
-      style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
+      className={cn("grid gap-2", compact ? "mb-1.5" : "ranglijsten-grid mb-3")}
+      style={{
+        gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
+        ...(!compact ? { ["--col-count" as string]: columns.length } : {}),
+      }}
       aria-label="Ranglijsten procespad"
     >
       {columns.map((col, index) => {
