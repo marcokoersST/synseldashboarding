@@ -528,6 +528,39 @@ function RanglijstenContent() {
     return () => { ro.disconnect(); el.removeEventListener("scroll", updateScrollButtons); };
   }, [isCompact, updateScrollButtons, columns]);
 
+  // Slow right-to-left carousel of the column strip (pauses on hover / interaction)
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let paused = false;
+    let raf = 0;
+    let last = performance.now();
+    const SPEED = 18; // px per second
+    const onEnter = () => { paused = true; };
+    const onLeave = () => { paused = false; };
+    el.addEventListener("mouseenter", onEnter);
+    el.addEventListener("mouseleave", onLeave);
+    el.addEventListener("pointerdown", onEnter);
+    const step = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (!paused && maxScroll > 4) {
+        const next = el.scrollLeft + SPEED * dt;
+        el.scrollLeft = next >= maxScroll - 0.5 ? 0 : next;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("mouseenter", onEnter);
+      el.removeEventListener("mouseleave", onLeave);
+      el.removeEventListener("pointerdown", onEnter);
+    };
+  }, [isCompact, columns.length]);
+
   return (
     <div className={cn(isCompact && "flex flex-col h-full")}>
       {/* Filters */}
@@ -916,8 +949,8 @@ function RanglijstenContent() {
               <ChevronRight className="w-4 h-4" />
             </Button>
           )}
-          <div ref={scrollRef} className="overflow-x-auto scroll-smooth">
-            <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(0, 1fr)) !important; } }`}</style>
+          <div ref={scrollRef} className="overflow-x-auto">
+            <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(300px, 1fr)) !important; } }`}</style>
             <div
               className="ranglijsten-grid grid gap-2 grid-cols-1 md:grid-cols-3"
               style={{ ['--col-count' as any]: columns.length }}
