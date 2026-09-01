@@ -1004,7 +1004,7 @@ function RanglijstenContent() {
                 const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
                 return (
-                  <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
+                  <div key={col.title} data-ranglijst-col className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
                     {/* Title — fixed height for alignment */}
                     <div className="flex items-center gap-1 mb-1 min-h-[1.5rem]">
                       <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
