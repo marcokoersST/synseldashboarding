@@ -135,7 +135,7 @@ function RankingColumnHeader({ config, title, compact, children }: { config: Col
 function RankingProcessLine({ columns, compact = false }: { columns: RankingColumn[]; compact?: boolean }) {
   return (
     <div
-      className={cn("grid gap-2", compact ? "mb-1.5" : "mb-3")}
+      className={cn("ranglijsten-grid grid gap-2", compact ? "mb-1.5" : "mb-3")}
       style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
       aria-label="Ranglijsten procespad"
     >
@@ -782,24 +782,13 @@ function RanglijstenContent() {
                         checked={selectedColumns.includes(title)}
                         onCheckedChange={() => toggleColumn(title)}
                       />
-                      {title === "Niet begonnen" && swapNietBegonnen ? belHeaderTitle : title}
+                      {title}
                     </label>
                   ))}
                 </div>
-                <div className="mt-3 pt-3 border-t border-border/40">
-                  <label className="flex items-center gap-2 text-xs cursor-pointer">
-                    <Checkbox
-                      checked={swapNietBegonnen}
-                      onCheckedChange={(v) => setSwapNietBegonnen(!!v)}
-                    />
-                    <span className="flex items-center gap-1">
-                      <ArrowLeftRight className="w-3 h-3" />
-                      Toon belstatistieken i.p.v. "Niet begonnen"
-                    </span>
-                  </label>
-
-                  {swapNietBegonnen && (
-                    <div className="mt-3 ml-5 pl-3 border-l border-border/40 space-y-2.5">
+                {selectedColumns.includes("Belstatistieken") && (
+                  <div className="mt-3 border-t border-border/40 pt-3">
+                    <div className="space-y-2.5">
                       <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                         Belstatistieken bereik
                       </p>
@@ -853,8 +842,8 @@ function RanglijstenContent() {
                         "Totaal" telt inkomend + uitgaand op. Per metric onafhankelijk instelbaar.
                       </p>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </PopoverContent>
             </Popover>
 
@@ -1048,6 +1037,7 @@ function RanglijstenContent() {
           <div ref={scrollRef} className="overflow-x-auto">
 
             <style>{`@media (min-width: 1280px) { .ranglijsten-grid { grid-template-columns: repeat(var(--col-count), minmax(300px, 1fr)) !important; } }`}</style>
+            <RankingProcessLine columns={columns} />
             <div
               className="ranglijsten-grid grid gap-2 grid-cols-1 md:grid-cols-3"
               style={{ ['--col-count' as any]: columns.length }}
@@ -1070,8 +1060,6 @@ function RanglijstenContent() {
                 const colRatioLabel = config?.ratioLabel;
                 const colIsTimeSecondary = config?.isTimeSecondary ?? false;
                 const colHidePercent = config?.hidePercent ?? false;
-
-                const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
                 return (
                   <div key={col.title} data-ranglijst-col className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
@@ -1096,18 +1084,6 @@ function RanglijstenContent() {
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      )}
-                      {canSwap && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 shrink-0"
-                          onClick={() => setSwapNietBegonnen(v => !v)}
-                          title={swapNietBegonnen ? "Toon 'Niet begonnen'" : "Toon belstatistieken (uitgaand)"}
-                          aria-label={swapNietBegonnen ? "Toon Niet begonnen" : "Toon belstatistieken"}
-                        >
-                          <ArrowLeftRight className={cn("w-3 h-3", config.iconClassName)} />
-                        </Button>
                       )}
                     </RankingColumnHeader>
                     {/* Main metric — fixed height */}
@@ -1234,11 +1210,15 @@ function RanglijstenContent() {
       {isCompact && (
         <div
           key={rotationOffset}
-          className="grid gap-1.5 flex-1 min-h-0 tv-col-rotate"
-          style={{ gridTemplateColumns: `repeat(${displayColumns.length}, minmax(0, 1fr))`, gridTemplateRows: '1fr' }}
+          className="flex min-h-0 flex-1 flex-col tv-col-rotate"
         >
           <style>{`@keyframes tvColRotate { from { transform: translateX(4%); opacity: .55; } to { transform: translateX(0); opacity: 1; } } .tv-col-rotate { animation: tvColRotate 700ms cubic-bezier(0.22, 1, 0.36, 1) both; }`}</style>
-          {displayColumns.map((col) => {
+          <RankingProcessLine columns={displayColumns} compact />
+          <div
+            className="grid min-h-0 flex-1 gap-1.5"
+            style={{ gridTemplateColumns: `repeat(${displayColumns.length}, minmax(0, 1fr))`, gridTemplateRows: "1fr" }}
+          >
+            {displayColumns.map((col) => {
 
             const isNegative = col.title === "Niet begonnen";
             const isPlain = col.title === "Inschrijvingen";
@@ -1257,8 +1237,6 @@ function RanglijstenContent() {
             const colRatioLabel = config?.ratioLabel;
             const colIsTimeSecondary = config?.isTimeSecondary ?? false;
             const colHidePercent = config?.hidePercent ?? false;
-
-            const canSwap = col.title === "Niet begonnen" || col.title === "Belstatistieken";
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card flex flex-col min-h-0 overflow-hidden">
@@ -1283,18 +1261,6 @@ function RanglijstenContent() {
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  )}
-                  {canSwap && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-5 w-5 shrink-0"
-                      onClick={() => setSwapNietBegonnen(v => !v)}
-                      title={swapNietBegonnen ? "Toon 'Niet begonnen'" : "Toon belstatistieken (uitgaand)"}
-                      aria-label={swapNietBegonnen ? "Toon Niet begonnen" : "Toon belstatistieken"}
-                    >
-                      <ArrowLeftRight className={cn("w-3 h-3", config.iconClassName)} />
-                    </Button>
                   )}
                 </RankingColumnHeader>
                 {/* Main metric — fixed height */}
@@ -1390,7 +1356,8 @@ function RanglijstenContent() {
                 </AutoColumnsWrapper>
               </div>
             );
-          })}
+            })}
+          </div>
         </div>
       )}
     </div>
