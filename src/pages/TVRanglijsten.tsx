@@ -112,6 +112,26 @@ const COLUMN_CONFIG: Record<string, ColumnConfig> = {
   "Vacature aanvragen": { headerTitle: "Vacature aanvragen", primaryLabel: "aanvragen", doneLabel: "kandidaten vanuit pre-matching", isInverse: false, hidePercent: true, icon: FilePlus2, headerClassName: "bg-ranking-vacatures/10 border-ranking-vacatures/45", iconClassName: "text-ranking-vacatures" },
 };
 
+function RankingColumnHeader({ config, title, compact, children }: { config: ColumnConfig; title: string; compact?: boolean; children?: ReactNode }) {
+  const Icon = config.icon;
+  return (
+    <div className={cn(
+      "-mx-1.5 -mt-1.5 px-1.5 flex items-center gap-1.5 border-b-2 rounded-t-md",
+      compact ? "mb-1 min-h-[1.65rem] py-1" : "mb-1.5 min-h-[2rem] py-1.5",
+      config.headerClassName,
+    )}>
+      <Icon className={cn("shrink-0", compact ? "h-3.5 w-3.5" : "h-4 w-4", config.iconClassName)} aria-hidden="true" />
+      <h2 className={cn(
+        "min-w-0 flex-1 font-semibold text-foreground uppercase tracking-wide leading-tight",
+        compact ? "text-[clamp(7px,1vw,11px)]" : "text-[clamp(8px,1.1vw,12px)]",
+      )}>
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
 const SORT_OPTIONS: Record<string, { value: string; done?: string }> = {
   "Inschrijvingen": { value: "Op naam", done: "Op gedaan" },
   "Acquisities": { value: "Op acquisities", done: "Op voorstellen" },
@@ -1020,17 +1040,13 @@ function RanglijstenContent() {
 
                 return (
                   <div key={col.title} data-ranglijst-col className="min-w-0 rounded-lg border border-border p-1.5 bg-card">
-                    {/* Title — fixed height for alignment */}
-                    <div className="flex items-center gap-1 mb-1 min-h-[1.5rem]">
-                      <h2 className="text-[clamp(8px,1.1vw,12px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
-                        {headerTitle}
-                      </h2>
+                    <RankingColumnHeader config={config} title={headerTitle}>
                       {SORT_OPTIONS[col.title] && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors">
-                              <ArrowUpDown className="w-3 h-3 text-muted-foreground" />
-                            </button>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" aria-label={`Sorteer ${headerTitle}`}>
+                              <ArrowUpDown className={cn("w-3 h-3", config.iconClassName)} />
+                            </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" className="min-w-[140px]">
                             <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: col.title === "Inschrijvingen" ? "name" : "value" }))}>
@@ -1047,15 +1063,18 @@ function RanglijstenContent() {
                         </DropdownMenu>
                       )}
                       {canSwap && (
-                        <button
-                          className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors"
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 shrink-0"
                           onClick={() => setSwapNietBegonnen(v => !v)}
                           title={swapNietBegonnen ? "Toon 'Niet begonnen'" : "Toon belstatistieken (uitgaand)"}
+                          aria-label={swapNietBegonnen ? "Toon Niet begonnen" : "Toon belstatistieken"}
                         >
-                          <ArrowLeftRight className="w-3 h-3 text-muted-foreground" />
-                        </button>
+                          <ArrowLeftRight className={cn("w-3 h-3", config.iconClassName)} />
+                        </Button>
                       )}
-                    </div>
+                    </RankingColumnHeader>
                     {/* Main metric — fixed height */}
                     <div className="flex items-baseline gap-1.5 min-h-[2rem]">
                       {col.title === "Belstatistieken" && (
@@ -1208,17 +1227,13 @@ function RanglijstenContent() {
 
             return (
               <div key={col.title} className="min-w-0 rounded-lg border border-border p-1.5 bg-card flex flex-col min-h-0 overflow-hidden">
-                {/* Title — fixed height */}
-                <div className="flex items-center gap-1 mb-1 min-h-[1.25rem]">
-                  <h2 className="text-[clamp(7px,1vw,11px)] font-semibold text-muted-foreground uppercase tracking-wide leading-tight">
-                    {headerTitle}
-                  </h2>
+                <RankingColumnHeader config={config} title={headerTitle} compact>
                   {SORT_OPTIONS[col.title] && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors">
-                          <ArrowUpDown className="w-3 h-3 text-muted-foreground" />
-                        </button>
+                        <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" aria-label={`Sorteer ${headerTitle}`}>
+                          <ArrowUpDown className={cn("w-3 h-3", config.iconClassName)} />
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start" className="min-w-[140px]">
                         <DropdownMenuItem onClick={() => setSortModes(p => ({ ...p, [col.title]: col.title === "Inschrijvingen" ? "name" : "value" }))}>
@@ -1235,15 +1250,18 @@ function RanglijstenContent() {
                     </DropdownMenu>
                   )}
                   {canSwap && (
-                    <button
-                      className="shrink-0 p-0.5 rounded hover:bg-muted/60 transition-colors"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 shrink-0"
                       onClick={() => setSwapNietBegonnen(v => !v)}
                       title={swapNietBegonnen ? "Toon 'Niet begonnen'" : "Toon belstatistieken (uitgaand)"}
+                      aria-label={swapNietBegonnen ? "Toon Niet begonnen" : "Toon belstatistieken"}
                     >
-                      <ArrowLeftRight className="w-3 h-3 text-muted-foreground" />
-                    </button>
+                      <ArrowLeftRight className={cn("w-3 h-3", config.iconClassName)} />
+                    </Button>
                   )}
-                </div>
+                </RankingColumnHeader>
                 {/* Main metric — fixed height */}
                 <div className="flex items-baseline gap-1.5 min-h-[1.75rem]">
                   {col.title === "Belstatistieken" && (
