@@ -300,6 +300,8 @@
     position: relative;
     z-index: 2;
     overflow: visible;
+    border-top-left-radius: calc(var(--radius) - 1px);
+    border-top-right-radius: calc(var(--radius) - 1px);
     background-color: hsl(var(--ranking-flow) / 0.11);
   }
 
