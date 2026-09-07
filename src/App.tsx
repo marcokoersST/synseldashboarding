@@ -88,6 +88,17 @@ const AIKpiDashboard = lazy(() => import("./pages/concepts/AIKpiDashboard"));
 const SysteemHygiene = lazy(() => import("./pages/concepts/SysteemHygiene"));
 const CallDashboarding = lazy(() => import("./pages/concepts/CallDashboarding"));
 
+// Bouw je eigen business
+const MijnBusiness = lazy(() => import("./pages/business/MijnBusiness"));
+const BusinessPortefeuille = lazy(() => import("./pages/business/Portefeuille"));
+const MijnDeals = lazy(() => import("./pages/business/MijnDeals"));
+const MijnGroeipad = lazy(() => import("./pages/business/MijnGroeipad"));
+const MijnVerdienvermogen = lazy(() => import("./pages/business/MijnVerdienvermogen"));
+const MijnTeam = lazy(() => import("./pages/business/MijnTeam"));
+const MijnDocumenten = lazy(() => import("./pages/business/MijnDocumenten"));
+const BusinessBeheer = lazy(() => import("./pages/business/Beheer"));
+const BusinessBonusregels = lazy(() => import("./pages/business/Bonusregels"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -177,6 +188,15 @@ const App = () => (
               <Route path="/concepts/systeem-hygiene" element={<SysteemHygiene />} />
               <Route path="/calldashboarding" element={<CallDashboarding />} />
               <Route path="/concepts/calldashboarding" element={<CallDashboarding />} />
+              <Route path="/mijn-business" element={<MijnBusiness />} />
+              <Route path="/portefeuille" element={<BusinessPortefeuille />} />
+              <Route path="/deals" element={<MijnDeals />} />
+              <Route path="/groeipad" element={<MijnGroeipad />} />
+              <Route path="/verdienvermogen" element={<MijnVerdienvermogen />} />
+              <Route path="/team" element={<MijnTeam />} />
+              <Route path="/documenten" element={<MijnDocumenten />} />
+              <Route path="/beheer" element={<BusinessBeheer />} />
+              <Route path="/beheer/bonusregels" element={<BusinessBonusregels />} />
             </Route>
             {/* Standalone preview routes (no sidebar/topbar) */}
             <Route path="/preview/consultant" element={
