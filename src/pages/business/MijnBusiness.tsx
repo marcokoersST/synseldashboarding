@@ -241,7 +241,7 @@ export default function MijnBusiness() {
         <Metric
           label="Werkelijke brutomarge"
           value={formatEuro(actualGrossMarginToDate)}
-          basis={`Afgeroken boekjaar ${financialYear} tot afkapdatum, inclusief correcties`}
+          basis={`Boekjaar ${financialYear} tot afkapdatum, inclusief correcties`}
           hint="Bron: goedgekeurde financiële dataset (voorbeeld)"
         />
         <Metric
