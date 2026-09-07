@@ -188,6 +188,15 @@ const App = () => (
               <Route path="/concepts/systeem-hygiene" element={<SysteemHygiene />} />
               <Route path="/calldashboarding" element={<CallDashboarding />} />
               <Route path="/concepts/calldashboarding" element={<CallDashboarding />} />
+              <Route path="/mijn-business" element={<MijnBusiness />} />
+              <Route path="/portefeuille" element={<BusinessPortefeuille />} />
+              <Route path="/deals" element={<MijnDeals />} />
+              <Route path="/groeipad" element={<MijnGroeipad />} />
+              <Route path="/verdienvermogen" element={<MijnVerdienvermogen />} />
+              <Route path="/team" element={<MijnTeam />} />
+              <Route path="/documenten" element={<MijnDocumenten />} />
+              <Route path="/beheer" element={<BusinessBeheer />} />
+              <Route path="/beheer/bonusregels" element={<BusinessBonusregels />} />
             </Route>
             {/* Standalone preview routes (no sidebar/topbar) */}
             <Route path="/preview/consultant" element={
