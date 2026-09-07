@@ -88,6 +88,17 @@ const AIKpiDashboard = lazy(() => import("./pages/concepts/AIKpiDashboard"));
 const SysteemHygiene = lazy(() => import("./pages/concepts/SysteemHygiene"));
 const CallDashboarding = lazy(() => import("./pages/concepts/CallDashboarding"));
 
+// Bouw je eigen business
+const MijnBusiness = lazy(() => import("./pages/business/MijnBusiness"));
+const BusinessPortefeuille = lazy(() => import("./pages/business/Portefeuille"));
+const MijnDeals = lazy(() => import("./pages/business/MijnDeals"));
+const MijnGroeipad = lazy(() => import("./pages/business/MijnGroeipad"));
+const MijnVerdienvermogen = lazy(() => import("./pages/business/MijnVerdienvermogen"));
+const MijnTeam = lazy(() => import("./pages/business/MijnTeam"));
+const MijnDocumenten = lazy(() => import("./pages/business/MijnDocumenten"));
+const BusinessBeheer = lazy(() => import("./pages/business/Beheer"));
+const BusinessBonusregels = lazy(() => import("./pages/business/Bonusregels"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
