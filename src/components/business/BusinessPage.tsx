@@ -8,6 +8,12 @@ import { cn } from "@/lib/utils";
 /** Zodra een BusinessPage in een andere BusinessPage hangt, rendert hij als sectie. */
 const NestedContext = createContext(false);
 
+/** Wikkel tab-inhoud hierin zodat losse pagina's als secties renderen. */
+export function BusinessNestedProvider({ children }: { children: ReactNode }) {
+  return <NestedContext.Provider value={true}>{children}</NestedContext.Provider>;
+}
+
+
 /** Smalle conceptstrook in warme zandkleur, precies zoals het oorspronkelijke raamwerk. */
 export function ConceptStrip() {
   return (
