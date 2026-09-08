@@ -53,23 +53,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  {
-    icon: Rocket,
-    label: "Bouw je eigen business",
-    path: "/mijn-business",
-    sectionLabel: "Bouw je eigen business",
-    subItems: [
-      { icon: LayoutDashboard, label: "Mijn business", path: "/mijn-business" },
-      { icon: Users, label: "Portefeuille", path: "/portefeuille" },
-      { icon: Target, label: "Mijn deals", path: "/deals" },
-      { icon: TrendingUp, label: "Mijn groeipad", path: "/groeipad" },
-      { icon: BarChart3, label: "Mijn verdienvermogen", path: "/verdienvermogen" },
-      { icon: Briefcase, label: "Mijn team", path: "/team" },
-      { icon: ClipboardCheck, label: "Mijn documenten", path: "/documenten" },
-      { icon: Shield, label: "Beheer", path: "/beheer" },
-      { icon: ShieldCheck, label: "Bonusregels", path: "/beheer/bonusregels" },
-    ],
-  },
+  { icon: Rocket, label: "Bouw je eigen business", path: "/bouw-je-eigen-business" },
   { 
     icon: ListOrdered, 
     label: "Ranglijsten", 

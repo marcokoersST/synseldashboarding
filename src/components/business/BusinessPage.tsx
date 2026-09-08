@@ -1,19 +1,48 @@
-import { ReactNode } from "react";
-import { AlertTriangle, Clock } from "lucide-react";
+import { createContext, ReactNode, useContext } from "react";
+import { Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DATA_UPDATED_AT, REPORT_DATE } from "@/data/synselBusiness";
-import { formatDate } from "@/lib/synselBusiness/calc";
+import { DEFAULT_ASSUMPTIONS, formatDate, formatEuro } from "@/lib/synselBusiness/calc";
+import { cn } from "@/lib/utils";
 
-export function ConceptBanner() {
+/** Zodra een BusinessPage in een andere BusinessPage hangt, rendert hij als sectie. */
+const NestedContext = createContext(false);
+
+/** Wikkel tab-inhoud hierin zodat losse pagina's als secties renderen. */
+export function BusinessNestedProvider({ children }: { children: ReactNode }) {
+  return <NestedContext.Provider value={true}>{children}</NestedContext.Provider>;
+}
+
+
+/** Smalle conceptstrook in warme zandkleur, precies zoals het oorspronkelijke raamwerk. */
+export function ConceptStrip() {
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-foreground">
-      <AlertTriangle className="h-4 w-4 shrink-0 text-primary" />
-      <span>
-        <strong>Concept met voorbeelddata.</strong> Alle cijfers op deze pagina en in elke export komen
-        uit een vaste voorbeelddataset. Er is geen koppeling met RecruitCRM of Finance.
+    <div className="-mx-6 -mt-6 mb-6 flex flex-wrap items-center justify-between gap-2 border-b border-primary/20 bg-primary/10 px-6 py-2 text-[11px] font-medium uppercase tracking-wide text-foreground/70">
+      <span>Concept · alle cijfers zijn fictief</span>
+      <span className="text-primary/90 normal-case tracking-normal">
+        Geen live data · Geen persoonlijke bonusberekening
       </span>
     </div>
   );
+}
+
+/** Rustige voetregel met de rekenbasis van de run-rate. */
+export function BusinessFooterLine() {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[11px] text-muted-foreground">
+      <span>
+        Rekenbasis run-rate: {DEFAULT_ASSUMPTIONS.hoursPerWeek} declarabele uren ·{" "}
+        {formatEuro(DEFAULT_ASSUMPTIONS.marginPerHour, 2)} marge per uur ·{" "}
+        {DEFAULT_ASSUMPTIONS.annualWeeks} weken
+      </span>
+      <span>Voorbeelddata · Alle wijzigingen blijven lokaal</span>
+    </div>
+  );
+}
+
+/** Behouden voor bestaande verwijzingen. */
+export function ConceptBanner() {
+  return <ConceptStrip />;
 }
 
 export function FreshnessLine() {
@@ -33,27 +62,51 @@ interface BusinessPageProps {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
+  /** Verberg de eigen kop; gebruikt wanneer de tab zelf al een kop toont. */
+  hideHeader?: boolean;
   children: ReactNode;
 }
 
-export function BusinessPage({ title, subtitle, actions, children }: BusinessPageProps) {
-  return (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        <ConceptBanner />
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-            {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
-            <div className="mt-2">
-              <FreshnessLine />
+export function BusinessPage({ title, subtitle, actions, hideHeader, children }: BusinessPageProps) {
+  const nested = useContext(NestedContext);
+
+  if (nested) {
+    return (
+      <section className="space-y-4">
+        {!hideHeader && (
+          <div className="flex flex-wrap items-start justify-between gap-3 border-l-2 border-primary/50 pl-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+              {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
             </div>
+            {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
           </div>
-          {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-        </div>
+        )}
+        {children}
+      </section>
+    );
+  }
+
+  return (
+    <NestedContext.Provider value={true}>
+      <div className="space-y-6">
+        <ConceptStrip />
+        {!hideHeader && (
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+              {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+              <div className="mt-2">
+                <FreshnessLine />
+              </div>
+            </div>
+            {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+          </div>
+        )}
+        {children}
+        <BusinessFooterLine />
       </div>
-      {children}
-    </div>
+    </NestedContext.Provider>
   );
 }
 
@@ -84,16 +137,43 @@ interface MetricProps {
   value: string;
   basis: string;
   hint?: string;
+  tone?: "default" | "dark";
 }
 
-export function Metric({ label, value, basis, hint }: MetricProps) {
+export function Metric({ label, value, basis, hint, tone = "default" }: MetricProps) {
+  const dark = tone === "dark";
   return (
-    <Card>
+    <Card className={cn(dark && "border-transparent bg-sidebar")}>
       <CardContent className="p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-        <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{basis}</p>
-        {hint && <p className="mt-2 text-[11px] leading-snug text-muted-foreground/80">{hint}</p>}
+        <p
+          className={cn(
+            "text-xs font-medium uppercase tracking-wide",
+            dark ? "text-sidebar-foreground" : "text-muted-foreground",
+          )}
+        >
+          {label}
+        </p>
+        <p
+          className={cn(
+            "mt-2 text-2xl font-bold",
+            dark ? "text-[hsl(var(--gold))] text-4xl" : "text-foreground",
+          )}
+        >
+          {value}
+        </p>
+        <p className={cn("mt-1 text-xs", dark ? "text-sidebar-foreground/80" : "text-muted-foreground")}>
+          {basis}
+        </p>
+        {hint && (
+          <p
+            className={cn(
+              "mt-2 text-[11px] leading-snug",
+              dark ? "text-sidebar-foreground/70" : "text-muted-foreground/80",
+            )}
+          >
+            {hint}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
