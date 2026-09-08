@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BusinessFooterLine, ConceptStrip } from "@/components/business/BusinessPage";
+import { BusinessFooterLine, BusinessNestedProvider, ConceptStrip } from "@/components/business/BusinessPage";
 import MijnBusiness from "./MijnBusiness";
 import MijnTeam from "./MijnTeam";
 import Portefeuille from "./Portefeuille";
@@ -23,6 +23,7 @@ export default function BouwJeEigenBusiness() {
   return (
     <div className="space-y-6">
       <ConceptStrip />
+      <BusinessNestedProvider>
       <Tabs
         value={tab}
         onValueChange={(v) => setParams({ tab: v }, { replace: true })}
@@ -61,6 +62,7 @@ export default function BouwJeEigenBusiness() {
           </Accordion>
         </TabsContent>
       </Tabs>
+      </BusinessNestedProvider>
       <BusinessFooterLine />
     </div>
   );
