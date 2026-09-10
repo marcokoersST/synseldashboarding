@@ -41,6 +41,7 @@ const toneClasses: Record<string, string> = {
   "chart-primary": "text-[hsl(var(--chart-primary))] bg-[hsl(var(--chart-primary)/0.1)]",
   accent: "text-accent bg-accent/10",
   gold: "text-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)]",
+  destructive: "text-destructive bg-destructive/10",
 };
 
 function fmtEuro(n: number) {
