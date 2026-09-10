@@ -16,7 +16,7 @@ Nieuwe tegel "Afmeldingen per consultant", direct onder de kanaal-performance te
 
 De bestaande tegel "Match-kwaliteit" krijgt een derde lijn:
 
-- Nieuwe lijn "Afmeld %" per matchscore-bucket (0–50, 50–70, 70–85, 85–100), in een eigen kleur, aan/uit te zetten via de legenda zoals de andere lijnen.
+- Nieuwe lijn "Afmeld %" per matchscore-bucket (0–50, 50–70, 70–85, 85–100), in een eigen kleur, aan- en uitzetbaar: klik op "Afmeld %" in de legenda om de lijn te tonen of te verbergen, precies zoals de andere lijnen nu al werken.
 - Ondertitel wordt uitgebreid met "Afmeldingen".
 - De conclusieregel onderaan vergelijkt de zwakke en de excellente bucket, zodat duidelijk wordt of afmeldingen vooral door slechte matchkwaliteit komen.
 
