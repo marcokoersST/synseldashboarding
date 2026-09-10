@@ -665,7 +665,7 @@ client-side from max(roi) across the three channels.`}
           <TileStrip
             icon={Gauge}
             title="Match-kwaliteit"
-            subtitle={`Kandidaten · Response · Doorgezet naar Sales · ${matchPeriod}`}
+            subtitle={`Kandidaten · Response · Doorgezet naar Sales · Afmeldingen · ${matchPeriod}`}
             tone="chart-primary"
             right={<TilePeriodTabs value={matchPeriod} onChange={setMatchPeriod} />}
             devStory={<>As <strong>Barend</strong>, I want to validate that a higher match score also leads to more responses and forwards to Sales — that proves the value of the matching algorithm.</>}
@@ -673,7 +673,12 @@ client-side from max(roi) across the three channels.`}
   0–50 · 50–70 · 70–85 · 85–100
 
   Bar  (left)  : number of candidates in bucket
-  Line (right) : Response % and Forwarded %
+  Line (right) : Response %, Forwarded % and Opt-out %
+
+Opt-out % (afmeldPct) comes from the unsubscribe link
+in mail and WhatsApp messages; it decreases as the
+match score rises — proof that opt-outs are driven by
+match quality, not channel fatigue.
 
 Tile-local period state (overrides global filter): 7d/30d/90d/QTD/YTD.
 Legend click toggles series visibility via hidden-set state.
@@ -700,13 +705,16 @@ vs 0-50 for the response and forward multipliers.`}
                 <Bar yAxisId="left" dataKey="kandidaten" name="Kandidaten" fill="hsl(var(--chart-primary))" radius={[6, 6, 0, 0]} hide={matchHidden.has("kandidaten")} />
                 <Line yAxisId="right" type="monotone" dataKey="responsePct" name="Response %" stroke="hsl(var(--accent))" strokeWidth={2.5} hide={matchHidden.has("responsePct")} />
                 <Line yAxisId="right" type="monotone" dataKey="doorgezetPct" name="Doorgezet %" stroke="hsl(var(--gold))" strokeWidth={2.5} hide={matchHidden.has("doorgezetPct")} />
+                <Line yAxisId="right" type="monotone" dataKey="afmeldPct" name="Afmeld %" stroke="hsl(var(--destructive))" strokeWidth={2.5} strokeDasharray="6 4" hide={matchHidden.has("afmeldPct")} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
 
           <p className="text-xs text-muted-foreground mt-3">
             <span className="font-semibold text-foreground">Excellent-bucket reageert 3.8× beter dan zwak-bucket</span>{" "}
-            (31,4% vs 8,3%) — en wordt 9.8× vaker doorgezet naar Sales.
+            (31,4% vs 8,3%) — en wordt 9.8× vaker doorgezet naar Sales.{" "}
+            <span className="font-semibold text-foreground">Afmeldingen dalen 6.3× van zwak naar excellent</span>{" "}
+            (3,8% vs 0,6%) — opt-outs zitten dus vooral in de matchkwaliteit, niet in het kanaal.
           </p>
         </CardContent>
       </Card>
