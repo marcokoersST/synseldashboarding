@@ -15,7 +15,7 @@ import {
   PhoneOff, Clock, MessageSquareWarning, AlarmClock,
   TrendingUp, TrendingDown, Filter, Mail, Smartphone, Linkedin,
   ArrowUpDown, Trophy, Wallet, PiggyBank, Gauge, Radar,
-  ArrowLeftRight, X,
+  ArrowLeftRight, X, UserX,
 } from "lucide-react";
 import {
   ResponsiveContainer, ComposedChart, Line, Area, Bar, BarChart,
@@ -24,7 +24,7 @@ import {
 } from "recharts";
 import {
   reverseFunnelKpis, actieNodigTiles, actieNodigCandidates, bronMixData, trendOverTimeData,
-  kanaalPerformance, matchKwaliteitBuckets, functiegroepRows,
+  kanaalPerformance, matchKwaliteitBuckets, functiegroepRows, afmeldingenPerConsultant,
   recruiterLeaderboard, financieleMetrics, monthlyRevenue, roiPerKanaal,
   periodOptions, type PeriodOption,
 } from "@/data/barendData";
@@ -41,6 +41,7 @@ const toneClasses: Record<string, string> = {
   "chart-primary": "text-[hsl(var(--chart-primary))] bg-[hsl(var(--chart-primary)/0.1)]",
   accent: "text-accent bg-accent/10",
   gold: "text-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)]",
+  destructive: "text-destructive bg-destructive/10",
 };
 
 function fmtEuro(n: number) {
@@ -157,6 +158,9 @@ export default function ReverseMatchingAnalytics() {
   const [trendHidden, setTrendHidden] = useState<Set<string>>(new Set());
   const [matchPeriod, setMatchPeriod] = useState<TilePeriod>("YTD");
   const [matchHidden, setMatchHidden] = useState<Set<string>>(new Set());
+  const [afmeldPeriod, setAfmeldPeriod] = useState<TilePeriod>("YTD");
+  const [afmeldSort, setAfmeldSort] = useState<"afmeldPct" | "afmeldingen" | "verstuurd">("afmeldPct");
+  const [afmeldDir, setAfmeldDir] = useState<"asc" | "desc">("desc");
   const [openTile, setOpenTile] = useState<string | null>(null);
   const [openKpi, setOpenKpi] = useState<{ key: string; label: string } | null>(null);
 
@@ -207,6 +211,30 @@ export default function ReverseMatchingAnalytics() {
   const toggleSort = (col: keyof typeof functiegroepRows[number]) => {
     if (funcSort === col) setFuncDir(d => d === "desc" ? "asc" : "desc");
     else { setFuncSort(col); setFuncDir("desc"); }
+  };
+
+  // Afmeldingen per consultant — afgeleide waarden + sortering
+  const afmeldRows = useMemo(() => {
+    const rows = afmeldingenPerConsultant.map(c => {
+      const verstuurd = c.mailVerstuurd + c.waVerstuurd;
+      const afmeldingen = c.mailAfmeld + c.waAfmeld;
+      return { ...c, verstuurd, afmeldingen, afmeldPct: (afmeldingen / verstuurd) * 100 };
+    });
+    rows.sort((a, b) => afmeldDir === "desc" ? b[afmeldSort] - a[afmeldSort] : a[afmeldSort] - b[afmeldSort]);
+    return rows;
+  }, [afmeldSort, afmeldDir]);
+
+  const afmeldTeamAvg = useMemo(() => {
+    const totAfmeld = afmeldRows.reduce((s, r) => s + r.afmeldingen, 0);
+    const totVerstuurd = afmeldRows.reduce((s, r) => s + r.verstuurd, 0);
+    return (totAfmeld / totVerstuurd) * 100;
+  }, [afmeldRows]);
+
+  const afmeldOutlier = afmeldRows[0]; // hoogste bij default sort desc
+
+  const toggleAfmeldSort = (col: typeof afmeldSort) => {
+    if (afmeldSort === col) setAfmeldDir(d => d === "desc" ? "asc" : "desc");
+    else { setAfmeldSort(col); setAfmeldDir("desc"); }
   };
 
   return (
@@ -632,13 +660,94 @@ client-side from max(roi) across the three channels.`}
         </CardContent>
       </Card>
 
-      {/* ============= 6. Match-kwaliteit ============= */}
+      {/* ============= 6. Afmeldingen per consultant ============= */}
+      <Card className="mb-4 animate-fade-in">
+        <CardContent className="p-6">
+          <TileStrip
+            icon={UserX}
+            title="Afmeldingen per consultant"
+            subtitle={`Opt-outs via de afmeldlink in mail en WhatsApp · ${afmeldPeriod}`}
+            tone="destructive"
+            right={<TilePeriodTabs value={afmeldPeriod} onChange={setAfmeldPeriod} />}
+            devStory={<>As <strong>Barend</strong>, I want to see opt-outs per consultant relative to how many messages they send, so I can spot who misuses the platform instead of blaming match quality.</>}
+            devLogic={`Source: afmeldingenPerConsultant (mock — in production fed by
+the unsubscribe link https://my-last-word.lovable.app/).
+
+Per consultant: mail + WhatsApp sent, opt-outs, opt-out %
+(= opt-outs / sent), channel split.
+
+Colour coding on opt-out %:
+  > 2x team average  → destructive (red)
+  > team average     → gold (orange)
+  otherwise          → accent (green)
+
+Sortable columns; default: opt-out % desc so the
+biggest outlier surfaces at the top. Summary line
+below shows the team average and the outlier.`}
+          />
+          <div className="rounded-lg border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30">
+                  <TableHead>Consultant</TableHead>
+                  {([
+                    ["verstuurd", "Berichten verstuurd"],
+                    ["afmeldingen", "Afmeldingen"],
+                    ["afmeldPct", "Afmeld %"],
+                  ] as const).map(([k, label]) => (
+                    <TableHead key={k} className="text-right">
+                      <button onClick={() => toggleAfmeldSort(k)} className="inline-flex items-center gap-1 hover:text-foreground">
+                        {label} <ArrowUpDown className="w-3 h-3" />
+                      </button>
+                    </TableHead>
+                  ))}
+                  <TableHead className="text-right">Mail</TableHead>
+                  <TableHead className="text-right">WhatsApp</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {afmeldRows.map(r => (
+                  <TableRow key={r.naam} className="hover:bg-muted/20">
+                    <TableCell className="font-medium text-foreground">{r.naam}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.verstuurd.toLocaleString("nl-NL")}</TableCell>
+                    <TableCell className="text-right tabular-nums font-semibold">{r.afmeldingen}</TableCell>
+                    <TableCell className={cn(
+                      "text-right tabular-nums font-semibold",
+                      r.afmeldPct > afmeldTeamAvg * 2 ? "text-destructive" : r.afmeldPct > afmeldTeamAvg ? "text-[hsl(var(--gold))]" : "text-accent"
+                    )}>
+                      {r.afmeldPct.toFixed(1).replace(".", ",")}%
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {r.mailAfmeld} / {r.mailVerstuurd.toLocaleString("nl-NL")}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {r.waAfmeld} / {r.waVerstuurd.toLocaleString("nl-NL")}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            <span className="font-semibold text-foreground">Teamgemiddelde: {afmeldTeamAvg.toFixed(1).replace(".", ",")}%</span>{" "}
+            afmeldingen per verstuurd bericht.{" "}
+            {afmeldSort === "afmeldPct" && afmeldDir === "desc" && afmeldOutlier && (
+              <>
+                <span className="font-semibold text-destructive">{afmeldOutlier.naam} is uitschieter</span>{" "}
+                met {afmeldOutlier.afmeldPct.toFixed(1).replace(".", ",")}% ({(afmeldOutlier.afmeldPct / afmeldTeamAvg).toFixed(1).replace(".", ",")}× het teamgemiddelde).
+              </>
+            )}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* ============= 7. Match-kwaliteit ============= */}
       <Card className="mb-4 animate-fade-in">
         <CardContent className="p-6">
           <TileStrip
             icon={Gauge}
             title="Match-kwaliteit"
-            subtitle={`Kandidaten · Response · Doorgezet naar Sales · ${matchPeriod}`}
+            subtitle={`Kandidaten · Response · Doorgezet naar Sales · Afmeldingen · ${matchPeriod}`}
             tone="chart-primary"
             right={<TilePeriodTabs value={matchPeriod} onChange={setMatchPeriod} />}
             devStory={<>As <strong>Barend</strong>, I want to validate that a higher match score also leads to more responses and forwards to Sales — that proves the value of the matching algorithm.</>}
@@ -646,7 +755,12 @@ client-side from max(roi) across the three channels.`}
   0–50 · 50–70 · 70–85 · 85–100
 
   Bar  (left)  : number of candidates in bucket
-  Line (right) : Response % and Forwarded %
+  Line (right) : Response %, Forwarded % and Opt-out %
+
+Opt-out % (afmeldPct) comes from the unsubscribe link
+in mail and WhatsApp messages; it decreases as the
+match score rises — proof that opt-outs are driven by
+match quality, not channel fatigue.
 
 Tile-local period state (overrides global filter): 7d/30d/90d/QTD/YTD.
 Legend click toggles series visibility via hidden-set state.
@@ -673,13 +787,16 @@ vs 0-50 for the response and forward multipliers.`}
                 <Bar yAxisId="left" dataKey="kandidaten" name="Kandidaten" fill="hsl(var(--chart-primary))" radius={[6, 6, 0, 0]} hide={matchHidden.has("kandidaten")} />
                 <Line yAxisId="right" type="monotone" dataKey="responsePct" name="Response %" stroke="hsl(var(--accent))" strokeWidth={2.5} hide={matchHidden.has("responsePct")} />
                 <Line yAxisId="right" type="monotone" dataKey="doorgezetPct" name="Doorgezet %" stroke="hsl(var(--gold))" strokeWidth={2.5} hide={matchHidden.has("doorgezetPct")} />
+                <Line yAxisId="right" type="monotone" dataKey="afmeldPct" name="Afmeld %" stroke="hsl(var(--destructive))" strokeWidth={2.5} strokeDasharray="6 4" hide={matchHidden.has("afmeldPct")} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
 
           <p className="text-xs text-muted-foreground mt-3">
             <span className="font-semibold text-foreground">Excellent-bucket reageert 3.8× beter dan zwak-bucket</span>{" "}
-            (31,4% vs 8,3%) — en wordt 9.8× vaker doorgezet naar Sales.
+            (31,4% vs 8,3%) — en wordt 9.8× vaker doorgezet naar Sales.{" "}
+            <span className="font-semibold text-foreground">Afmeldingen dalen 6.3× van zwak naar excellent</span>{" "}
+            (3,8% vs 0,6%) — opt-outs zitten dus vooral in de matchkwaliteit, niet in het kanaal.
           </p>
         </CardContent>
       </Card>
