@@ -212,6 +212,30 @@ export default function ReverseMatchingAnalytics() {
     else { setFuncSort(col); setFuncDir("desc"); }
   };
 
+  // Afmeldingen per consultant — afgeleide waarden + sortering
+  const afmeldRows = useMemo(() => {
+    const rows = afmeldingenPerConsultant.map(c => {
+      const verstuurd = c.mailVerstuurd + c.waVerstuurd;
+      const afmeldingen = c.mailAfmeld + c.waAfmeld;
+      return { ...c, verstuurd, afmeldingen, afmeldPct: (afmeldingen / verstuurd) * 100 };
+    });
+    rows.sort((a, b) => afmeldDir === "desc" ? b[afmeldSort] - a[afmeldSort] : a[afmeldSort] - b[afmeldSort]);
+    return rows;
+  }, [afmeldSort, afmeldDir]);
+
+  const afmeldTeamAvg = useMemo(() => {
+    const totAfmeld = afmeldRows.reduce((s, r) => s + r.afmeldingen, 0);
+    const totVerstuurd = afmeldRows.reduce((s, r) => s + r.verstuurd, 0);
+    return (totAfmeld / totVerstuurd) * 100;
+  }, [afmeldRows]);
+
+  const afmeldOutlier = afmeldRows[0]; // hoogste bij default sort desc
+
+  const toggleAfmeldSort = (col: typeof afmeldSort) => {
+    if (afmeldSort === col) setAfmeldDir(d => d === "desc" ? "asc" : "desc");
+    else { setAfmeldSort(col); setAfmeldDir("desc"); }
+  };
+
   return (
     <ConsultantLayout
       title="Reverse Matching Analytics"
