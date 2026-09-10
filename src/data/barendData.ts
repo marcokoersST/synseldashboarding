@@ -169,10 +169,23 @@ export const kanaalPerformance = [
 ];
 
 export const matchKwaliteitBuckets = [
-  { bucket: "0–50",   kandidaten: 420, responsePct: 8.3,  doorgezetPct: 1.4 },
-  { bucket: "50–70",  kandidaten: 760, responsePct: 14.6, doorgezetPct: 4.2 },
-  { bucket: "70–85",  kandidaten: 880, responsePct: 23.9, doorgezetPct: 9.7 },
-  { bucket: "85–100", kandidaten: 356, responsePct: 31.4, doorgezetPct: 13.7 },
+  { bucket: "0–50",   kandidaten: 420, responsePct: 8.3,  doorgezetPct: 1.4,  afmeldPct: 3.8 },
+  { bucket: "50–70",  kandidaten: 760, responsePct: 14.6, doorgezetPct: 4.2,  afmeldPct: 2.6 },
+  { bucket: "70–85",  kandidaten: 880, responsePct: 23.9, doorgezetPct: 9.7,  afmeldPct: 1.4 },
+  { bucket: "85–100", kandidaten: 356, responsePct: 31.4, doorgezetPct: 13.7, afmeldPct: 0.6 },
+];
+
+// Afmeldingen (opt-outs via de afmeldlink in mails en WhatsApp) per consultant.
+// afmeldPct = afmeldingen / berichten verstuurd.
+export const afmeldingenPerConsultant = [
+  { naam: "Sanne de Vries", mailVerstuurd: 1180, waVerstuurd: 320, mailAfmeld: 7,  waAfmeld: 2 },
+  { naam: "Mark Jansen",    mailVerstuurd: 1040, waVerstuurd: 290, mailAfmeld: 9,  waAfmeld: 3 },
+  { naam: "Lisa Bakker",    mailVerstuurd: 960,  waVerstuurd: 260, mailAfmeld: 6,  waAfmeld: 2 },
+  { naam: "Jeroen Visser",  mailVerstuurd: 1010, waVerstuurd: 275, mailAfmeld: 14, waAfmeld: 6 },
+  { naam: "Eva Smit",       mailVerstuurd: 830,  waVerstuurd: 230, mailAfmeld: 5,  waAfmeld: 1 },
+  { naam: "Tom Mulder",     mailVerstuurd: 720,  waVerstuurd: 195, mailAfmeld: 11, waAfmeld: 5 },
+  { naam: "Nina van Dijk",  mailVerstuurd: 640,  waVerstuurd: 175, mailAfmeld: 4,  waAfmeld: 1 },
+  { naam: "Ruben Hoekstra", mailVerstuurd: 580,  waVerstuurd: 160, mailAfmeld: 13, waAfmeld: 7 },
 ];
 
 export const functiegroepRows = [
