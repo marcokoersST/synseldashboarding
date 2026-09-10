@@ -15,7 +15,7 @@ import {
   PhoneOff, Clock, MessageSquareWarning, AlarmClock,
   TrendingUp, TrendingDown, Filter, Mail, Smartphone, Linkedin,
   ArrowUpDown, Trophy, Wallet, PiggyBank, Gauge, Radar,
-  ArrowLeftRight, X,
+  ArrowLeftRight, X, UserX,
 } from "lucide-react";
 import {
   ResponsiveContainer, ComposedChart, Line, Area, Bar, BarChart,
@@ -24,7 +24,7 @@ import {
 } from "recharts";
 import {
   reverseFunnelKpis, actieNodigTiles, actieNodigCandidates, bronMixData, trendOverTimeData,
-  kanaalPerformance, matchKwaliteitBuckets, functiegroepRows,
+  kanaalPerformance, matchKwaliteitBuckets, functiegroepRows, afmeldingenPerConsultant,
   recruiterLeaderboard, financieleMetrics, monthlyRevenue, roiPerKanaal,
   periodOptions, type PeriodOption,
 } from "@/data/barendData";
@@ -157,6 +157,9 @@ export default function ReverseMatchingAnalytics() {
   const [trendHidden, setTrendHidden] = useState<Set<string>>(new Set());
   const [matchPeriod, setMatchPeriod] = useState<TilePeriod>("YTD");
   const [matchHidden, setMatchHidden] = useState<Set<string>>(new Set());
+  const [afmeldPeriod, setAfmeldPeriod] = useState<TilePeriod>("YTD");
+  const [afmeldSort, setAfmeldSort] = useState<"afmeldPct" | "afmeldingen" | "verstuurd">("afmeldPct");
+  const [afmeldDir, setAfmeldDir] = useState<"asc" | "desc">("desc");
   const [openTile, setOpenTile] = useState<string | null>(null);
   const [openKpi, setOpenKpi] = useState<{ key: string; label: string } | null>(null);
 
