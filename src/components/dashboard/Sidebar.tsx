@@ -127,6 +127,11 @@ const navItems: NavItem[] = [
   },
   {
     icon: Megaphone,
+    label: "Marketing Hub V2",
+    path: "/marketing-v2",
+  },
+  {
+    icon: Megaphone,
     label: "Reengagement",
     path: "/reengagement",
   },
