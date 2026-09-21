@@ -48,11 +48,12 @@ const addDays = (iso: string, days: number) => {
 };
 
 /** Detachering: kostprijs × factor = uurtarief; marge per uur × uren = dealwaarde. */
-const buildDetachering = (kostprijs: number, factor: number, uren: number) => {
+const buildDetachering = (kostprijs: number, factor: number, uren: number, weging = 1) => {
   const uurtarief = Math.round(kostprijs * factor * 100) / 100;
-  const dealwaarde = round((uurtarief - kostprijs) * uren);
+  const dealwaarde = round((uurtarief - kostprijs) * uren * weging);
   return { uurtarief, factor, dealwaarde };
 };
+
 
 /** W&S: percentage van het jaarsalaris. */
 const buildWS = (jaarsalaris: number, percentage: number) => ({
