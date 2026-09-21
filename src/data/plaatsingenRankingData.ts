@@ -83,7 +83,7 @@ allConsultantsList.filter((consultant) => consultant.isActive).forEach((consulta
 
     const conditions = categorie === "W&S"
       ? { ...buildWS(jaarsalaris, percentage), factor: null, uurtarief: null }
-      : { ...buildDetachering(kostprijs, Math.round(factor * 100) / 100, looptijdUren), jaarsalaris: null, wsPercentage: null };
+      : { ...buildDetachering(kostprijs, Math.round(factor * 100) / 100, looptijdUren, categorie === "Marge Fac" ? 0.3 : 0.75), jaarsalaris: null, wsPercentage: null };
 
     records.push({
       id: `plaatsing-${consultantIndex}-${index}`,
