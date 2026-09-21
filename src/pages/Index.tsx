@@ -11,6 +11,7 @@ import { CoreActivitiesCard } from "@/components/dashboard/CoreActivitiesCard";
 import { VacancyActivitiesCard } from "@/components/dashboard/VacancyActivitiesCard";
 import { RecruitmentFunnel } from "@/components/dashboard/RecruitmentFunnel";
 import { ReverseMatchingCard } from "@/components/dashboard/ReverseMatchingCard";
+import { ConsultantFinanceDashboard } from "@/components/dashboard/ConsultantFinanceDashboard";
 
 import { CallsStatsCard, EmailStatsCard } from "@/components/dashboard/CommunicationStatsCard";
 import { AINpsCard } from "@/components/dashboard/AINpsCard";
@@ -31,8 +32,10 @@ const Index = () => {
         <ForecastGoalsCard delay={50} />
       </div>
 
+      <ConsultantFinanceDashboard delay={75} />
+
       {/* Unit Ranglijsten — eigen positie binnen unit */}
-      <UnitRanglijstenCard delay={75} />
+      <UnitRanglijstenCard delay={125} />
 
       {/* Section Title */}
       <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
