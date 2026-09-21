@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Award, BriefcaseBusiness, ChevronDown, ChevronRight, CircleDollarSign, Handshake, Medal, Trophy, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,9 +72,9 @@ export default function PlaatsingenRanglijst() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Tabs value={scope} onValueChange={(value) => setScope(value as Scope)}>
             <TabsList className="grid w-full grid-cols-3 sm:w-[300px]">
-              <TabsTrigger value="week">Week</TabsTrigger>
-              <TabsTrigger value="periode">Periode</TabsTrigger>
-              <TabsTrigger value="jaar">Jaar</TabsTrigger>
+              <TabsTrigger value="week"><span className="sm:hidden">W</span><span className="hidden sm:inline">Week</span></TabsTrigger>
+              <TabsTrigger value="periode"><span className="sm:hidden">P</span><span className="hidden sm:inline">Periode</span></TabsTrigger>
+              <TabsTrigger value="jaar"><span className="sm:hidden">J</span><span className="hidden sm:inline">Jaar</span></TabsTrigger>
             </TabsList>
           </Tabs>
           {scope === "week" && (
@@ -98,7 +98,7 @@ export default function PlaatsingenRanglijst() {
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-          <div className="flex items-center justify-between border-b border-ranking-plaatsingen/30 bg-ranking-plaatsingen/10 px-5 py-4">
+          <div className="flex flex-col items-start justify-between gap-3 border-b border-ranking-plaatsingen/30 bg-ranking-plaatsingen/10 px-5 py-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="font-semibold text-foreground">Beste plaatsingen · {selectedLabel}</h2>
               <p className="mt-0.5 text-xs text-muted-foreground">Klik op een consultant voor alle onderliggende plaatsingen</p>
@@ -122,8 +122,8 @@ export default function PlaatsingenRanglijst() {
                   const rank = index + 1;
                   const isOpen = expanded === entry.consultant;
                   return (
-                    <>
-                      <TableRow key={entry.consultant} className={cn("group", rank <= 3 && "bg-ranking-plaatsingen/[0.035]")}>
+                    <Fragment key={entry.consultant}>
+                      <TableRow className={cn("group", rank <= 3 && "bg-ranking-plaatsingen/[0.035]")}>
                         <TableCell className="font-bold tabular-nums">
                           <span className="flex items-center gap-2">
                             {rank === 1 ? <Trophy className="h-5 w-5 text-primary" /> : rank <= 3 ? <Medal className="h-5 w-5 text-muted-foreground" /> : <span className="w-5 text-center text-muted-foreground">{rank}</span>}
@@ -140,7 +140,7 @@ export default function PlaatsingenRanglijst() {
                         </TableCell>
                       </TableRow>
                       {isOpen && (
-                        <TableRow key={`${entry.consultant}-details`} className="bg-muted/20 hover:bg-muted/20">
+                        <TableRow className="bg-muted/20 hover:bg-muted/20">
                           <TableCell colSpan={6} className="px-4 py-3 sm:px-8">
                             <div className="overflow-x-auto rounded-md border border-border bg-card">
                               <table className="w-full min-w-[720px] text-xs">
@@ -151,7 +151,7 @@ export default function PlaatsingenRanglijst() {
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </TableBody>
