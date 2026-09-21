@@ -60,6 +60,11 @@ const navItems: NavItem[] = [
     path: "/tv/ranglijsten",
     sectionLabel: "Ready for development",
   },
+  {
+    icon: Trophy,
+    label: "Plaatsingen ranglijst",
+    path: "/plaatsingen-ranglijst",
+  },
   { 
     icon: BarChart3, 
     label: "Omzetdashboard", 
