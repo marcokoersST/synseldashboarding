@@ -126,8 +126,8 @@ export default function PlaatsingenRanglijst() {
           <SummaryMetric
             icon={Users}
             label="Beste plaatsing"
-            value={ranking[0]?.consultant ?? "—"}
-            sub={ranking[0] ? `${ranking[0].records[0].kandidaat} · ${euro.format(ranking[0].records[0].dealwaarde)}` : undefined}
+            value={bestPlacement ? bestPlacement.kandidaat : "—"}
+            sub={bestPlacement ? `${bestPlacement.consultant} · ${euro.format(bestPlacement.dealwaarde)}` : undefined}
             compact
           />
         </div>
