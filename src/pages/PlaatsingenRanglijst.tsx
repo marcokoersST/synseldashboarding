@@ -144,17 +144,17 @@ export default function PlaatsingenRanglijst() {
           <div className="overflow-x-auto">
             <Table className="min-w-[960px] text-xs">
               <TableHeader>
-                <TableRow className="h-8 bg-muted/40 hover:bg-muted/40">
-                  <TableHead className="h-8 w-10 px-2 text-[10px]">Pos.</TableHead>
-                  <TableHead className="h-8 min-w-[145px] px-2 text-[10px]">Consultant</TableHead>
-                  <TableHead className="h-8 min-w-[120px] px-2 text-[10px]">KDD</TableHead>
-                  <TableHead className="h-8 min-w-[110px] px-2 text-[10px]">Klant</TableHead>
-                  <TableHead className="h-8 px-2 text-[10px]">Type</TableHead>
-                  <TableHead className="h-8 px-2 text-right text-[10px]">Factor</TableHead>
-                  <TableHead className="h-8 px-2 text-right text-[10px]">Looptijd</TableHead>
-                  <TableHead className="h-8 px-2 text-right text-[10px]">W&amp;S</TableHead>
-                  <TableHead className="h-8 px-2 text-right text-[10px]">Dealwaarde</TableHead>
-                  <TableHead className="h-8 min-w-[125px] px-2 text-right text-[10px]">Totaal dealwaarde</TableHead>
+                <TableRow className="h-9 bg-muted/40 hover:bg-muted/40">
+                  <TableHead className="h-9 w-10 px-2 text-[10px]">Pos.</TableHead>
+                  <TableHead className="h-9 min-w-[145px] px-2 text-[10px]">Consultant</TableHead>
+                  <TableHead className="h-9 min-w-[120px] px-2 text-[10px]">KDD</TableHead>
+                  <TableHead className="h-9 min-w-[110px] px-2 text-[10px]">Klant</TableHead>
+                  <TableHead className="h-9 px-2 text-[10px]">Type</TableHead>
+                  <TableHead className="h-9 px-2 text-right text-[10px]">Factor</TableHead>
+                  <TableHead className="h-9 px-2 text-right text-[10px]">Looptijd</TableHead>
+                  <TableHead className="h-9 px-2 text-right text-[10px]">W&amp;S</TableHead>
+                  <TableHead className="h-9 px-2 text-right text-[10px]">Dealwaarde</TableHead>
+                  <TableHead className="h-9 min-w-[125px] px-2 text-right text-[10px]">Totaal dealwaarde</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -163,19 +163,19 @@ export default function PlaatsingenRanglijst() {
                   return (
                     <Fragment key={entry.consultant}>
                       {entry.records.map((record, recordIndex) => (
-                        <TableRow key={record.id} className={cn("h-8 hover:bg-muted/30", recordIndex === 0 && "border-t-2 border-t-border", rank <= 3 && "bg-ranking-plaatsingen/[0.025]")}>
-                          {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1 align-top font-bold tabular-nums">
+                        <TableRow key={record.id} className={cn("h-9 hover:bg-muted/30", recordIndex === 0 && "border-t-2 border-t-border", rank <= 3 && "bg-ranking-plaatsingen/[0.025]")}>
+                          {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1.5 align-top font-bold tabular-nums">
                             {rank === 1 ? <Trophy className="h-3.5 w-3.5 text-primary" /> : rank <= 3 ? <Medal className="h-3.5 w-3.5 text-muted-foreground" /> : rank}
                           </TableCell>}
-                          {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1 align-top font-semibold text-foreground">{entry.consultant}<div className="mt-0.5 text-[9px] font-normal text-muted-foreground">{entry.unit}</div></TableCell>}
-                          <TableCell className="px-2 py-1 font-medium text-foreground">{record.kandidaat}</TableCell>
-                          <TableCell className="px-2 py-1 text-muted-foreground">{record.klant}</TableCell>
-                          <TableCell className="px-2 py-1"><Badge variant="outline" className={cn("h-5 whitespace-nowrap px-1.5 text-[9px]", categoryStyles[record.categorie])}>{record.categorie}</Badge></TableCell>
-                          <TableCell className="px-2 py-1 text-right tabular-nums text-muted-foreground">{record.factor !== null ? decimal.format(record.factor) : "—"}</TableCell>
-                          <TableCell className="px-2 py-1 text-right tabular-nums text-muted-foreground">{record.looptijdUren ? `${number.format(record.looptijdUren)}h` : "—"}</TableCell>
-                          <TableCell className="px-2 py-1 text-right tabular-nums text-muted-foreground">{record.wsPercentage !== null ? `${decimal.format(record.wsPercentage)}%` : "—"}</TableCell>
-                          <TableCell className="px-2 py-1 text-right font-medium tabular-nums">{euro.format(record.dealwaarde)}</TableCell>
-                          {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1 text-right align-top font-bold tabular-nums text-ranking-plaatsingen">{euro.format(entry.dealwaarde)}</TableCell>}
+                          {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1.5 align-top font-semibold text-foreground">{entry.consultant}<div className="mt-0.5 text-[9px] font-normal text-muted-foreground">{entry.unit}</div></TableCell>}
+                          <TableCell className="px-2 py-1.5 font-medium text-foreground">{record.kandidaat}</TableCell>
+                          <TableCell className="px-2 py-1.5 text-muted-foreground">{record.klant}</TableCell>
+                          <TableCell className="px-2 py-1.5"><Badge variant="outline" className={cn("h-5 whitespace-nowrap px-1.5 text-[9px]", categoryStyles[record.categorie])}>{record.categorie}</Badge></TableCell>
+                          <TableCell className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">{record.factor !== null ? decimal.format(record.factor) : "—"}</TableCell>
+                          <TableCell className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">{record.looptijdUren ? `${number.format(record.looptijdUren)}h` : "—"}</TableCell>
+                          <TableCell className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">{record.wsPercentage !== null ? `${decimal.format(record.wsPercentage)}%` : "—"}</TableCell>
+                          <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{euro.format(record.dealwaarde)}</TableCell>
+                          {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1.5 text-right align-top font-bold tabular-nums text-ranking-plaatsingen">{euro.format(entry.dealwaarde)}</TableCell>}
                         </TableRow>
                       ))}
                     </Fragment>
