@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from "react";
-import { BriefcaseBusiness, CircleDollarSign, Handshake, Medal, Monitor, Trophy, Users } from "lucide-react";
+import { BriefcaseBusiness, CircleDollarSign, Handshake, Medal, Monitor, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
