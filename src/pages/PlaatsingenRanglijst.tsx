@@ -123,7 +123,13 @@ export default function PlaatsingenRanglijst() {
           <SummaryMetric icon={Handshake} label="Plaatsingen" value={number.format(filtered.length)} />
           <SummaryMetric icon={CircleDollarSign} label="Totale dealwaarde" value={euro.format(totalValue)} />
           <SummaryMetric icon={BriefcaseBusiness} label="Gemiddelde dealwaarde" value={euro.format(averageValue)} />
-          <SummaryMetric icon={Users} label="Beste unit" value={bestUnit?.[0] ?? "—"} sub={bestUnit ? euro.format(bestUnit[1]) : undefined} compact />
+          <SummaryMetric
+            icon={Users}
+            label="Beste plaatsing"
+            value={ranking[0]?.consultant ?? "—"}
+            sub={ranking[0] ? `${ranking[0].records[0].kandidaat} · ${euro.format(ranking[0].records[0].dealwaarde)}` : undefined}
+            compact
+          />
         </div>
 
         <div className="rounded-md border border-border bg-card px-3 py-2.5 shadow-sm">
