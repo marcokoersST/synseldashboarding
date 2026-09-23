@@ -168,7 +168,14 @@ export default function PlaatsingenRanglijst() {
                             {rank === 1 ? <Trophy className="h-3.5 w-3.5 text-primary" /> : rank <= 3 ? <Medal className="h-3.5 w-3.5 text-muted-foreground" /> : rank}
                           </TableCell>}
                           {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1.5 align-top font-semibold text-foreground">{entry.consultant}<div className="mt-0.5 text-[9px] font-normal text-muted-foreground">{entry.unit}</div></TableCell>}
-                          <TableCell className="px-2 py-1.5 font-medium text-foreground">{record.kandidaat}</TableCell>
+                          <TableCell className="px-2 py-1.5 font-medium text-foreground">
+                            {entry.records.length > 1 && (
+                              <span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-muted text-[9px] font-semibold tabular-nums text-muted-foreground">
+                                {recordIndex + 1}
+                              </span>
+                            )}
+                            {record.kandidaat}
+                          </TableCell>
                           <TableCell className="px-2 py-1.5 text-muted-foreground">{record.klant}</TableCell>
                           <TableCell className="px-2 py-1.5"><Badge variant="outline" className={cn("h-5 whitespace-nowrap px-1.5 text-[9px]", categoryStyles[record.categorie])}>{record.categorie}</Badge></TableCell>
                           <TableCell className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">{record.factor !== null ? decimal.format(record.factor) : "—"}</TableCell>
