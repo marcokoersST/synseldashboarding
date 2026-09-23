@@ -65,6 +65,11 @@ const navItems: NavItem[] = [
     label: "Plaatsingen ranglijst",
     path: "/plaatsingen-ranglijst",
   },
+  {
+    icon: Users,
+    label: "Gedetacheerden ranglijst",
+    path: "/gedetacheerden-ranglijst",
+  },
   { 
     icon: BarChart3, 
     label: "Omzetdashboard", 
