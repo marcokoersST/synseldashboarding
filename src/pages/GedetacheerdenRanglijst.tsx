@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowDownRight, ArrowUpRight, CircleDollarSign, Clock3, Medal, Trophy, UserMinus, Users } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RankingDevInfo } from "@/components/dashboard/RankingDevInfo";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,18 @@ export default function GedetacheerdenRanglijst() {
           <p className="text-xs text-muted-foreground">Gerangschikt op huidig aantal gedetacheerden · {selectedLabel}</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <RankingDevInfo
+            source="gedetacheerdenRankingData: deterministische mockportefeuilles voor alle actieve consultants uit de centrale consultantlijst."
+            filters={`Scope: ${scope}; selectie: ${selectedLabel}; jaar: ${jaar}. De gekozen week, periode of het jaar bepaalt de gesimuleerde momentopname.`}
+            ranking="Consultants sorteren aflopend op momenteel gedetacheerd; bij een gelijke stand bepaalt de brutomarge van de laatste periode de volgorde."
+            calculations={[
+              "Huidige gedetacheerden, starters en afvallers zijn sommen van alle zichtbare consultants.",
+              "Brutomarge laatste periode = som van de consultantmarges in de gekozen momentopname.",
+              "Gemiddelde marge per gedetacheerde = totale brutomarge / totaal huidige gedetacheerden.",
+              "De pijl vergelijkt de brutomarge van de laatste periode met de periode daarvoor.",
+            ]}
+            rowCount={ranking.length}
+          />
           <Tabs value={scope} onValueChange={(value) => setScope(value as GedetacheerdenScope)}>
             <TabsList className="grid w-full grid-cols-3 sm:w-[300px]">
               <TabsTrigger value="week"><span className="sm:hidden">W</span><span className="hidden sm:inline">Week</span></TabsTrigger>
