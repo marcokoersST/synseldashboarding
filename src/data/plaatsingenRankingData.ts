@@ -65,7 +65,7 @@ const buildWS = (jaarsalaris: number, percentage: number) => ({
 const records: PlaatsingRankingRecord[] = [];
 
 allConsultantsList.filter((consultant) => consultant.isActive).forEach((consultant, consultantIndex) => {
-  const placementCount = 2 + (consultantIndex % 4);
+  const placementCount = 4 + (consultantIndex % 5);
 
   for (let index = 0; index < placementCount; index += 1) {
     const week = 1 + ((consultantIndex * 7 + index * 11) % 52);
@@ -106,6 +106,46 @@ allConsultantsList.filter((consultant) => consultant.isActive).forEach((consulta
       dealwaarde: conditions.dealwaarde,
     });
   }
+});
+
+// Extra dichtheid rond de standaardweergave (week 42 / periode 11) zodat de
+// ranglijst bij het openen minimaal 25 consultants toont.
+const defaultViewConsultants = allConsultantsList.filter((c) => c.isActive).slice(0, 30);
+defaultViewConsultants.forEach((consultant, i) => {
+  const categorie = categories[i % categories.length];
+  const looptijdUren = categorie === "W&S" ? 0 : 960 + (i % 6) * 240;
+  const kostprijs = 26 + (i % 12);
+  const factor = 1.9 + ((i % 13) * 0.1);
+  const jaarsalaris = 52000 + (i % 9) * 4000;
+  const percentage = 15 + (i % 8);
+
+  const conditions = categorie === "W&S"
+    ? { ...buildWS(jaarsalaris, percentage), factor: null, uurtarief: null }
+    : { ...buildDetachering(kostprijs, Math.round(factor * 100) / 100, looptijdUren, categorie === "Marge Fac" ? 0.3 : 0.75), jaarsalaris: null, wsPercentage: null };
+
+  const plaatsingsdatum = new Date(Date.UTC(2026, 9, 13 + (i % 7))).toISOString();
+  const startdatum = addDays(plaatsingsdatum, 14 + (i % 3) * 7);
+
+  records.push({
+    id: `extra-week42-${i}`,
+    consultant: consultant.fullName,
+    unit: consultant.unit,
+    kandidaat: kandidaten[(i * 3) % kandidaten.length],
+    klant: klanten[(i * 2) % klanten.length],
+    categorie,
+    plaatsingsdatum,
+    startdatum,
+    einddatum: looptijdUren ? addDays(startdatum, Math.round((looptijdUren / 40) * 7)) : null,
+    week: 42,
+    periode: 11,
+    jaar: 2026,
+    looptijdUren,
+    factor: conditions.factor,
+    uurtarief: conditions.uurtarief,
+    jaarsalaris: conditions.jaarsalaris,
+    wsPercentage: conditions.wsPercentage,
+    dealwaarde: conditions.dealwaarde,
+  });
 });
 
 // Referentievoorbeelden uit de briefing (week 42).
