@@ -2,6 +2,7 @@ import { Fragment, useMemo, useState } from "react";
 import { BriefcaseBusiness, CircleDollarSign, Handshake, Medal, Monitor, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { RankingDevInfo } from "@/components/dashboard/RankingDevInfo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -79,6 +80,18 @@ export default function PlaatsingenRanglijst() {
           <p className="text-xs text-muted-foreground">Gerangschikt op totale dealwaarde · {selectedLabel}</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <RankingDevInfo
+            source="plaatsingenRankingData: statische plaatsingen voor actieve consultants uit de centrale consultantlijst."
+            filters={`Scope: ${scope}; selectie: ${selectedLabel}; jaar: ${jaar}. Week filtert op week + jaar, periode op periode + jaar, jaar op alle records van dat jaar.`}
+            ranking="Plaatsingen worden per consultant gegroepeerd. Consultantgroepen sorteren aflopend op totale dealwaarde; plaatsingen binnen een groep sorteren aflopend op individuele dealwaarde."
+            calculations={[
+              "Totale dealwaarde = som van alle zichtbare plaatsingen.",
+              "Gemiddelde dealwaarde = totale dealwaarde / aantal zichtbare plaatsingen.",
+              "Beste plaatsing = zichtbare plaatsing met de hoogste individuele dealwaarde.",
+              "Detavast/Marge Fac: dealwaarde is afgeleid van tarief, kostprijs, looptijd en weging. W&S: jaarsalaris × percentage.",
+            ]}
+            rowCount={filtered.length}
+          />
           <Tabs value={scope} onValueChange={(value) => setScope(value as Scope)}>
             <TabsList className="grid w-full grid-cols-3 sm:w-[300px]">
               <TabsTrigger value="week"><span className="sm:hidden">W</span><span className="hidden sm:inline">Week</span></TabsTrigger>
