@@ -65,7 +65,7 @@ const buildWS = (jaarsalaris: number, percentage: number) => ({
 const records: PlaatsingRankingRecord[] = [];
 
 allConsultantsList.filter((consultant) => consultant.isActive).forEach((consultant, consultantIndex) => {
-  const placementCount = 2 + (consultantIndex % 4);
+  const placementCount = 4 + (consultantIndex % 5);
 
   for (let index = 0; index < placementCount; index += 1) {
     const week = 1 + ((consultantIndex * 7 + index * 11) % 52);
