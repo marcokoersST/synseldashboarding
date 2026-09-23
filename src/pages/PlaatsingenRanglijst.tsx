@@ -1,7 +1,6 @@
 import { Fragment, useMemo, useState } from "react";
-import { BriefcaseBusiness, CalendarClock, ChevronDown, ChevronRight, CircleDollarSign, Handshake, Medal, Percent, Trophy, Users } from "lucide-react";
+import { BriefcaseBusiness, CircleDollarSign, Handshake, Medal, Trophy, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,11 +10,8 @@ import { plaatsingenRankingData, type PlaatsingCategorie, type PlaatsingRankingR
 type Scope = "week" | "periode" | "jaar";
 
 const euro = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-const euroExact = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 });
 const number = new Intl.NumberFormat("nl-NL");
 const decimal = new Intl.NumberFormat("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const shortDate = new Intl.DateTimeFormat("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric" });
-const longDate = new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "long", year: "numeric" });
 
 const allCategories: PlaatsingCategorie[] = ["Detavast", "W&S", "Marge Fac"];
 
@@ -25,18 +21,11 @@ const categoryStyles: Record<PlaatsingCategorie, string> = {
   "Marge Fac": "border-ranking-intakes/30 bg-ranking-intakes/10 text-ranking-intakes",
 };
 
-const categoryBars: Record<PlaatsingCategorie, string> = {
-  Detavast: "bg-ranking-plaatsingen",
-  "W&S": "bg-ranking-vacatures",
-  "Marge Fac": "bg-ranking-intakes",
-};
-
 export default function PlaatsingenRanglijst() {
   const [scope, setScope] = useState<Scope>("week");
   const [week, setWeek] = useState("42");
   const [periode, setPeriode] = useState("11");
   const [jaar, setJaar] = useState("2026");
-  const [expanded, setExpanded] = useState<string | null>("Robin van Bruggen");
 
   const filtered = useMemo(() => plaatsingenRankingData.filter((record) => {
     if (scope === "week") return record.week === Number(week) && record.jaar === Number(jaar);
@@ -55,15 +44,9 @@ export default function PlaatsingenRanglijst() {
     return [...grouped.values()]
       .map((entry) => {
         const sorted = [...entry.records].sort((a, b) => b.dealwaarde - a.dealwaarde);
-        const detacheringen = sorted.filter((record) => record.factor !== null);
-        const wsRecords = sorted.filter((record) => record.wsPercentage !== null);
         return {
           ...entry,
           records: sorted,
-          mix: allCategories.map((category) => ({ category, count: sorted.filter((record) => record.categorie === category).length })).filter((item) => item.count > 0),
-          gemiddeldeFactor: detacheringen.length ? detacheringen.reduce((sum, record) => sum + (record.factor ?? 0), 0) / detacheringen.length : null,
-          totaalUren: sorted.reduce((sum, record) => sum + record.looptijdUren, 0),
-          gemiddeldWsPercentage: wsRecords.length ? wsRecords.reduce((sum, record) => sum + (record.wsPercentage ?? 0), 0) / wsRecords.length : null,
         };
       })
       .sort((a, b) => b.dealwaarde - a.dealwaarde);
@@ -89,14 +72,14 @@ export default function PlaatsingenRanglijst() {
   const selectedLabel = scope === "week" ? `Week ${week}` : scope === "periode" ? `Periode ${periode}` : jaar;
 
   return (
-    <div className="space-y-5">
-      <section className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-3">
+      <section className="flex flex-col gap-3 border-b border-border pb-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-ranking-plaatsingen">
+          <div className="mb-1 flex items-center gap-2 text-[10px] font-semibold uppercase text-ranking-plaatsingen">
             <Handshake className="h-4 w-4" /> Commerciële prestaties
           </div>
-          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Plaatsingen ranglijst</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Gerangschikt op totale dealwaarde · {selectedLabel}</p>
+          <h1 className="text-xl font-bold text-foreground sm:text-2xl">Plaatsingen ranglijst</h1>
+          <p className="text-xs text-muted-foreground">Gerangschikt op totale dealwaarde · {selectedLabel}</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Tabs value={scope} onValueChange={(value) => setScope(value as Scope)}>
@@ -125,139 +108,76 @@ export default function PlaatsingenRanglijst() {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           <SummaryMetric icon={Handshake} label="Plaatsingen" value={number.format(filtered.length)} />
           <SummaryMetric icon={CircleDollarSign} label="Totale dealwaarde" value={euro.format(totalValue)} />
           <SummaryMetric icon={BriefcaseBusiness} label="Gemiddelde dealwaarde" value={euro.format(averageValue)} />
           <SummaryMetric icon={Users} label="Beste unit" value={bestUnit?.[0] ?? "—"} sub={bestUnit ? euro.format(bestUnit[1]) : undefined} compact />
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Verdeling plaatsingstype · {selectedLabel}</h2>
-          <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-md border border-border bg-card px-3 py-2.5 shadow-sm">
+          <h2 className="mb-2 text-xs font-semibold text-foreground">Verdeling plaatsingstype · {selectedLabel}</h2>
+          <div className="grid gap-2 sm:grid-cols-3">
             {categoryTotals.map((item) => (
               <div key={item.category}>
-                <Badge variant="outline" className={cn("mb-2", categoryStyles[item.category])}>{item.category}</Badge>
-                <div className="text-lg font-bold tabular-nums text-foreground">{euro.format(item.value)}</div>
-                <div className="mb-2 text-xs text-muted-foreground">{item.count} plaatsingen · {Math.round(item.share)}%</div>
-                <div className="h-2 overflow-hidden rounded-full bg-muted">
-                  <div className={cn("h-full rounded-full transition-all duration-500", categoryBars[item.category])} style={{ width: `${item.share}%` }} />
+                <div className="flex items-center justify-between gap-2">
+                  <Badge variant="outline" className={cn("h-5 px-1.5 text-[10px]", categoryStyles[item.category])}>{item.category}</Badge>
+                  <span className="text-xs font-bold tabular-nums text-foreground">{euro.format(item.value)}</span>
                 </div>
+                <div className="mt-1 text-[10px] text-muted-foreground">{item.count} plaatsingen · {Math.round(item.share)}%</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-        <div className="flex flex-col items-start justify-between gap-3 border-b border-ranking-plaatsingen/30 bg-ranking-plaatsingen/10 px-5 py-4 sm:flex-row sm:items-center">
+      <section className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-ranking-plaatsingen/30 bg-ranking-plaatsingen/10 px-3 py-2">
           <div>
-            <h2 className="font-semibold text-foreground">Beste plaatsingen · {selectedLabel}</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">Type plaatsing en voorwaarden direct in de lijst · klik voor kandidaat, klant en exacte datums</p>
+            <h2 className="text-sm font-semibold text-foreground">Beste plaatsingen · {selectedLabel}</h2>
+            <p className="text-[10px] text-muted-foreground">Alle plaatsingen en voorwaarden direct zichtbaar</p>
           </div>
           <Badge variant="outline" className="border-ranking-plaatsingen/30 bg-card text-ranking-plaatsingen">{ranking.length} consultants</Badge>
         </div>
         {ranking.length ? (
           <div className="overflow-x-auto">
-            <Table className="min-w-[1080px]">
+            <Table className="min-w-[960px] text-xs">
               <TableHeader>
-                <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="w-16">Pos.</TableHead>
-                  <TableHead className="min-w-[180px]">Consultant</TableHead>
-                  <TableHead className="min-w-[140px]">Unit</TableHead>
-                  <TableHead className="min-w-[220px]">Type plaatsingen</TableHead>
-                  <TableHead className="text-right">Gem. factor</TableHead>
-                  <TableHead className="text-right">Looptijd</TableHead>
-                  <TableHead className="text-right">Gem. W&amp;S %</TableHead>
-                  <TableHead className="text-right">Plaatsingen</TableHead>
-                  <TableHead className="text-right">Dealwaarde</TableHead>
-                  <TableHead className="w-12"><span className="sr-only">Details</span></TableHead>
+                <TableRow className="h-8 bg-muted/40 hover:bg-muted/40">
+                  <TableHead className="h-8 w-10 px-2 text-[10px]">Pos.</TableHead>
+                  <TableHead className="h-8 min-w-[145px] px-2 text-[10px]">Consultant</TableHead>
+                  <TableHead className="h-8 min-w-[120px] px-2 text-[10px]">KDD</TableHead>
+                  <TableHead className="h-8 min-w-[110px] px-2 text-[10px]">Klant</TableHead>
+                  <TableHead className="h-8 px-2 text-[10px]">Type</TableHead>
+                  <TableHead className="h-8 px-2 text-right text-[10px]">Factor</TableHead>
+                  <TableHead className="h-8 px-2 text-right text-[10px]">Looptijd</TableHead>
+                  <TableHead className="h-8 px-2 text-right text-[10px]">W&amp;S</TableHead>
+                  <TableHead className="h-8 px-2 text-right text-[10px]">Dealwaarde</TableHead>
+                  <TableHead className="h-8 min-w-[125px] px-2 text-right text-[10px]">Totaal dealwaarde</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {ranking.map((entry, index) => {
                   const rank = index + 1;
-                  const isOpen = expanded === entry.consultant;
                   return (
                     <Fragment key={entry.consultant}>
-                      <TableRow className={cn("cursor-pointer", rank <= 3 && "bg-ranking-plaatsingen/[0.035]")} onClick={() => setExpanded(isOpen ? null : entry.consultant)}>
-                        <TableCell className="font-bold tabular-nums">
-                          <span className="flex items-center gap-2">
-                            {rank === 1 ? <Trophy className="h-5 w-5 text-primary" /> : rank <= 3 ? <Medal className="h-5 w-5 text-muted-foreground" /> : <span className="w-5 text-center text-muted-foreground">{rank}</span>}
-                          </span>
-                        </TableCell>
-                        <TableCell className="font-semibold text-foreground">{entry.consultant}</TableCell>
-                        <TableCell className="text-muted-foreground">{entry.unit}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1.5">
-                            {entry.mix.map((item) => (
-                              <Badge key={item.category} variant="outline" className={cn("text-[11px]", categoryStyles[item.category])}>
-                                {item.category} · {item.count}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums text-muted-foreground">{entry.gemiddeldeFactor ? decimal.format(entry.gemiddeldeFactor) : "—"}</TableCell>
-                        <TableCell className="text-right tabular-nums text-muted-foreground">{entry.totaalUren ? `${number.format(entry.totaalUren)}h` : "—"}</TableCell>
-                        <TableCell className="text-right tabular-nums text-muted-foreground">{entry.gemiddeldWsPercentage ? `${decimal.format(entry.gemiddeldWsPercentage)}%` : "—"}</TableCell>
-                        <TableCell className="text-right font-medium tabular-nums">{entry.records.length}</TableCell>
-                        <TableCell className="text-right text-base font-bold tabular-nums text-ranking-plaatsingen">{euro.format(entry.dealwaarde)}</TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(event) => { event.stopPropagation(); setExpanded(isOpen ? null : entry.consultant); }} aria-label={`${isOpen ? "Sluit" : "Open"} plaatsingen van ${entry.consultant}`}>
-                            {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                      {isOpen && (
-                        <TableRow className="bg-muted/20 hover:bg-muted/20">
-                          <TableCell colSpan={10} className="px-4 py-3 sm:px-8">
-                            <div className="overflow-x-auto rounded-md border border-border bg-card">
-                              <table className="w-full min-w-[1000px] text-xs">
-                                <thead>
-                                  <tr className="border-b border-border text-left text-muted-foreground">
-                                    <th className="p-3 font-medium">Kandidaat</th>
-                                    <th className="p-3 font-medium">Klant</th>
-                                    <th className="p-3 font-medium">Type</th>
-                                    <th className="p-3 font-medium">Voorwaarden</th>
-                                    <th className="p-3 font-medium">Plaatsingsdatum</th>
-                                    <th className="p-3 font-medium">Startdatum</th>
-                                    <th className="p-3 font-medium">Einddatum</th>
-                                    <th className="p-3 text-right font-medium">Dealwaarde</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {entry.records.map((record) => (
-                                    <tr key={record.id} className="border-b border-border/50 last:border-0">
-                                      <td className="p-3 font-medium text-foreground">{record.kandidaat}</td>
-                                      <td className="p-3 text-muted-foreground">{record.klant}</td>
-                                      <td className="p-3"><Badge variant="outline" className={categoryStyles[record.categorie]}>{record.categorie}</Badge></td>
-                                      <td className="p-3">
-                                        {record.wsPercentage !== null ? (
-                                          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground">
-                                            <span className="inline-flex items-center gap-1 font-medium text-foreground"><Percent className="h-3 w-3" />{decimal.format(record.wsPercentage)}% fee</span>
-                                            <span>over jaarsalaris {euro.format(record.jaarsalaris ?? 0)}</span>
-                                          </span>
-                                        ) : (
-                                          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground">
-                                            <span className="font-medium text-foreground">Factor {decimal.format(record.factor ?? 0)}</span>
-                                            <span>· tarief {euroExact.format(record.uurtarief ?? 0)}/uur</span>
-                                            <span className="inline-flex items-center gap-1"><CalendarClock className="h-3 w-3" />{number.format(record.looptijdUren)}h</span>
-                                          </span>
-                                        )}
-                                      </td>
-                                      <td className="p-3 text-muted-foreground">{longDate.format(new Date(record.plaatsingsdatum))}</td>
-                                      <td className="p-3 text-muted-foreground">{longDate.format(new Date(record.startdatum))}</td>
-                                      <td className="p-3 tabular-nums text-muted-foreground">{record.einddatum ? shortDate.format(new Date(record.einddatum)) : "—"}</td>
-                                      <td className="p-3 text-right font-semibold tabular-nums">{euro.format(record.dealwaarde)}</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </TableCell>
+                      {entry.records.map((record, recordIndex) => (
+                        <TableRow key={record.id} className={cn("h-8 hover:bg-muted/30", recordIndex === 0 && "border-t-2 border-t-border", rank <= 3 && "bg-ranking-plaatsingen/[0.025]")}>
+                          {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1 align-top font-bold tabular-nums">
+                            {rank === 1 ? <Trophy className="h-3.5 w-3.5 text-primary" /> : rank <= 3 ? <Medal className="h-3.5 w-3.5 text-muted-foreground" /> : rank}
+                          </TableCell>}
+                          {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1 align-top font-semibold text-foreground">{entry.consultant}<div className="mt-0.5 text-[9px] font-normal text-muted-foreground">{entry.unit}</div></TableCell>}
+                          <TableCell className="px-2 py-1 font-medium text-foreground">{record.kandidaat}</TableCell>
+                          <TableCell className="px-2 py-1 text-muted-foreground">{record.klant}</TableCell>
+                          <TableCell className="px-2 py-1"><Badge variant="outline" className={cn("h-5 whitespace-nowrap px-1.5 text-[9px]", categoryStyles[record.categorie])}>{record.categorie}</Badge></TableCell>
+                          <TableCell className="px-2 py-1 text-right tabular-nums text-muted-foreground">{record.factor !== null ? decimal.format(record.factor) : "—"}</TableCell>
+                          <TableCell className="px-2 py-1 text-right tabular-nums text-muted-foreground">{record.looptijdUren ? `${number.format(record.looptijdUren)}h` : "—"}</TableCell>
+                          <TableCell className="px-2 py-1 text-right tabular-nums text-muted-foreground">{record.wsPercentage !== null ? `${decimal.format(record.wsPercentage)}%` : "—"}</TableCell>
+                          <TableCell className="px-2 py-1 text-right font-medium tabular-nums">{euro.format(record.dealwaarde)}</TableCell>
+                          {recordIndex === 0 && <TableCell rowSpan={entry.records.length} className="px-2 py-1 text-right align-top font-bold tabular-nums text-ranking-plaatsingen">{euro.format(entry.dealwaarde)}</TableCell>}
                         </TableRow>
-                      )}
+                      ))}
                     </Fragment>
                   );
                 })}
@@ -272,10 +192,10 @@ export default function PlaatsingenRanglijst() {
 
 function SummaryMetric({ icon: Icon, label, value, sub, compact = false }: { icon: typeof Handshake; label: string; value: string; sub?: string; compact?: boolean }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-      <Icon className="mb-3 h-4 w-4 text-ranking-plaatsingen" />
-      <div className={cn("font-bold text-foreground", compact ? "text-base leading-tight" : "text-xl tabular-nums")}>{value}</div>
-      <div className="mt-1 text-[11px] text-muted-foreground">{label}{sub ? ` · ${sub}` : ""}</div>
+    <div className="rounded-md border border-border bg-card px-3 py-2.5 shadow-sm">
+      <div className="mb-1 flex items-center gap-1.5"><Icon className="h-3.5 w-3.5 text-ranking-plaatsingen" /><span className="text-[10px] text-muted-foreground">{label}</span></div>
+      <div className={cn("font-bold text-foreground", compact ? "text-sm leading-tight" : "text-base tabular-nums")}>{value}</div>
+      {sub && <div className="text-[9px] text-muted-foreground">{sub}</div>}
     </div>
   );
 }
