@@ -120,7 +120,7 @@ export default function PlaatsingenRanglijst() {
           <SummaryMetric icon={CircleDollarSign} label="Totale dealwaarde" value={euro.format(totalValue)} />
           <SummaryMetric icon={BriefcaseBusiness} label="Gemiddelde dealwaarde" value={euro.format(averageValue)} />
           <SummaryMetric
-            icon={Users}
+            icon={Trophy}
             label="Beste plaatsing"
             value={bestPlacement ? bestPlacement.kandidaat : "—"}
             sub={bestPlacement ? `${bestPlacement.consultant} · ${euro.format(bestPlacement.dealwaarde)}` : undefined}
