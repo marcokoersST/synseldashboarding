@@ -243,6 +243,7 @@ const navItems: NavItem[] = [
       { icon: Monitor, label: "Heatmap", path: "/tv/heatmap" },
       { icon: LineChart, label: "Ranglijsten Grafiek", path: "/tv/ranglijsten-grafiek" },
       { icon: Monitor, label: "Acties vandaag", path: "/tv/acties-vandaag" },
+      { icon: Trophy, label: "Plaatsingen ranglijst", path: "/tv/plaatsingen-ranglijst" },
     ]
   },
   {

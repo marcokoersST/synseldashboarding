@@ -18,6 +18,7 @@ import TVRanglijsten from "./pages/TVRanglijsten";
 import TVHeatmap from "./pages/TVHeatmap";
 import TVActiesVandaag from "./pages/TVActiesVandaag";
 import PlaatsingenRanglijst from "./pages/PlaatsingenRanglijst";
+import TVPlaatsingenRanglijst from "./pages/TVPlaatsingenRanglijst";
 import TVFunnelOpsOverzicht from "./pages/TVFunnelOpsOverzicht";
 import TVFunnelOpsActies from "./pages/TVFunnelOpsActies";
 import NotFound from "./pages/NotFound";
@@ -129,6 +130,7 @@ const App = () => (
               <Route path="/tv/ranglijsten-grafiek" element={<TVRanglijstenGrafiek />} />
               <Route path="/tv/acties-vandaag" element={<TVActiesVandaag />} />
               <Route path="/plaatsingen-ranglijst" element={<PlaatsingenRanglijst />} />
+              <Route path="/tv/plaatsingen-ranglijst" element={<TVPlaatsingenRanglijst />} />
               <Route path="/tv/funnel-ops-overzicht" element={<TVFunnelOpsOverzicht />} />
               <Route path="/tv/funnel-ops-acties" element={<TVFunnelOpsActies />} />
               <Route path="/consultant/geld-bonus" element={<GeldBonus />} />

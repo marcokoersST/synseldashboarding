@@ -1,5 +1,6 @@
 import { Fragment, useMemo, useState } from "react";
-import { BriefcaseBusiness, CircleDollarSign, Handshake, Medal, Trophy, Users } from "lucide-react";
+import { BriefcaseBusiness, CircleDollarSign, Handshake, Medal, Monitor, Trophy, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -105,6 +106,15 @@ export default function PlaatsingenRanglijst() {
             <SelectTrigger className="w-full bg-card sm:w-[110px]"><SelectValue /></SelectTrigger>
             <SelectContent><SelectItem value="2026">2026</SelectItem></SelectContent>
           </Select>
+          <Link
+            to="/tv/plaatsingen-ranglijst"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-xs transition-colors hover:bg-muted/50"
+          >
+            <Monitor className="h-3.5 w-3.5" />
+            TV Modus
+          </Link>
         </div>
       </section>
 
