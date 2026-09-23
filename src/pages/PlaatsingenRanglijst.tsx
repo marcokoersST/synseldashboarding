@@ -55,11 +55,7 @@ export default function PlaatsingenRanglijst() {
 
   const totalValue = filtered.reduce((sum, record) => sum + record.dealwaarde, 0);
   const averageValue = filtered.length ? totalValue / filtered.length : 0;
-  const unitTotals = filtered.reduce<Record<string, number>>((totals, record) => {
-    totals[record.unit] = (totals[record.unit] ?? 0) + record.dealwaarde;
-    return totals;
-  }, {});
-  const bestUnit = Object.entries(unitTotals).sort((a, b) => b[1] - a[1])[0];
+  const bestPlacement = filtered.length ? filtered.reduce((best, record) => (record.dealwaarde > best.dealwaarde ? record : best), filtered[0]) : null;
   const categoryTotals = allCategories.map((category) => {
     const rows = filtered.filter((record) => record.categorie === category);
     return {
