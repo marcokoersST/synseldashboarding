@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from "react";
-import { BriefcaseBusiness, CircleDollarSign, Handshake, Medal, Monitor, Trophy, Users } from "lucide-react";
+import { BriefcaseBusiness, CircleDollarSign, Handshake, Medal, Monitor, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -55,11 +55,7 @@ export default function PlaatsingenRanglijst() {
 
   const totalValue = filtered.reduce((sum, record) => sum + record.dealwaarde, 0);
   const averageValue = filtered.length ? totalValue / filtered.length : 0;
-  const unitTotals = filtered.reduce<Record<string, number>>((totals, record) => {
-    totals[record.unit] = (totals[record.unit] ?? 0) + record.dealwaarde;
-    return totals;
-  }, {});
-  const bestUnit = Object.entries(unitTotals).sort((a, b) => b[1] - a[1])[0];
+  const bestPlacement = filtered.length ? filtered.reduce((best, record) => (record.dealwaarde > best.dealwaarde ? record : best), filtered[0]) : null;
   const categoryTotals = allCategories.map((category) => {
     const rows = filtered.filter((record) => record.categorie === category);
     return {
@@ -123,7 +119,13 @@ export default function PlaatsingenRanglijst() {
           <SummaryMetric icon={Handshake} label="Plaatsingen" value={number.format(filtered.length)} />
           <SummaryMetric icon={CircleDollarSign} label="Totale dealwaarde" value={euro.format(totalValue)} />
           <SummaryMetric icon={BriefcaseBusiness} label="Gemiddelde dealwaarde" value={euro.format(averageValue)} />
-          <SummaryMetric icon={Users} label="Beste unit" value={bestUnit?.[0] ?? "—"} sub={bestUnit ? euro.format(bestUnit[1]) : undefined} compact />
+          <SummaryMetric
+            icon={Trophy}
+            label="Beste plaatsing"
+            value={bestPlacement ? bestPlacement.kandidaat : "—"}
+            sub={bestPlacement ? `${bestPlacement.consultant} · ${euro.format(bestPlacement.dealwaarde)}` : undefined}
+            compact
+          />
         </div>
 
         <div className="rounded-md border border-border bg-card px-3 py-2.5 shadow-sm">
