@@ -1,6 +1,12 @@
-export type AppLanguage = "nl" | "en";
+export type AppLanguage = "nl" | "en" | "uk" | "pl";
 
-const exact: Record<string, string> = {
+export const supportedLanguages: readonly AppLanguage[] = ["nl", "en", "uk", "pl"];
+
+export function isAppLanguage(value: string | null): value is AppLanguage {
+  return value !== null && supportedLanguages.includes(value as AppLanguage);
+}
+
+const exactEnglish: Record<string, string> = {
   "Laden...": "Loading...",
   "Jouw naam": "Your name",
   "Welkom terug": "Welcome back",
@@ -119,7 +125,245 @@ const exact: Record<string, string> = {
   "Marge Fac": "Margin invoicing",
 };
 
-const replacements: Array<[RegExp, string]> = [
+const exactPolish: Record<string, string> = {
+  "Laden...": "Ładowanie...",
+  "Jouw naam": "Twoje imię",
+  "Welkom terug": "Witamy ponownie",
+  "Jouw volgende level": "Twój następny poziom",
+  Kwaliteitsoverzicht: "Przegląd jakości",
+  "Recruitment Consultant": "Konsultant ds. rekrutacji",
+  "Bouw je eigen business": "Zbuduj własny biznes",
+  Ranglijsten: "Rankingi",
+  "Plaatsingen ranglijst": "Ranking zatrudnień",
+  "Gedetacheerden ranglijst": "Ranking pracowników kontraktowych",
+  Omzetdashboard: "Panel przychodów",
+  "Vacaturetitel Funnel": "Lejek stanowisk",
+  "Synsel Groeimodel": "Model rozwoju Synsel",
+  "Dashboard consultant": "Panel konsultanta",
+  Vergelijking: "Porównanie",
+  "Consultant sub dashboards": "Panele szczegółowe konsultanta",
+  "Manager Dashboard": "Panel menedżera",
+  "Systeem Hygiene": "Higiena systemu",
+  "Call Dashboarding": "Panel połączeń",
+  "Geld & Bonus": "Wynagrodzenie i premia",
+  "Volgende Actie": "Następne działanie",
+  Gesprekskwaliteit: "Jakość rozmów",
+  "Activiteit vs Resultaat": "Aktywność a wynik",
+  "Kandidaat-First": "Kandydat na pierwszym miejscu",
+  "Klant & Markt": "Klient i rynek",
+  "CRM Hygiëne": "Higiena CRM",
+  Snelheid: "Szybkość",
+  "Detavast & Retentie": "Praca tymczasowa z zatrudnieniem i retencja",
+  "Skills & Training": "Umiejętności i szkolenia",
+  "Alerts & Risico's": "Alerty i ryzyka",
+  "Match Kwaliteit": "Jakość dopasowania",
+  "Route naar #1": "Droga do 1. miejsca",
+  "Extra Dashboards": "Dodatkowe panele",
+  "Dashboards Hendrik": "Panele Hendrika",
+  "Dashboards Peter-Jan": "Panele Petera-Jana",
+  "Dashboards Barend": "Panele Barenda",
+  "Dashboards Marco": "Panele Marco",
+  "TV Dashboards": "Panele TV",
+  "Commerciële prestaties": "Wyniki komercyjne",
+  "Portefeuille prestaties": "Wyniki portfela",
+  "Gerangschikt op totale dealwaarde": "Ranking według łącznej wartości transakcji",
+  "Gerangschikt op huidig aantal gedetacheerden": "Ranking według bieżącej liczby pracowników kontraktowych",
+  "Totale dealwaarde": "Łączna wartość transakcji",
+  "Gemiddelde dealwaarde": "Średnia wartość transakcji",
+  "Beste plaatsing": "Najlepsze zatrudnienie",
+  "Verdeling plaatsingstype": "Podział typów zatrudnienia",
+  "Beste plaatsingen": "Najlepsze zatrudnienia",
+  "Beste portefeuilles": "Najlepsze portfele",
+  "Alle plaatsingen en voorwaarden direct zichtbaar": "Wszystkie zatrudnienia i warunki widoczne od razu",
+  "Actieve inzet, mutaties en brutomarge per consultant": "Aktywne kontrakty, zmiany i marża brutto według konsultanta",
+  Plaatsingen: "Zatrudnienia",
+  Plaatsing: "Zatrudnienie",
+  Consultants: "Konsultanci",
+  Consultant: "Konsultant",
+  Periode: "Okres",
+  Jaar: "Rok",
+  Week: "Tydzień",
+  "TV Modus": "Tryb TV",
+  Positie: "Pozycja",
+  Klant: "Klient",
+  Kandidaat: "Kandydat",
+  Type: "Typ",
+  Factor: "Współczynnik",
+  Looptijd: "Czas trwania",
+  Dealwaarde: "Wartość transakcji",
+  Voorwaarden: "Warunki",
+  "Huidige gedetacheerden": "Obecni pracownicy kontraktowi",
+  "Nog te starten": "Jeszcze nierozpoczęte",
+  Afvallers: "Odejścia",
+  "Af te vallen": "Planowane odejścia",
+  "Brutomarge laatste periode": "Marża brutto w ostatnim okresie",
+  "Brutomarge periode daarvoor": "Marża brutto w poprzednim okresie",
+  "Marge per gedetacheerde": "Marża na pracownika kontraktowego",
+  "Marge afgelopen 13 periodes": "Marża z ostatnich 13 okresów",
+  "Momenteel gedetacheerd": "Obecnie na kontrakcie",
+  "Gem. marge per gedetacheerde": "Śr. marża na pracownika kontraktowego",
+  "Geen gedetacheerden in deze selectie": "Brak pracowników kontraktowych w tym wyborze",
+  "Geen resultaten": "Brak wyników",
+  "Geen data beschikbaar": "Brak dostępnych danych",
+  "Alles aan": "Zaznacz wszystko",
+  "Alles uit": "Wyczyść wszystko",
+  Selecteer: "Wybierz",
+  Sluiten: "Zamknij",
+  Annuleren: "Anuluj",
+  Opslaan: "Zapisz",
+  Verwijderen: "Usuń",
+  Bewerken: "Edytuj",
+  Zoeken: "Szukaj",
+  Filters: "Filtry",
+  Filter: "Filtr",
+  Overzicht: "Przegląd",
+  Vandaag: "Dzisiaj",
+  Gisteren: "Wczoraj",
+  Morgen: "Jutro",
+  Totaal: "Łącznie",
+  Gemiddeld: "Średnio",
+  Doel: "Cel",
+  Resultaat: "Wynik",
+  Omzet: "Przychód",
+  Marge: "Marża",
+  Vacatures: "Oferty pracy",
+  Vacature: "Oferta pracy",
+  Gesprekken: "Rozmowy",
+  Telefonie: "Połączenia",
+  Inschrijvingen: "Rejestracje",
+  Intakes: "Rozmowy wstępne",
+  Voorstellen: "Prezentacje kandydatów",
+  Acquisities: "Pozyskanie klientów",
+  Acties: "Działania",
+  Actie: "Działanie",
+  Medewerkers: "Pracownicy",
+  Gedetacheerden: "Pracownicy kontraktowi",
+  Gedetacheerde: "Pracownik kontraktowy",
+  "W&S": "Rekrutacja stała",
+  Detavast: "Praca tymczasowa z zatrudnieniem",
+  "Marge Fac": "Fakturowanie marży",
+};
+
+const exactUkrainian: Record<string, string> = {
+  "Laden...": "Завантаження...",
+  "Jouw naam": "Ваше ім’я",
+  "Welkom terug": "З поверненням",
+  "Jouw volgende level": "Ваш наступний рівень",
+  Kwaliteitsoverzicht: "Огляд якості",
+  "Recruitment Consultant": "Консультант із рекрутингу",
+  "Bouw je eigen business": "Побудуйте власний бізнес",
+  Ranglijsten: "Рейтинги",
+  "Plaatsingen ranglijst": "Рейтинг працевлаштувань",
+  "Gedetacheerden ranglijst": "Рейтинг контрактних працівників",
+  Omzetdashboard: "Панель доходів",
+  "Vacaturetitel Funnel": "Воронка посад",
+  "Synsel Groeimodel": "Модель розвитку Synsel",
+  "Dashboard consultant": "Панель консультанта",
+  Vergelijking: "Порівняння",
+  "Consultant sub dashboards": "Детальні панелі консультанта",
+  "Manager Dashboard": "Панель менеджера",
+  "Systeem Hygiene": "Гігієна системи",
+  "Call Dashboarding": "Панель дзвінків",
+  "Geld & Bonus": "Дохід і бонус",
+  "Volgende Actie": "Наступна дія",
+  Gesprekskwaliteit: "Якість розмов",
+  "Activiteit vs Resultaat": "Активність і результат",
+  "Kandidaat-First": "Кандидат насамперед",
+  "Klant & Markt": "Клієнт і ринок",
+  "CRM Hygiëne": "Гігієна CRM",
+  Snelheid: "Швидкість",
+  "Detavast & Retentie": "Тимчасова робота з працевлаштуванням і утримання",
+  "Skills & Training": "Навички й навчання",
+  "Alerts & Risico's": "Сповіщення та ризики",
+  "Match Kwaliteit": "Якість відповідності",
+  "Route naar #1": "Шлях до 1-го місця",
+  "Extra Dashboards": "Додаткові панелі",
+  "Dashboards Hendrik": "Панелі Хендріка",
+  "Dashboards Peter-Jan": "Панелі Петера-Яна",
+  "Dashboards Barend": "Панелі Баренда",
+  "Dashboards Marco": "Панелі Марко",
+  "TV Dashboards": "Панелі TV",
+  "Commerciële prestaties": "Комерційні результати",
+  "Portefeuille prestaties": "Результати портфеля",
+  "Gerangschikt op totale dealwaarde": "Рейтинг за загальною вартістю угод",
+  "Gerangschikt op huidig aantal gedetacheerden": "Рейтинг за поточною кількістю контрактних працівників",
+  "Totale dealwaarde": "Загальна вартість угод",
+  "Gemiddelde dealwaarde": "Середня вартість угоди",
+  "Beste plaatsing": "Найкраще працевлаштування",
+  "Verdeling plaatsingstype": "Розподіл типів працевлаштування",
+  "Beste plaatsingen": "Найкращі працевлаштування",
+  "Beste portefeuilles": "Найкращі портфелі",
+  "Alle plaatsingen en voorwaarden direct zichtbaar": "Усі працевлаштування та умови видно одразу",
+  "Actieve inzet, mutaties en brutomarge per consultant": "Активні контракти, зміни та валова маржа за консультантом",
+  Plaatsingen: "Працевлаштування",
+  Plaatsing: "Працевлаштування",
+  Consultants: "Консультанти",
+  Consultant: "Консультант",
+  Periode: "Період",
+  Jaar: "Рік",
+  Week: "Тиждень",
+  "TV Modus": "Режим TV",
+  Positie: "Позиція",
+  Klant: "Клієнт",
+  Kandidaat: "Кандидат",
+  Type: "Тип",
+  Factor: "Коефіцієнт",
+  Looptijd: "Тривалість",
+  Dealwaarde: "Вартість угоди",
+  Voorwaarden: "Умови",
+  "Huidige gedetacheerden": "Поточні контрактні працівники",
+  "Nog te starten": "Ще не розпочато",
+  Afvallers: "Вибуття",
+  "Af te vallen": "Очікувані вибуття",
+  "Brutomarge laatste periode": "Валова маржа за останній період",
+  "Brutomarge periode daarvoor": "Валова маржа за попередній період",
+  "Marge per gedetacheerde": "Маржа на контрактного працівника",
+  "Marge afgelopen 13 periodes": "Маржа за останні 13 періодів",
+  "Momenteel gedetacheerd": "Зараз на контракті",
+  "Gem. marge per gedetacheerde": "Сер. маржа на контрактного працівника",
+  "Geen gedetacheerden in deze selectie": "У цьому виборі немає контрактних працівників",
+  "Geen resultaten": "Немає результатів",
+  "Geen data beschikbaar": "Дані відсутні",
+  "Alles aan": "Вибрати все",
+  "Alles uit": "Очистити все",
+  Selecteer: "Вибрати",
+  Sluiten: "Закрити",
+  Annuleren: "Скасувати",
+  Opslaan: "Зберегти",
+  Verwijderen: "Видалити",
+  Bewerken: "Редагувати",
+  Zoeken: "Пошук",
+  Filters: "Фільтри",
+  Filter: "Фільтр",
+  Overzicht: "Огляд",
+  Vandaag: "Сьогодні",
+  Gisteren: "Учора",
+  Morgen: "Завтра",
+  Totaal: "Усього",
+  Gemiddeld: "У середньому",
+  Doel: "Ціль",
+  Resultaat: "Результат",
+  Omzet: "Дохід",
+  Marge: "Маржа",
+  Vacatures: "Вакансії",
+  Vacature: "Вакансія",
+  Gesprekken: "Розмови",
+  Telefonie: "Дзвінки",
+  Inschrijvingen: "Реєстрації",
+  Intakes: "Вступні співбесіди",
+  Voorstellen: "Представлення кандидатів",
+  Acquisities: "Залучення клієнтів",
+  Acties: "Дії",
+  Actie: "Дія",
+  Medewerkers: "Працівники",
+  Gedetacheerden: "Контрактні працівники",
+  Gedetacheerde: "Контрактний працівник",
+  "W&S": "Постійний рекрутинг",
+  Detavast: "Тимчасова робота з працевлаштуванням",
+  "Marge Fac": "Фактурування маржі",
+};
+
+const replacementsEnglish: Array<[RegExp, string]> = [
   [/\bBeste\b/g, "Best"],
   [/\bbeste\b/g, "best"],
   [/\bSlechtste\b/g, "Worst"],
@@ -230,28 +474,90 @@ const replacements: Array<[RegExp, string]> = [
   [/\ben\b/gi, "and"],
 ];
 
-const months: Record<string, string> = {
+const replacementWords: Record<"pl" | "uk", Record<string, string>> = {
+  pl: {
+    Beste: "Najlepsze", beste: "najlepsze", Slechtste: "Najgorsze", slechtste: "najgorsze",
+    plaatsingen: "zatrudnienia", plaatsing: "zatrudnienie", gedetacheerden: "pracownicy kontraktowi", gedetacheerde: "pracownik kontraktowy",
+    brutomarge: "marża brutto", portefeuilles: "portfele", portefeuille: "portfel", prestaties: "wyniki", overzicht: "przegląd",
+    kwaliteit: "jakość", ontwikkeling: "rozwój", snelheid: "szybkość", opvolging: "działania następcze", uitnodigingen: "zaproszenia",
+    inschrijvingen: "rejestracje", inschrijving: "rejestracja", acquisities: "pozyskanie klientów", acquisitie: "pozyskanie klienta",
+    voorstellen: "prezentacje", voorstel: "prezentacja", verlopen: "wygasłe", geplaatst: "zatrudniony", ingeschreven: "zarejestrowany",
+    toegewezen: "przypisany", verstuurd: "wysłany", gerealiseerd: "zrealizowany", behaald: "osiągnięty", afgelopen: "ostatnie",
+    actieve: "aktywne", actief: "aktywny", activiteit: "aktywność", activiteiten: "aktywności", voortgang: "postęp", groei: "wzrost",
+    risico: "ryzyko", naam: "nazwa", aantal: "liczba", dagen: "dni", weken: "tygodnie", maand: "miesiąc", uur: "godziny",
+    nodig: "potrzebne", bekijk: "zobacz", klik: "kliknij", volgende: "następne", ranglijst: "ranking", afvallers: "odejścia",
+    starters: "rozpoczęcia", dealwaarde: "wartość transakcji", omzet: "przychód", periode: "okres", jaar: "rok", week: "tydzień",
+    vandaag: "dzisiaj", gisteren: "wczoraj", morgen: "jutro", kandidaat: "kandydat", kandidaten: "kandydaci", klanten: "klienci",
+    klant: "klient", vacatures: "oferty pracy", vacature: "oferta pracy", gesprekken: "rozmowy", doel: "cel", doelen: "cele",
+    resultaten: "wyniki", resultaat: "wynik", gemiddelde: "średnia", gemiddeld: "średnio", totaal: "łącznie", vorige: "poprzednie",
+    laatste: "ostatnie", huidige: "obecne", nieuwe: "nowe", nieuw: "nowy", open: "otwarte", gesloten: "zamknięte",
+    afgerond: "ukończone", gepland: "zaplanowane", verzonden: "wysłane", selecteer: "wybierz", zoeken: "szukaj",
+    opslaan: "zapisz", annuleren: "anuluj", sluiten: "zamknij", meer: "więcej", minder: "mniej", geen: "brak", alle: "wszystkie",
+  },
+  uk: {
+    Beste: "Найкращі", beste: "найкращі", Slechtste: "Найгірші", slechtste: "найгірші",
+    plaatsingen: "працевлаштування", plaatsing: "працевлаштування", gedetacheerden: "контрактні працівники", gedetacheerde: "контрактний працівник",
+    brutomarge: "валова маржа", portefeuilles: "портфелі", portefeuille: "портфель", prestaties: "результати", overzicht: "огляд",
+    kwaliteit: "якість", ontwikkeling: "розвиток", snelheid: "швидкість", opvolging: "подальші дії", uitnodigingen: "запрошення",
+    inschrijvingen: "реєстрації", inschrijving: "реєстрація", acquisities: "залучення клієнтів", acquisitie: "залучення клієнта",
+    voorstellen: "представлення", voorstel: "представлення", verlopen: "прострочено", geplaatst: "працевлаштовано", ingeschreven: "зареєстровано",
+    toegewezen: "призначено", verstuurd: "надіслано", gerealiseerd: "реалізовано", behaald: "досягнуто", afgelopen: "останні",
+    actieve: "активні", actief: "активний", activiteit: "активність", activiteiten: "активності", voortgang: "прогрес", groei: "зростання",
+    risico: "ризик", naam: "назва", aantal: "кількість", dagen: "дні", weken: "тижні", maand: "місяць", uur: "години",
+    nodig: "потрібно", bekijk: "переглянути", klik: "натисніть", volgende: "наступні", ranglijst: "рейтинг", afvallers: "вибуття",
+    starters: "початки", dealwaarde: "вартість угоди", omzet: "дохід", periode: "період", jaar: "рік", week: "тиждень",
+    vandaag: "сьогодні", gisteren: "учора", morgen: "завтра", kandidaat: "кандидат", kandidaten: "кандидати", klanten: "клієнти",
+    klant: "клієнт", vacatures: "вакансії", vacature: "вакансія", gesprekken: "розмови", doel: "ціль", doelen: "цілі",
+    resultaten: "результати", resultaat: "результат", gemiddelde: "середнє", gemiddeld: "у середньому", totaal: "усього", vorige: "попередні",
+    laatste: "останні", huidige: "поточні", nieuwe: "нові", nieuw: "новий", open: "відкриті", gesloten: "закриті",
+    afgerond: "завершено", gepland: "заплановано", verzonden: "надіслано", selecteer: "вибрати", zoeken: "пошук",
+    opslaan: "зберегти", annuleren: "скасувати", sluiten: "закрити", meer: "більше", minder: "менше", geen: "немає", alle: "усі",
+  },
+};
+
+const monthsEnglish: Record<string, string> = {
   januari: "January", februari: "February", maart: "March", april: "April", mei: "May", juni: "June",
   juli: "July", augustus: "August", september: "September", oktober: "October", november: "November", december: "December",
   jan: "Jan", feb: "Feb", mrt: "Mar", apr: "Apr", jun: "Jun", jul: "Jul", aug: "Aug", sep: "Sep", okt: "Oct", nov: "Nov", dec: "Dec",
 };
 
-export function translateDutchText(input: string): string {
+const monthsPolish: Record<string, string> = {
+  januari: "styczeń", februari: "luty", maart: "marzec", april: "kwiecień", mei: "maj", juni: "czerwiec",
+  juli: "lipiec", augustus: "sierpień", september: "wrzesień", oktober: "październik", november: "listopad", december: "grudzień",
+  jan: "sty", feb: "lut", mrt: "mar", apr: "kwi", jun: "cze", jul: "lip", aug: "sie", sep: "wrz", okt: "paź", nov: "lis", dec: "gru",
+};
+
+const monthsUkrainian: Record<string, string> = {
+  januari: "січень", februari: "лютий", maart: "березень", april: "квітень", mei: "травень", juni: "червень",
+  juli: "липень", augustus: "серпень", september: "вересень", oktober: "жовтень", november: "листопад", december: "грудень",
+  jan: "січ", feb: "лют", mrt: "бер", apr: "кві", jun: "чер", jul: "лип", aug: "сер", sep: "вер", okt: "жов", nov: "лис", dec: "гру",
+};
+
+export function translateDutchText(input: string, language: AppLanguage = "en"): string {
+  if (language === "nl") return input;
   const trimmed = input.trim();
   if (!trimmed) return input;
+  const exact = language === "en" ? exactEnglish : language === "pl" ? exactPolish : exactUkrainian;
   const direct = exact[trimmed];
   if (direct) return input.replace(trimmed, direct);
 
   let translated = input;
+  const months = language === "en" ? monthsEnglish : language === "pl" ? monthsPolish : monthsUkrainian;
   Object.entries(months).forEach(([nl, en]) => {
     translated = translated.replace(new RegExp(`\\b${nl}\\b`, "gi"), en);
   });
-  replacements.forEach(([pattern, replacement]) => {
-    translated = translated.replace(pattern, replacement);
-  });
+  if (language === "en") {
+    replacementsEnglish.forEach(([pattern, replacement]) => {
+      translated = translated.replace(pattern, replacement);
+    });
+  } else {
+    Object.entries(replacementWords[language]).forEach(([source, replacement]) => {
+      translated = translated.replace(new RegExp(`\\b${source}\\b`, "gi"), replacement);
+    });
+  }
   return translated;
 }
 
 export function localeFor(language: AppLanguage) {
-  return language === "en" ? "en-GB" : "nl-NL";
+  return { nl: "nl-NL", en: "en-GB", uk: "uk-UA", pl: "pl-PL" }[language];
 }

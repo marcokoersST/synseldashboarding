@@ -15,8 +15,10 @@ export function LanguageSelector({ collapsed = false }: { collapsed?: boolean })
               {collapsed ? <Languages className="h-3.5 w-3.5" /> : <SelectValue />}
             </SelectTrigger>
             <SelectContent align="end">
-              <SelectItem value="nl">NL</SelectItem>
-              <SelectItem value="en">EN</SelectItem>
+              <SelectItem value="nl">NL · Nederlands</SelectItem>
+              <SelectItem value="en">EN · English</SelectItem>
+              <SelectItem value="uk">UK · Українська</SelectItem>
+              <SelectItem value="pl">PL · Polski</SelectItem>
             </SelectContent>
           </Select>
         </div>
