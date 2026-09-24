@@ -542,6 +542,12 @@ export function translateDutchText(input: string, language: AppLanguage = "en"):
   if (direct) return input.replace(trimmed, direct);
 
   let translated = input;
+  Object.entries(exact)
+    .filter(([source]) => source.includes(" "))
+    .sort(([left], [right]) => right.length - left.length)
+    .forEach(([source, replacement]) => {
+      translated = translated.split(source).join(replacement);
+    });
   const months = language === "en" ? monthsEnglish : language === "pl" ? monthsPolish : monthsUkrainian;
   Object.entries(months).forEach(([nl, en]) => {
     translated = translated.replace(new RegExp(`\\b${nl}\\b`, "gi"), en);

@@ -11,6 +11,8 @@ describe("translations", () => {
 
   it("translates dynamic labels while retaining their values", () => {
     expect(translateDutchText("Beste plaatsingen · Periode 11")).toBe("Best placements · period 11");
+    expect(translateDutchText("Gerangschikt op totale dealwaarde · Week 42", "pl")).toBe("Ranking według łącznej wartości transakcji · tydzień 42");
+    expect(translateDutchText("Verdeling plaatsingstype · Week 42", "uk")).toBe("Розподіл типів працевлаштування · тиждень 42");
   });
 
   it("selects the correct formatting locale", () => {
