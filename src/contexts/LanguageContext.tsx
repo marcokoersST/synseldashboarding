@@ -1,6 +1,6 @@
 import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { translateDutchText, type AppLanguage } from "@/lib/translations";
+import { isAppLanguage, translateDutchText, type AppLanguage } from "@/lib/translations";
 
 interface LanguageContextValue {
   language: AppLanguage;
@@ -24,7 +24,7 @@ function translateElement(root: Node, language: AppLanguage) {
     const current = node.nodeValue ?? "";
     const stored = originalText.get(node);
     const source = !stored || current !== stored.rendered ? current : stored.source;
-    const next = language === "en" ? translateDutchText(source) : source;
+    const next = language === "nl" ? source : translateDutchText(source, language);
     originalText.set(node, { source, rendered: next });
     if (current !== next) node.nodeValue = next;
   };
@@ -41,7 +41,7 @@ function translateElement(root: Node, language: AppLanguage) {
       if (current === null) return;
       if (!stored?.has(attribute)) stored?.set(attribute, current);
       const source = stored?.get(attribute) ?? current;
-      const next = language === "en" ? translateDutchText(source) : source;
+      const next = language === "nl" ? source : translateDutchText(source, language);
       if (current !== next) element.setAttribute(attribute, next);
     });
   };
@@ -60,7 +60,7 @@ function translateElement(root: Node, language: AppLanguage) {
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<AppLanguage>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved === "en" ? "en" : "nl";
+    return isAppLanguage(saved) ? saved : "nl";
   });
 
   const setLanguage = useCallback((next: AppLanguage) => {
@@ -69,7 +69,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleLanguage = useCallback(() => setLanguage(language === "nl" ? "en" : "nl"), [language, setLanguage]);
-  const t = useCallback((dutch: string, english?: string) => language === "en" ? (english ?? translateDutchText(dutch)) : dutch, [language]);
+  const t = useCallback((dutch: string, english?: string) => language === "nl" ? dutch : language === "en" && english ? english : translateDutchText(dutch, language), [language]);
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -92,12 +92,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (!context) {
-    const saved = typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY) === "en" ? "en" : "nl";
+    const stored = typeof localStorage !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+    const saved: AppLanguage = isAppLanguage(stored) ? stored : "nl";
     return {
       language: saved,
       setLanguage: (next: AppLanguage) => { localStorage.setItem(STORAGE_KEY, next); window.location.reload(); },
       toggleLanguage: () => { localStorage.setItem(STORAGE_KEY, saved === "nl" ? "en" : "nl"); window.location.reload(); },
-      t: (dutch: string, english?: string) => saved === "en" ? (english ?? translateDutchText(dutch)) : dutch,
+      t: (dutch: string, english?: string) => saved === "nl" ? dutch : saved === "en" && english ? english : translateDutchText(dutch, saved),
     } satisfies LanguageContextValue;
   }
   return context;

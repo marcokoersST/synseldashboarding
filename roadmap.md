@@ -4,3 +4,4 @@
 - [x] Make current and future rendered interface labels respond to the global language.
 - [x] Keep all ranking Dev info content permanently in English.
 - [x] Verify Dutch/English switching, persistence, ranking pages, and compact navigation.
+- [x] Add persistent Ukrainian and Polish options with localized interface text and formatting.

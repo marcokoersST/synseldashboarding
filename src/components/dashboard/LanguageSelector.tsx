@@ -12,11 +12,13 @@ export function LanguageSelector({ collapsed = false }: { collapsed?: boolean })
         <div className="shrink-0" data-no-translate="true">
           <Select value={language} onValueChange={(value) => setLanguage(value as AppLanguage)}>
             <SelectTrigger aria-label="Language" className={collapsed ? "h-7 w-9 border-sidebar-border bg-sidebar-accent px-2 text-[10px] text-sidebar-accent-foreground" : "h-7 w-[52px] border-sidebar-border bg-sidebar-accent px-2 text-[10px] font-semibold text-sidebar-accent-foreground"}>
-              {collapsed ? <Languages className="h-3.5 w-3.5" /> : <SelectValue />}
+              {collapsed ? <Languages className="h-3.5 w-3.5" /> : language.toUpperCase()}
             </SelectTrigger>
             <SelectContent align="end">
-              <SelectItem value="nl">NL</SelectItem>
-              <SelectItem value="en">EN</SelectItem>
+              <SelectItem value="nl">NL · Nederlands</SelectItem>
+              <SelectItem value="en">EN · English</SelectItem>
+              <SelectItem value="uk">UK · Українська</SelectItem>
+              <SelectItem value="pl">PL · Polski</SelectItem>
             </SelectContent>
           </Select>
         </div>

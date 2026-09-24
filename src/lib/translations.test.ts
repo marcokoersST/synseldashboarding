@@ -5,14 +5,20 @@ describe("translations", () => {
   it("uses exact translations for primary interface labels", () => {
     expect(translateDutchText("Plaatsingen ranglijst")).toBe("Placements ranking");
     expect(translateDutchText("Gedetacheerden ranglijst")).toBe("Contractors ranking");
+    expect(translateDutchText("Plaatsingen ranglijst", "pl")).toBe("Ranking zatrudnień");
+    expect(translateDutchText("Plaatsingen ranglijst", "uk")).toBe("Рейтинг працевлаштувань");
   });
 
   it("translates dynamic labels while retaining their values", () => {
     expect(translateDutchText("Beste plaatsingen · Periode 11")).toBe("Best placements · period 11");
+    expect(translateDutchText("Gerangschikt op totale dealwaarde · Week 42", "pl")).toBe("Ranking według łącznej wartości transakcji · tydzień 42");
+    expect(translateDutchText("Verdeling plaatsingstype · Week 42", "uk")).toBe("Розподіл типів працевлаштування · тиждень 42");
   });
 
   it("selects the correct formatting locale", () => {
     expect(localeFor("nl")).toBe("nl-NL");
     expect(localeFor("en")).toBe("en-GB");
+    expect(localeFor("pl")).toBe("pl-PL");
+    expect(localeFor("uk")).toBe("uk-UA");
   });
 });
