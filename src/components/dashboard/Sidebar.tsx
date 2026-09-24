@@ -42,6 +42,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { LanguageSelector } from "@/components/dashboard/LanguageSelector";
 
 interface NavItem {
   icon: typeof LayoutDashboard;
@@ -362,14 +363,18 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
         isCollapsed ? "w-16" : "w-52"
       )}>
         {/* Logo */}
-        <div className="h-14 px-6 flex items-center overflow-hidden shrink-0">
+        <div className={cn("h-14 flex items-center shrink-0", isCollapsed ? "justify-center px-2" : "px-4")}>
           <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
             <span className="text-sidebar-primary-foreground font-bold text-sm">S</span>
           </div>
           {!isCollapsed && (
-            <span className="text-sidebar-accent-foreground font-semibold text-lg whitespace-nowrap ml-3">Synsel AI</span>
+            <>
+              <span className="text-sidebar-accent-foreground font-semibold text-lg whitespace-nowrap ml-2">Synsel AI</span>
+              <div className="ml-auto"><LanguageSelector /></div>
+            </>
           )}
         </div>
+        {isCollapsed && <div className="flex justify-center pb-2"><LanguageSelector collapsed /></div>}
 
         {/* Main Navigation */}
         <nav className="flex-1 px-3 py-2 overflow-y-auto overflow-x-hidden scrollbar-thin overscroll-contain">
