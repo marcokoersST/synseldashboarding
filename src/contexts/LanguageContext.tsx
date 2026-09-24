@@ -1,3 +1,4 @@
+import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { translateDutchText, type AppLanguage } from "@/lib/translations";
 
@@ -9,7 +10,9 @@ interface LanguageContextValue {
 }
 
 const STORAGE_KEY = "synsel-language";
-const LanguageContext = createContext<LanguageContextValue | null>(null);
+// Keep one context instance across hot reloads so the provider and consumers always match.
+const globalStore = globalThis as unknown as { __synselLanguageContext?: React.Context<LanguageContextValue | null> };
+const LanguageContext = globalStore.__synselLanguageContext ?? (globalStore.__synselLanguageContext = createContext<LanguageContextValue | null>(null));
 const originalText = new WeakMap<Text, { source: string; rendered: string }>();
 const originalAttributes = new WeakMap<Element, Map<string, string>>();
 const translatedAttributes = ["aria-label", "title", "placeholder", "alt"];
@@ -88,6 +91,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export function useLanguage() {
   const context = useContext(LanguageContext);
-  if (!context) throw new Error("useLanguage must be used within LanguageProvider");
+  if (!context) {
+    const saved = typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY) === "en" ? "en" : "nl";
+    return {
+      language: saved,
+      setLanguage: (next: AppLanguage) => { localStorage.setItem(STORAGE_KEY, next); window.location.reload(); },
+      toggleLanguage: () => { localStorage.setItem(STORAGE_KEY, saved === "nl" ? "en" : "nl"); window.location.reload(); },
+      t: (dutch: string, english?: string) => saved === "en" ? (english ?? translateDutchText(dutch)) : dutch,
+    } satisfies LanguageContextValue;
+  }
   return context;
 }
