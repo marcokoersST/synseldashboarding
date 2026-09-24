@@ -6,11 +6,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { getGedetacheerdenRankingData, type GedetacheerdenScope } from "@/data/gedetacheerdenRankingData";
-
-const euro = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-const number = new Intl.NumberFormat("nl-NL");
+import { useLanguage } from "@/contexts/LanguageContext";
+import { localeFor } from "@/lib/translations";
 
 export default function GedetacheerdenRanglijst() {
+  const { language } = useLanguage();
+  const locale = localeFor(language);
+  const euro = useMemo(() => new Intl.NumberFormat(locale, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }), [locale]);
+  const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const [scope, setScope] = useState<GedetacheerdenScope>("week");
   const [week, setWeek] = useState("42");
   const [periode, setPeriode] = useState("11");
@@ -31,6 +34,7 @@ export default function GedetacheerdenRanglijst() {
 
   const averageMargin = totals.active ? totals.margin / totals.active : 0;
   const selectedLabel = scope === "week" ? `Week ${week}` : scope === "periode" ? `Periode ${periode}` : jaar;
+  const devSelectedLabel = scope === "week" ? `Week ${week}` : scope === "periode" ? `Period ${periode}` : jaar;
 
   return (
     <div className="space-y-3">
@@ -44,14 +48,14 @@ export default function GedetacheerdenRanglijst() {
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <RankingDevInfo
-            source="gedetacheerdenRankingData: deterministische mockportefeuilles voor alle actieve consultants uit de centrale consultantlijst."
-            filters={`Scope: ${scope}; selectie: ${selectedLabel}; jaar: ${jaar}. De gekozen week, periode of het jaar bepaalt de gesimuleerde momentopname.`}
-            ranking="Consultants sorteren aflopend op momenteel gedetacheerd; bij een gelijke stand bepaalt de brutomarge van de laatste periode de volgorde."
+            source="gedetacheerdenRankingData: deterministic mock portfolios for every active consultant in the central consultant list."
+            filters={`Scope: ${scope === "periode" ? "period" : scope === "jaar" ? "year" : scope}; selection: ${devSelectedLabel}; year: ${jaar}. The selected week, period or year determines the simulated snapshot.`}
+            ranking="Consultants are sorted by current contractor count in descending order; gross margin from the latest period breaks a tie."
             calculations={[
-              "Huidige gedetacheerden, starters en afvallers zijn sommen van alle zichtbare consultants.",
-              "Brutomarge laatste periode = som van de consultantmarges in de gekozen momentopname.",
-              "Gemiddelde marge per gedetacheerde = totale brutomarge / totaal huidige gedetacheerden.",
-              "De pijl vergelijkt de brutomarge van de laatste periode met de periode daarvoor.",
+              "Current contractors, starters and departures are totals across all visible consultants.",
+              "Gross margin latest period = sum of consultant margins in the selected snapshot.",
+              "Average margin per contractor = total gross margin / total current contractors.",
+              "The arrow compares gross margin from the latest period with the previous period.",
             ]}
             rowCount={ranking.length}
           />

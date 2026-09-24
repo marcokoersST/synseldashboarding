@@ -8,12 +8,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { plaatsingenRankingData, type PlaatsingCategorie, type PlaatsingRankingRecord } from "@/data/plaatsingenRankingData";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { localeFor } from "@/lib/translations";
 
 type Scope = "week" | "periode" | "jaar";
-
-const euro = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-const number = new Intl.NumberFormat("nl-NL");
-const decimal = new Intl.NumberFormat("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const allCategories: PlaatsingCategorie[] = ["Detavast", "W&S", "Marge Fac"];
 
@@ -24,6 +22,11 @@ const categoryStyles: Record<PlaatsingCategorie, string> = {
 };
 
 export default function PlaatsingenRanglijst() {
+  const { language } = useLanguage();
+  const locale = localeFor(language);
+  const euro = useMemo(() => new Intl.NumberFormat(locale, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }), [locale]);
+  const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+  const decimal = useMemo(() => new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), [locale]);
   const [scope, setScope] = useState<Scope>("week");
   const [week, setWeek] = useState("42");
   const [periode, setPeriode] = useState("11");
@@ -68,6 +71,7 @@ export default function PlaatsingenRanglijst() {
   });
 
   const selectedLabel = scope === "week" ? `Week ${week}` : scope === "periode" ? `Periode ${periode}` : jaar;
+  const devSelectedLabel = scope === "week" ? `Week ${week}` : scope === "periode" ? `Period ${periode}` : jaar;
 
   return (
     <div className="space-y-3">
@@ -81,14 +85,14 @@ export default function PlaatsingenRanglijst() {
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <RankingDevInfo
-            source="plaatsingenRankingData: statische plaatsingen voor actieve consultants uit de centrale consultantlijst."
-            filters={`Scope: ${scope}; selectie: ${selectedLabel}; jaar: ${jaar}. Week filtert op week + jaar, periode op periode + jaar, jaar op alle records van dat jaar.`}
-            ranking="Plaatsingen worden per consultant gegroepeerd. Consultantgroepen sorteren aflopend op totale dealwaarde; plaatsingen binnen een groep sorteren aflopend op individuele dealwaarde."
+            source="plaatsingenRankingData: static placements for active consultants from the central consultant list."
+            filters={`Scope: ${scope === "periode" ? "period" : scope === "jaar" ? "year" : scope}; selection: ${devSelectedLabel}; year: ${jaar}. Week filters by week and year, period by period and year, and year includes all records from that year.`}
+            ranking="Placements are grouped by consultant. Consultant groups are sorted by total deal value in descending order; placements within a group are sorted by individual deal value in descending order."
             calculations={[
-              "Totale dealwaarde = som van alle zichtbare plaatsingen.",
-              "Gemiddelde dealwaarde = totale dealwaarde / aantal zichtbare plaatsingen.",
-              "Beste plaatsing = zichtbare plaatsing met de hoogste individuele dealwaarde.",
-              "Detavast/Marge Fac: dealwaarde is afgeleid van tarief, kostprijs, looptijd en weging. W&S: jaarsalaris × percentage.",
+              "Total deal value = sum of all visible placements.",
+              "Average deal value = total deal value / number of visible placements.",
+              "Best placement = visible placement with the highest individual deal value.",
+              "Temp-to-perm/Margin invoicing: deal value is derived from rate, cost price, duration and weighting. Permanent recruitment: annual salary × percentage.",
             ]}
             rowCount={filtered.length}
           />
