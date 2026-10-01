@@ -27,8 +27,8 @@ export default function GedetacheerdenRanglijst() {
 
   const totals = useMemo(() => ranking.reduce((result, record) => ({
     active: result.active + record.momenteelGedetacheerd,
-    starts: result.starts + record.nogTeStarten,
-    exits: result.exits + record.afTeVallen,
+    starts: result.starts + record.startersGeselecteerdePeriode,
+    exits: result.exits + record.afvallersGeselecteerdePeriode,
     margin: result.margin + record.brutoMargeLaatstePeriode,
   }), { active: 0, starts: 0, exits: 0, margin: 0 }), [ranking]);
 
@@ -52,7 +52,8 @@ export default function GedetacheerdenRanglijst() {
             filters={`Scope: ${scope === "periode" ? "period" : scope === "jaar" ? "year" : scope}; selection: ${devSelectedLabel}; year: ${jaar}. The selected week, period or year determines the simulated snapshot.`}
             ranking="Consultants are sorted by current contractor count in descending order; gross margin from the latest period breaks a tie."
             calculations={[
-              "Current contractors, starters and departures are totals across all visible consultants.",
+              "Current contractors, starters and departures are totals across all visible consultants for the selected period.",
+              "The upcoming starters and expected departures are a rolling four-week forecast based on today's date and do not change with the period filter.",
               "Gross margin latest period = sum of consultant margins in the selected snapshot.",
               "Average margin per contractor = total gross margin / total current contractors.",
               "The arrow compares gross margin from the latest period with the previous period.",
@@ -87,8 +88,8 @@ export default function GedetacheerdenRanglijst() {
 
       <section className="grid grid-cols-2 gap-2 lg:grid-cols-5">
         <SummaryMetric icon={Users} label="Huidige gedetacheerden" value={number.format(totals.active)} />
-        <SummaryMetric icon={Clock3} label="Nog te starten" value={number.format(totals.starts)} />
-        <SummaryMetric icon={UserMinus} label="Afvallers" value={number.format(totals.exits)} />
+        <SummaryMetric icon={Clock3} label="Starters in geselecteerde periode" value={number.format(totals.starts)} />
+        <SummaryMetric icon={UserMinus} label="Afvallers in geselecteerde periode" value={number.format(totals.exits)} />
         <SummaryMetric icon={CircleDollarSign} label="Brutomarge laatste periode" value={euro.format(totals.margin)} />
         <SummaryMetric icon={Trophy} label="Gem. marge per gedetacheerde" value={euro.format(averageMargin)} />
       </section>
@@ -103,18 +104,20 @@ export default function GedetacheerdenRanglijst() {
         </div>
         {ranking.length ? (
           <div className="overflow-x-auto">
-            <Table className="min-w-[1120px] text-xs">
+            <Table className="min-w-[1420px] text-xs">
               <TableHeader>
-                <TableRow className="h-9 bg-muted/40 hover:bg-muted/40">
-                  <TableHead className="h-9 w-12 px-2 text-[10px]">Pos.</TableHead>
-                  <TableHead className="h-9 min-w-[160px] px-2 text-[10px]">Consultant</TableHead>
-                  <TableHead className="h-9 px-2 text-right text-[10px]">Momenteel gedetacheerd</TableHead>
-                  <TableHead className="h-9 px-2 text-right text-[10px]">Nog te starten</TableHead>
-                  <TableHead className="h-9 px-2 text-right text-[10px]">Af te vallen</TableHead>
-                  <TableHead className="h-9 min-w-[140px] px-2 text-right text-[10px]">Brutomarge laatste periode</TableHead>
-                  <TableHead className="h-9 min-w-[150px] px-2 text-right text-[10px]">Brutomarge periode daarvoor</TableHead>
-                  <TableHead className="h-9 min-w-[140px] px-2 text-right text-[10px]">Marge per gedetacheerde</TableHead>
-                  <TableHead className="h-9 min-w-[150px] px-2 text-right text-[10px]">Marge afgelopen 13 periodes</TableHead>
+                <TableRow className="h-12 bg-muted/40 hover:bg-muted/40">
+                  <TableHead className="h-12 w-12 px-2 text-[10px]">Pos.</TableHead>
+                  <TableHead className="h-12 min-w-[160px] px-2 text-[10px]">Consultant</TableHead>
+                  <TableHead className="h-12 px-2 text-right text-[10px] leading-tight">Momenteel<br />gedetacheerd</TableHead>
+                  <TableHead className="h-12 min-w-[112px] px-2 text-right text-[10px] leading-tight">Starters in<br />geselecteerde periode</TableHead>
+                  <TableHead className="h-12 min-w-[126px] px-2 text-right text-[10px] leading-tight">Nog te starten<br />komende 4 weken</TableHead>
+                  <TableHead className="h-12 min-w-[112px] px-2 text-right text-[10px] leading-tight">Afvallers in<br />geselecteerde periode</TableHead>
+                  <TableHead className="h-12 min-w-[136px] px-2 text-right text-[10px] leading-tight">Verwachte afvallers<br />komende 4 weken</TableHead>
+                  <TableHead className="h-12 min-w-[140px] px-2 text-right text-[10px] leading-tight">Brutomarge<br />laatste periode</TableHead>
+                  <TableHead className="h-12 min-w-[150px] px-2 text-right text-[10px] leading-tight">Brutomarge<br />periode daarvoor</TableHead>
+                  <TableHead className="h-12 min-w-[140px] px-2 text-right text-[10px] leading-tight">Marge per<br />gedetacheerde</TableHead>
+                  <TableHead className="h-12 min-w-[150px] px-2 text-right text-[10px] leading-tight">Marge afgelopen<br />13 periodes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -128,8 +131,10 @@ export default function GedetacheerdenRanglijst() {
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-2 py-1.5 font-semibold text-foreground">{record.consultant}</TableCell>
                       <TableCell className="px-2 py-1.5 text-right text-sm font-bold tabular-nums text-ranking-plaatsingen">{record.momenteelGedetacheerd}</TableCell>
-                      <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{record.nogTeStarten}</TableCell>
-                      <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{record.afTeVallen}</TableCell>
+                      <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{record.startersGeselecteerdePeriode}</TableCell>
+                      <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums text-ranking-plaatsingen">{record.nogTeStartenKomendeVierWeken}</TableCell>
+                      <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{record.afvallersGeselecteerdePeriode}</TableCell>
+                      <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums text-ranking-plaatsingen">{record.verwachteAfvallersKomendeVierWeken}</TableCell>
                       <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums">
                         <span className="inline-flex items-center justify-end gap-1">
                           {difference >= 0 ? <ArrowUpRight className="h-3 w-3 text-success" /> : <ArrowDownRight className="h-3 w-3 text-destructive" />}
