@@ -121,7 +121,7 @@ export default function GedetacheerdenRanglijst() {
                   <TableHead className="h-12 min-w-[136px] px-2 text-right text-[10px] leading-tight">Verwachte afvallers<br />komende 4 weken</TableHead>
                   <TableHead className="h-12 min-w-[140px] px-2 text-right text-[10px] leading-tight">Brutomarge<br />laatste periode</TableHead>
                   <TableHead className="h-12 min-w-[150px] px-2 text-right text-[10px] leading-tight">Brutomarge<br />periode daarvoor</TableHead>
-                  <TableHead className="h-12 min-w-[140px] px-2 text-right text-[10px] leading-tight">Marge per<br />gedetacheerde</TableHead>
+                  <TableHead className="h-12 min-w-[150px] px-2 text-right text-[10px] leading-tight">Marge per gedetacheerde<br />laatste periode</TableHead>
                   <TableHead className="h-12 min-w-[150px] px-2 text-right text-[10px] leading-tight">Marge afgelopen<br />13 periodes</TableHead>
                 </TableRow>
               </TableHeader>
@@ -149,7 +149,7 @@ export default function GedetacheerdenRanglijst() {
                         </span>
                       </TableCell>
                       <TableCell className="px-2 py-1.5 text-right tabular-nums text-muted-foreground">{euro.format(record.brutoMargeVorigePeriode)}</TableCell>
-                      <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{euro.format(record.margePerGedetacheerde)}</TableCell>
+                      <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{euro.format(record.margePerGedetacheerdeLaatstePeriode)}</TableCell>
                       <TableCell className="px-2 py-1.5 text-right font-bold tabular-nums text-ranking-plaatsingen">{euro.format(record.margeAfgelopen13Periodes)}</TableCell>
                     </TableRow>
                   );
