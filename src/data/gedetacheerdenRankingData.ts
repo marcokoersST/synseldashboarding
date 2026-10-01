@@ -7,8 +7,10 @@ export interface GedetacheerdenRankingRecord {
   consultant: string;
   unit: string;
   momenteelGedetacheerd: number;
-  nogTeStarten: number;
-  afTeVallen: number;
+  startersGeselecteerdePeriode: number;
+  nogTeStartenKomendeVierWeken: number;
+  afvallersGeselecteerdePeriode: number;
+  verwachteAfvallersKomendeVierWeken: number;
   brutoMargeLaatstePeriode: number;
   brutoMargeVorigePeriode: number;
   margePerGedetacheerde: number;
@@ -17,11 +19,17 @@ export interface GedetacheerdenRankingRecord {
 
 const round = (value: number, step = 50) => Math.round(value / step) * step;
 
+const currentDateSeed = () => {
+  const now = new Date();
+  return Number(`${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`);
+};
+
 export function getGedetacheerdenRankingData(
   scope: GedetacheerdenScope,
   selection: number,
 ): GedetacheerdenRankingRecord[] {
   const scopeOffset = scope === "week" ? selection - 42 : scope === "periode" ? selection - 11 : selection - 2026;
+  const fourWeekSeed = currentDateSeed();
 
   return allConsultantsList
     .filter((consultant) => consultant.isActive)
@@ -29,8 +37,10 @@ export function getGedetacheerdenRankingData(
       const baseActive = Math.max(2, 31 - Math.floor(index * 0.48));
       const movement = ((index * 7 + scopeOffset * 3) % 5) - 2;
       const momenteelGedetacheerd = Math.max(1, baseActive + movement);
-      const nogTeStarten = Math.max(0, (index * 3 + selection) % 7);
-      const afTeVallen = Math.max(0, (index * 5 + selection) % 5);
+      const startersGeselecteerdePeriode = Math.max(0, (index * 3 + selection) % 7);
+      const afvallersGeselecteerdePeriode = Math.max(0, (index * 5 + selection) % 5);
+      const nogTeStartenKomendeVierWeken = Math.max(0, (index * 7 + fourWeekSeed) % 6);
+      const verwachteAfvallersKomendeVierWeken = Math.max(0, (index * 11 + fourWeekSeed) % 5);
       const margePerGedetacheerde = round(1850 + ((index * 173 + selection * 29) % 1450), 10);
       const brutoMargeLaatstePeriode = round(momenteelGedetacheerd * margePerGedetacheerde);
       const margeVerschil = round((((index * 11 + selection) % 13) - 6) * 650);
@@ -45,8 +55,10 @@ export function getGedetacheerdenRankingData(
         consultant: consultant.fullName,
         unit: consultant.unit,
         momenteelGedetacheerd,
-        nogTeStarten,
-        afTeVallen,
+        startersGeselecteerdePeriode,
+        nogTeStartenKomendeVierWeken,
+        afvallersGeselecteerdePeriode,
+        verwachteAfvallersKomendeVierWeken,
         brutoMargeLaatstePeriode,
         brutoMargeVorigePeriode,
         margePerGedetacheerde,
@@ -57,8 +69,8 @@ export function getGedetacheerdenRankingData(
       ? {
           ...record,
           momenteelGedetacheerd: 32,
-          nogTeStarten: 5,
-          afTeVallen: 3,
+          startersGeselecteerdePeriode: 5,
+          afvallersGeselecteerdePeriode: 3,
           brutoMargeLaatstePeriode: 54000,
           brutoMargeVorigePeriode: 49000,
           margePerGedetacheerde: 2850,
