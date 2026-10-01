@@ -132,10 +132,12 @@ export default function GedetacheerdenRanglijst() {
                       <TableCell className="whitespace-nowrap px-2 py-1.5 font-semibold text-foreground">{record.consultant}</TableCell>
                       <TableCell className="px-2 py-1.5 text-right text-sm font-bold tabular-nums text-ranking-plaatsingen">{record.momenteelGedetacheerd}</TableCell>
                       <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{record.startersGeselecteerdePeriode}</TableCell>
-                      <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums text-ranking-plaatsingen">{record.nogTeStartenKomendeVierWeken}</TableCell>
+                      <TableCell className={`px-2 py-1.5 text-right font-semibold tabular-nums ${record.nogTeStartenKomendeVierWeken > 0 ? "text-emerald-600" : ""}`}>{record.nogTeStartenKomendeVierWeken}</TableCell>
+
                       <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{record.afvallersGeselecteerdePeriode}</TableCell>
-                      <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums text-ranking-plaatsingen">{record.verwachteAfvallersKomendeVierWeken}</TableCell>
+                      <TableCell className={`px-2 py-1.5 text-right font-semibold tabular-nums ${record.verwachteAfvallersKomendeVierWeken > 0 ? "text-red-600" : ""}`}>{record.verwachteAfvallersKomendeVierWeken}</TableCell>
                       <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums">
+
                         <span className="inline-flex items-center justify-end gap-1">
                           {difference >= 0 ? <ArrowUpRight className="h-3 w-3 text-success" /> : <ArrowDownRight className="h-3 w-3 text-destructive" />}
                           {euro.format(record.brutoMargeLaatstePeriode)}
