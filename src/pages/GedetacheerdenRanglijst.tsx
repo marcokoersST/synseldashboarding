@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowDownRight, ArrowUpRight, CircleDollarSign, Clock3, Medal, UserMinus, Users } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, CircleDollarSign, Clock3, Medal, Trophy, UserMinus, Users } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RankingDevInfo } from "@/components/dashboard/RankingDevInfo";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
