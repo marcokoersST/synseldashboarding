@@ -74,19 +74,21 @@ export function getGedetacheerdenRankingData(
         margeAfgelopen13Periodes,
       };
     })
-    .map((record) => record.consultant === "Robin van Bruggen" && scopeOffset === 0
+    .map((record) => record.consultant === "Robin van Bruggen"
       ? {
           ...record,
           gedetacheerdenVandaag: 32,
-          momenteelGedetacheerd: 32,
-          startersGeselecteerdePeriode: 5,
-          afvallersGeselecteerdePeriode: 3,
           brutoMargeLaatstePeriode: 54000,
-          brutoMargeGeselecteerdePeriode: 54000,
           brutoMargeVorigePeriode: 49000,
-          margePerGedetacheerde: 2850,
           margePerGedetacheerdeLaatstePeriode: 1688,
-          margeAfgelopen13Periodes: 580000,
+          ...(scopeOffset === 0 ? {
+            momenteelGedetacheerd: 32,
+            startersGeselecteerdePeriode: 5,
+            afvallersGeselecteerdePeriode: 3,
+            brutoMargeGeselecteerdePeriode: 54000,
+            margePerGedetacheerde: 2850,
+            margeAfgelopen13Periodes: 580000,
+          } : {}),
         }
       : record);
 }
