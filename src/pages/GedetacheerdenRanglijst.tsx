@@ -26,13 +26,18 @@ export default function GedetacheerdenRanglijst() {
   );
 
   const totals = useMemo(() => ranking.reduce((result, record) => ({
-    active: result.active + record.momenteelGedetacheerd,
+    activeToday: result.activeToday + record.gedetacheerdenVandaag,
+    activeSelected: result.activeSelected + record.momenteelGedetacheerd,
     starts: result.starts + record.startersGeselecteerdePeriode,
+    upcomingStarts: result.upcomingStarts + record.nogTeStartenKomendeVierWeken,
     exits: result.exits + record.afvallersGeselecteerdePeriode,
-    margin: result.margin + record.brutoMargeLaatstePeriode,
-  }), { active: 0, starts: 0, exits: 0, margin: 0 }), [ranking]);
+    upcomingExits: result.upcomingExits + record.verwachteAfvallersKomendeVierWeken,
+    latestMargin: result.latestMargin + record.brutoMargeLaatstePeriode,
+    selectedMargin: result.selectedMargin + record.brutoMargeGeselecteerdePeriode,
+  }), { activeToday: 0, activeSelected: 0, starts: 0, upcomingStarts: 0, exits: 0, upcomingExits: 0, latestMargin: 0, selectedMargin: 0 }), [ranking]);
 
-  const averageMargin = totals.active ? totals.margin / totals.active : 0;
+  const latestAverageMargin = totals.activeToday ? totals.latestMargin / totals.activeToday : 0;
+  const selectedAverageMargin = totals.activeSelected ? totals.selectedMargin / totals.activeSelected : 0;
   const selectedLabel = scope === "week" ? `Week ${week}` : scope === "periode" ? `Periode ${periode}` : jaar;
   const devSelectedLabel = scope === "week" ? `Week ${week}` : scope === "periode" ? `Period ${periode}` : jaar;
 
@@ -52,10 +57,10 @@ export default function GedetacheerdenRanglijst() {
             filters={`Scope: ${scope === "periode" ? "period" : scope === "jaar" ? "year" : scope}; selection: ${devSelectedLabel}; year: ${jaar}. The selected week, period or year determines the simulated snapshot.`}
             ranking="Consultants are sorted by current contractor count in descending order; gross margin from the latest period breaks a tie."
             calculations={[
-              "Current contractors, starters and departures are totals across all visible consultants for the selected period.",
+              "Today's contractor count and the rolling four-week forecasts are based on the current date and do not change with the period filter.",
+              "Selected-period contractors, starters, departures and gross margin respond to the active week, period or year selection.",
               "The upcoming starters and expected departures are a rolling four-week forecast based on today's date and do not change with the period filter.",
-              "Gross margin latest period = sum of consultant margins in the selected snapshot.",
-              "Average margin per contractor = total gross margin / total current contractors.",
+              "Average margin per contractor = the matching gross margin / the matching contractor count.",
               "The arrow compares gross margin from the latest period with the previous period.",
             ]}
             rowCount={ranking.length}
@@ -87,11 +92,11 @@ export default function GedetacheerdenRanglijst() {
       </section>
 
       <section className="grid grid-cols-2 gap-2 lg:grid-cols-5">
-        <SummaryMetric icon={Users} label="Huidige gedetacheerden" value={number.format(totals.active)} />
-        <SummaryMetric icon={Clock3} label="Starters in geselecteerde periode" value={number.format(totals.starts)} />
-        <SummaryMetric icon={UserMinus} label="Afvallers in geselecteerde periode" value={number.format(totals.exits)} />
-        <SummaryMetric icon={CircleDollarSign} label="Brutomarge laatste periode" value={euro.format(totals.margin)} />
-        <SummaryMetric icon={Trophy} label="Gem. marge per gedetacheerde" value={euro.format(averageMargin)} />
+        <SummaryMetric icon={Users} left={{ label: "Huidige gedetacheerden van vandaag", value: number.format(totals.activeToday) }} right={{ label: "Aantal gedetacheerden in geselecteerde periode", value: number.format(totals.activeSelected) }} />
+        <SummaryMetric icon={Clock3} left={{ label: "Starters in geselecteerde periode", value: number.format(totals.starts) }} right={{ label: "Starters in de komende 4 weken", value: number.format(totals.upcomingStarts), tone: "positive" }} />
+        <SummaryMetric icon={UserMinus} left={{ label: "Afvallers in geselecteerde periode", value: number.format(totals.exits) }} right={{ label: "Verwachte afvallers komende 4 weken", value: number.format(totals.upcomingExits), tone: "negative" }} />
+        <SummaryMetric icon={CircleDollarSign} left={{ label: "Brutomarge laatste periode", value: euro.format(totals.latestMargin) }} right={{ label: "Gemiddelde marge per gedetacheerde laatste periode", value: euro.format(latestAverageMargin) }} />
+        <SummaryMetric icon={CircleDollarSign} left={{ label: "Brutomarge geselecteerde periode", value: euro.format(totals.selectedMargin) }} right={{ label: "Gemiddelde marge per gedetacheerde geselecteerde periode", value: euro.format(selectedAverageMargin) }} />
       </section>
 
       <section className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
@@ -158,11 +163,30 @@ export default function GedetacheerdenRanglijst() {
   );
 }
 
-function SummaryMetric({ icon: Icon, label, value }: { icon: typeof Users; label: string; value: string }) {
+type SummaryValue = { label: string; value: string; tone?: "positive" | "negative" };
+
+function SummaryMetric({ icon: Icon, left, right }: { icon: typeof Users; left: SummaryValue; right: SummaryValue }) {
   return (
-    <div className="rounded-md border border-border bg-card px-3 py-2.5 shadow-sm">
-      <div className="mb-1 flex items-center gap-1.5"><Icon className="h-3.5 w-3.5 text-ranking-plaatsingen" /><span className="text-[10px] text-muted-foreground">{label}</span></div>
-      <div className="text-base font-bold tabular-nums text-foreground">{value}</div>
+    <div className="grid min-h-[88px] grid-cols-2 overflow-hidden rounded-md border border-border bg-card shadow-sm">
+      <SummaryHalf icon={Icon} metric={left} />
+      <SummaryHalf metric={right} divided />
+    </div>
+  );
+}
+
+function SummaryHalf({ icon: Icon, metric, divided = false }: { icon?: typeof Users; metric: SummaryValue; divided?: boolean }) {
+  const coloredValue = metric.value !== "0" && metric.value !== "€ 0" && metric.value !== "€0";
+  return (
+    <div className={cn("flex min-w-0 flex-col justify-between px-2.5 py-2.5", divided && "border-l border-border")}>
+      <div className="flex items-start gap-1.5">
+        {Icon && <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ranking-plaatsingen" />}
+        <span className="text-[10px] leading-tight text-muted-foreground">{metric.label}</span>
+      </div>
+      <div className={cn(
+        "mt-1.5 text-sm font-bold tabular-nums text-foreground xl:text-base",
+        coloredValue && metric.tone === "positive" && "text-emerald-600",
+        coloredValue && metric.tone === "negative" && "text-red-600",
+      )}>{metric.value}</div>
     </div>
   );
 }

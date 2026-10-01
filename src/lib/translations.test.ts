@@ -21,4 +21,10 @@ describe("translations", () => {
     expect(localeFor("pl")).toBe("pl-PL");
     expect(localeFor("uk")).toBe("uk-UA");
   });
+
+  it("translates the expanded contractor summary labels", () => {
+    expect(translateDutchText("Huidige gedetacheerden van vandaag")).toBe("Current contractors today");
+    expect(translateDutchText("Brutomarge geselecteerde periode", "pl")).toBe("Marża brutto w wybranym okresie");
+    expect(translateDutchText("Gemiddelde marge per gedetacheerde geselecteerde periode", "uk")).toBe("Середня маржа на контрактного працівника за вибраний період");
+  });
 });

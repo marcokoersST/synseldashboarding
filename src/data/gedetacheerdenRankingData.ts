@@ -6,14 +6,17 @@ export interface GedetacheerdenRankingRecord {
   id: string;
   consultant: string;
   unit: string;
+  gedetacheerdenVandaag: number;
   momenteelGedetacheerd: number;
   startersGeselecteerdePeriode: number;
   nogTeStartenKomendeVierWeken: number;
   afvallersGeselecteerdePeriode: number;
   verwachteAfvallersKomendeVierWeken: number;
   brutoMargeLaatstePeriode: number;
+  brutoMargeGeselecteerdePeriode: number;
   brutoMargeVorigePeriode: number;
   margePerGedetacheerde: number;
+  margePerGedetacheerdeLaatstePeriode: number;
   margeAfgelopen13Periodes: number;
 }
 
@@ -35,6 +38,7 @@ export function getGedetacheerdenRankingData(
     .filter((consultant) => consultant.isActive)
     .map((consultant, index) => {
       const baseActive = Math.max(2, 31 - Math.floor(index * 0.48));
+      const gedetacheerdenVandaag = Math.max(1, baseActive + (((index * 7 + fourWeekSeed) % 5) - 2));
       const movement = ((index * 7 + scopeOffset * 3) % 5) - 2;
       const momenteelGedetacheerd = Math.max(1, baseActive + movement);
       const startersGeselecteerdePeriode = Math.max(0, (index * 3 + selection) % 7);
@@ -42,7 +46,9 @@ export function getGedetacheerdenRankingData(
       const nogTeStartenKomendeVierWeken = Math.max(0, (index * 7 + fourWeekSeed) % 6);
       const verwachteAfvallersKomendeVierWeken = Math.max(0, (index * 11 + fourWeekSeed) % 5);
       const margePerGedetacheerde = round(1850 + ((index * 173 + selection * 29) % 1450), 10);
-      const brutoMargeLaatstePeriode = round(momenteelGedetacheerd * margePerGedetacheerde);
+      const brutoMargeGeselecteerdePeriode = round(momenteelGedetacheerd * margePerGedetacheerde);
+      const margePerGedetacheerdeLaatstePeriode = round(1850 + ((index * 173 + fourWeekSeed * 29) % 1450), 10);
+      const brutoMargeLaatstePeriode = round(gedetacheerdenVandaag * margePerGedetacheerdeLaatstePeriode);
       const margeVerschil = round((((index * 11 + selection) % 13) - 6) * 650);
       const brutoMargeVorigePeriode = Math.max(0, brutoMargeLaatstePeriode - margeVerschil);
       const margeAfgelopen13Periodes = round(
@@ -54,27 +60,35 @@ export function getGedetacheerdenRankingData(
         id: `gedetacheerden-${consultant.fullName}`,
         consultant: consultant.fullName,
         unit: consultant.unit,
+        gedetacheerdenVandaag,
         momenteelGedetacheerd,
         startersGeselecteerdePeriode,
         nogTeStartenKomendeVierWeken,
         afvallersGeselecteerdePeriode,
         verwachteAfvallersKomendeVierWeken,
         brutoMargeLaatstePeriode,
+        brutoMargeGeselecteerdePeriode,
         brutoMargeVorigePeriode,
         margePerGedetacheerde,
+        margePerGedetacheerdeLaatstePeriode,
         margeAfgelopen13Periodes,
       };
     })
-    .map((record) => record.consultant === "Robin van Bruggen" && scopeOffset === 0
+    .map((record) => record.consultant === "Robin van Bruggen"
       ? {
           ...record,
-          momenteelGedetacheerd: 32,
-          startersGeselecteerdePeriode: 5,
-          afvallersGeselecteerdePeriode: 3,
+          gedetacheerdenVandaag: 32,
           brutoMargeLaatstePeriode: 54000,
           brutoMargeVorigePeriode: 49000,
-          margePerGedetacheerde: 2850,
-          margeAfgelopen13Periodes: 580000,
+          margePerGedetacheerdeLaatstePeriode: 1688,
+          ...(scopeOffset === 0 ? {
+            momenteelGedetacheerd: 32,
+            startersGeselecteerdePeriode: 5,
+            afvallersGeselecteerdePeriode: 3,
+            brutoMargeGeselecteerdePeriode: 54000,
+            margePerGedetacheerde: 2850,
+            margeAfgelopen13Periodes: 580000,
+          } : {}),
         }
       : record);
 }
