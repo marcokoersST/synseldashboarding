@@ -1,6 +1,6 @@
 [role="dialog"][aria-label="TV Weergave"] {
   display: grid;
-  grid-template-rows: 36px minmax(0, 0.27fr) minmax(0, 0.73fr);
+  grid-template-rows: 36px minmax(0, 0.22fr) minmax(0, 0.78fr);
   height: 100dvh;
   padding: 16px;
   gap: 12px;
@@ -15,14 +15,14 @@
 [aria-label="TV Weergave"] > :nth-child(2) > div { min-width: 0; min-height: 0; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div {
   display: grid;
-  grid-template-rows: 36px minmax(44px, 1fr) 36px 30px;
-  padding: 10px;
-  gap: 2px;
+  grid-template-rows: 36px minmax(0, 1fr) 34px 24px;
+  padding: 8px;
+  gap: 0;
 }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { display: contents; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child { grid-row: 1; align-self: start; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { grid-row: 2; align-self: center; }
-[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) > p { min-height: 26px; font-size: 10px; line-height: 13px; }
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) > p { height: 20px; font-size: 9px; line-height: 10px; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :last-child { grid-row: 4; align-self: end; }
 [aria-label="TV Weergave"] > :nth-child(2) .text-5xl { grid-row: 3; font-size: 30px; line-height: 36px; margin: 0; align-self: center; }
 [aria-label="TV Weergave"] > :nth-child(2) .text-lg { font-size: 14px; }
