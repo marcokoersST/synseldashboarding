@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Copy the source marketing dashboard in isolation and fit its TV view to the screen while preserving the signal carousel.
+- [x] Copy the source marketing dashboard in isolation and fit its TV view to the screen while preserving the signal carousel.
 
 - [x] Replace only Marketing Hub V2 with the unchanged dashboard from synsel-insight-hub.lovable.app.
 
