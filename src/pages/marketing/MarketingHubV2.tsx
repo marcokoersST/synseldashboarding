@@ -2,7 +2,7 @@ const MarketingHubV2 = () => {
   return (
     <div className="-m-6 h-[calc(100dvh-3.5rem)]" data-no-translate="true">
       <iframe
-        src="https://synsel-insight-hub.lovable.app/"
+        src="/marketing-dashboard/index.html"
         title="Marketing Hub"
         className="block h-full w-full border-0"
         allow="fullscreen"

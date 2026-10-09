@@ -1,0 +1,61 @@
+[role="dialog"][aria-label="TV Weergave"] {
+  display: grid;
+  grid-template-rows: 36px minmax(0, 0.28fr) minmax(0, 0.72fr);
+  height: 100dvh;
+  padding: 16px;
+  gap: 12px;
+  overflow: hidden;
+}
+[aria-label="TV Weergave"] > :first-child h1 { font-size: 20px; }
+[aria-label="TV Weergave"] > :nth-child(2) {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  min-height: 0;
+  gap: 10px;
+}
+[aria-label="TV Weergave"] > :nth-child(2) > div { min-width: 0; min-height: 0; }
+[aria-label="TV Weergave"] > :nth-child(2) > div > div { padding: 10px; gap: 4px; }
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { min-height: 0; gap: 4px; }
+[aria-label="TV Weergave"] > :nth-child(2) .text-5xl { font-size: 30px; margin: 2px 0; }
+[aria-label="TV Weergave"] > :nth-child(2) .text-lg { font-size: 14px; }
+[aria-label="TV Weergave"] > :nth-child(2) .text-sm { font-size: 11px; }
+[aria-label="TV Weergave"] > :nth-child(2) .size-12 { width: 28px; height: 28px; }
+[aria-label="TV Weergave"] > :nth-child(3) {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 180px;
+  gap: 12px;
+}
+[aria-label="TV Weergave"] section[aria-label="Prognose"] { display: flex; flex-direction: column; min-height: 0; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] > h2 { font-size: 16px; margin-bottom: 4px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] > div {
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+[aria-label="TV Weergave"] section[aria-label="Prognose"] > div > div { min-height: 0; gap: 6px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] > div > div > h3 { font-size: 13px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] > div > div > div { flex: 1; min-height: 0; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .p-4 { padding: 8px; justify-content: space-between; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-base { font-size: 12px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-sm { font-size: 10px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-3xl { font-size: 24px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-lg { font-size: 13px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] dl { display: grid; margin-top: 4px; padding-top: 4px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] dd { margin-top: 0; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .mt-2,
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .mt-3 { margin-top: 4px; }
+[aria-label="TV Weergave"] section[aria-label="Week- en maandprestatiesignalen"] { min-height: 0; }
+[aria-label="Week- en maandprestatiesignalen"] > :first-child { margin-bottom: 4px; }
+[aria-label="Week- en maandprestatiesignalen"] > :first-child h3 { font-size: 16px; }
+[aria-label="Week- en maandprestatiesignalen"] [aria-roledescription="carousel"] { flex: 1; height: 0; min-height: 0; }
+[aria-label="Week- en maandprestatiesignalen"] .p-5 { padding: 10px; }
+[aria-label="Week- en maandprestatiesignalen"] .text-xl { font-size: 16px; }
+[aria-label="Week- en maandprestatiesignalen"] .text-4xl { font-size: 28px; }
+[aria-label="Week- en maandprestatiesignalen"] .text-sm { font-size: 12px; }
+[aria-label="Week- en maandprestatiesignalen"] .mt-3,
+[aria-label="Week- en maandprestatiesignalen"] .mt-4 { margin-top: 5px; }
+@media (min-height: 1000px) {
+  [role="dialog"][aria-label="TV Weergave"] { padding: 24px; gap: 16px; }
+  [aria-label="TV Weergave"] > :nth-child(3) { grid-template-rows: minmax(0, 1fr) 220px; }
+}
