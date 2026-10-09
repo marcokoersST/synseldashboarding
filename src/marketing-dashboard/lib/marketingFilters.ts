@@ -88,7 +88,7 @@ function scaleCounts<T>(value: T, share: number): T {
   if (Array.isArray(value)) return value.map((v) => scaleCounts(v, share)) as T;
   if (!value || typeof value !== "object") return value;
   return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([k, v]) => [k,
-    typeof v === "number" ? (/quality|score|pct|percent|rate|ratio|cpa|cpr|bem/i.test(k) ? v : Math.round(v * share))
+    typeof v === "number" ? (/quality|score|pct|percent|rate|ratio|^cpa$|^cpr$|^bem$/i.test(k) ? v : Math.round(v * share))
       : typeof v === "object" ? scaleCounts(v, share) : v,
   ])) as T;
 }

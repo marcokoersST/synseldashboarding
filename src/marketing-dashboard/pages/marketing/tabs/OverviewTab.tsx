@@ -160,8 +160,19 @@ const OverviewTab = ({ dateRange, compareRange, deltaMode = "percent", onTabChan
   const adLevelData = useMemo(() => scaleRows(filterMarketingRows(rawAdLevelData, filters, (row) => ({ unit: row.unit, functiegroep: row.functiegroep, bron: row.platform, ad: row.adType })), dataShare), [filters, dataShare]);
   const inflowSourceData = useMemo(() => scaleRows(filterMarketingRows(overviewSourceQualityRows, filters, (row) => ({ bron: row.bron })), dataShare), [filters, dataShare]);
   const sourceTableData = useMemo(() => scaleRows(filterMarketingRows(overviewSourceQualityRows, withoutQuickFilter(filters, "bron"), (row) => ({ bron: row.bron })), dataShare), [filters, dataShare]);
-  const consultantTableData = useMemo(() => filterMarketingRows(rawInflowConsultantData, withoutQuickFilter(filters, "consultant"), (row) => ({ unit: row.unit, consultant: row.consultant })), [filters]);
-  const inflowConsultantData = useMemo(() => filterMarketingRows(rawInflowConsultantData, filters, (row) => ({ unit: row.unit, consultant: row.consultant })), [filters]);
+  // Consultant rows have no source dimension: scale counts by the selected sources' inflow share so source clicks propagate.
+  const bronShare = useMemo(() => {
+    const bronRules = filters.filter((f) => f.field === "bron" || f.field === "campagne");
+    if (bronRules.length === 0) return 1;
+    const all = overviewSourceQualityRows.reduce((a, r) => a + r.inschrijvingen, 0);
+    const kept = rawInflowCampaignData.length && bronRules.some((f) => f.field === "campagne")
+      ? (() => { const c = rawInflowCampaignData.reduce((a, r) => a + r.inschrijvingen, 0); const k = filterMarketingRows(rawInflowCampaignData, bronRules, (row) => ({ bron: row.bron, campagne: row.campagne })).reduce((a, r) => a + r.inschrijvingen, 0); return c > 0 ? (k / c) * all : 0; })()
+      : filterMarketingRows(overviewSourceQualityRows, bronRules, (row) => ({ bron: row.bron })).reduce((a, r) => a + r.inschrijvingen, 0);
+    return all > 0 ? kept / all : 1;
+  }, [filters]);
+  const consultantScale = bronShare * inflowShare;
+  const consultantTableData = useMemo(() => scaleRows(filterMarketingRows(rawInflowConsultantData, withoutQuickFilter(filters, "consultant"), (row) => ({ unit: row.unit, consultant: row.consultant })), consultantScale), [filters, consultantScale]);
+  const inflowConsultantData = useMemo(() => scaleRows(filterMarketingRows(rawInflowConsultantData, filters, (row) => ({ unit: row.unit, consultant: row.consultant })), consultantScale), [filters, consultantScale]);
   const inflowCampaignData = useMemo(() => scaleRows(filterMarketingRows(rawInflowCampaignData, filters, (row) => ({ bron: row.bron, campagne: row.campagne })), dataShare), [filters, dataShare]);
 
   const qualityRows = useMemo(() => [...paidChannelData, ...jobboardData, ...paidSocialData], [paidChannelData, jobboardData, paidSocialData]);
