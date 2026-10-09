@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { TooltipProvider } from "@/marketing-dashboard/components/ui/tooltip";
 import MarketingHub from "@/marketing-dashboard/pages/marketing/MarketingHub";
-import theme from "./styles-source.css?dashboard-theme";
+import theme from "./styles-source.tw?dashboard-theme";
 import tvStyles from "./tv-layout.css?raw";
 
 const style = document.createElement("style");
