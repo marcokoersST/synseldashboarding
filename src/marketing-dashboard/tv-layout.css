@@ -96,10 +96,10 @@
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .mt-3 { margin-top: 4px; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .h-2\.5 { flex-shrink: 0; height: 10px; }
 @media (max-height: 850px) {
-  [role="dialog"][aria-label="TV Weergave"] { grid-template-rows: 36px 140px minmax(190px, 0.9fr) minmax(190px, 1.1fr); }
+  [role="dialog"][aria-label="TV Weergave"] { grid-template-rows: 36px 140px minmax(190px, 0.85fr) minmax(190px, 1.15fr); }
   [aria-label="TV Weergave"] > :nth-child(4) { grid-template-rows: minmax(0, 1fr) 150px; gap: 18px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { font-size: 10px; line-height: 13px; }
-  [aria-label="TV Weergave"] section[aria-label="Prognose"] dl { gap: 4px; }
+  [aria-label="TV Weergave"] section[aria-label="Prognose"] dl { display: none; }
   [aria-label="TV Weergave"] .tv-forecast-heading .size-9 { width: 28px; height: 28px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .p-4 { padding: 4px; gap: 0; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { line-height: 11px; }
