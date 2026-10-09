@@ -1,8 +1,8 @@
 [role="dialog"][aria-label="TV Weergave"] {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  /* Double the trend band while keeping forecasts and signals on screen. */
-  grid-template-rows: 36px 140px minmax(192px, 300px) minmax(0, 1fr);
+  /* Another notch taller trend; the forecast blocks give up the room. */
+  grid-template-rows: 36px 140px minmax(240px, 1fr) minmax(240px, 1.15fr);
   height: 100dvh;
   padding: 16px;
   gap: 12px;
@@ -50,7 +50,7 @@
 [aria-label="TV Weergave"] > :nth-child(2) .text-sm { font-size: 11px; }
 [aria-label="TV Weergave"] > :nth-child(2) .size-12 { width: 28px; height: 28px; }
 @media (max-width: 1400px) {
-  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { grid-template-columns: minmax(0, 1fr) auto; gap: 9px; }
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { width: 86px; padding: 4px 6px 3px; }
 
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child { gap: 4px; }
@@ -84,22 +84,22 @@
 [aria-label="TV Weergave"] [data-tv-trend] > :first-child { margin-bottom: 4px; flex-shrink: 0; }
 [aria-label="TV Weergave"] [data-tv-trend] > :last-child { flex: 1; height: 0; min-height: 0; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .p-4 { padding: 8px; justify-content: space-between; }
-/* The forecast cards are taller now, so their type scales up with them. */
-[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-base { font-size: 15px; }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-sm { font-size: 12px; }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-3xl { font-size: 34px; }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-lg { font-size: 18px; }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { font-size: 12px; }
+/* The forecast blocks shrank, so their type steps down with them. */
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-base { font-size: 14px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-sm { font-size: 11px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-3xl { font-size: 30px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-lg { font-size: 16px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { font-size: 11px; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] dl { display: grid; margin-top: 4px; padding-top: 4px; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] dd { margin-top: 0; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .mt-2,
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .mt-3 { margin-top: 4px; }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] .h-2\.5 { flex-shrink: 0; height: 12px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .h-2\.5 { flex-shrink: 0; height: 10px; }
 @media (max-height: 850px) {
-  [role="dialog"][aria-label="TV Weergave"] { grid-template-rows: 36px 140px minmax(160px, 216px) minmax(0, 1fr); }
+  [role="dialog"][aria-label="TV Weergave"] { grid-template-rows: 36px 140px minmax(190px, 0.85fr) minmax(190px, 1.15fr); }
   [aria-label="TV Weergave"] > :nth-child(4) { grid-template-rows: minmax(0, 1fr) 150px; gap: 18px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { font-size: 10px; line-height: 13px; }
-  [aria-label="TV Weergave"] section[aria-label="Prognose"] dl { gap: 4px; }
+  [aria-label="TV Weergave"] section[aria-label="Prognose"] dl { display: none; }
   [aria-label="TV Weergave"] .tv-forecast-heading .size-9 { width: 28px; height: 28px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .p-4 { padding: 4px; gap: 0; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { line-height: 11px; }
@@ -122,11 +122,13 @@
 [aria-label="Week- en maandprestatiesignalen"] .mt-3,
 [aria-label="Week- en maandprestatiesignalen"] .mt-4 { margin-top: 5px; }
 @media (min-height: 1000px) {
-  [role="dialog"][aria-label="TV Weergave"] { padding: 24px; gap: 16px; grid-template-rows: 36px 140px minmax(192px, 336px) minmax(0, 1fr); }
-  [aria-label="TV Weergave"] > :nth-child(4) { grid-template-rows: minmax(0, 1fr) 210px; gap: 32px; }
+  [role="dialog"][aria-label="TV Weergave"] { padding: 24px; gap: 16px; grid-template-rows: 36px 140px minmax(240px, 1.05fr) minmax(260px, 1.15fr); }
+  [aria-label="TV Weergave"] > :nth-child(4) { grid-template-rows: minmax(0, 1fr) 190px; gap: 24px; }
 }
 /* Extremely tall canvases: keep the forecast content as one readable block
    instead of spreading it across the whole card. */
 @media (min-height: 1400px) {
+  /* Cap the trend band on very tall canvases so the forecast keeps the rest. */
+  [role="dialog"][aria-label="TV Weergave"] { grid-template-rows: 36px 140px minmax(240px, 560px) minmax(300px, 1fr); }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .p-4 { justify-content: center; gap: 20px; }
 }
