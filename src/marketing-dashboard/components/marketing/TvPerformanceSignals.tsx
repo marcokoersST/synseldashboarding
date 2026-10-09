@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useTvCarousel } from "@/marketing-dashboard/components/marketing/useTvCarousel";
 import { ArrowDownRight, ArrowUpRight, CheckCircle2, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { Button } from "@/marketing-dashboard/components/ui/button";
 import { Card, CardContent } from "@/marketing-dashboard/components/ui/card";
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/marketing-dashboard/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from "@/marketing-dashboard/components/ui/carousel";
 import type { ForecastPeriod, ForecastResult } from "@/marketing-dashboard/lib/marketingForecast";
 import { cn } from "@/marketing-dashboard/lib/utils";
 
@@ -32,32 +32,8 @@ function SignalCard({ signal }: { signal: TvSignal }) {
 }
 
 export default function TvPerformanceSignals({ signals }: { signals: TvSignal[] }) {
-  const [api, setApi] = useState<CarouselApi>();
-  const [paused, setPaused] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [index, setIndex] = useState(0);
   const rotating = signals.length >= 4;
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReducedMotion(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
-  useEffect(() => {
-    if (!api) return;
-    const update = () => setIndex(api.selectedScrollSnap());
-    update();
-    api.on("select", update);
-    api.on("reInit", update);
-    return () => { api.off("select", update); api.off("reInit", update); };
-  }, [api]);
-  useEffect(() => {
-    if (!api || !rotating || paused || hovered || reducedMotion) return;
-    const timer = window.setInterval(() => { if (!document.hidden) api.scrollNext(); }, 8000);
-    return () => window.clearInterval(timer);
-  }, [api, rotating, paused, hovered, reducedMotion]);
+  const { api, setApi, paused, setPaused, setHovered, reducedMotion, index } = useTvCarousel(rotating);
   return <section className="flex shrink-0 flex-col" aria-label="Week- en maandprestatiesignalen" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
     <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:justify-between">
       <h3 className="text-xl font-semibold">Prestatiesignalen <span className="ml-2 text-base font-normal text-muted-foreground">Week & Maand</span></h3>

@@ -410,6 +410,7 @@ const OverviewTab = ({ dateRange, compareRange, deltaMode = "percent", onTabChan
 
   if (tvMode) {
     return (
+      <>
       <div className="grid shrink-0 grid-cols-2 gap-6 lg:min-h-[18vh] lg:grid-cols-3 xl:grid-cols-[1.4fr_1.4fr_1.4fr_1fr_1fr_1fr] [@media(max-height:850px)]:gap-4">
         {kpis.map((kpi) => (
           <Card key={kpi.label}>
@@ -430,6 +431,8 @@ const OverviewTab = ({ dateRange, compareRange, deltaMode = "percent", onTabChan
           </Card>
         ))}
       </div>
+      <MarketingTrendChart dateRange={dateRange} qualityRows={qualityRows} totals={totals(qualityRows)} matchableCandidates={inflowSourceData.reduce((sum, row) => sum + row.bemiddelbareKandidaten, 0)} tvMode />
+      </>
     );
   }
 

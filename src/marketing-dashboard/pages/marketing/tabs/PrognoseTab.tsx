@@ -2,7 +2,7 @@ import { Fragment, useMemo, useState } from "react";
 import { format, getISOWeek, startOfDay, subDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import type { DateRange } from "react-day-picker-v9";
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, CalendarDays, CheckCircle2, ChevronDown, ChevronRight, Target } from "lucide-react";
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Pause, Play, Target } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/marketing-dashboard/components/ui/button";
 import { Card, CardContent } from "@/marketing-dashboard/components/ui/card";
@@ -10,6 +10,8 @@ import { FORECAST_METRICS, buildForecastDemoData, calculateForecast, filterForec
 import type { MarketingFilterRule } from "@/marketing-dashboard/lib/marketingFilters";
 import { cn } from "@/marketing-dashboard/lib/utils";
 import TvPerformanceSignals, { type TvSignal } from "@/marketing-dashboard/components/marketing/TvPerformanceSignals";
+import { Carousel, CarouselContent, CarouselItem } from "@/marketing-dashboard/components/ui/carousel";
+import { useTvCarousel } from "@/marketing-dashboard/components/marketing/useTvCarousel";
 
 interface Props { dateRange: DateRange; filters: MarketingFilterRule[]; tvMode?: boolean }
 const number = (value: number) => value.toLocaleString("nl-NL", { maximumFractionDigits: 0 });
@@ -101,6 +103,7 @@ function ForecastCells({ row, metric }: { row: ForecastResult; metric: ForecastM
 }
 
 export default function PrognoseTab({ dateRange, filters, tvMode = false }: Props) {
+  const { api, setApi, paused, setPaused, setHovered, reducedMotion, index } = useTvCarousel(tvMode);
   const [metric, setMetric] = useState<ForecastMetric>("registrations");
   const [period, setPeriod] = useState<ForecastPeriod>("week");
   const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
@@ -109,7 +112,7 @@ export default function PrognoseTab({ dateRange, filters, tvMode = false }: Prop
   const stamp = asOf.getTime();
   const rows = useMemo(() => filterForecastRows(buildForecastDemoData(new Date(stamp)), filters), [stamp, filters]);
   const overview = useMemo(() => FORECAST_METRICS.map(m => ({ ...m, week: calculateForecast(rows, new Date(stamp), "week", m.key), month: calculateForecast(rows, new Date(stamp), "month", m.key) })), [rows, stamp]);
-  const week = overview[0]!.week;
+  const firstMetric = overview[0];
   const breakdown = useMemo(() => forecastBreakdown(rows, new Date(stamp), period, metric, "source"), [rows, stamp, period, metric]);
   const campaigns = useMemo(() => forecastBreakdown(rows, new Date(stamp), period, metric, "campaign"), [rows, stamp, period, metric]);
   const alerts = useMemo(() => FORECAST_METRICS.flatMap(m => forecastBreakdown(rows, new Date(stamp), period, m.key, "source").map(row => ({ ...row, metricKey: m.key, metricLabel: m.label }))).filter(row => row.status === "behind" || row.status === "ahead")
@@ -120,7 +123,9 @@ export default function PrognoseTab({ dateRange, filters, tvMode = false }: Prop
     return next;
   });
   const metricLabel = metricLabelOf(metric);
-  const result = period === "week" ? week : overview[0]!.month;
+  if (!firstMetric) return null;
+  const week = firstMetric.week;
+  const result = period === "week" ? week : firstMetric.month;
 
   if (tvMode) {
     const signalsByPeriod = (["week", "month"] as const).map(signalPeriod => FORECAST_METRICS.flatMap(m => forecastBreakdown(rows, new Date(stamp), signalPeriod, m.key, "source").map(result => ({ source: result.source, period: signalPeriod, metric: m.label, result })))
@@ -131,9 +136,19 @@ export default function PrognoseTab({ dateRange, filters, tvMode = false }: Prop
       for (const signals of signalsByPeriod) { const signal = signals[index]; if (signal) tvSignals.push(signal); }
     }
     return <div className="flex shrink-0 flex-col gap-4 [@media(max-height:850px)]:gap-2">
-      <section className="shrink-0" aria-label="Prognose">
-        <h2 className="mb-2 text-xl font-semibold [@media(max-height:850px)]:mb-1 [@media(max-height:850px)]:text-lg">Prognose</h2>
-        <div className="grid gap-4 lg:grid-cols-4 [@media(max-height:850px)]:gap-3">{overview.map(m => <div key={m.key} className="flex min-w-0 flex-col gap-3 [@media(max-height:850px)]:gap-2"><h3 className="text-base font-semibold text-muted-foreground">{m.label}</h3><TvPeriodCard result={m.week} period="week" metricKey={m.key} /><TvPeriodCard result={m.month} period="month" metricKey={m.key} /></div>)}</div>
+      <section className="shrink-0" aria-label="Prognose" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+        <div className="tv-forecast-heading flex items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold">Prognose <span className="text-muted-foreground">· {overview[index]?.label ?? firstMetric.label}</span></h2>
+          <div className="flex items-center gap-1">
+            <span className="mr-2 text-sm tabular-nums text-muted-foreground">{index + 1} / {overview.length}</span>
+            <Button variant="ghost" size="icon" aria-label="Vorige prognose" title="Vorige prognose" onClick={() => api?.scrollPrev(reducedMotion)}><ChevronLeft className="size-5" /></Button>
+            {!reducedMotion && <Button variant="ghost" size="icon" aria-label={paused ? "Prognoses afspelen" : "Prognoses pauzeren"} title={paused ? "Afspelen" : "Pauzeren"} onClick={() => setPaused(value => !value)}>{paused ? <Play className="size-4" /> : <Pause className="size-4" />}</Button>}
+            <Button variant="ghost" size="icon" aria-label="Volgende prognose" title="Volgende prognose" onClick={() => api?.scrollNext(reducedMotion)}><ChevronRight className="size-5" /></Button>
+          </div>
+        </div>
+        <Carousel className="tv-forecast-carousel min-h-0" setApi={setApi} opts={{ loop: true, align: "start", duration: 80 }} aria-label="Prognoses" onFocusCapture={() => setPaused(true)}>
+          <CarouselContent className="h-full">{overview.map(m => <CarouselItem key={m.key} className="h-full basis-full" aria-label={m.label}><div className="tv-forecast-pair grid h-full min-w-0 grid-cols-2 gap-3"><TvPeriodCard result={m.week} period="week" metricKey={m.key} /><TvPeriodCard result={m.month} period="month" metricKey={m.key} /></div></CarouselItem>)}</CarouselContent>
+        </Carousel>
       </section>
       <TvPerformanceSignals signals={tvSignals} />
     </div>;
@@ -145,7 +160,7 @@ export default function PrognoseTab({ dateRange, filters, tvMode = false }: Prop
       <div className="flex gap-1" aria-label="Prognose meetwaarde">{FORECAST_METRICS.map(m => <Button key={m.key} size="sm" variant={metric === m.key ? "default" : "outline"} aria-pressed={metric === m.key} onClick={() => setMetric(m.key)}>{m.label}</Button>)}</div>
     </div>
     <p className="text-xs text-muted-foreground">Referentie: {format(week.historyStart, "d MMM yyyy", { locale: nl })} – {format(subDays(week.historyEnd, 1), "d MMM yyyy", { locale: nl })} · Alerts bij meer dan 20% afwijking (quality score: 5%).</p>
-    {(() => { const m = overview.find(o => o.key === metric) ?? overview[0]!; return <div className="grid gap-4 lg:grid-cols-2"><PeriodCard result={m.week} period="week" metricKey={m.key} /><PeriodCard result={m.month} period="month" metricKey={m.key} /></div>; })()}
+    {(() => { const m = overview.find(o => o.key === metric) ?? firstMetric; return <div className="grid gap-4 lg:grid-cols-2"><PeriodCard result={m.week} period="week" metricKey={m.key} /><PeriodCard result={m.month} period="month" metricKey={m.key} /></div>; })()}
     <section className="space-y-4">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h3 className="text-base font-semibold">Prestatiesignalen <span className="ml-1 text-sm font-normal text-muted-foreground">({alerts.length})</span></h3><p className="mt-1 text-xs text-muted-foreground">Conversions, inschrijven en quality scores (conv. en bem.) per bron · afwijking van de verwachting op dit moment</p></div>
         <div className="flex gap-1">{(["week", "month"] as const).map(value => <Button size="sm" key={value} variant={period === value ? "secondary" : "ghost"} aria-pressed={period === value} onClick={() => setPeriod(value)}>{value === "week" ? "Week" : "Maand"}</Button>)}</div>

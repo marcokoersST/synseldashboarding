@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Add the candidate/spend trend below TV KPIs and rotate side-by-side weekly/monthly forecasts at the performance-signal carousel cadence.
+
 - [x] Copy the source marketing dashboard in isolation and fit its TV view to the screen while preserving the signal carousel.
 - [x] Pin the quality chip into each TV tile's top-right corner, shrink overview quality labels, and keep all TV content inside one screen.
 

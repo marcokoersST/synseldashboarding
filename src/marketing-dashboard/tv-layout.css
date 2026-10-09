@@ -1,7 +1,7 @@
 [role="dialog"][aria-label="TV Weergave"] {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: 36px 140px minmax(0, 1fr);
+  grid-template-rows: 36px 140px minmax(160px, 1fr) minmax(340px, 1.4fr);
   height: 100dvh;
   padding: 16px;
   gap: 12px;
@@ -57,28 +57,30 @@
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child span { width: 20px; height: 24px; }
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child svg { width: 14px; height: 14px; }
 }
-[aria-label="TV Weergave"] > :nth-child(3) {
+[aria-label="TV Weergave"] > :nth-child(4) {
   min-height: 0;
   display: grid;
   /* Without an explicit column the implicit auto track grows to the section's
      max-content (1573px), so the right-hand forecast column and the last
      carousel card fall outside the dialog's hidden overflow. */
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) 180px;
+  grid-template-rows: minmax(160px, 1fr) 180px;
   gap: 12px;
 }
 
 [aria-label="TV Weergave"] section[aria-label="Prognose"] { display: flex; flex-direction: column; min-height: 0; }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] > h2 { font-size: 16px; margin-bottom: 4px; }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] > div {
+[aria-label="TV Weergave"] .tv-forecast-heading { flex-shrink: 0; margin-bottom: 4px; }
+[aria-label="TV Weergave"] .tv-forecast-heading h2 { font-size: 16px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] > .tv-forecast-carousel {
   flex: 1;
+  height: 0;
   min-height: 0;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
 }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] > div > div { min-height: 0; gap: 6px; }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] > div > div > h3 { font-size: 13px; }
-[aria-label="TV Weergave"] section[aria-label="Prognose"] > div > div > div { flex: 1; min-height: 0; }
+[aria-label="TV Weergave"] .tv-forecast-carousel > div { height: 100%; }
+[aria-label="TV Weergave"] .tv-forecast-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+[aria-label="TV Weergave"] [data-tv-trend] { display: flex; flex-direction: column; min-height: 0; padding: 8px 0; }
+[aria-label="TV Weergave"] [data-tv-trend] > :first-child { margin-bottom: 4px; flex-shrink: 0; }
+[aria-label="TV Weergave"] [data-tv-trend] > :last-child { flex: 1; height: 0; min-height: 0; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .p-4 { padding: 8px; justify-content: space-between; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-base { font-size: 12px; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-sm { font-size: 10px; }
@@ -105,5 +107,5 @@
 [aria-label="Week- en maandprestatiesignalen"] .mt-4 { margin-top: 5px; }
 @media (min-height: 1000px) {
   [role="dialog"][aria-label="TV Weergave"] { padding: 24px; gap: 16px; }
-  [aria-label="TV Weergave"] > :nth-child(3) { grid-template-rows: minmax(0, 1fr) 220px; }
+  [aria-label="TV Weergave"] > :nth-child(4) { grid-template-rows: minmax(0, 1fr) 220px; }
 }

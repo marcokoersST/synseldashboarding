@@ -15,16 +15,19 @@ interface Props {
   totals: TrendTotals;
   compareRange?: DateRange | null;
   qualityRows?: QualityRow[];
+  tvMode?: boolean;
+  matchableCandidates?: number;
 }
 
-export default function MarketingTrendChart({ dateRange, totals, compareRange = null, qualityRows = [] }: Props) {
+export default function MarketingTrendChart({ dateRange, totals: sourceTotals, compareRange = null, qualityRows = [], tvMode = false, matchableCandidates = 0 }: Props) {
+  const totals = useMemo(() => tvMode ? { ...sourceTotals, registrations: matchableCandidates } : sourceTotals, [sourceTotals, tvMode, matchableCandidates]);
   const [selected, setSelected] = useState<TrendMetric[]>(["conversions", "registrations"]);
   const [chosen, setChosen] = useState<TrendGranularity | null>(null);
   const { points, granularity } = useMemo(() => buildMarketingTrend(dateRange, totals, chosen ?? undefined), [dateRange, totals, chosen]);
   const summary = deriveTrendMetrics(totals);
   // Previous-period line: same comparison basis as the tiles, bucketed with the current granularity and aligned by position.
   const chartPoints = useMemo(() => {
-    if (!compareRange?.from || !compareRange.to) return points;
+    if (tvMode || !compareRange?.from || !compareRange.to) return points;
     const prevTotals = {
       conversions: getComparisonValue(totals.conversions, { dateRange, compareRange, seed: "trend-conversions" }),
       registrations: getComparisonValue(totals.registrations, { dateRange, compareRange, seed: "trend-registrations" }),
@@ -39,28 +42,30 @@ export default function MarketingTrendChart({ dateRange, totals, compareRange = 
       for (const m of trendMetrics) extra[`prev_${m.key}`] = p[m.key];
       return { ...point, ...extra };
     });
-  }, [points, compareRange, totals, dateRange, qualityRows, granularity]);
+  }, [points, compareRange, totals, dateRange, qualityRows, granularity, tvMode]);
   const hasCompare = chartPoints !== points;
-  const activeMetrics = trendMetrics.filter(metric => selected.includes(metric.key));
+  const availableMetrics = tvMode ? trendMetrics.filter(metric => metric.key === "registrations" || metric.key === "spend").map(metric => metric.key === "registrations" ? { ...metric, label: "Bemiddelbare kandidaten" } : metric) : trendMetrics;
+  const activeMetrics = tvMode ? availableMetrics : availableMetrics.filter(metric => selected.includes(metric.key));
   const hasData = totals.conversions > 0 || totals.registrations > 0 || totals.spend > 0;
 
   return (
-    <section aria-label="Trendgrafiek" data-granularity={granularity} className="min-w-0 border-y border-border bg-card py-4">
+    <section aria-label="Trendgrafiek" data-tv-trend={tvMode || undefined} data-granularity={granularity} className="min-w-0 border-y border-border bg-card py-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-4">
         <div className="flex items-center gap-2">
           <TrendingUp className="size-4 text-primary" aria-hidden="true" />
           <h2 className="text-sm font-semibold">Trend</h2>
         </div>
-        <div className="inline-flex rounded-md border border-border p-0.5" role="group" aria-label="Periode-indeling">
+        {!tvMode && <div className="inline-flex rounded-md border border-border p-0.5" role="group" aria-label="Periode-indeling">
           {([["day", "Per dag"], ["week", "Per week"], ["month", "Per maand"]] as const).map(([key, label]) => (
             <button key={key} type="button" aria-pressed={granularity === key} onClick={() => setChosen(key)}
               className={cn("rounded px-2.5 py-1 text-xs transition-colors", granularity === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
               {label}
             </button>
           ))}
-        </div>
+        </div>}
+        {tvMode && <div className="flex items-center gap-5" aria-label="Trendlijnen">{activeMetrics.map(metric => <span key={metric.key} className="flex items-center gap-2 text-xs font-medium"><span className="trend-swatch size-2 rounded-full" data-metric={metric.key} />{metric.label}</span>)}</div>}
       </div>
-      <div className="mb-5 flex flex-wrap gap-2 px-4" role="group" aria-label="Trendlijnen">
+      {!tvMode && <div className="mb-5 flex flex-wrap gap-2 px-4" role="group" aria-label="Trendlijnen">
         {trendMetrics.map(metric => {
           const active = selected.includes(metric.key);
           return (
@@ -74,7 +79,7 @@ export default function MarketingTrendChart({ dateRange, totals, compareRange = 
             </Button>
           );
         })}
-      </div>
+      </div>}
       <div className="h-64 min-w-0 px-2 sm:px-4">
         {!hasData || !points.length || !selected.length ? (
           <div className="grid h-full place-items-center text-sm text-muted-foreground" role="status">{!selected.length ? "Geen meetwaarden geselecteerd" : "Geen data in deze selectie"}</div>
@@ -84,7 +89,7 @@ export default function MarketingTrendChart({ dateRange, totals, compareRange = 
               <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 4" />
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} minTickGap={28} />
               {activeMetrics.map(metric => (
-                <YAxis key={metric.key} yAxisId={metric.key} hide={activeMetrics.length > 1} width={58} domain={(metric.key === "qualityScore" || metric.key === "qualityScoreConv") ? [0, 100] : [0, "auto"]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false}
+                <YAxis key={metric.key} yAxisId={metric.key} orientation={tvMode && metric.key === "spend" ? "right" : "left"} hide={!tvMode && activeMetrics.length > 1} width={58} domain={(metric.key === "qualityScore" || metric.key === "qualityScoreConv") ? [0, 100] : [0, "auto"]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false}
                   tickFormatter={value => metric.format === "currency" ? `€${Number(value).toLocaleString("nl-NL", { notation: "compact" })}` : `${Number(value).toLocaleString("nl-NL", { notation: "compact" })}${metric.format === "percent" ? "%" : ""}`} />
               ))}
               <Tooltip content={({ active, payload }) => {
