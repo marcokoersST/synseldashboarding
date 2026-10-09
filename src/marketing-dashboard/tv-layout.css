@@ -1,11 +1,13 @@
 [role="dialog"][aria-label="TV Weergave"] {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 36px 140px minmax(0, 1fr);
   height: 100dvh;
   padding: 16px;
   gap: 12px;
   overflow: hidden;
 }
+
 [aria-label="TV Weergave"] > :first-child h1 { font-size: 20px; }
 [aria-label="TV Weergave"] > :nth-child(2) {
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
@@ -15,23 +17,41 @@
 [aria-label="TV Weergave"] > :nth-child(2) > div { min-width: 0; min-height: 0; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div {
   display: grid;
+  /* The tile markup carries justify-between; on a grid that sizes the column to
+     max-content instead of the tile, so corner-anchored chips would land at
+     different spots per tile. Stretch keeps every tile's inner width identical. */
+  justify-content: normal;
   grid-template-rows: 60px minmax(34px, 1fr) 24px;
   padding: 8px;
   gap: 0;
 }
-[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; gap: 6px; align-items: start; }
+
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { display: grid; grid-template-columns: minmax(0, 1fr) 98px; min-height: 0; gap: 10px; align-items: start; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child { gap: 6px; align-items: start; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :only-child { grid-column: 1 / -1; }
-[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { margin: 0; }
-[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) > p { white-space: nowrap; }
+/* Quality chip: pinned flush into the tile's top-right corner, fixed width so all tiles align. */
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) {
+  margin: -8px -8px 0 0;
+  justify-self: end;
+  width: 98px;
+
+
+  padding: 5px 8px 4px;
+  border: 0;
+  border-radius: 0 11px 0 8px;
+  background: var(--muted);
+}
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) > p { white-space: normal; line-height: 11px; }
+
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :last-child { grid-row: 3; align-self: end; }
 [aria-label="TV Weergave"] > :nth-child(2) .text-5xl { grid-row: 2; font-size: 30px; line-height: 36px; margin: 0; align-self: center; }
 [aria-label="TV Weergave"] > :nth-child(2) .text-lg { font-size: 14px; }
 [aria-label="TV Weergave"] > :nth-child(2) .text-sm { font-size: 11px; }
 [aria-label="TV Weergave"] > :nth-child(2) .size-12 { width: 28px; height: 28px; }
 @media (max-width: 1400px) {
-  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { grid-template-columns: minmax(0, 1fr) auto; gap: 4px; }
-  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { padding-left: 6px; padding-right: 6px; }
+  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { width: 86px; padding: 4px 6px 3px; }
+
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child { gap: 4px; }
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child p { font-size: 11px; line-height: 13px; }
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child span { width: 20px; height: 24px; }
@@ -40,9 +60,14 @@
 [aria-label="TV Weergave"] > :nth-child(3) {
   min-height: 0;
   display: grid;
+  /* Without an explicit column the implicit auto track grows to the section's
+     max-content (1573px), so the right-hand forecast column and the last
+     carousel card fall outside the dialog's hidden overflow. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) 180px;
   gap: 12px;
 }
+
 [aria-label="TV Weergave"] section[aria-label="Prognose"] { display: flex; flex-direction: column; min-height: 0; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] > h2 { font-size: 16px; margin-bottom: 4px; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] > div {

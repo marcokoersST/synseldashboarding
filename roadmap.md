@@ -1,6 +1,8 @@
 # Roadmap
 
 - [x] Copy the source marketing dashboard in isolation and fit its TV view to the screen while preserving the signal carousel.
+- [x] Pin the quality chip into each TV tile's top-right corner, shrink overview quality labels, and keep all TV content inside one screen.
+
 
 - [x] Replace only Marketing Hub V2 with the unchanged dashboard from synsel-insight-hub.lovable.app.
 
