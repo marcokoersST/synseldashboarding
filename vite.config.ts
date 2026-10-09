@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => ({
     {
       name: "isolated-marketing-theme",
       async load(id: string) {
-        if (!id.endsWith("styles-source.css?dashboard-theme")) return;
+        if (!id.endsWith("styles-source.tw?dashboard-theme")) return;
         const filename = id.split("?")[0];
         const directory = path.dirname(filename);
         this.addWatchFile(filename);
@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => ({
         const css = compiler.build(await dashboardCandidates(directory));
         return `export default ${JSON.stringify(css)}`;
       },
-    },
+    } satisfies Plugin,
     react(),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
