@@ -1,6 +1,6 @@
 [role="dialog"][aria-label="TV Weergave"] {
   display: grid;
-  grid-template-rows: 36px minmax(0, 0.28fr) minmax(0, 0.72fr);
+  grid-template-rows: 36px minmax(0, 0.22fr) minmax(0, 0.78fr);
   height: 100dvh;
   padding: 16px;
   gap: 12px;
@@ -45,6 +45,11 @@
 [aria-label="TV Weergave"] section[aria-label="Prognose"] dd { margin-top: 0; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .mt-2,
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .mt-3 { margin-top: 4px; }
+[aria-label="TV Weergave"] section[aria-label="Prognose"] .h-2\.5 { flex-shrink: 0; }
+@media (max-height: 850px) {
+  [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { font-size: 10px; line-height: 13px; }
+  [aria-label="TV Weergave"] section[aria-label="Prognose"] dl { gap: 4px; }
+}
 [aria-label="TV Weergave"] section[aria-label="Week- en maandprestatiesignalen"] { min-height: 0; }
 [aria-label="Week- en maandprestatiesignalen"] > :first-child { margin-bottom: 4px; }
 [aria-label="Week- en maandprestatiesignalen"] > :first-child h3 { font-size: 16px; }
