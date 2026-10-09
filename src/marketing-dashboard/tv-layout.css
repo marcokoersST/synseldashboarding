@@ -21,7 +21,7 @@
 }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { display: contents; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child { grid-row: 1; align-self: start; }
-[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { grid-row: 2; align-self: center; }
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { grid-row: 2; align-self: center; width: 100%; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) > p { height: 20px; font-size: 9px; line-height: 10px; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :last-child { grid-row: 4; align-self: end; }
 [aria-label="TV Weergave"] > :nth-child(2) .text-5xl { grid-row: 3; font-size: 30px; line-height: 36px; margin: 0; align-self: center; }
