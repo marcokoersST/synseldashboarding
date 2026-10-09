@@ -92,6 +92,8 @@
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .mt-3 { margin-top: 4px; }
 [aria-label="TV Weergave"] section[aria-label="Prognose"] .h-2\.5 { flex-shrink: 0; }
 @media (max-height: 850px) {
+  [role="dialog"][aria-label="TV Weergave"] { grid-template-rows: 36px 140px minmax(140px, 1fr) 380px; }
+  [aria-label="TV Weergave"] > :nth-child(4) { grid-template-rows: 208px 160px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { font-size: 10px; line-height: 13px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] dl { gap: 4px; }
 }
