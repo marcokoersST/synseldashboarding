@@ -19,13 +19,15 @@
   padding: 8px;
   gap: 0;
 }
-[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; gap: 10px; align-items: start; }
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { display: grid; grid-template-columns: minmax(0, 1fr) 98px; min-height: 0; gap: 10px; align-items: start; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child { gap: 6px; align-items: start; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :only-child { grid-column: 1 / -1; }
 /* Quality chip: pinned flush into the tile's top-right corner, fixed width so all tiles align. */
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) {
   margin: -8px -8px 0 0;
+  justify-self: end;
   width: 98px;
+
   padding: 5px 8px 4px;
   border: 0;
   border-radius: 0 11px 0 8px;
