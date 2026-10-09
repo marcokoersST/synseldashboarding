@@ -19,19 +19,19 @@
   padding: 8px;
   gap: 0;
 }
-[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { display: grid; grid-template-columns: minmax(0, 1fr) 76px; min-height: 0; gap: 6px; align-items: start; }
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; gap: 6px; align-items: start; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child { gap: 6px; align-items: start; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :only-child { grid-column: 1 / -1; }
-[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { width: 76px; margin: 0; }
-[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) > p { min-height: 30px; font-size: 9px; line-height: 10px; }
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { margin: 0; }
+[aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) > p { white-space: nowrap; }
 [aria-label="TV Weergave"] > :nth-child(2) > div > div > :last-child { grid-row: 3; align-self: end; }
 [aria-label="TV Weergave"] > :nth-child(2) .text-5xl { grid-row: 2; font-size: 30px; line-height: 36px; margin: 0; align-self: center; }
 [aria-label="TV Weergave"] > :nth-child(2) .text-lg { font-size: 14px; }
 [aria-label="TV Weergave"] > :nth-child(2) .text-sm { font-size: 11px; }
 [aria-label="TV Weergave"] > :nth-child(2) .size-12 { width: 28px; height: 28px; }
 @media (max-width: 1400px) {
-  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { grid-template-columns: minmax(0, 1fr) 62px; gap: 4px; }
-  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { width: 62px; }
+  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { grid-template-columns: minmax(0, 1fr) auto; gap: 4px; }
+  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { padding-left: 6px; padding-right: 6px; }
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child { gap: 4px; }
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child p { font-size: 11px; line-height: 13px; }
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child span { width: 20px; height: 24px; }

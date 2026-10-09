@@ -414,7 +414,7 @@ const OverviewTab = ({ dateRange, compareRange, deltaMode = "percent", onTabChan
         {kpis.map((kpi) => (
           <Card key={kpi.label}>
             <CardContent className="flex h-full flex-col justify-between p-6 [@media(max-height:850px)]:p-3">
-               <div className="flex min-h-[100px] flex-wrap items-start justify-between gap-2 [@media(max-height:850px)]:min-h-[80px]">
+               <div className="flex min-h-[64px] items-start justify-between gap-2 [@media(max-height:850px)]:min-h-[52px]">
                 <KpiIcon label={kpi.label} title={kpi.label} size="lg" />
                 <KpiQualityBadge label={kpi.label} rows={qualityRows} dateRange={dateRange} compareRange={compareRange} size="lg" />
               </div>
@@ -440,7 +440,7 @@ const OverviewTab = ({ dateRange, compareRange, deltaMode = "percent", onTabChan
         {kpis.map((kpi) => (
           <Card key={kpi.label} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => onTabChange(kpi.tab)}>
             <CardContent className="p-5">
-              <div className="mb-1 flex min-h-[85px] flex-wrap items-start justify-between gap-2">
+              <div className="mb-1 flex min-h-[56px] items-start justify-between gap-2">
                 <KpiIcon label={kpi.label} title={kpi.label} />
                 <KpiQualityBadge label={kpi.label} rows={qualityRows} dateRange={dateRange} compareRange={compareRange} />
               </div>
