@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Copy the source marketing dashboard in isolation and fit its TV view to the screen while preserving the signal carousel.
+
 - [x] Replace only Marketing Hub V2 with the unchanged dashboard from synsel-insight-hub.lovable.app.
 
 - [x] Add a persistent NL/EN language selector beside the Synsel AI logo.
