@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Replace only Marketing Hub V2 with the unchanged dashboard from synsel-insight-hub.lovable.app.
+
 - [x] Add a persistent NL/EN language selector beside the Synsel AI logo.
 - [x] Make current and future rendered interface labels respond to the global language.
 - [x] Keep all ranking Dev info content permanently in English.
