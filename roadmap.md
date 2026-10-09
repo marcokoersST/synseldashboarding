@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Double the TV trend height and show same-weekday previous-week comparisons by default, without scrolling.
+
 - [x] Add the candidate/spend trend below TV KPIs and rotate side-by-side weekly/monthly forecasts at the performance-signal carousel cadence.
 
 - [x] Copy the source marketing dashboard in isolation and fit its TV view to the screen while preserving the signal carousel.
