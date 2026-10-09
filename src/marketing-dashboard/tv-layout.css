@@ -8,7 +8,7 @@
 }
 [aria-label="TV Weergave"] > :first-child h1 { font-size: 20px; }
 [aria-label="TV Weergave"] > :nth-child(2) {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
   min-height: 0;
   gap: 10px;
 }
