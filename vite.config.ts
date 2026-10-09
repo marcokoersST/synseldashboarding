@@ -5,16 +5,23 @@ import { componentTagger } from "lovable-tagger";
 import { compile } from "@tailwindcss/node";
 import { readFile, readdir } from "node:fs/promises";
 
-async function dashboardCandidates(directory: string): Promise<string[]> {
+type DashboardScan = { candidates: string[]; files: string[] };
+
+async function dashboardCandidates(directory: string): Promise<DashboardScan> {
   const entries = await readdir(directory, { withFileTypes: true });
-  const candidates = await Promise.all(entries.map(async (entry) => {
+  const scans = await Promise.all(entries.map(async (entry): Promise<DashboardScan> => {
     const filename = path.join(directory, entry.name);
     if (entry.isDirectory()) return dashboardCandidates(filename);
-    if (!/\.(tsx?|css)$/.test(entry.name)) return [];
-    return (await readFile(filename, "utf8")).split(/[\s"'`]+/);
+    if (!/\.(tsx?|css)$/.test(entry.name)) return { candidates: [], files: [] };
+    const text = await readFile(filename, "utf8");
+    return { candidates: text.split(/[\s"'`]+/), files: [filename] };
   }));
-  return candidates.flat();
+  return scans.reduce<DashboardScan>(
+    (acc, scan) => ({ candidates: acc.candidates.concat(scan.candidates), files: acc.files.concat(scan.files) }),
+    { candidates: [], files: [] },
+  );
 }
+
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -37,8 +44,13 @@ export default defineConfig(({ mode }) => ({
           base: directory,
           onDependency: (dependency) => this.addWatchFile(dependency),
         });
-        const css = compiler.build(await dashboardCandidates(directory));
+        const { candidates, files } = await dashboardCandidates(directory);
+        // Every dashboard source file can contribute class candidates, so each one must
+        // invalidate the compiled theme; otherwise new utilities silently never appear.
+        for (const file of files) this.addWatchFile(file);
+        const css = compiler.build(candidates);
         return `export default ${JSON.stringify(css)}`;
+
       },
     } satisfies Plugin,
     react(),
