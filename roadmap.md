@@ -1,5 +1,6 @@
 # Roadmap
 
+- [x] Grow the TV trend band once more and shrink the forecast blocks, without scrolling.
 - [x] Double the TV trend height and show same-weekday previous-week comparisons by default, without scrolling.
 
 - [x] Add the candidate/spend trend below TV KPIs and rotate side-by-side weekly/monthly forecasts at the performance-signal carousel cadence.

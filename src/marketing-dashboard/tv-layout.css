@@ -50,7 +50,7 @@
 [aria-label="TV Weergave"] > :nth-child(2) .text-sm { font-size: 11px; }
 [aria-label="TV Weergave"] > :nth-child(2) .size-12 { width: 28px; height: 28px; }
 @media (max-width: 1400px) {
-  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+  [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child { grid-template-columns: minmax(0, 1fr) auto; gap: 9px; }
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :nth-child(2) { width: 86px; padding: 4px 6px 3px; }
 
   [aria-label="TV Weergave"] > :nth-child(2) > div > div > :first-child > :first-child { gap: 4px; }
