@@ -1,6 +1,7 @@
 import { getComparisonValue } from "@/marketing-dashboard/lib/marketingCompare";
 import { aggregateComparisonQualityScore } from "@/marketing-dashboard/lib/marketingQuality";
 import { useMemo, useState } from "react";
+import { subDays } from "date-fns";
 import type { DateRange } from "react-day-picker-v9";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
 import { Check, TrendingUp } from "lucide-react";
@@ -23,11 +24,16 @@ export default function MarketingTrendChart({ dateRange, totals: sourceTotals, c
   const totals = useMemo(() => tvMode ? { ...sourceTotals, registrations: matchableCandidates } : sourceTotals, [sourceTotals, tvMode, matchableCandidates]);
   const [selected, setSelected] = useState<TrendMetric[]>(["conversions", "registrations"]);
   const [chosen, setChosen] = useState<TrendGranularity | null>(null);
-  const { points, granularity } = useMemo(() => buildMarketingTrend(dateRange, totals, chosen ?? undefined), [dateRange, totals, chosen]);
+  const trendCompareRange = useMemo(() => tvMode && dateRange.from ? {
+    from: subDays(dateRange.from, 7),
+    to: subDays(dateRange.to ?? dateRange.from, 7),
+  } : compareRange, [tvMode, dateRange, compareRange]);
+  const { points, granularity } = useMemo(() => buildMarketingTrend(dateRange, totals, tvMode ? "day" : chosen ?? undefined), [dateRange, totals, chosen, tvMode]);
   const summary = deriveTrendMetrics(totals);
   // Previous-period line: same comparison basis as the tiles, bucketed with the current granularity and aligned by position.
   const chartPoints = useMemo(() => {
-    if (tvMode || !compareRange?.from || !compareRange.to) return points;
+    if (!trendCompareRange?.from || !trendCompareRange.to) return points;
+    const compareRange = trendCompareRange;
     const prevTotals = {
       conversions: getComparisonValue(totals.conversions, { dateRange, compareRange, seed: "trend-conversions" }),
       registrations: getComparisonValue(totals.registrations, { dateRange, compareRange, seed: "trend-registrations" }),
@@ -42,7 +48,7 @@ export default function MarketingTrendChart({ dateRange, totals: sourceTotals, c
       for (const m of trendMetrics) extra[`prev_${m.key}`] = p[m.key];
       return { ...point, ...extra };
     });
-  }, [points, compareRange, totals, dateRange, qualityRows, granularity, tvMode]);
+  }, [points, trendCompareRange, totals, dateRange, qualityRows, granularity]);
   const hasCompare = chartPoints !== points;
   const availableMetrics = tvMode ? trendMetrics.filter(metric => metric.key === "registrations" || metric.key === "spend").map(metric => metric.key === "registrations" ? { ...metric, label: "Bemiddelbare kandidaten" } : metric) : trendMetrics;
   const activeMetrics = tvMode ? availableMetrics : availableMetrics.filter(metric => selected.includes(metric.key));
@@ -63,7 +69,7 @@ export default function MarketingTrendChart({ dateRange, totals: sourceTotals, c
             </button>
           ))}
         </div>}
-        {tvMode && <div className="flex items-center gap-5" aria-label="Trendlijnen">{activeMetrics.map(metric => <span key={metric.key} className="flex items-center gap-2 text-xs font-medium"><span className="trend-swatch size-2 rounded-full" data-metric={metric.key} />{metric.label}</span>)}</div>}
+        {tvMode && <div className="flex flex-wrap items-center gap-5" aria-label="Trendlijnen">{activeMetrics.map(metric => <span key={metric.key} className="flex items-center gap-2 text-xs font-medium"><span className="trend-swatch size-2 rounded-full" data-metric={metric.key} />{metric.label}</span>)}<span className="flex items-center gap-2 text-xs text-muted-foreground"><span className="w-5 border-t-2 border-dashed border-muted-foreground" />Zelfde dagen vorige week</span></div>}
       </div>
       {!tvMode && <div className="mb-5 flex flex-wrap gap-2 px-4" role="group" aria-label="Trendlijnen">
         {trendMetrics.map(metric => {
@@ -96,6 +102,7 @@ export default function MarketingTrendChart({ dateRange, totals: sourceTotals, c
                 if (!active || !payload?.length) return null;
                 return <div className="rounded-md border border-border bg-popover p-3 text-popover-foreground shadow-sm">
                   <p className="mb-2 text-xs font-medium">{payload[0]?.payload.dateLabel}</p>
+                  {tvMode && payload[0]?.payload.prevDateLabel && <p className="mb-2 text-xs text-muted-foreground">Vorige week: {payload[0].payload.prevDateLabel}</p>}
                   {activeMetrics.map(metric => <div key={metric.key} className="flex items-center justify-between gap-6 py-0.5 text-xs">
                     <span className="flex items-center gap-2"><span className="trend-swatch size-2 rounded-full" data-metric={metric.key} />{metric.label}</span>
                     <span className="flex items-center gap-3"><span className="font-medium tabular-nums">{metric.key === "qualityScore" ? <QualityScoreComparison value={Number(payload[0]?.payload.qualityScore ?? 0)} rows={qualityRows} dateRange={dateRange} compareRange={compareRange} /> : formatTrendValue(Number(payload[0]?.payload[metric.key] ?? 0), metric.format)}</span>{payload[0]?.payload[`prev_${metric.key}`] !== undefined && <span className="tabular-nums text-muted-foreground" title="Vorige periode">vs {formatTrendValue(Number(payload[0]?.payload[`prev_${metric.key}`]), metric.format)}</span>}</span>
@@ -103,7 +110,7 @@ export default function MarketingTrendChart({ dateRange, totals: sourceTotals, c
                 </div>;
               }} />
               {activeMetrics.map(metric => <Line key={metric.key} yAxisId={metric.key} type="linear" dataKey={metric.key} name={metric.label} stroke={metric.color} strokeWidth={2} dot={points.length === 1 ? { r: 4 } : false} activeDot={{ r: 4 }} isAnimationActive={false} />)}
-              {hasCompare && activeMetrics.map(metric => <Line key={`prev-${metric.key}`} yAxisId={metric.key} type="linear" dataKey={`prev_${metric.key}`} name={`${metric.label} (vorige periode)`} stroke={metric.color} strokeOpacity={0.45} strokeWidth={1.5} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />)}
+              {hasCompare && activeMetrics.map(metric => <Line key={`prev-${metric.key}`} yAxisId={metric.key} type="linear" dataKey={`prev_${metric.key}`} name={`${metric.label} (${tvMode ? "vorige week" : "vorige periode"})`} stroke={metric.color} strokeOpacity={0.6} strokeWidth={1.5} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />)}
             </LineChart>
           </ResponsiveContainer>
         )}
