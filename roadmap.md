@@ -15,3 +15,4 @@
 - [x] Add persistent Ukrainian and Polish options with localized interface text and formatting.
 - [x] Split contractor starters and departures into selected-period and rolling four-week columns.
 - [x] Split all contractor ranking summary tiles into current, selected-period, and four-week statistics.
+- [x] Shorten the TV trend band, enlarge the forecast cards, and add clear space between forecast and performance signals.
