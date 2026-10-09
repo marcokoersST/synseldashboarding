@@ -101,7 +101,9 @@
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { font-size: 10px; line-height: 13px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] dl { gap: 4px; }
   [aria-label="TV Weergave"] .tv-forecast-heading .size-9 { width: 28px; height: 28px; }
-  [aria-label="TV Weergave"] section[aria-label="Prognose"] .p-4 { padding: 6px; gap: 2px; }
+  [aria-label="TV Weergave"] section[aria-label="Prognose"] .p-4 { padding: 4px; gap: 0; }
+  [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-xs { line-height: 11px; }
+  [aria-label="TV Weergave"] section[aria-label="Prognose"] .h-2\.5 { height: 8px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-3xl { font-size: 26px; line-height: 28px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-lg { font-size: 14px; line-height: 16px; }
   [aria-label="TV Weergave"] section[aria-label="Prognose"] .text-sm { line-height: 14px; }
