@@ -116,3 +116,8 @@
   [role="dialog"][aria-label="TV Weergave"] { padding: 24px; gap: 16px; grid-template-rows: 36px 140px minmax(96px, 168px) minmax(0, 1fr); }
   [aria-label="TV Weergave"] > :nth-child(4) { grid-template-rows: minmax(0, 1fr) 210px; gap: 32px; }
 }
+/* Extremely tall canvases: keep the forecast content as one readable block
+   instead of spreading it across the whole card. */
+@media (min-height: 1400px) {
+  [aria-label="TV Weergave"] section[aria-label="Prognose"] .p-4 { justify-content: center; gap: 20px; }
+}
