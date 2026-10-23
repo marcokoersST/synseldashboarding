@@ -6,6 +6,7 @@ Een nieuwe pagina "Bonus Tabel Overzicht" in het menu onder Concepts, met de bon
 ## Opbouw van de pagina
 - **Kop**: "Bonus periode 8 (week 29, 30, 31 & 32)" — titel past zich aan de gekozen periode aan.
 - **Periodeselector** bovenaan: periodes P1–P13 (elk 4 weken) met vorige/volgende-knoppen; standaard periode 8. Cijfers wisselen per periode (demodata).
+- **Unitfilter** en **consultantfilter** naast de periodeselector: keuzelijsten met meerdere vinkjes en "Alles aan/uit", net als op de andere dashboards. Tabel en totaalrij passen zich direct aan. Elke consultant hoort bij een van de 5 units.
 - **Kolommen aan/uit**: knop "Kolommen" met een lijst van vinkjes per kolom en "Alles aan/uit". Keuze blijft bewaard. Consultant blijft altijd zichtbaar.
 - **Tabel** met alle kolommen uit de afbeelding: Consultant, Datum in dienst, Uitbetaling, Targetbonus, Prijzen, Periodes F, Forecastbonus, Yellow Card, HPC/FG, Omzet detachering, Omzet margefactuur, Omzet Please, Totaal marge, Omzetbonus, Totaal uit te keren, Totale bonus 2026.
   - Bedragen als € met Nederlandse notatie, lege waarden als "–".
