@@ -168,6 +168,11 @@ const navItems: NavItem[] = [
     path: "/concepts/systeem-hygiene",
   },
   {
+    icon: ShieldCheck,
+    label: "Bonus Tabel Overzicht",
+    path: "/concepts/bonus-tabel",
+  },
+  {
     icon: Phone,
     label: "Call Dashboarding",
     path: "/calldashboarding",
