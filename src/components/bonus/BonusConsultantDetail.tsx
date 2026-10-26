@@ -56,7 +56,7 @@ export function BonusConsultantDetail({ rows, consultant, periode, onChange }: {
               <h3 className="flex items-center gap-2 text-sm font-semibold"><TrendingUp className="h-4 w-4 text-primary" />Omzetverdeling</h3>
               <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
                 {REVENUE.map((c) => (
-                  <div key={c.key} style={{ width: `${pct(num(r[c.key]), r.totaalMarge)}%`, background: c.color }} />
+                  <div key={c.key} style={{ width: `${pct(num(r[c.key]), REVENUE.reduce((s, x) => s + num(r[x.key]), 0))}%`, background: c.color }} />
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -64,7 +64,7 @@ export function BonusConsultantDetail({ rows, consultant, periode, onChange }: {
                   <div key={c.key} className="rounded-lg border border-border p-3">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><span className="h-2 w-2 rounded-full" style={{ background: c.color }} />{c.label}</div>
                     <div className="mt-1 font-semibold tabular-nums">{money.format(num(r[c.key]))}</div>
-                    <div className="text-xs text-muted-foreground">{pct(num(r[c.key]), r.totaalMarge)}%</div>
+                    <div className="text-xs text-muted-foreground">{pct(num(r[c.key]), REVENUE.reduce((s, x) => s + num(r[x.key]), 0))}%</div>
                   </div>
                 ))}
               </div>
