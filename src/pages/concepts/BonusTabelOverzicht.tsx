@@ -18,7 +18,6 @@ const COLUMNS: { key: Key; label: string; kind: Kind }[] = [
   { key: "prijzen", label: "Prijzen", kind: "money" },
   { key: "periodesF", label: "Periodes forecastbonus", kind: "money" },
   { key: "forecastbonus", label: "Forecastbonus", kind: "money" },
-  { key: "yellowCards", label: "Gele kaarten", kind: "count" },
   { key: "hpcFg", label: "HPC/FG", kind: "money" },
   { key: "omzetDetachering", label: "Omzet Jigler", kind: "money" },
   { key: "omzetWns", label: "Omzet W&S", kind: "money" },
@@ -164,7 +163,7 @@ export default function BonusTabelOverzicht() {
               "Periodes forecastbonus = monetary amount (€) of forecast bonus for locked-in periods; not a counter. Counts in Totaal uit te keren.",
               "HPC/FG: HPC Million €2,000/month (period revenue ≥ €76,923), HPC 7.5 Ton €1,000/month (≥ €57,692), Fast Growers €500/month (≥ €7.5k growth over 3 periods). Club bonuses continue during holiday periods; holiday periods do not count as reference periods.",
               "Prijzen: €500 per trophy, also awarded in holiday periods. Assigned MANUALLY via the Financieel tab (assign button still to be built). Trophies: Meeste Omzetgroei (≥ €3.5k growth), Margebaas (≥ 2 placements with creation start date, highest potential margin), Plaatsingskanon (≥ 3 placements with creation start date), Gesprekken-goeroe (≥ 24 conversations).",
-              "Gele kaarten = number of yellow cards the consultant has received (count, shown before HPC/FG). A yellow card is given when Fast Growers growth drops below €7.5k; the consultant then has 2 non-holiday periods to recover. Footer row sums the count.",
+              "Gele kaarten = shown as a yellow football-card icon directly before the HPC/FG value (one icon per card received; no separate column). A yellow card is given when Fast Growers growth drops below €7.5k; the consultant then has 2 non-holiday periods to recover.",
               "Totaal uit te keren = Omzetbonus + HPC/FG + Forecastbonus + Periodes forecastbonus + Targetbonus + Prijzen (empty = 0)",
               "Totale bonus 2026 = cumulative bonus paid out in 2026 up to the selected period",
               "Datum in dienst / Uitbetaling = HR fields. Fixed salary (salary house by RF level, €2,550–€6,500/month) is not part of this table.",
@@ -202,7 +201,14 @@ export default function BonusTabelOverzicht() {
                 </td>
                 {cols.map((c) => (
                   <td key={c.key} className={cn("whitespace-nowrap px-3 tabular-nums", c.kind !== "text" ? "text-right" : "text-left", c.key === "totaleBonus" && "font-bold text-foreground", fmt(r[c.key], c.kind) === "–" && "text-muted-foreground")}>
-                    {fmt(r[c.key], c.kind)}
+                    {c.key === "hpcFg" && r.yellowCards > 0 ? (
+                      <span className="inline-flex items-center justify-end gap-1.5">
+                        {Array.from({ length: r.yellowCards }).map((_, i) => (
+                          <span key={i} title={`Gele kaart (${r.yellowCards})`} aria-label="Gele kaart" className="inline-block h-4 w-3 rotate-6 rounded-[2px] border border-amber-500 bg-yellow-400 shadow-sm" />
+                        ))}
+                        {fmt(r[c.key], c.kind)}
+                      </span>
+                    ) : fmt(r[c.key], c.kind)}
                   </td>
                 ))}
               </tr>
