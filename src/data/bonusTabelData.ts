@@ -9,7 +9,8 @@ export interface BonusRecord {
   prijzen: number | null;
   periodesF: number | null;
   forecastbonus: number | null;
-  yellowCard: string | null;
+  /** Number of yellow cards received so far */
+  yellowCards: number;
   hpcFg: number | null;
   omzetDetachering: number;
   omzetWns: number;
@@ -78,7 +79,7 @@ export function bonusRecordsForPeriode(p: number): BonusRecord[] {
       prijzen: b[5],
       periodesF: null,
       forecastbonus: b[6],
-      yellowCard: b[7],
+      yellowCards: b[7] ? parseInt(b[7], 10) || 0 : 0,
       hpcFg: b[8],
       omzetDetachering: det,
       omzetWns: wns,

@@ -82,7 +82,7 @@ export function BonusConsultantDetail({ rows, consultant, periode, onChange }: {
                   </div>
                 );
               })}
-              {r.yellowCard && <p className="text-xs text-destructive">Yellow Card: {r.yellowCard}</p>}
+              {r.yellowCards > 0 && <p className="text-xs text-destructive">Gele kaarten: {r.yellowCards}</p>}
             </section>
           </>
         )}
