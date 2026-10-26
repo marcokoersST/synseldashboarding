@@ -7,7 +7,7 @@ export interface BonusRecord {
   uitbetaling: string;
   targetbonus: number | null;
   prijzen: number | null;
-  periodesF: string | null;
+  periodesF: number | null;
   forecastbonus: number | null;
   yellowCard: string | null;
   hpcFg: number | null;
