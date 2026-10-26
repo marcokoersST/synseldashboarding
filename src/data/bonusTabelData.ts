@@ -7,7 +7,7 @@ export interface BonusRecord {
   uitbetaling: string;
   targetbonus: number | null;
   prijzen: number | null;
-  periodesF: string | null;
+  periodesF: number | null;
   forecastbonus: number | null;
   yellowCard: string | null;
   hpcFg: number | null;
@@ -53,6 +53,11 @@ export function periodeWeeks(p: number) {
 
 const round = (n: number) => Math.round(n * 100) / 100;
 
+/** Totaal uit te keren = Omzetbonus + HPC/FG + Forecastbonus + Periodes forecastbonus + Targetbonus + Prijzen */
+export function sumUitTeKeren(r: Pick<BonusRecord, "omzetbonus" | "hpcFg" | "forecastbonus" | "periodesF" | "targetbonus" | "prijzen">) {
+  return (r.omzetbonus || 0) + (r.hpcFg || 0) + (r.forecastbonus || 0) + (r.periodesF || 0) + (r.targetbonus || 0) + (r.prijzen || 0);
+}
+
 export function bonusRecordsForPeriode(p: number): BonusRecord[] {
   return BASE.map((b, i) => {
     // Periode 8 = exact uit de bron; andere periodes deterministisch afgeleid.
@@ -77,8 +82,8 @@ export function bonusRecordsForPeriode(p: number): BonusRecord[] {
       omzetPlease: please,
       totaalMarge: round(det + marge + please),
       omzetbonus: Math.round((b[12] * f) / 100) * 100,
-      totaalUitTeKeren: Math.round((b[13] * f) / 100) * 100,
+      totaalUitTeKeren: 0,
       totaleBonus: Math.round((b[14] * cum) / 100) * 100,
     };
-  });
+  }).map((r) => ({ ...r, totaalUitTeKeren: sumUitTeKeren(r) }));
 }
