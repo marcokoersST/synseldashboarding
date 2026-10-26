@@ -12,6 +12,7 @@ export interface BonusRecord {
   yellowCard: string | null;
   hpcFg: number | null;
   omzetDetachering: number;
+  omzetWns: number;
   omzetMargefactuur: number;
   omzetPlease: number;
   totaalMarge: number;
