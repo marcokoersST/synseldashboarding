@@ -80,5 +80,5 @@ export function bonusRecordsForPeriode(p: number): BonusRecord[] {
       totaalUitTeKeren: 0,
       totaleBonus: Math.round((b[14] * cum) / 100) * 100,
     };
-  });
+  }).map((r) => ({ ...r, totaalUitTeKeren: totaalUitTeKeren(r) }));
 }
