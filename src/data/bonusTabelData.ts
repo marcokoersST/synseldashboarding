@@ -12,6 +12,7 @@ export interface BonusRecord {
   yellowCard: string | null;
   hpcFg: number | null;
   omzetDetachering: number;
+  omzetWns: number;
   omzetMargefactuur: number;
   omzetPlease: number;
   totaalMarge: number;
@@ -66,6 +67,8 @@ export function bonusRecordsForPeriode(p: number): BonusRecord[] {
     const det = round(b[9] * f);
     const marge = round(b[10] * f);
     const please = round(b[11] * f);
+    // Omzet W&S: geen bronwaarde, deterministisch mockbedrag (ca. 0–6 k per periode).
+    const wns = b[9] === 0 && b[11] === 0 ? 0 : round(((i * 71 + p * 29) % 7) * 850 * f);
     return {
       consultant: b[0],
       unit: b[1],
@@ -78,9 +81,10 @@ export function bonusRecordsForPeriode(p: number): BonusRecord[] {
       yellowCard: b[7],
       hpcFg: b[8],
       omzetDetachering: det,
+      omzetWns: wns,
       omzetMargefactuur: marge,
       omzetPlease: please,
-      totaalMarge: round(det + marge + please),
+      totaalMarge: round(det + wns + marge + please),
       omzetbonus: Math.round((b[12] * f) / 100) * 100,
       totaalUitTeKeren: 0,
       totaleBonus: Math.round((b[14] * cum) / 100) * 100,
