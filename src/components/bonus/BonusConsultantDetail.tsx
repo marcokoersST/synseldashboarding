@@ -6,10 +6,10 @@ import type { BonusRecord } from "@/data/bonusTabelData";
 const money = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
 const REVENUE: { key: keyof BonusRecord; label: string; color: string }[] = [
-  { key: "omzetDetachering", label: "Omzet Jigler", color: "hsl(var(--chart-1))" },
-  { key: "omzetWns", label: "Omzet W&S", color: "hsl(var(--chart-2))" },
-  { key: "omzetMargefactuur", label: "Omzet margefactuur", color: "hsl(var(--chart-3))" },
-  { key: "omzetPlease", label: "Omzet Please", color: "hsl(var(--chart-4))" },
+  { key: "omzetDetachering", label: "Omzet Jigler", color: "hsl(var(--primary))" },
+  { key: "omzetWns", label: "Omzet W&S", color: "hsl(var(--primary) / 0.7)" },
+  { key: "omzetMargefactuur", label: "Omzet margefactuur", color: "hsl(var(--primary) / 0.45)" },
+  { key: "omzetPlease", label: "Omzet Please", color: "hsl(var(--primary) / 0.25)" },
 ];
 const BONUS: { key: keyof BonusRecord; label: string }[] = [
   { key: "omzetbonus", label: "Omzetbonus" },
