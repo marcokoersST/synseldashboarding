@@ -84,7 +84,8 @@ export function bonusRecordsForPeriode(p: number): BonusRecord[] {
       omzetWns: wns,
       omzetMargefactuur: marge,
       omzetPlease: please,
-      totaalMarge: round(det + wns + marge + please),
+      // Totaal marge excludes W&S (W&S only counts for the Targetbonus).
+      totaalMarge: round(det + marge + please),
       omzetbonus: Math.round((b[12] * f) / 100) * 100,
       totaalUitTeKeren: 0,
       totaleBonus: Math.round((b[14] * cum) / 100) * 100,
