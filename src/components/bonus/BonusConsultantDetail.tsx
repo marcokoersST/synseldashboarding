@@ -82,7 +82,14 @@ export function BonusConsultantDetail({ rows, consultant, periode, onChange }: {
                   </div>
                 );
               })}
-              {r.yellowCards > 0 && <p className="text-xs text-destructive">Gele kaarten: {r.yellowCards}</p>}
+              {r.yellowCards > 0 && (
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  {Array.from({ length: r.yellowCards }).map((_, i) => (
+                    <span key={i} aria-label="Gele kaart" className="inline-block h-4 w-3 rotate-6 rounded-[2px] border border-amber-500 bg-yellow-400 shadow-sm" />
+                  ))}
+                  Gele kaart
+                </p>
+              )}
             </section>
           </>
         )}
