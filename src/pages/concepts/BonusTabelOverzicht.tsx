@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { BONUS_UNITS, BonusRecord, DEFAULT_PERIODE, PERIODES, bonusRecordsForPeriode, periodeWeeks } from "@/data/bonusTabelData";
 
 type Key = keyof BonusRecord;
-type Kind = "text" | "money";
+type Kind = "text" | "money" | "count";
 const COLUMNS: { key: Key; label: string; kind: Kind }[] = [
   { key: "datumInDienst", label: "Datum in dienst", kind: "text" },
   { key: "uitbetaling", label: "Uitbetaling", kind: "text" },
@@ -18,7 +18,7 @@ const COLUMNS: { key: Key; label: string; kind: Kind }[] = [
   { key: "prijzen", label: "Prijzen", kind: "money" },
   { key: "periodesF", label: "Periodes forecastbonus", kind: "money" },
   { key: "forecastbonus", label: "Forecastbonus", kind: "money" },
-  { key: "yellowCard", label: "Yellow Card", kind: "text" },
+  { key: "yellowCards", label: "Gele kaarten", kind: "count" },
   { key: "hpcFg", label: "HPC/FG", kind: "money" },
   { key: "omzetDetachering", label: "Omzet Jigler", kind: "money" },
   { key: "omzetWns", label: "Omzet W&S", kind: "money" },
@@ -29,7 +29,7 @@ const COLUMNS: { key: Key; label: string; kind: Kind }[] = [
   { key: "totaalUitTeKeren", label: "Totaal uit te keren", kind: "money" },
   { key: "totaleBonus", label: "Totale bonus 2026", kind: "money" },
 ];
-const STORAGE = "bonus-tabel-columns-v3";
+const STORAGE = "bonus-tabel-columns-v4";
 const DEFAULT_HIDDEN: Key[] = ["datumInDienst", "uitbetaling", "omzetDetachering", "omzetWns", "omzetMargefactuur", "omzetPlease"];
 const money = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 });
 const fmt = (v: unknown, kind: Kind) => (v === null || v === undefined || v === 0 || v === "" ? "–" : kind === "money" ? money.format(v as number) : String(v));
@@ -164,7 +164,7 @@ export default function BonusTabelOverzicht() {
               "Periodes forecastbonus = monetary amount (€) of forecast bonus for locked-in periods; not a counter. Counts in Totaal uit te keren.",
               "HPC/FG: HPC Million €2,000/month (period revenue ≥ €76,923), HPC 7.5 Ton €1,000/month (≥ €57,692), Fast Growers €500/month (≥ €7.5k growth over 3 periods). Club bonuses continue during holiday periods; holiday periods do not count as reference periods.",
               "Prijzen: €500 per trophy, also awarded in holiday periods. Assigned MANUALLY via the Financieel tab (assign button still to be built). Trophies: Meeste Omzetgroei (≥ €3.5k growth), Margebaas (≥ 2 placements with creation start date, highest potential margin), Plaatsingskanon (≥ 3 placements with creation start date), Gesprekken-goeroe (≥ 24 conversations).",
-              "Yellow Card = warning (text, not summed); consultant has 2 non-holiday periods to recover.",
+              "Gele kaarten = number of yellow cards the consultant has received (count, shown before HPC/FG). A yellow card is given when Fast Growers growth drops below €7.5k; the consultant then has 2 non-holiday periods to recover. Footer row sums the count.",
               "Totaal uit te keren = Omzetbonus + HPC/FG + Forecastbonus + Periodes forecastbonus + Targetbonus + Prijzen (empty = 0)",
               "Totale bonus 2026 = cumulative bonus paid out in 2026 up to the selected period",
               "Datum in dienst / Uitbetaling = HR fields. Fixed salary (salary house by RF level, €2,550–€6,500/month) is not part of this table.",
@@ -185,7 +185,7 @@ export default function BonusTabelOverzicht() {
                 <button className="flex items-center gap-1" onClick={() => toggleSort("consultant")}>Consultant <ArrowUpDown className="h-3 w-3" /></button>
               </th>
               {cols.map((c) => (
-                <th key={c.key} className={cn("whitespace-nowrap px-3 text-xs font-semibold text-muted-foreground", c.kind === "money" ? "text-right" : "text-left")}>
+                <th key={c.key} className={cn("whitespace-nowrap px-3 text-xs font-semibold text-muted-foreground", c.kind !== "text" ? "text-right" : "text-left")}>
                   <button className={cn("inline-flex items-center gap-1", sort.key === c.key && "text-foreground")} onClick={() => toggleSort(c.key)}>
                     {c.label} <ArrowUpDown className="h-3 w-3" />
                   </button>
@@ -201,7 +201,7 @@ export default function BonusTabelOverzicht() {
                   <span className="ml-2 text-[10px] text-muted-foreground">{r.unit}</span>
                 </td>
                 {cols.map((c) => (
-                  <td key={c.key} className={cn("whitespace-nowrap px-3 tabular-nums", c.kind === "money" ? "text-right" : "text-left", c.key === "totaleBonus" && "font-bold text-foreground", fmt(r[c.key], c.kind) === "–" && "text-muted-foreground")}>
+                  <td key={c.key} className={cn("whitespace-nowrap px-3 tabular-nums", c.kind !== "text" ? "text-right" : "text-left", c.key === "totaleBonus" && "font-bold text-foreground", fmt(r[c.key], c.kind) === "–" && "text-muted-foreground")}>
                     {fmt(r[c.key], c.kind)}
                   </td>
                 ))}
@@ -215,7 +215,7 @@ export default function BonusTabelOverzicht() {
             <tr className="h-10 border-t-2 border-border bg-muted/60 font-semibold">
               <td className="sticky left-0 z-10 bg-muted px-3">Totaal</td>
               {cols.map((c) => (
-                <td key={c.key} className="whitespace-nowrap px-3 text-right tabular-nums">{c.kind === "money" ? fmt(total(c.key), "money") : ""}</td>
+                <td key={c.key} className="whitespace-nowrap px-3 text-right tabular-nums">{c.kind !== "text" ? fmt(total(c.key), c.kind) : ""}</td>
               ))}
             </tr>
           </tfoot>
