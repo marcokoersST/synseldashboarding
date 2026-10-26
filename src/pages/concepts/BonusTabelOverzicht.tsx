@@ -15,11 +15,11 @@ const COLUMNS: { key: Key; label: string; kind: Kind }[] = [
   { key: "uitbetaling", label: "Uitbetaling", kind: "text" },
   { key: "targetbonus", label: "Targetbonus", kind: "money" },
   { key: "prijzen", label: "Prijzen", kind: "money" },
-  { key: "periodesF", label: "Periodes F", kind: "text" },
+  { key: "periodesF", label: "Periodes forecastbonus", kind: "money" },
   { key: "forecastbonus", label: "Forecastbonus", kind: "money" },
   { key: "yellowCard", label: "Yellow Card", kind: "text" },
   { key: "hpcFg", label: "HPC/FG", kind: "money" },
-  { key: "omzetDetachering", label: "Omzet detachering", kind: "money" },
+  { key: "omzetDetachering", label: "Omzet Jigler", kind: "money" },
   { key: "omzetMargefactuur", label: "Omzet margefactuur", kind: "money" },
   { key: "omzetPlease", label: "Omzet Please", kind: "money" },
   { key: "totaalMarge", label: "Totaal marge", kind: "money" },
@@ -27,7 +27,8 @@ const COLUMNS: { key: Key; label: string; kind: Kind }[] = [
   { key: "totaalUitTeKeren", label: "Totaal uit te keren", kind: "money" },
   { key: "totaleBonus", label: "Totale bonus 2026", kind: "money" },
 ];
-const STORAGE = "bonus-tabel-columns";
+const STORAGE = "bonus-tabel-columns-v2";
+const DEFAULT_HIDDEN: Key[] = ["datumInDienst", "uitbetaling", "omzetDetachering", "omzetMargefactuur", "omzetPlease"];
 const money = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 });
 const fmt = (v: unknown, kind: Kind) => (v === null || v === undefined || v === 0 || v === "" ? "–" : kind === "money" ? money.format(v as number) : String(v));
 
@@ -79,7 +80,7 @@ export default function BonusTabelOverzicht() {
   const [sort, setSort] = useState<{ key: Key; dir: 1 | -1 }>({ key: "totaleBonus", dir: -1 });
   const [visible, setVisible] = useState<Key[]>(() => {
     try { const s = localStorage.getItem(STORAGE); if (s) return JSON.parse(s); } catch { /* ignore */ }
-    return COLUMNS.map((c) => c.key);
+    return COLUMNS.map((c) => c.key).filter((k) => !DEFAULT_HIDDEN.includes(k));
   });
   useEffect(() => { localStorage.setItem(STORAGE, JSON.stringify(visible)); }, [visible]);
 
@@ -147,7 +148,17 @@ export default function BonusTabelOverzicht() {
             source="Static mock data reproducing the bonus spreadsheet (period 8 matches the source exactly; other periods are deterministic derivations)."
             filters="Period (P1–P13, 4 weeks each), unit multi-select, consultant multi-select (options limited to selected units). Column visibility persisted in localStorage."
             ranking="Default: Total bonus 2026 descending. Every column header toggles sort."
-            calculations={["Total margin = secondment revenue + margin invoice revenue + Please revenue", "Footer row sums all visible monetary columns for the filtered rows"]}
+            calculations={[
+              "Omzet Jigler = secondment (detachering) revenue invoiced via Jigler in the selected period",
+              "Omzet margefactuur = margin-invoice revenue; Omzet Please = revenue via Please",
+              "Totaal marge = Omzet Jigler + Omzet margefactuur + Omzet Please",
+              "Omzetbonus = revenue bonus from the period revenue ladder",
+              "Totaal uit te keren = Omzetbonus + HPC/FG + Forecastbonus + Periodes forecastbonus + Targetbonus + Prijzen (empty = 0)",
+              "Totale bonus 2026 = cumulative bonus paid out in 2026 up to the selected period",
+              "Yellow Card = warning count (text, not summed); Datum in dienst / Uitbetaling = HR fields",
+              "Hidden by default: Datum in dienst, Uitbetaling, Omzet Jigler, Omzet margefactuur, Omzet Please",
+              "Footer row sums all visible monetary columns for the filtered rows",
+            ]}
             rowCount={rows.length}
           />
         </div>

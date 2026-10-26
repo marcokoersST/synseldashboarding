@@ -77,7 +77,7 @@ export function bonusRecordsForPeriode(p: number): BonusRecord[] {
       omzetPlease: please,
       totaalMarge: round(det + marge + please),
       omzetbonus: Math.round((b[12] * f) / 100) * 100,
-      totaalUitTeKeren: Math.round((b[13] * f) / 100) * 100,
+      totaalUitTeKeren: 0,
       totaleBonus: Math.round((b[14] * cum) / 100) * 100,
     };
   });
