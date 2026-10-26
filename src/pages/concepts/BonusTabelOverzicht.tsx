@@ -152,16 +152,24 @@ export default function BonusTabelOverzicht() {
             filters="Period (P1–P13, 4 weeks each), unit multi-select, consultant multi-select (options limited to selected units). Column visibility persisted in localStorage."
             ranking="Default: Total bonus 2026 descending. Every column header toggles sort."
             calculations={[
+              "Periods: 13 periods of 4 weeks. Holiday periods are fixed: P1, P8, P9 and P13.",
+              "'Starts' everywhere = number of placements with a creation start date (aanmaakstartdatum) within that period.",
               "Omzet Jigler = secondment (detachering) revenue invoiced via Jigler in the selected period",
-              "Omzet W&S = recruitment & selection (werving & selectie) fee revenue in the selected period (mock values, no source column yet)",
+              "Omzet W&S = recruitment & selection fee revenue (mock values, no source column yet)",
               "Omzet margefactuur = margin-invoice revenue; Omzet Please = revenue via Please",
               "Totaal marge = Omzet Jigler + Omzet W&S + Omzet margefactuur + Omzet Please",
-              "Row click opens a consultant detail view: revenue split across the four streams (share of Totaal marge) and payout per bonus component (share of Totaal uit te keren)",
-              "Omzetbonus = revenue bonus from the period revenue ladder",
+              "Omzetbonus (per period): fixed ladder on period revenue, €10k → €200 up to €160k → €10,000. Strict floor: the highest tier the revenue is at or above applies, never rounded up (e.g. €48k → €40k tier). Counts secondment, margin invoices and takeovers; W&S is EXCLUDED.",
+              "Targetbonus: one-off payout when a yearly cumulative revenue threshold is passed (€250k → €1,000 up to €2M → €40,000). Not cumulative: each tier pays its own amount once. W&S is the only stream that DOES count here.",
+              "Forecastbonus (monetary amount): based on the average revenue of the last 3 non-holiday periods; tiers €500k → +€500/month up to €1.5M → +€2,500/month; 3-month lock-in. Retention requires avg ≥ 20 conversations per period and ≥ 6 placements with creation start date in the last 3 non-holiday periods.",
+              "Periodes forecastbonus = monetary amount (€) of forecast bonus for locked-in periods; not a counter. Counts in Totaal uit te keren.",
+              "HPC/FG: HPC Million €2,000/month (period revenue ≥ €76,923), HPC 7.5 Ton €1,000/month (≥ €57,692), Fast Growers €500/month (≥ €7.5k growth over 3 periods). Club bonuses continue during holiday periods; holiday periods do not count as reference periods.",
+              "Prijzen: €500 per trophy, also awarded in holiday periods. Meeste Omzetgroei (≥ €3.5k growth), Margebaas (≥ 2 placements with creation start date, highest potential margin), Plaatsingskanon (≥ 3 placements with creation start date), Gesprekken-goeroe (≥ 24 conversations).",
+              "Yellow Card = warning (text, not summed); consultant has 2 non-holiday periods to recover.",
               "Totaal uit te keren = Omzetbonus + HPC/FG + Forecastbonus + Periodes forecastbonus + Targetbonus + Prijzen (empty = 0)",
               "Totale bonus 2026 = cumulative bonus paid out in 2026 up to the selected period",
-              "Yellow Card = warning count (text, not summed); Datum in dienst / Uitbetaling = HR fields",
-              "Hidden by default: Datum in dienst, Uitbetaling, Omzet Jigler, Omzet margefactuur, Omzet Please",
+              "Datum in dienst / Uitbetaling = HR fields. Fixed salary (salary house by RF level, €2,550–€6,500/month) is not part of this table.",
+              "Row click opens a consultant detail view: revenue split (share of Totaal marge) and payout per bonus component (share of Totaal uit te keren)",
+              "Hidden by default: Datum in dienst, Uitbetaling, Omzet Jigler, Omzet W&S, Omzet margefactuur, Omzet Please",
               "Footer row sums all visible monetary columns for the filtered rows",
             ]}
             rowCount={rows.length}
