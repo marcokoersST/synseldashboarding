@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BonusConsultantDetail } from "@/components/bonus/BonusConsultantDetail";
 import { RankingDevInfo } from "@/components/dashboard/RankingDevInfo";
 import { cn } from "@/lib/utils";
 import { BONUS_UNITS, BonusRecord, DEFAULT_PERIODE, PERIODES, bonusRecordsForPeriode, periodeWeeks } from "@/data/bonusTabelData";
@@ -20,6 +21,7 @@ const COLUMNS: { key: Key; label: string; kind: Kind }[] = [
   { key: "yellowCard", label: "Yellow Card", kind: "text" },
   { key: "hpcFg", label: "HPC/FG", kind: "money" },
   { key: "omzetDetachering", label: "Omzet Jigler", kind: "money" },
+  { key: "omzetWns", label: "Omzet W&S", kind: "money" },
   { key: "omzetMargefactuur", label: "Omzet margefactuur", kind: "money" },
   { key: "omzetPlease", label: "Omzet Please", kind: "money" },
   { key: "totaalMarge", label: "Totaal marge", kind: "money" },
@@ -27,8 +29,8 @@ const COLUMNS: { key: Key; label: string; kind: Kind }[] = [
   { key: "totaalUitTeKeren", label: "Totaal uit te keren", kind: "money" },
   { key: "totaleBonus", label: "Totale bonus 2026", kind: "money" },
 ];
-const STORAGE = "bonus-tabel-columns-v2";
-const DEFAULT_HIDDEN: Key[] = ["datumInDienst", "uitbetaling", "omzetDetachering", "omzetMargefactuur", "omzetPlease"];
+const STORAGE = "bonus-tabel-columns-v3";
+const DEFAULT_HIDDEN: Key[] = ["datumInDienst", "uitbetaling", "omzetDetachering", "omzetWns", "omzetMargefactuur", "omzetPlease"];
 const money = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 });
 const fmt = (v: unknown, kind: Kind) => (v === null || v === undefined || v === 0 || v === "" ? "–" : kind === "money" ? money.format(v as number) : String(v));
 
@@ -77,6 +79,7 @@ export default function BonusTabelOverzicht() {
   const [periode, setPeriode] = useState(DEFAULT_PERIODE);
   const [units, setUnits] = useState<string[]>([]);
   const [consultants, setConsultants] = useState<string[]>([]);
+  const [detail, setDetail] = useState<string | null>(null);
   const [sort, setSort] = useState<{ key: Key; dir: 1 | -1 }>({ key: "totaleBonus", dir: -1 });
   const [visible, setVisible] = useState<Key[]>(() => {
     try { const s = localStorage.getItem(STORAGE); if (s) return JSON.parse(s); } catch { /* ignore */ }
@@ -150,8 +153,10 @@ export default function BonusTabelOverzicht() {
             ranking="Default: Total bonus 2026 descending. Every column header toggles sort."
             calculations={[
               "Omzet Jigler = secondment (detachering) revenue invoiced via Jigler in the selected period",
+              "Omzet W&S = recruitment & selection (werving & selectie) fee revenue in the selected period (mock values, no source column yet)",
               "Omzet margefactuur = margin-invoice revenue; Omzet Please = revenue via Please",
-              "Totaal marge = Omzet Jigler + Omzet margefactuur + Omzet Please",
+              "Totaal marge = Omzet Jigler + Omzet W&S + Omzet margefactuur + Omzet Please",
+              "Row click opens a consultant detail view: revenue split across the four streams (share of Totaal marge) and payout per bonus component (share of Totaal uit te keren)",
               "Omzetbonus = revenue bonus from the period revenue ladder",
               "Totaal uit te keren = Omzetbonus + HPC/FG + Forecastbonus + Periodes forecastbonus + Targetbonus + Prijzen (empty = 0)",
               "Totale bonus 2026 = cumulative bonus paid out in 2026 up to the selected period",
@@ -182,7 +187,7 @@ export default function BonusTabelOverzicht() {
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.consultant} className="h-9 border-t border-border hover:bg-muted/40">
+              <tr key={r.consultant} onClick={() => setDetail(r.consultant)} className="h-9 cursor-pointer border-t border-border hover:bg-muted/40">
                 <td className="sticky left-0 z-10 whitespace-nowrap bg-card px-3 font-medium text-foreground">
                   {r.consultant}
                   <span className="ml-2 text-[10px] text-muted-foreground">{r.unit}</span>
@@ -208,6 +213,7 @@ export default function BonusTabelOverzicht() {
           </tfoot>
         </table>
       </div>
+      <BonusConsultantDetail rows={rows} consultant={detail} periode={periode} onChange={setDetail} />
     </div>
   );
 }
