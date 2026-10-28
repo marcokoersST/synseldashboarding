@@ -33,7 +33,10 @@ const rankIcons = [
   <Rocket className="h-4 w-4 text-primary" />,
 ];
 
-function PeriodeMultiSelect({ label, selected, onChange }: { label: string; selected: string[]; onChange: (v: string[]) => void }) {
+const JAREN = ["2026", "2025", "2024"];
+const jaarFactor = (j: string) => ({ "2026": 1, "2025": 0.91, "2024": 0.84 } as Record<string, number>)[j] ?? 1;
+
+function PeriodeMultiSelect({ label, selected, onChange, jaar, onJaarChange }: { label: string; selected: string[]; onChange: (v: string[]) => void; jaar: string; onJaarChange: (v: string) => void }) {
   const toggle = (p: string) => {
     if (selected.includes(p)) {
       onChange(selected.filter((s) => s !== p));
@@ -43,12 +46,19 @@ function PeriodeMultiSelect({ label, selected, onChange }: { label: string; sele
   };
 
   return (
-    <div className="space-y-1">
-      <label className="text-xs font-medium text-muted-foreground">{label}</label>
+    <div className="space-y-2 min-w-0">
+      <label className="text-xs text-muted-foreground">{label}</label>
+      <div className="flex gap-2">
+      <Select value={jaar} onValueChange={onJaarChange}>
+        <SelectTrigger className="w-24 shrink-0 text-sm"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          {JAREN.map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}
+        </SelectContent>
+      </Select>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="w-40 justify-between text-sm font-normal">
-            {selected.length === 0 ? "Selecteer..." : selected.join(", ")}
+          <Button variant="outline" className="flex-1 min-w-0 justify-between text-sm font-normal">
+            <span className="truncate">{selected.length === 0 ? "Selecteer..." : selected.join(", ")}</span>
             <ChevronDown className="h-3.5 w-3.5 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -66,6 +76,7 @@ function PeriodeMultiSelect({ label, selected, onChange }: { label: string; sele
           </div>
         </PopoverContent>
       </Popover>
+      </div>
     </div>
   );
 }
