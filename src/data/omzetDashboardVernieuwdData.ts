@@ -51,10 +51,22 @@ export const omzetConsultantsPerType: ConsultantOmzetPerType[] = omzetConsultant
   })
 );
 
-/** Som van de gekozen omzettypes over de gekozen periodes voor één consultant */
-export function omzetVoorTypes(c: ConsultantOmzetPerType, periodes: string[], types: OmzetType[]) {
+// Mock: omzet van eerdere jaren als vast deel van het huidige jaar (index 0 = huidig jaar)
+const jaarFactoren = [1, 0.91, 0.84];
+
+/** Kiesbare jaren, nieuwste eerst; schuift automatisch mee met de datum van vandaag */
+export function beschikbareJaren(vandaag = new Date()): string[] {
+  return jaarFactoren.map((_, i) => String(vandaag.getFullYear() - i));
+}
+
+export function jaarFactor(jaar: string, vandaag = new Date()): number {
+  return jaarFactoren[vandaag.getFullYear() - Number(jaar)] ?? 1;
+}
+
+/** Som van de gekozen omzettypes over de gekozen periodes voor één consultant, per bedrag geschaald met de jaarfactor */
+export function omzetVoorTypes(c: ConsultantOmzetPerType, periodes: string[], types: OmzetType[], factor = 1) {
   return periodes.reduce(
-    (som, p) => som + types.reduce((s, type) => s + (c.periodes[p]?.[type] ?? 0), 0),
+    (som, p) => som + types.reduce((s, type) => s + Math.round((c.periodes[p]?.[type] ?? 0) * factor), 0),
     0
   );
 }
@@ -64,12 +76,14 @@ export function getOmzetPerTypeForPeriodeGroups(
   data: ConsultantOmzetPerType[],
   groep1: string[],
   groep2: string[],
-  types: OmzetType[]
+  types: OmzetType[],
+  factor1 = 1,
+  factor2 = 1
 ) {
   return data
     .map((c) => {
-      const sum1 = omzetVoorTypes(c, groep1, types);
-      const sum2 = omzetVoorTypes(c, groep2, types);
+      const sum1 = omzetVoorTypes(c, groep1, types, factor1);
+      const sum2 = omzetVoorTypes(c, groep2, types, factor2);
       return { name: c.name, unit: c.unit, status: c.status, periode1: sum1, periode2: sum2, verschil: sum2 - sum1 };
     })
     .sort((a, b) => b.verschil - a.verschil);
@@ -80,13 +94,15 @@ export function getUitsplitsingPerType(
   data: ConsultantOmzetPerType[],
   groep1: string[],
   groep2: string[],
-  types: OmzetType[]
+  types: OmzetType[],
+  factor1 = 1,
+  factor2 = 1
 ) {
   return omzetTypes
     .filter((t) => types.includes(t.key))
     .map((t) => {
-      const sum1 = data.reduce((s, c) => s + omzetVoorTypes(c, groep1, [t.key]), 0);
-      const sum2 = data.reduce((s, c) => s + omzetVoorTypes(c, groep2, [t.key]), 0);
+      const sum1 = data.reduce((s, c) => s + omzetVoorTypes(c, groep1, [t.key], factor1), 0);
+      const sum2 = data.reduce((s, c) => s + omzetVoorTypes(c, groep2, [t.key], factor2), 0);
       return { key: t.key, label: t.label, periode1: sum1, periode2: sum2, verschil: sum2 - sum1 };
     });
 }

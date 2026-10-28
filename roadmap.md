@@ -22,5 +22,6 @@
 - [x] Bonus Tabel Overzicht (Concepts) met periode-, unit-, consultant- en kolomfilters
 - [x] Bonus Tabel: klikbare rijen met consultant-detailscherm en Omzet W&S
 - [x] Omzet dashboard - vernieuwde versie (Concepts): kopie van het Omzetdashboard met uitsplitsing per type omzet, statusfilter en twee vergelijkingspanelen
+- [x] Omzet dashboard - vernieuwde versie: jaarkeuze werkt door in rijen, uitsplitsing per type en totalen; standaard het jaar van vandaag
 
 - [ ] Bonus Tabel: knop in Financieel-tab om Prijzen handmatig toe te wijzen (wacht op opzet Financieel-tab)

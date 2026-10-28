@@ -15,6 +15,7 @@ import { ArrowUpRight, ArrowDownRight, TrendingUp, Trophy, Medal, Flame, Rocket,
 import { allPeriodes, unitAbbr } from "@/data/omzetDashboardData";
 import {
   omzetConsultantsPerType, omzetTypes, alleOmzetTypes, getOmzetPerTypeForPeriodeGroups, getUitsplitsingPerType,
+  beschikbareJaren, jaarFactor,
   type ConsultantStatus, type OmzetType,
 } from "@/data/omzetDashboardVernieuwdData";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
@@ -33,9 +34,6 @@ const rankIcons = [
   <Rocket className="h-4 w-4 text-primary" />,
 ];
 
-const JAREN = ["2026", "2025", "2024"];
-const jaarFactor = (j: string) => ({ "2026": 1, "2025": 0.91, "2024": 0.84 } as Record<string, number>)[j] ?? 1;
-
 function PeriodeMultiSelect({ label, selected, onChange, jaar, onJaarChange }: { label: string; selected: string[]; onChange: (v: string[]) => void; jaar: string; onJaarChange: (v: string) => void }) {
   const toggle = (p: string) => {
     if (selected.includes(p)) {
@@ -52,7 +50,7 @@ function PeriodeMultiSelect({ label, selected, onChange, jaar, onJaarChange }: {
       <Select value={jaar} onValueChange={onJaarChange}>
         <SelectTrigger className="w-24 shrink-0 text-sm"><SelectValue /></SelectTrigger>
         <SelectContent>
-          {JAREN.map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}
+          {beschikbareJaren().map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}
         </SelectContent>
       </Select>
       <Popover>
@@ -149,31 +147,30 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
     [unitFilter, statusFilter]
   );
 
+  // Standaard het jaar van vandaag
+  const [jaar1, setJaar1] = useState(() => beschikbareJaren()[0]);
+  const [jaar2, setJaar2] = useState(() => beschikbareJaren()[0]);
+
   const filtered = useMemo(
-    () => getOmzetPerTypeForPeriodeGroups(base, groep1, groep2, typeFilter),
-    [base, groep1, groep2, typeFilter]
+    () => getOmzetPerTypeForPeriodeGroups(base, groep1, groep2, typeFilter, jaarFactor(jaar1), jaarFactor(jaar2)),
+    [base, groep1, groep2, typeFilter, jaar1, jaar2]
   );
 
   const uitsplitsing = useMemo(
-    () => getUitsplitsingPerType(base, groep1, groep2, typeFilter),
-    [base, groep1, groep2, typeFilter]
+    () => getUitsplitsingPerType(base, groep1, groep2, typeFilter, jaarFactor(jaar1), jaarFactor(jaar2)),
+    [base, groep1, groep2, typeFilter, jaar1, jaar2]
   );
 
-  const [jaar1, setJaar1] = useState("2026");
-  const [jaar2, setJaar2] = useState("2026");
-
   const totals = useMemo(() => {
-    const raw = filtered.reduce(
-      (acc, r) => ({ p1: acc.p1 + r.periode1, p2: acc.p2 + r.periode2 }),
-      { p1: 0, p2: 0 }
-    );
-    const p1 = Math.round(raw.p1 * jaarFactor(jaar1));
-    const p2 = Math.round(raw.p2 * jaarFactor(jaar2));
+    const p1 = filtered.reduce((s, r) => s + r.periode1, 0);
+    const p2 = filtered.reduce((s, r) => s + r.periode2, 0);
     return { p1, p2, verschil: p2 - p1 };
-  }, [filtered, jaar1, jaar2]);
+  }, [filtered]);
 
-  const g1Label = groep1.length ? groep1.join("+") : "—";
-  const g2Label = groep2.length ? groep2.join("+") : "—";
+  // Jaar alleen in de labels als de groepen verschillende jaren hebben, anders zijn beide kolommen bijv. "P4"
+  const toonJaar = jaar1 !== jaar2;
+  const g1Label = groep1.length ? `${toonJaar ? `${jaar1} ` : ""}${groep1.join("+")}` : "—";
+  const g2Label = groep2.length ? `${toonJaar ? `${jaar2} ` : ""}${groep2.join("+")}` : "—";
   const up = totals.verschil >= 0;
   const fmt = (v: number) => Math.round(v).toLocaleString("nl-NL");
 
