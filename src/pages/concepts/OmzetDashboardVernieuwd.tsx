@@ -159,59 +159,55 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
     [base, groep1, groep2, typeFilter]
   );
 
-  const totals = useMemo(
-    () => filtered.reduce(
-      (acc, r) => ({ p1: acc.p1 + r.periode1, p2: acc.p2 + r.periode2, verschil: acc.verschil + r.verschil }),
-      { p1: 0, p2: 0, verschil: 0 }
-    ),
-    [filtered]
-  );
+  const [jaar1, setJaar1] = useState("2026");
+  const [jaar2, setJaar2] = useState("2026");
+
+  const totals = useMemo(() => {
+    const raw = filtered.reduce(
+      (acc, r) => ({ p1: acc.p1 + r.periode1, p2: acc.p2 + r.periode2 }),
+      { p1: 0, p2: 0 }
+    );
+    const p1 = Math.round(raw.p1 * jaarFactor(jaar1));
+    const p2 = Math.round(raw.p2 * jaarFactor(jaar2));
+    return { p1, p2, verschil: p2 - p1 };
+  }, [filtered, jaar1, jaar2]);
 
   const g1Label = groep1.length ? groep1.join("+") : "—";
   const g2Label = groep2.length ? groep2.join("+") : "—";
+  const up = totals.verschil >= 0;
+  const fmt = (v: number) => Math.round(v).toLocaleString("nl-NL");
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <Card className="rounded-xl">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">{title}</CardTitle>
+          <CardTitle className="text-lg font-bold">{title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-3">
-            <PeriodeMultiSelect label="Groep 1" selected={groep1} onChange={setGroep1} />
-            <PeriodeMultiSelect label="Groep 2" selected={groep2} onChange={setGroep2} />
+          <div className="grid grid-cols-2 gap-3">
+            <PeriodeMultiSelect label="Groep 1" selected={groep1} onChange={setGroep1} jaar={jaar1} onJaarChange={setJaar1} />
+            <PeriodeMultiSelect label="Groep 2" selected={groep2} onChange={setGroep2} jaar={jaar2} onJaarChange={setJaar2} />
           </div>
 
-          {/* Mini KPI row */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-muted/40 rounded-lg p-3">
-              <p className="text-[10px] font-medium text-muted-foreground mb-0.5">{g1Label}</p>
-              <p className="text-lg font-bold text-foreground tabular-nums">
-                <AnimatedNumber value={totals.p1} prefix="€" formatFn={(v) => Math.round(v).toLocaleString("nl-NL")} />
+            <div className="border border-border bg-card rounded-xl p-4">
+              <p className="text-xs text-muted-foreground mb-1">{g1Label}</p>
+              <p className="text-2xl font-bold text-foreground tabular-nums">
+                <AnimatedNumber value={totals.p1} prefix="€" formatFn={fmt} />
               </p>
             </div>
-            <div className="bg-muted/40 rounded-lg p-3">
-              <p className="text-[10px] font-medium text-muted-foreground mb-0.5">{g2Label}</p>
-              <p className="text-lg font-bold text-foreground tabular-nums">
-                <AnimatedNumber value={totals.p2} prefix="€" formatFn={(v) => Math.round(v).toLocaleString("nl-NL")} />
+            <div className="border border-border bg-card rounded-xl p-4">
+              <p className="text-xs text-muted-foreground mb-1">{g2Label}</p>
+              <p className="text-2xl font-bold text-foreground tabular-nums">
+                <AnimatedNumber value={totals.p2} prefix="€" formatFn={fmt} />
               </p>
             </div>
-            <div className="bg-muted/40 rounded-lg p-3">
-              <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Verschil</p>
-              <div className="flex items-center gap-1">
-                <p className={`text-lg font-bold tabular-nums ${totals.verschil >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-                  <AnimatedNumber
-                    value={totals.verschil}
-                    prefix={totals.verschil >= 0 ? "+€" : "-€"}
-                    formatFn={(v) => Math.abs(Math.round(v)).toLocaleString("nl-NL")}
-                  />
-                </p>
-                {totals.verschil >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-emerald-600" />
-                ) : (
-                  <ArrowDownRight className="h-4 w-4 text-red-500" />
-                )}
-              </div>
+            <div className="border border-border bg-card rounded-xl p-4">
+              <p className="text-xs text-muted-foreground mb-2">Verschil</p>
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums ${up ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive"}`}>
+                {up ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                {up ? "+€" : "-€"}{Math.abs(totals.verschil).toLocaleString("nl-NL")}
+              </span>
             </div>
           </div>
 
