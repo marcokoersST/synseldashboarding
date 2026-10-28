@@ -173,6 +173,11 @@ const navItems: NavItem[] = [
     path: "/concepts/bonus-tabel",
   },
   {
+    icon: BarChart3,
+    label: "Omzet dashboard - vernieuwde versie",
+    path: "/concepts/omzet-dashboard-vernieuwd",
+  },
+  {
     icon: Phone,
     label: "Call Dashboarding",
     path: "/calldashboarding",

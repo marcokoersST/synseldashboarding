@@ -21,5 +21,6 @@
 - [x] Shorten the TV trend band, enlarge the forecast cards, and add clear space between forecast and performance signals.
 - [x] Bonus Tabel Overzicht (Concepts) met periode-, unit-, consultant- en kolomfilters
 - [x] Bonus Tabel: klikbare rijen met consultant-detailscherm en Omzet W&S
+- [x] Omzet dashboard - vernieuwde versie (Concepts): kopie van het Omzetdashboard met uitsplitsing per type omzet, statusfilter en twee vergelijkingspanelen
 
 - [ ] Bonus Tabel: knop in Financieel-tab om Prijzen handmatig toe te wijzen (wacht op opzet Financieel-tab)

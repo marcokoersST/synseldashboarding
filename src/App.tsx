@@ -92,6 +92,7 @@ const ProductiviteitDashboard = lazy(() => import("./pages/marco/ProductiviteitD
 const AIKpiDashboard = lazy(() => import("./pages/concepts/AIKpiDashboard"));
 const SysteemHygiene = lazy(() => import("./pages/concepts/SysteemHygiene"));
 const BonusTabelOverzicht = lazy(() => import("./pages/concepts/BonusTabelOverzicht"));
+const OmzetDashboardVernieuwd = lazy(() => import("./pages/concepts/OmzetDashboardVernieuwd"));
 const CallDashboarding = lazy(() => import("./pages/concepts/CallDashboarding"));
 
 // Bouw je eigen business
@@ -190,6 +191,7 @@ const App = () => (
               <Route path="/concepts/ai-kpi" element={<AIKpiDashboard />} />
               <Route path="/concepts/systeem-hygiene" element={<SysteemHygiene />} />
               <Route path="/concepts/bonus-tabel" element={<BonusTabelOverzicht />} />
+              <Route path="/concepts/omzet-dashboard-vernieuwd" element={<OmzetDashboardVernieuwd />} />
               <Route path="/calldashboarding" element={<CallDashboarding />} />
               <Route path="/concepts/calldashboarding" element={<CallDashboarding />} />
               <Route path="/bouw-je-eigen-business" element={<BouwJeEigenBusiness />} />
