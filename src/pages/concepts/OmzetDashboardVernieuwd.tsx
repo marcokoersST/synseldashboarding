@@ -19,6 +19,7 @@ import {
   type ConsultantStatus, type OmzetType,
 } from "@/data/omzetDashboardVernieuwdData";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
+import { OmzetConsultantDetail } from "@/components/omzet/OmzetConsultantDetail";
 
 type StatusFilter = "alle" | ConsultantStatus;
 
@@ -150,6 +151,7 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
   // Standaard het jaar van vandaag
   const [jaar1, setJaar1] = useState(() => beschikbareJaren()[0]);
   const [jaar2, setJaar2] = useState(() => beschikbareJaren()[0]);
+  const [detail, setDetail] = useState<string | null>(null);
 
   const filtered = useMemo(
     () => getOmzetPerTypeForPeriodeGroups(base, groep1, groep2, typeFilter, jaarFactor(jaar1), jaarFactor(jaar2)),
@@ -265,7 +267,13 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
             </TableHeader>
             <TableBody>
               {filtered.map((row, idx) => (
-                <TableRow key={row.name} className={idx < 3 ? "bg-primary/5" : row.verschil < 0 ? "bg-red-50/60" : ""}>
+                <TableRow
+                  key={row.name}
+                  tabIndex={0}
+                  onClick={() => setDetail(row.name)}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setDetail(row.name))}
+                  className={`cursor-pointer hover:bg-muted/60 ${idx < 3 ? "bg-primary/5" : row.verschil < 0 ? "bg-red-50/60" : ""}`}
+                >
                   <TableCell className="font-medium text-muted-foreground">
                     <div className="flex items-center gap-1.5">
                       {idx < 5 && rankIcons[idx]}
@@ -337,13 +345,26 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
           </Table>
         </CardContent>
       </Card>
+
+      <OmzetConsultantDetail
+        rows={filtered}
+        consultant={detail}
+        onChange={setDetail}
+        groep1={groep1}
+        groep2={groep2}
+        jaar1={jaar1}
+        jaar2={jaar2}
+        g1Label={g1Label}
+        g2Label={g2Label}
+        typeFilter={typeFilter}
+      />
     </div>
   );
 }
 
 const OmzetDashboardVernieuwd = () => {
   const [unitFilter, setUnitFilter] = useState("alle");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("alle");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("actief");
   const [typeFilter, setTypeFilter] = useState<OmzetType[]>(alleOmzetTypes);
 
   // Panel A: single period comparison (default)

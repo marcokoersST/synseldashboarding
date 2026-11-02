@@ -106,3 +106,33 @@ export function getUitsplitsingPerType(
       return { key: t.key, label: t.label, periode1: sum1, periode2: sum2, verschil: sum2 - sum1 };
     });
 }
+
+/** Huidige periode (1–13) van 28 dagen; zelfde berekening als getCurrentPeriodNumber in ranglijstenData */
+export function huidigePeriodeNummer(vandaag = new Date()): number {
+  const dagVanJaar = Math.floor((vandaag.getTime() - new Date(vandaag.getFullYear(), 0, 1).getTime()) / 86400000) + 1;
+  return Math.min(13, Math.max(1, Math.ceil(dagVanJaar / 28)));
+}
+
+/** De laatste 13 periodes t/m de huidige, over de jaargrens heen; oudste eerst */
+export function laatste13Periodes(vandaag = new Date()): { jaar: string; periode: string }[] {
+  const huidig = huidigePeriodeNummer(vandaag);
+  return Array.from({ length: 13 }, (_, i) => {
+    const n = huidig - 12 + i; // 0 of lager valt in het vorige jaar
+    return n > 0
+      ? { jaar: String(vandaag.getFullYear()), periode: `P${n}` }
+      : { jaar: String(vandaag.getFullYear() - 1), periode: `P${n + 13}` };
+  });
+}
+
+export type PeriodeOmzetPerType = { jaar: string; periode: string } & Record<OmzetType, number>;
+
+/** Omzet per type voor één consultant over de laatste 13 periodes, per periode met de jaarfactor van dat jaar */
+export function omzetLaatste13Periodes(c: ConsultantOmzetPerType, vandaag = new Date()): PeriodeOmzetPerType[] {
+  return laatste13Periodes(vandaag).map(({ jaar, periode }) => {
+    const factor = jaarFactor(jaar, vandaag);
+    const perType = Object.fromEntries(
+      alleOmzetTypes.map((t): [OmzetType, number] => [t, omzetVoorTypes(c, [periode], [t], factor)])
+    ) as Record<OmzetType, number>;
+    return { jaar, periode, ...perType };
+  });
+}

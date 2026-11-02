@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { omzetConsultants, getOmzetForPeriodeGroups } from "./omzetDashboardData";
 import {
   omzetConsultantsPerType, alleOmzetTypes, getOmzetPerTypeForPeriodeGroups, getUitsplitsingPerType,
+  laatste13Periodes, omzetLaatste13Periodes, omzetVoorTypes, jaarFactor,
 } from "./omzetDashboardVernieuwdData";
 
 describe("Omzet dashboard - vernieuwde versie", () => {
@@ -30,5 +31,34 @@ describe("Omzet dashboard - vernieuwde versie", () => {
   it("heeft zowel actieve als inactieve consultants", () => {
     const statussen = new Set(omzetConsultantsPerType.map((c) => c.status));
     expect(statussen).toEqual(new Set(["actief", "inactief"]));
+  });
+});
+
+describe("Afgelopen 13 periodes", () => {
+  const label = (r: { jaar: string; periode: string }) => `${r.periode} ${r.jaar}`;
+
+  it("loopt t/m de huidige periode en gaat over de jaargrens heen", () => {
+    const periodes = laatste13Periodes(new Date(2026, 10, 2)).map(label); // 2 nov 2026 = P11
+    expect(periodes).toHaveLength(13);
+    expect(periodes[0]).toBe("P12 2025");
+    expect(periodes[1]).toBe("P13 2025");
+    expect(periodes[2]).toBe("P1 2026");
+    expect(periodes[12]).toBe("P11 2026");
+  });
+
+  it("begin januari zijn bijna alle periodes van vorig jaar", () => {
+    const periodes = laatste13Periodes(new Date(2027, 0, 10)).map(label); // P1 2027
+    expect(periodes[0]).toBe("P2 2026");
+    expect(periodes[11]).toBe("P13 2026");
+    expect(periodes[12]).toBe("P1 2027");
+  });
+
+  it("totaal per periode = omzet van die periode met de jaarfactor van dat jaar", () => {
+    const vandaag = new Date(2026, 10, 2);
+    const c = omzetConsultantsPerType[0];
+    omzetLaatste13Periodes(c, vandaag).forEach((r) => {
+      const totaal = alleOmzetTypes.reduce((s, t) => s + r[t], 0);
+      expect(totaal).toBe(omzetVoorTypes(c, [r.periode], alleOmzetTypes, jaarFactor(r.jaar, vandaag)));
+    });
   });
 });
