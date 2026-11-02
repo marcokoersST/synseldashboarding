@@ -20,6 +20,7 @@ import {
 } from "@/data/omzetDashboardVernieuwdData";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { OmzetConsultantDetail } from "@/components/omzet/OmzetConsultantDetail";
+import { RankingDevInfo } from "@/components/dashboard/RankingDevInfo";
 
 type StatusFilter = "alle" | ConsultantStatus;
 
@@ -380,6 +381,11 @@ const OmzetDashboardVernieuwd = () => {
     []
   );
 
+  const aantalConsultants = omzetConsultantsPerType.filter(
+    (c) => (unitFilter === "alle" || c.unit === unitFilter) && (statusFilter === "alle" || c.status === statusFilter)
+  ).length;
+  const inactieveNamen = omzetConsultantsPerType.filter((c) => c.status === "inactief").map((c) => c.name).join(", ");
+
   return (
     <ConsultantLayout
       title="Omzet dashboard - vernieuwde versie"
@@ -411,6 +417,25 @@ const OmzetDashboardVernieuwd = () => {
           </Select>
         </div>
         <OmzetTypeMultiSelect selected={typeFilter} onChange={setTypeFilter} />
+        <div className="ml-auto">
+          <RankingDevInfo
+            source="Static mock data. Period totals per consultant (P1–P13) are taken from the original Omzetdashboard (omzetDashboardData.ts) and split deterministically into five revenue types (omzetDashboardVernieuwdData.ts). Previous years are derived from the current year: −1 year = 91%, −2 years = 84%."
+            filters="Global: unit, consultant status (default Active) and revenue type multi-select (default all five). Per panel: group 1 and group 2 each have a year (current year and the two before it; default = the current year, follows today's date) and a multi-select of periods P1–P13. Filters are not persisted and reset on reload."
+            ranking="Per panel: consultants sorted by difference (group 2 − group 1) descending, so the biggest risers are on top. Top 3 rows are highlighted, rows with a negative difference are tinted red. No column sorting."
+            calculations={[
+              "Revenue types: Jigler = secondment revenue invoiced via Jigler · Please = revenue via Please · W&S = recruitment & selection fees · Margefacturatie = margin invoicing · Overname fee = takeover fees.",
+              "Mock split per consultant per period: Please 15–24%, W&S 6–15%, Margefacturatie 3–7.5%, Overname fee 4–13% in roughly one of every five periods, Jigler = remainder. The five types always add up to the original period total.",
+              "Group amount = sum over the selected periods and selected revenue types. Every amount is multiplied by the year factor of that group's year and rounded to whole euros before summing, so rows, per-type breakdown, KPI tiles and the Total row always add up.",
+              "Difference = group 2 − group 1 in euros (no percentage).",
+              "Year labels appear in the column headers only when group 1 and group 2 use different years.",
+              `Inactive consultants (mock): ${inactieveNamen}. Shown with an 'Inactief' badge when the status filter is All or Inactive.`,
+              "Consultant detail (click a row): KPI tiles and the revenue-per-type table use the panel's groups, years and the revenue type filter. The chart shows stacked bars for the last 13 periods up to and including the current period, crossing the year boundary; bars from last year use last year's factor. The Table toggle shows the same numbers.",
+              "Current period = 28-day block: ceil(day of year / 28), capped at P13 (same rule as getCurrentPeriodNumber in ranglijstenData).",
+              "Known limitations: groups cannot span two years (panel B's default P13+P1+P2 takes all three periods from the same year). The mock series grows steeply within a year, so the detail chart shows a drop from P13 of last year to P1 of this year.",
+            ]}
+            rowCount={aantalConsultants}
+          />
+        </div>
       </div>
 
       {/* Two panels side by side */}

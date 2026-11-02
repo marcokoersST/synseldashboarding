@@ -24,5 +24,6 @@
 - [x] Omzet dashboard - vernieuwde versie (Concepts): kopie van het Omzetdashboard met uitsplitsing per type omzet, statusfilter en twee vergelijkingspanelen
 - [x] Omzet dashboard - vernieuwde versie: jaarkeuze werkt door in rijen, uitsplitsing per type en totalen; standaard het jaar van vandaag
 - [x] Omzet dashboard - vernieuwde versie: klikbare consultantrijen met detailscherm (omzet per type + gestapelde staafdiagram van de afgelopen 13 periodes), standaard alleen actieve consultants, vertalingen aangevuld
+- [x] Omzet dashboard - vernieuwde versie: Dev info (Engels) met databron, filters, sortering, berekeningen en bekende beperkingen
 
 - [ ] Bonus Tabel: knop in Financieel-tab om Prijzen handmatig toe te wijzen (wacht op opzet Financieel-tab)
