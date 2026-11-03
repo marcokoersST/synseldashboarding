@@ -2,8 +2,29 @@ import { describe, it, expect } from "vitest";
 import { omzetConsultants, getOmzetForPeriodeGroups } from "./omzetDashboardData";
 import {
   omzetConsultantsPerType, alleOmzetTypes, getOmzetPerTypeForPeriodeGroups, getUitsplitsingPerType,
-  laatste13Periodes, omzetLaatste13Periodes, omzetVoorTypes, jaarFactor,
+  laatste13Periodes, omzetLaatste13Periodes, omzetVoorTypes, jaarFactor, sorteerOmzetRijen,
 } from "./omzetDashboardVernieuwdData";
+
+describe("Sorteren van de consultanttabel", () => {
+  const rijen = [
+    { name: "A", periode1: 10, periode2: 50, verschil: 40 },
+    { name: "B", periode1: 30, periode2: 20, verschil: -10 },
+    { name: "C", periode1: 20, periode2: 80, verschil: 60 },
+  ];
+  const namen = (r: { name: string }[]) => r.map((x) => x.name).join("");
+
+  it("sorteert op verschil, groep 1 of groep 2, hoog naar laag of andersom", () => {
+    expect(namen(sorteerOmzetRijen(rijen, { kolom: "verschil", richting: "desc" }))).toBe("CAB");
+    expect(namen(sorteerOmzetRijen(rijen, { kolom: "periode1", richting: "desc" }))).toBe("BCA");
+    expect(namen(sorteerOmzetRijen(rijen, { kolom: "periode2", richting: "desc" }))).toBe("CAB");
+    expect(namen(sorteerOmzetRijen(rijen, { kolom: "periode2", richting: "asc" }))).toBe("BAC");
+  });
+
+  it("past de originele lijst niet aan", () => {
+    sorteerOmzetRijen(rijen, { kolom: "periode1", richting: "asc" });
+    expect(namen(rijen)).toBe("ABC");
+  });
+});
 
 describe("Omzet dashboard - vernieuwde versie", () => {
   it("som van alle types per periode = origineel periodetotaal", () => {

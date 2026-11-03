@@ -89,6 +89,15 @@ export function getOmzetPerTypeForPeriodeGroups(
     .sort((a, b) => b.verschil - a.verschil);
 }
 
+export type SorteerKolom = "periode1" | "periode2" | "verschil";
+export type Sortering = { kolom: SorteerKolom; richting: "asc" | "desc" };
+
+/** Sorteer consultantrijen op groep 1, groep 2 of verschil; gelijke waarden houden hun volgorde */
+export function sorteerOmzetRijen<T extends Record<SorteerKolom, number>>(rows: T[], sortering: Sortering): T[] {
+  const richting = sortering.richting === "desc" ? -1 : 1;
+  return [...rows].sort((a, b) => richting * (a[sortering.kolom] - b[sortering.kolom]));
+}
+
 /** Totaal per omzettype over alle meegegeven consultants, voor beide periodegroepen */
 export function getUitsplitsingPerType(
   data: ConsultantOmzetPerType[],

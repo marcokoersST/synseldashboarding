@@ -11,12 +11,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Trophy, Medal, Flame, Rocket, ChevronDown } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, ArrowUp, ArrowDown, ArrowUpDown, TrendingUp, Trophy, Medal, Flame, Rocket, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { allPeriodes, unitAbbr } from "@/data/omzetDashboardData";
 import {
   omzetConsultantsPerType, omzetTypes, alleOmzetTypes, getOmzetPerTypeForPeriodeGroups, getUitsplitsingPerType,
-  beschikbareJaren, jaarFactor,
-  type ConsultantStatus, type OmzetType,
+  beschikbareJaren, jaarFactor, sorteerOmzetRijen,
+  type ConsultantStatus, type OmzetType, type SorteerKolom, type Sortering,
 } from "@/data/omzetDashboardVernieuwdData";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
 import { OmzetConsultantDetail } from "@/components/omzet/OmzetConsultantDetail";
@@ -130,6 +131,26 @@ function OmzetTypeMultiSelect({ selected, onChange }: { selected: OmzetType[]; o
   );
 }
 
+function SorteerKop({ kolom, label, sortering, onSorteer }: { kolom: SorteerKolom; label: string; sortering: Sortering; onSorteer: (k: SorteerKolom) => void }) {
+  const actief = sortering.kolom === kolom;
+  const Icon = !actief ? ArrowUpDown : sortering.richting === "desc" ? ArrowDown : ArrowUp;
+  return (
+    <TableHead
+      className="text-right font-semibold"
+      aria-sort={actief ? (sortering.richting === "desc" ? "descending" : "ascending") : "none"}
+    >
+      <button
+        type="button"
+        onClick={() => onSorteer(kolom)}
+        className={cn("inline-flex items-center gap-1 hover:text-foreground", actief && "text-foreground")}
+      >
+        {label}
+        <Icon className={cn("h-3 w-3", !actief && "opacity-50")} />
+      </button>
+    </TableHead>
+  );
+}
+
 interface PanelProps {
   title: string;
   groep1: string[];
@@ -158,6 +179,14 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
     () => getOmzetPerTypeForPeriodeGroups(base, groep1, groep2, typeFilter, jaarFactor(jaar1), jaarFactor(jaar2)),
     [base, groep1, groep2, typeFilter, jaar1, jaar2]
   );
+
+  // Standaard op verschil, hoog naar laag; nogmaals klikken op dezelfde kolom draait de richting om
+  const [sortering, setSortering] = useState<Sortering>({ kolom: "verschil", richting: "desc" });
+  const sorteer = (kolom: SorteerKolom) =>
+    setSortering((s) => ({ kolom, richting: s.kolom === kolom && s.richting === "desc" ? "asc" : "desc" }));
+  const rijen = useMemo(() => sorteerOmzetRijen(filtered, sortering), [filtered, sortering]);
+  // Bekers en top-3-markering alleen bij hoog naar laag, anders krijgt de laagste omzet de beker
+  const toonPodium = sortering.richting === "desc";
 
   const uitsplitsing = useMemo(
     () => getUitsplitsingPerType(base, groep1, groep2, typeFilter, jaarFactor(jaar1), jaarFactor(jaar2)),
@@ -261,23 +290,23 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
                 <TableHead className="w-10 font-semibold">#</TableHead>
                 <TableHead className="font-semibold">Consultant</TableHead>
                 <TableHead className="font-semibold">Unit</TableHead>
-                <TableHead className="text-right font-semibold">{g1Label}</TableHead>
-                <TableHead className="text-right font-semibold">{g2Label}</TableHead>
-                <TableHead className="text-right font-semibold">Verschil</TableHead>
+                <SorteerKop kolom="periode1" label={g1Label} sortering={sortering} onSorteer={sorteer} />
+                <SorteerKop kolom="periode2" label={g2Label} sortering={sortering} onSorteer={sorteer} />
+                <SorteerKop kolom="verschil" label="Verschil" sortering={sortering} onSorteer={sorteer} />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((row, idx) => (
+              {rijen.map((row, idx) => (
                 <TableRow
                   key={row.name}
                   tabIndex={0}
                   onClick={() => setDetail(row.name)}
                   onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setDetail(row.name))}
-                  className={`cursor-pointer hover:bg-muted/60 ${idx < 3 ? "bg-primary/5" : row.verschil < 0 ? "bg-red-50/60" : ""}`}
+                  className={`cursor-pointer hover:bg-muted/60 ${toonPodium && idx < 3 ? "bg-primary/5" : row.verschil < 0 ? "bg-red-50/60" : ""}`}
                 >
                   <TableCell className="font-medium text-muted-foreground">
                     <div className="flex items-center gap-1.5">
-                      {idx < 5 && rankIcons[idx]}
+                      {toonPodium && idx < 5 && rankIcons[idx]}
                       <span>{idx + 1}</span>
                     </div>
                   </TableCell>
@@ -348,7 +377,7 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
       </Card>
 
       <OmzetConsultantDetail
-        rows={filtered}
+        rows={rijen}
         consultant={detail}
         onChange={setDetail}
         groep1={groep1}
@@ -421,7 +450,7 @@ const OmzetDashboardVernieuwd = () => {
           <RankingDevInfo
             source="Static mock data. Period totals per consultant (P1–P13) are taken from the original Omzetdashboard (omzetDashboardData.ts) and split deterministically into five revenue types (omzetDashboardVernieuwdData.ts). Previous years are derived from the current year: −1 year = 91%, −2 years = 84%."
             filters="Global: unit, consultant status (default Active) and revenue type multi-select (default all five). Per panel: group 1 and group 2 each have a year (current year and the two before it; default = the current year, follows today's date) and a multi-select of periods P1–P13. Filters are not persisted and reset on reload."
-            ranking="Per panel: consultants sorted by difference (group 2 − group 1) descending, so the biggest risers are on top. Top 3 rows are highlighted, rows with a negative difference are tinted red. No column sorting."
+            ranking="Per panel, default: difference (group 2 − group 1) descending, so the biggest risers are on top. Click the group 1, group 2 or Difference header to sort on that column (highest first); click the same header again to flip the direction. Rank numbers and the previous/next order in the consultant detail follow the active sort; rank icons and the top 3 highlight are only shown when sorting highest first. Rows with a negative difference are tinted red. Sorting is per panel and not persisted."
             calculations={[
               "Revenue types: Jigler = secondment revenue invoiced via Jigler · Please = revenue via Please · W&S = recruitment & selection fees · Margefacturatie = margin invoicing · Overname fee = takeover fees.",
               "Mock split per consultant per period: Please 15–24%, W&S 6–15%, Margefacturatie 3–7.5%, Overname fee 4–13% in roughly one of every five periods, Jigler = remainder. The five types always add up to the original period total.",
