@@ -26,5 +26,6 @@
 - [x] Omzet dashboard - vernieuwde versie: klikbare consultantrijen met detailscherm (omzet per type + gestapelde staafdiagram van de afgelopen 13 periodes), standaard alleen actieve consultants, vertalingen aangevuld
 - [x] Omzet dashboard - vernieuwde versie: Dev info (Engels) met databron, filters, sortering, berekeningen en bekende beperkingen
 - [x] Omzet dashboard - vernieuwde versie: consultanttabellen sorteerbaar op groep 1, groep 2 en verschil (standaard verschil, hoog naar laag)
+- [x] Omzet dashboard - vernieuwde versie: periodekeuze met een kolom per jaar, zodat groepen over de jaargrens heen kunnen lopen (paneel B standaard P10–P12 '25 vs P13 '25–P2 '26)
 
 - [ ] Bonus Tabel: knop in Financieel-tab om Prijzen handmatig toe te wijzen (wacht op opzet Financieel-tab)

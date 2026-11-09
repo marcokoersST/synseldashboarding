@@ -3,7 +3,33 @@ import { omzetConsultants, getOmzetForPeriodeGroups } from "./omzetDashboardData
 import {
   omzetConsultantsPerType, alleOmzetTypes, getOmzetPerTypeForPeriodeGroups, getUitsplitsingPerType,
   laatste13Periodes, omzetLaatste13Periodes, omzetVoorTypes, jaarFactor, sorteerOmzetRijen,
+  periodeKeuzeLabel, sorteerPeriodeSleutels, omzetVoorPeriodes,
 } from "./omzetDashboardVernieuwdData";
+
+const vandaag = new Date(2026, 10, 9); // huidig jaar 2026
+
+describe("Periodes over de jaargrens", () => {
+  it("sorteert periodes chronologisch over jaren heen", () => {
+    expect(sorteerPeriodeSleutels(["2026-P2", "2025-P13", "2026-P1", "2025-P12"])).toEqual(["2025-P12", "2025-P13", "2026-P1", "2026-P2"]);
+  });
+
+  it("maakt korte labels, met reeksen ook over de jaargrens", () => {
+    expect(periodeKeuzeLabel(["2026-P4"], false)).toBe("P4");
+    expect(periodeKeuzeLabel(["2026-P4", "2026-P5"], false)).toBe("P4+P5");
+    expect(periodeKeuzeLabel(["2026-P10", "2026-P11", "2026-P12"], false)).toBe("P10–P12");
+    expect(periodeKeuzeLabel(["2026-P2", "2025-P13", "2026-P1"], true)).toBe("P13 '25–P2 '26");
+    expect(periodeKeuzeLabel(["2025-P4", "2026-P4"], true)).toBe("P4 '25 + P4 '26");
+    expect(periodeKeuzeLabel([], true)).toBe("—");
+  });
+
+  it("telt elke periode met de jaarfactor van zijn eigen jaar", () => {
+    const c = omzetConsultantsPerType[0];
+    const overJaargrens = omzetVoorPeriodes(c, ["2025-P13", "2026-P1"], alleOmzetTypes, vandaag);
+    expect(overJaargrens).toBe(
+      omzetVoorTypes(c, ["P13"], alleOmzetTypes, jaarFactor("2025", vandaag)) + omzetVoorTypes(c, ["P1"], alleOmzetTypes, 1)
+    );
+  });
+});
 
 describe("Sorteren van de consultanttabel", () => {
   const rijen = [
@@ -39,13 +65,16 @@ describe("Omzet dashboard - vernieuwde versie", () => {
 
   it("alle types geselecteerd geeft dezelfde ranglijst als het originele dashboard", () => {
     const origineel = getOmzetForPeriodeGroups(omzetConsultants, ["P4"], ["P5"]);
-    const vernieuwd = getOmzetPerTypeForPeriodeGroups(omzetConsultantsPerType, ["P4"], ["P5"], alleOmzetTypes);
+    const vernieuwd = getOmzetPerTypeForPeriodeGroups(omzetConsultantsPerType, ["2026-P4"], ["2026-P5"], alleOmzetTypes, vandaag);
     expect(vernieuwd.map((r) => [r.name, r.verschil])).toEqual(origineel.map((r) => [r.name, r.verschil]));
   });
 
   it("uitsplitsing per type telt op tot het totaal van de tabel", () => {
-    const rijen = getOmzetPerTypeForPeriodeGroups(omzetConsultantsPerType, ["P10", "P11"], ["P12", "P13"], alleOmzetTypes);
-    const perType = getUitsplitsingPerType(omzetConsultantsPerType, ["P10", "P11"], ["P12", "P13"], alleOmzetTypes);
+    const groep1 = ["2025-P12", "2025-P13", "2026-P1"];
+    const groep2 = ["2026-P2", "2026-P3"];
+    const rijen = getOmzetPerTypeForPeriodeGroups(omzetConsultantsPerType, groep1, groep2, alleOmzetTypes, vandaag);
+    const perType = getUitsplitsingPerType(omzetConsultantsPerType, groep1, groep2, alleOmzetTypes, vandaag);
+    expect(perType.reduce((s, t) => s + t.periode1, 0)).toBe(rijen.reduce((s, r) => s + r.periode1, 0));
     expect(perType.reduce((s, t) => s + t.periode2, 0)).toBe(rijen.reduce((s, r) => s + r.periode2, 0));
   });
 

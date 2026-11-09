@@ -71,19 +71,57 @@ export function omzetVoorTypes(c: ConsultantOmzetPerType, periodes: string[], ty
   );
 }
 
-/** Sum multiple periods for each consultant (only the chosen revenue types), compare two groups, sort by verschil */
+// Een gekozen periode is jaar + periode, als sleutel "2026-P4", zodat een groep over de jaargrens heen kan lopen
+export const periodeSleutel = (jaar: string, periode: string) => `${jaar}-${periode}`;
+
+export function leesPeriodeSleutel(sleutel: string): { jaar: string; periode: string } {
+  const [jaar, periode] = sleutel.split("-");
+  return { jaar, periode };
+}
+
+// Doorlopend volgnummer over jaren heen: P13 2025 en P1 2026 liggen naast elkaar
+const volgnummer = ({ jaar, periode }: { jaar: string; periode: string }) => Number(jaar) * 13 + Number(periode.slice(1));
+
+/** Chronologische volgorde: oudste eerst */
+export function sorteerPeriodeSleutels(sleutels: string[]): string[] {
+  return [...sleutels].sort((a, b) => volgnummer(leesPeriodeSleutel(a)) - volgnummer(leesPeriodeSleutel(b)));
+}
+
+/** Korte weergave: 3+ aaneengesloten periodes als "P10–P12"; het jaartal alleen als metJaar */
+export function periodeKeuzeLabel(sleutels: string[], metJaar: boolean): string {
+  if (!sleutels.length) return "—";
+  const tekst = (p: { jaar: string; periode: string }) => (metJaar ? `${p.periode} '${p.jaar.slice(2)}` : p.periode);
+  const reeksen: { jaar: string; periode: string }[][] = [];
+  sorteerPeriodeSleutels(sleutels).map(leesPeriodeSleutel).forEach((p) => {
+    const laatste = reeksen[reeksen.length - 1];
+    if (laatste && volgnummer(p) === volgnummer(laatste[laatste.length - 1]) + 1) laatste.push(p);
+    else reeksen.push([p]);
+  });
+  return reeksen
+    .flatMap((r) => (r.length >= 3 ? [`${tekst(r[0])}–${tekst(r[r.length - 1])}`] : r.map(tekst)))
+    .join(metJaar ? " + " : "+");
+}
+
+/** Som van de gekozen omzettypes over de gekozen periodes (jaar + periode), elk met de jaarfactor van dat jaar */
+export function omzetVoorPeriodes(c: ConsultantOmzetPerType, sleutels: string[], types: OmzetType[], vandaag = new Date()) {
+  return sleutels.reduce((som, s) => {
+    const { jaar, periode } = leesPeriodeSleutel(s);
+    return som + omzetVoorTypes(c, [periode], types, jaarFactor(jaar, vandaag));
+  }, 0);
+}
+
+/** Sum the chosen periods (year + period) for each consultant (only the chosen revenue types), compare two groups, sort by verschil */
 export function getOmzetPerTypeForPeriodeGroups(
   data: ConsultantOmzetPerType[],
   groep1: string[],
   groep2: string[],
   types: OmzetType[],
-  factor1 = 1,
-  factor2 = 1
+  vandaag = new Date()
 ) {
   return data
     .map((c) => {
-      const sum1 = omzetVoorTypes(c, groep1, types, factor1);
-      const sum2 = omzetVoorTypes(c, groep2, types, factor2);
+      const sum1 = omzetVoorPeriodes(c, groep1, types, vandaag);
+      const sum2 = omzetVoorPeriodes(c, groep2, types, vandaag);
       return { name: c.name, unit: c.unit, status: c.status, periode1: sum1, periode2: sum2, verschil: sum2 - sum1 };
     })
     .sort((a, b) => b.verschil - a.verschil);
@@ -104,14 +142,13 @@ export function getUitsplitsingPerType(
   groep1: string[],
   groep2: string[],
   types: OmzetType[],
-  factor1 = 1,
-  factor2 = 1
+  vandaag = new Date()
 ) {
   return omzetTypes
     .filter((t) => types.includes(t.key))
     .map((t) => {
-      const sum1 = data.reduce((s, c) => s + omzetVoorTypes(c, groep1, [t.key], factor1), 0);
-      const sum2 = data.reduce((s, c) => s + omzetVoorTypes(c, groep2, [t.key], factor2), 0);
+      const sum1 = data.reduce((s, c) => s + omzetVoorPeriodes(c, groep1, [t.key], vandaag), 0);
+      const sum2 = data.reduce((s, c) => s + omzetVoorPeriodes(c, groep2, [t.key], vandaag), 0);
       return { key: t.key, label: t.label, periode1: sum1, periode2: sum2, verschil: sum2 - sum1 };
     });
 }

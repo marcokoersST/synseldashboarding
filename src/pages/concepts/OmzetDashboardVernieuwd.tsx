@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { allPeriodes, unitAbbr } from "@/data/omzetDashboardData";
 import {
   omzetConsultantsPerType, omzetTypes, alleOmzetTypes, getOmzetPerTypeForPeriodeGroups, getUitsplitsingPerType,
-  beschikbareJaren, jaarFactor, sorteerOmzetRijen,
+  beschikbareJaren, sorteerOmzetRijen, periodeSleutel, sorteerPeriodeSleutels, periodeKeuzeLabel, leesPeriodeSleutel,
   type ConsultantStatus, type OmzetType, type SorteerKolom, type Sortering,
 } from "@/data/omzetDashboardVernieuwdData";
 import { AnimatedNumber } from "@/components/animations/AnimatedNumber";
@@ -37,47 +37,61 @@ const rankIcons = [
   <Rocket className="h-4 w-4 text-primary" />,
 ];
 
-function PeriodeMultiSelect({ label, selected, onChange, jaar, onJaarChange }: { label: string; selected: string[]; onChange: (v: string[]) => void; jaar: string; onJaarChange: (v: string) => void }) {
-  const toggle = (p: string) => {
-    if (selected.includes(p)) {
-      onChange(selected.filter((s) => s !== p));
+/** Periodekeuze met een kolom per jaar, zodat een groep over de jaargrens heen kan lopen (bijv. P12 '25 t/m P2 '26) */
+function PeriodeMultiSelect({ label, knopLabel, selected, onChange }: { label: string; knopLabel: string; selected: string[]; onChange: (v: string[]) => void }) {
+  const jaren = [...beschikbareJaren()].reverse(); // oudste links
+  const toggle = (sleutel: string) => {
+    if (selected.includes(sleutel)) {
+      onChange(selected.filter((s) => s !== sleutel));
     } else {
-      onChange([...selected, p].sort((a, b) => allPeriodes.indexOf(a) - allPeriodes.indexOf(b)));
+      onChange(sorteerPeriodeSleutels([...selected, sleutel]));
     }
   };
 
   return (
     <div className="space-y-2 min-w-0">
       <label className="text-xs text-muted-foreground">{label}</label>
-      <div className="flex gap-2">
-      <Select value={jaar} onValueChange={onJaarChange}>
-        <SelectTrigger className="w-24 shrink-0 text-sm"><SelectValue /></SelectTrigger>
-        <SelectContent>
-          {beschikbareJaren().map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}
-        </SelectContent>
-      </Select>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="flex-1 min-w-0 justify-between text-sm font-normal">
-            <span className="truncate">{selected.length === 0 ? "Selecteer..." : selected.join(", ")}</span>
-            <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+          <Button variant="outline" className="w-full min-w-0 justify-between text-sm font-normal">
+            <span className="truncate">{selected.length === 0 ? "Selecteer..." : knopLabel}</span>
+            <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-48 p-2 pointer-events-auto" align="start">
-          <div className="grid grid-cols-2 gap-1">
-            {allPeriodes.map((p) => (
-              <label key={p} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer text-sm">
-                <Checkbox
-                  checked={selected.includes(p)}
-                  onCheckedChange={() => toggle(p)}
-                />
-                {p}
-              </label>
-            ))}
-          </div>
+        <PopoverContent className="w-auto p-2 pointer-events-auto" align="start">
+          <table className="text-sm">
+            <thead>
+              <tr>
+                <th />
+                {jaren.map((j) => (
+                  <th key={j} className="px-2 pb-1 text-xs font-semibold text-muted-foreground">{j}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {allPeriodes.map((p) => (
+                <tr key={p}>
+                  <td className="pr-2 text-xs text-muted-foreground">{p}</td>
+                  {jaren.map((j) => {
+                    const sleutel = periodeSleutel(j, p);
+                    return (
+                      <td key={j} className="p-0">
+                        <label className="flex cursor-pointer justify-center rounded px-3 py-1 hover:bg-muted">
+                          <Checkbox
+                            checked={selected.includes(sleutel)}
+                            onCheckedChange={() => toggle(sleutel)}
+                            aria-label={`${p} ${j}`}
+                          />
+                        </label>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </PopoverContent>
       </Popover>
-      </div>
     </div>
   );
 }
@@ -170,14 +184,11 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
     [unitFilter, statusFilter]
   );
 
-  // Standaard het jaar van vandaag
-  const [jaar1, setJaar1] = useState(() => beschikbareJaren()[0]);
-  const [jaar2, setJaar2] = useState(() => beschikbareJaren()[0]);
   const [detail, setDetail] = useState<string | null>(null);
 
   const filtered = useMemo(
-    () => getOmzetPerTypeForPeriodeGroups(base, groep1, groep2, typeFilter, jaarFactor(jaar1), jaarFactor(jaar2)),
-    [base, groep1, groep2, typeFilter, jaar1, jaar2]
+    () => getOmzetPerTypeForPeriodeGroups(base, groep1, groep2, typeFilter),
+    [base, groep1, groep2, typeFilter]
   );
 
   // Standaard op verschil, hoog naar laag; nogmaals klikken op dezelfde kolom draait de richting om
@@ -189,8 +200,8 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
   const toonPodium = sortering.richting === "desc";
 
   const uitsplitsing = useMemo(
-    () => getUitsplitsingPerType(base, groep1, groep2, typeFilter, jaarFactor(jaar1), jaarFactor(jaar2)),
-    [base, groep1, groep2, typeFilter, jaar1, jaar2]
+    () => getUitsplitsingPerType(base, groep1, groep2, typeFilter),
+    [base, groep1, groep2, typeFilter]
   );
 
   const totals = useMemo(() => {
@@ -199,10 +210,11 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
     return { p1, p2, verschil: p2 - p1 };
   }, [filtered]);
 
-  // Jaar alleen in de labels als de groepen verschillende jaren hebben, anders zijn beide kolommen bijv. "P4"
-  const toonJaar = jaar1 !== jaar2;
-  const g1Label = groep1.length ? `${toonJaar ? `${jaar1} ` : ""}${groep1.join("+")}` : "—";
-  const g2Label = groep2.length ? `${toonJaar ? `${jaar2} ` : ""}${groep2.join("+")}` : "—";
+  // Jaartal alleen in de labels als er een periode buiten het huidige jaar gekozen is, anders bijv. gewoon "P4"
+  const huidigJaar = beschikbareJaren()[0];
+  const metJaar = [...groep1, ...groep2].some((s) => leesPeriodeSleutel(s).jaar !== huidigJaar);
+  const g1Label = periodeKeuzeLabel(groep1, metJaar);
+  const g2Label = periodeKeuzeLabel(groep2, metJaar);
   const up = totals.verschil >= 0;
   const fmt = (v: number) => Math.round(v).toLocaleString("nl-NL");
 
@@ -214,8 +226,8 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <PeriodeMultiSelect label="Groep 1" selected={groep1} onChange={setGroep1} jaar={jaar1} onJaarChange={setJaar1} />
-            <PeriodeMultiSelect label="Groep 2" selected={groep2} onChange={setGroep2} jaar={jaar2} onJaarChange={setJaar2} />
+            <PeriodeMultiSelect label="Groep 1" knopLabel={g1Label} selected={groep1} onChange={setGroep1} />
+            <PeriodeMultiSelect label="Groep 2" knopLabel={g2Label} selected={groep2} onChange={setGroep2} />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -382,8 +394,6 @@ function OmzetPanel({ title, groep1, groep2, setGroep1, setGroep2, unitFilter, s
         onChange={setDetail}
         groep1={groep1}
         groep2={groep2}
-        jaar1={jaar1}
-        jaar2={jaar2}
         g1Label={g1Label}
         g2Label={g2Label}
         typeFilter={typeFilter}
@@ -398,12 +408,15 @@ const OmzetDashboardVernieuwd = () => {
   const [typeFilter, setTypeFilter] = useState<OmzetType[]>(alleOmzetTypes);
 
   // Panel A: single period comparison (default)
-  const [groepA1, setGroepA1] = useState(["P4"]);
-  const [groepA2, setGroepA2] = useState(["P5"]);
+  const [jaarNu, jaarVorig] = beschikbareJaren();
+  const [groepA1, setGroepA1] = useState([periodeSleutel(jaarNu, "P4")]);
+  const [groepA2, setGroepA2] = useState([periodeSleutel(jaarNu, "P5")]);
 
-  // Panel B: multi-period comparison (default 3 vs 3)
-  const [groepB1, setGroepB1] = useState(["P10", "P11", "P12"]);
-  const [groepB2, setGroepB2] = useState(["P13", "P1", "P2"]);
+  // Panel B: multi-period comparison (default 3 vs the next 3, across the year boundary)
+  const [groepB1, setGroepB1] = useState(["P10", "P11", "P12"].map((p) => periodeSleutel(jaarVorig, p)));
+  const [groepB2, setGroepB2] = useState([
+    periodeSleutel(jaarVorig, "P13"), periodeSleutel(jaarNu, "P1"), periodeSleutel(jaarNu, "P2"),
+  ]);
 
   const units = useMemo(
     () => [...new Set(omzetConsultantsPerType.map((c) => c.unit))].sort(),
@@ -449,18 +462,18 @@ const OmzetDashboardVernieuwd = () => {
         <div className="ml-auto">
           <RankingDevInfo
             source="Static mock data. Period totals per consultant (P1–P13) are taken from the original Omzetdashboard (omzetDashboardData.ts) and split deterministically into five revenue types (omzetDashboardVernieuwdData.ts). Previous years are derived from the current year: −1 year = 91%, −2 years = 84%."
-            filters="Global: unit, consultant status (default Active) and revenue type multi-select (default all five). Per panel: group 1 and group 2 each have a year (current year and the two before it; default = the current year, follows today's date) and a multi-select of periods P1–P13. Filters are not persisted and reset on reload."
+            filters="Global: unit, consultant status (default Active) and revenue type multi-select (default all five). Per panel: group 1 and group 2 each have a period picker with a column per year (the current year and the two before it, following today's date) and a row per period P1–P13. Any combination of year + period can be ticked, so a group can cross the year boundary (e.g. P12 '25–P2 '26) or compare the same period across years. Defaults: panel A = P4 vs P5 of the current year; panel B = P10–P12 of last year vs P13 of last year + P1–P2 of this year. Filters are not persisted and reset on reload."
             ranking="Per panel, default: difference (group 2 − group 1) descending, so the biggest risers are on top. Click the group 1, group 2 or Difference header to sort on that column (highest first); click the same header again to flip the direction. Rank numbers and the previous/next order in the consultant detail follow the active sort; rank icons and the top 3 highlight are only shown when sorting highest first. Rows with a negative difference are tinted red. Sorting is per panel and not persisted."
             calculations={[
               "Revenue types: Jigler = secondment revenue invoiced via Jigler · Please = revenue via Please · W&S = recruitment & selection fees · Margefacturatie = margin invoicing · Overname fee = takeover fees.",
               "Mock split per consultant per period: Please 15–24%, W&S 6–15%, Margefacturatie 3–7.5%, Overname fee 4–13% in roughly one of every five periods, Jigler = remainder. The five types always add up to the original period total.",
-              "Group amount = sum over the selected periods and selected revenue types. Every amount is multiplied by the year factor of that group's year and rounded to whole euros before summing, so rows, per-type breakdown, KPI tiles and the Total row always add up.",
+              "Group amount = sum over the selected periods (year + period) and selected revenue types. Every amount is multiplied by the year factor of its own year and rounded to whole euros before summing, so rows, per-type breakdown, KPI tiles and the Total row always add up.",
               "Difference = group 2 − group 1 in euros (no percentage).",
-              "Year labels appear in the column headers only when group 1 and group 2 use different years.",
+              "Group labels: 3 or more consecutive periods are shown as a range (P10–P12, also across years: P13 '25–P2 '26); otherwise periods are joined with '+'. The year ('25) is only shown when a panel contains a period outside the current year.",
               `Inactive consultants (mock): ${inactieveNamen}. Shown with an 'Inactief' badge when the status filter is All or Inactive.`,
-              "Consultant detail (click a row): KPI tiles and the revenue-per-type table use the panel's groups, years and the revenue type filter. The chart shows stacked bars for the last 13 periods up to and including the current period, crossing the year boundary; bars from last year use last year's factor. The Table toggle shows the same numbers.",
+              "Consultant detail (click a row): KPI tiles and the revenue-per-type table use the panel's groups and the revenue type filter. The chart shows stacked bars for the last 13 periods up to and including the current period, crossing the year boundary; bars from last year use last year's factor. The Table toggle shows the same numbers.",
               "Current period = 28-day block: ceil(day of year / 28), capped at P13 (same rule as getCurrentPeriodNumber in ranglijstenData).",
-              "Known limitations: groups cannot span two years (panel B's default P13+P1+P2 takes all three periods from the same year). The mock series grows steeply within a year, so the detail chart shows a drop from P13 of last year to P1 of this year.",
+              "Known limitation: the mock series grows steeply within a year and earlier years are a fixed percentage of the current year, so comparisons and the detail chart show a drop from P13 of last year to P1 of this year.",
             ]}
             rowCount={aantalConsultants}
           />

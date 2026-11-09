@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartStyle, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import {
-  omzetConsultantsPerType, omzetTypes, getUitsplitsingPerType, jaarFactor, omzetLaatste13Periodes,
+  omzetConsultantsPerType, omzetTypes, getUitsplitsingPerType, omzetLaatste13Periodes,
   type OmzetType, type PeriodeOmzetPerType,
 } from "@/data/omzetDashboardVernieuwdData";
 
@@ -34,23 +34,21 @@ interface Props {
   consultant: string | null;
   onChange: (c: string | null) => void;
   groep1: string[];
-  groep2: string[];
-  jaar1: string;
-  jaar2: string;
+  groep2: string[]; // periodesleutels "2026-P4"
   g1Label: string;
   g2Label: string;
   typeFilter: OmzetType[];
 }
 
-export function OmzetConsultantDetail({ rows, consultant, onChange, groep1, groep2, jaar1, jaar2, g1Label, g2Label, typeFilter }: Props) {
+export function OmzetConsultantDetail({ rows, consultant, onChange, groep1, groep2, g1Label, g2Label, typeFilter }: Props) {
   const [weergave, setWeergave] = useState<"grafiek" | "tabel">("grafiek");
   const c = omzetConsultantsPerType.find((x) => x.name === consultant) ?? null;
   const idx = rows.findIndex((r) => r.name === consultant);
   const go = (d: number) => rows.length && onChange(rows[(idx + d + rows.length) % rows.length].name);
 
   const perType = useMemo(
-    () => (c ? getUitsplitsingPerType([c], groep1, groep2, typeFilter, jaarFactor(jaar1), jaarFactor(jaar2)) : []),
-    [c, groep1, groep2, typeFilter, jaar1, jaar2]
+    () => (c ? getUitsplitsingPerType([c], groep1, groep2, typeFilter) : []),
+    [c, groep1, groep2, typeFilter]
   );
   const totaal = perType.reduce(
     (acc, t) => ({ p1: acc.p1 + t.periode1, p2: acc.p2 + t.periode2 }),
